@@ -1,0 +1,149 @@
+{% extends "redirect-manager/_layouts/settings" %}
+{% set title = "General Settings"|t('redirect-manager') %}
+{% set fullPageForm = true %}
+{% set selectedSettingsItem = 'general' %}
+
+{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
+{% set crumbs = [
+    {
+        label: plugin.settings.pluginName|t('redirect-manager'),
+        url: url('redirect-manager'),
+    },
+    {
+        label: 'Settings'|t('redirect-manager'),
+        url: url('redirect-manager/settings'),
+    },
+    {
+        label: 'General'|t('redirect-manager'),
+        url: url('redirect-manager/settings/general'),
+    },
+] %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+    <form method="post" accept-charset="UTF-8">
+        {{ actionInput('redirect-manager/settings/save') }}
+        {{ csrfInput() }}
+        {{ redirectInput('redirect-manager/settings/general') }}
+
+        <h2 style="margin-top: 0px;">{{ "Plugin Settings"|t('redirect-manager') }}</h2>
+
+        {{ forms.textField({
+            label: "Plugin Name"|t('redirect-manager'),
+            instructions: "The name of the plugin as it appears in the Control Panel menu"|t('redirect-manager'),
+            id: 'pluginName',
+            name: 'settings[pluginName]',
+            value: settings.pluginName,
+            required: true,
+            disabled: settings.isOverriddenByConfig('pluginName'),
+            warning: settings.isOverriddenByConfig('pluginName') ?
+                "This is being overridden by the <code>pluginName</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+        <hr>
+
+        <h2>{{ "Redirect Settings"|t('redirect-manager') }}</h2>
+
+        {{ forms.lightswitchField({
+            label: 'Auto Create Redirects'|t('redirect-manager'),
+            instructions: 'Automatically create redirects when entry URIs change'|t('redirect-manager'),
+            id: 'autoCreateRedirects',
+            name: 'settings[autoCreateRedirects]',
+            on: settings.autoCreateRedirects,
+            disabled: settings.isOverriddenByConfig('autoCreateRedirects'),
+            warning: settings.isOverriddenByConfig('autoCreateRedirects') ?
+                "This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+        {{ forms.selectField({
+            label: 'Default Source Match Mode'|t('redirect-manager'),
+            instructions: 'Default mode for new redirects. Each redirect can override this individually.'|t('redirect-manager'),
+            id: 'redirectSrcMatch',
+            name: 'settings[redirectSrcMatch]',
+            value: settings.redirectSrcMatch,
+            options: {
+                'pathonly': 'Path Only'|t('redirect-manager'),
+                'fullurl': 'Full URL'|t('redirect-manager')
+            },
+            disabled: settings.isOverriddenByConfig('redirectSrcMatch'),
+            warning: settings.isOverriddenByConfig('redirectSrcMatch') ?
+                "This is being overridden by the <code>redirectSrcMatch</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+        <hr>
+
+        <h2>{{ "Query String Handling"|t('redirect-manager') }}</h2>
+
+        {{ forms.lightswitchField({
+            label: 'Strip Query String'|t('redirect-manager'),
+            instructions: 'Strip query string from all 404 URLs before evaluation'|t('redirect-manager'),
+            id: 'stripQueryString',
+            name: 'settings[stripQueryString]',
+            on: settings.stripQueryString,
+            disabled: settings.isOverriddenByConfig('stripQueryString'),
+            warning: settings.isOverriddenByConfig('stripQueryString') ?
+                "This is being overridden by the <code>stripQueryString</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Preserve Query String'|t('redirect-manager'),
+            instructions: 'Preserve and pass query string to destination URL'|t('redirect-manager'),
+            id: 'preserveQueryString',
+            name: 'settings[preserveQueryString]',
+            on: settings.preserveQueryString,
+            disabled: settings.isOverriddenByConfig('preserveQueryString'),
+            warning: settings.isOverriddenByConfig('preserveQueryString') ?
+                "This is being overridden by the <code>preserveQueryString</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+        <hr>
+
+        <h2>{{ "HTTP Headers"|t('redirect-manager') }}</h2>
+
+        {{ forms.lightswitchField({
+            label: 'Set No-Cache Headers'|t('redirect-manager'),
+            instructions: 'Set no-cache headers on redirect responses'|t('redirect-manager'),
+            id: 'setNoCacheHeaders',
+            name: 'settings[setNoCacheHeaders]',
+            on: settings.setNoCacheHeaders,
+            disabled: settings.isOverriddenByConfig('setNoCacheHeaders'),
+            warning: settings.isOverriddenByConfig('setNoCacheHeaders') ?
+                "This is being overridden by the <code>setNoCacheHeaders</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+        <hr>
+
+        <h2>{{ "Logging Settings"|t('redirect-manager') }}</h2>
+
+        {% set logOptions = [
+            {value: 'error', label: 'Error (Critical errors only)'|t('redirect-manager')},
+            {value: 'warning', label: 'Warning (Errors and warnings)'|t('redirect-manager')},
+            {value: 'info', label: 'Info (General information)'|t('redirect-manager')},
+        ] %}
+
+        {% if craft.app.config.general.devMode %}
+            {% set logOptions = logOptions|merge([
+                {value: 'debug', label: 'Debug (Detailed debugging)'|t('redirect-manager')}
+            ]) %}
+        {% endif %}
+
+        {{ forms.selectField({
+            label: 'Log Level'|t('redirect-manager'),
+            instructions: 'Choose what types of messages to log. Debug level requires devMode to be enabled.'|t('redirect-manager'),
+            id: 'logLevel',
+            name: 'settings[logLevel]',
+            value: settings.logLevel,
+            options: logOptions,
+            disabled: settings.isOverriddenByConfig('logLevel'),
+            warning: settings.isOverriddenByConfig('logLevel') ?
+                "This is being overridden by the <code>logLevel</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+        <div class="buttons">
+            <button type="submit" class="btn submit">{{ "Save Settings"|t('redirect-manager') }}</button>
+        </div>
+    </form>
+
+    {% include 'redirect-manager/_components/plugin-credit.twig' %}
+{% endblock %}

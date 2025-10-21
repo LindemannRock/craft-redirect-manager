@@ -1,0 +1,594 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{% set title = isNew ? 'New redirect'|t('redirect-manager') : 'Edit redirect'|t('redirect-manager') %}
+{% set selectedSubnavItem = 'redirects' %}
+
+{% set crumbs = [
+    { label: craft.redirectManager.settings.pluginName, url: url('redirect-manager') },
+    { label: isNew ? 'New redirect'|t('redirect-manager') : redirect.sourceUrl }
+] %}
+
+{% set fullPageForm = true %}
+{% set saveShortcutRedirect = redirect ? 'redirect-manager/redirects/' ~ redirect.id : 'redirect-manager/redirects' %}
+
+{% block content %}
+	{{ actionInput('redirect-manager/redirects/save') }}
+	{{ redirectInput('redirect-manager/redirects') }}
+
+	{% if not isNew %}
+		{{ hiddenInput('redirectId', redirect.id) }}
+	{% endif %}
+
+	<div class="field" style="margin-top: 0px;">
+		<div class="heading">
+			<label for="redirectSrcMatch">{{ 'Source Match Mode'|t('redirect-manager') }}
+				<span class="required" aria-label="Required"></span>
+			</label>
+			<div class="instructions">
+				<p id="srcMatchInstructions">{{ 'Choose whether to match by path only or full URL.'|t('redirect-manager') }}</p>
+			</div>
+		</div>
+		<div class="input">
+			<div class="select">
+				{% set srcMatchValue = redirect ? redirect.redirectSrcMatch : (craft.app.request.getParam('redirectSrcMatch') ?: craft.redirectManager.settings.redirectSrcMatch) %}
+				<select id="redirectSrcMatch" name="redirectSrcMatch" required>
+					<option value="pathonly" {% if srcMatchValue == 'pathonly' %} selected {% endif %}>{{ 'Path Only'|t('redirect-manager') }}</option>
+					<option value="fullurl" {% if srcMatchValue == 'fullurl' %} selected {% endif %}>{{ 'Full URL'|t('redirect-manager') }}</option>
+				</select>
+			</div>
+		</div>
+		<p id="pathOnlyTip" class="notice has-icon" style="display: none; margin-top: 10px;">
+			<span class="icon" aria-hidden="true"></span>
+			<span class="visually-hidden">Tip:
+			</span>
+			<span>Full URLs entered will be automatically converted to paths when saving.</span>
+		</p>
+	</div>
+
+	{{ forms.selectField({
+        label: 'Match Type'|t('redirect-manager'),
+        instructions: 'How the source URL should be matched'|t('redirect-manager'),
+        id: 'matchType',
+        name: 'matchType',
+        value: redirect ? redirect.matchType : 'exact',
+        options: matchTypes,
+        required: true
+    }) }}
+
+	<div class="field" id="sourceUrl-field">
+		<div class="heading">
+			<label for="sourceUrl">{{ 'Source URL'|t('redirect-manager') }}
+				<span class="required" aria-label="Required"></span>
+			</label>
+			<div class="instructions">
+				<p id="sourceUrlInstructions">{{ 'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.'|t('redirect-manager') }}</p>
+			</div>
+		</div>
+		<div class="input ltr">
+			<input type="text" id="sourceUrl" name="sourceUrl" value="{{ redirect ? redirect.sourceUrl : craft.app.request.getParam('sourceUrl') }}" required class="text fullwidth">
+		</div>
+		{% if redirect and redirect.getErrors('sourceUrl') %}
+			<ul class="errors">
+				{% for error in redirect.getErrors('sourceUrl') %}
+					<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+		<p id="regexTip" class="notice has-icon" style="display: none; margin-top: 10px;">
+			<span class="icon" aria-hidden="true"></span>
+			<span class="visually-hidden">Tip:
+			</span>
+			<span>Test your pattern at
+				<a class="go" href="https://regexr.com/" target="_blank" rel="noopener">regexr.com</a>
+				before saving.</span>
+		</p>
+	</div>
+
+	{{ forms.textField({
+        label: 'Destination URL'|t('redirect-manager'),
+        instructions: 'The URL to redirect to (can be relative or absolute)'|t('redirect-manager'),
+        id: 'destinationUrl',
+        name: 'destinationUrl',
+        value: redirect ? redirect.destinationUrl : null,
+        required: true,
+        errors: redirect ? redirect.getErrors('destinationUrl') : null
+    }) }}
+
+	<hr>
+
+	<div id="priority-field" style="display: {{ (redirect ? redirect.matchType : 'exact') == 'exact' ? 'none' : 'block' }};">
+		<div class="field">
+			<div class="heading">
+				<label for="priority">{{ 'Priority'|t('redirect-manager') }}</label>
+				<div class="instructions">
+					<p>{{ 'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.'|t('redirect-manager') }}</p>
+				</div>
+			</div>
+			<div class="input ltr">
+				<div class="select">
+					<select id="priority" name="priority" style="width: 250px;">
+						{% for i in 0..9 %}
+							<option value="{{ i }}" {% if (redirect ? redirect.priority : 0) == i %} selected {% endif %}>
+								{{ i }}
+								-
+								{{ i == 0 ? 'Highest priority' : (i == 9 ? 'Lowest priority' : 'Priority ' ~ i) }}
+							</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+		</div>
+
+		<hr>
+	</div>
+
+	<div class="field">
+		<div class="heading">
+			<label for="statusCode">{{ 'Status Code'|t('redirect-manager') }}
+				<span class="required" aria-label="Required"></span>
+			</label>
+			<div class="instructions">
+				<p>{{ 'The HTTP status code to use for the redirect'|t('redirect-manager') }}</p>
+			</div>
+		</div>
+		<div class="input">
+			<div class="select">
+				<select id="statusCode" name="statusCode" required>
+					{% for code, label in statusCodes %}
+						<option value="{{ code }}" {% if (redirect ? redirect.statusCode : 301) == code %} selected {% endif %}>{{ label }}</option>
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<p id="statusCodeTip" class="notice has-icon" style="margin-top: 10px;">
+			<span class="icon" aria-hidden="true"></span>
+			<span class="visually-hidden">Tip:
+			</span>
+			<span id="statusCodeTipText">Most common: Use
+				<strong>301</strong>
+				for permanent moves.
+				<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" target="_blank" rel="noopener">Learn more about HTTP status codes</a>
+			</span>
+		</p>
+	</div>
+
+	{% include 'redirect-manager/_components/plugin-credit.twig' %}
+{% endblock %}
+
+{% block details %}
+	<fieldset>
+		<legend class="h6">{{ 'Status'|t('redirect-manager') }}</legend>
+		<div class="meta">
+			{{ forms.lightswitchField({
+                label: 'Enabled'|t('redirect-manager'),
+                id: 'enabled',
+                name: 'enabled',
+                on: redirect ? redirect.enabled : true
+            }) }}
+		</div>
+	</fieldset>
+
+	{% if craft.app.getIsMultiSite() %}
+		<fieldset>
+			<legend class="h6">{{ 'Site'|t('redirect-manager') }}</legend>
+			<div class="meta">
+				{{ forms.selectField({
+                    label: 'Site'|t('redirect-manager'),
+                    instructions: 'Select which site this redirect applies to'|t('redirect-manager'),
+                    id: 'siteId',
+                    name: 'siteId',
+                    value: redirect ? redirect.siteId : craft.app.request.getParam('siteId'),
+                    options: [{ label: 'All Sites'|t('redirect-manager'), value: '' }]|merge(craft.app.sites.getAllSites()|map(site => { label: site.name, value: site.id }))
+                }) }}
+			</div>
+		</fieldset>
+	{% endif %}
+
+	{% if not isNew %}
+		<fieldset>
+			<legend class="h6">{{ 'Statistics'|t('redirect-manager') }}</legend>
+			<dl class="meta read-only">
+				<div class="data">
+					<dt class="heading">{{ 'Hit count'|t('redirect-manager') }}</dt>
+					<dd class="value">{{ redirect.hitCount }}</dd>
+				</div>
+				{% if redirect.lastHit %}
+					<div class="data">
+						<dt class="heading">{{ 'Last hit'|t('redirect-manager') }}</dt>
+						<dd class="value">{{ redirect.lastHit|datetime('short') }}</dd>
+					</div>
+				{% endif %}
+				<div class="data">
+					<dt class="heading">{{ 'Created'|t('redirect-manager') }}</dt>
+					<dd class="value">{{ redirect.dateCreated|datetime('short') }}</dd>
+				</div>
+				<div class="data">
+					<dt class="heading">{{ 'Updated'|t('redirect-manager') }}</dt>
+					<dd class="value">{{ redirect.dateUpdated|datetime('short') }}</dd>
+				</div>
+			</dl>
+		</fieldset>
+	{% endif %}
+{% endblock %}
+
+{% js %}
+// Update Source URL instructions based on Match Type and Source Match Mode
+    const matchTypeSelect = document.getElementById('matchType');
+    const priorityField = document.getElementById('priority-field');
+    const srcMatchSelect = document.getElementById('redirectSrcMatch');
+    const pathOnlyTip = document.getElementById('pathOnlyTip');
+    const sourceUrlInput = document.getElementById('sourceUrl');
+    const sourceUrlInstructions = document.getElementById('sourceUrlInstructions');
+    const regexTip = document.getElementById('regexTip');
+
+    function updateSrcMatchTip() {
+        if (!srcMatchSelect || !pathOnlyTip) return;
+
+        const isPathOnly = srcMatchSelect.value === 'pathonly';
+
+        // Show tip only when "Path Only" is selected
+        pathOnlyTip.style.display = isPathOnly ? 'block' : 'none';
+    }
+
+    // Auto-fix URLs before form submission
+    // Returns false if validation fails (should prevent submit)
+    function validateAndFixUrls() {
+        console.log('validateAndFixUrls called');
+        const destinationUrlInput = document.getElementById('destinationUrl');
+        const corrections = [];
+        let validationFailed = false;
+
+        // VALIDATE SOURCE URL
+        if (sourceUrlInput && srcMatchSelect) {
+            let sourceValue = sourceUrlInput.value.trim();
+
+            // Empty check
+            if (!sourceValue) {
+                if (typeof Craft !== 'undefined') {
+                    Craft.cp.displayError('Source URL is required');
+                }
+                sourceUrlInput.classList.add('error');
+                sourceUrlInput.focus();
+                return false;
+            }
+
+            const isFullUrl = sourceValue.startsWith('http://') || sourceValue.startsWith('https://');
+            const isPath = sourceValue.startsWith('/');
+            const mode = srcMatchSelect.value;
+            const hasDot = sourceValue.includes('.');
+
+            console.log('Source validation:', {value: sourceValue, isFullUrl, isPath, mode, hasDot});
+
+            // FULL URL MODE VALIDATION
+            if (mode === 'fullurl') {
+                if (isFullUrl) {
+                    // Already a full URL - validate it has a domain
+                    try {
+                        const url = new URL(sourceValue);
+                        if (!url.hostname || !url.hostname.includes('.')) {
+                            throw new Error('No TLD');
+                        }
+                        // Valid full URL
+                    } catch(e) {
+                        if (typeof Craft !== 'undefined') {
+                            Craft.cp.displayError('Invalid full URL: Must be a valid URL with domain and TLD (e.g., https://example.com/page)');
+                        }
+                        sourceUrlInput.classList.add('error');
+                        sourceUrlInput.focus();
+                        return false;
+                    }
+                } else if (isPath) {
+                    // User entered a path but we're in Full URL mode
+                    if (typeof Craft !== 'undefined') {
+                        Craft.cp.displayError('Invalid Source URL: Full URL mode requires a domain. Either add domain (e.g., https://example.com' + sourceValue + ') or switch to Path Only mode.');
+                    }
+                    sourceUrlInput.classList.add('error');
+                    sourceUrlInput.focus();
+                    return false;
+                } else if (hasDot) {
+                    // Looks like a domain, add https://
+                    const correctedValue = 'https://' + sourceValue;
+                    // Validate the corrected URL
+                    try {
+                        const url = new URL(correctedValue);
+                        if (!url.hostname || !url.hostname.includes('.')) {
+                            throw new Error('No TLD');
+                        }
+                        sourceUrlInput.value = correctedValue;
+                        corrections.push('Source URL: ' + correctedValue);
+                    } catch(e) {
+                        if (typeof Craft !== 'undefined') {
+                            Craft.cp.displayError('Invalid domain: Must include a valid TLD (e.g., example.com)');
+                        }
+                        sourceUrlInput.classList.add('error');
+                        sourceUrlInput.focus();
+                        return false;
+                    }
+                } else {
+                    // No dot, no slash, no protocol = invalid in Full URL mode
+                    if (typeof Craft !== 'undefined') {
+                        Craft.cp.displayError('Invalid Source URL: Full URL mode requires a domain with TLD (e.g., example.com)');
+                    }
+                    sourceUrlInput.classList.add('error');
+                    sourceUrlInput.focus();
+                    return false;
+                }
+            }
+
+            // PATH ONLY MODE VALIDATION
+            else if (mode === 'pathonly') {
+                if (!isPath && !isFullUrl) {
+                    // Add leading /
+                    const correctedValue = '/' + sourceValue;
+                    sourceUrlInput.value = correctedValue;
+                    corrections.push('Source URL: ' + correctedValue);
+                }
+                // Full URLs are OK - backend will convert them
+            }
+        }
+
+        // VALIDATE DESTINATION URL
+        if (destinationUrlInput) {
+            let destValue = destinationUrlInput.value.trim();
+            if (destValue) {
+                const isFullUrl = destValue.startsWith('http://') || destValue.startsWith('https://');
+                const isPath = destValue.startsWith('/');
+                const isHash = destValue.startsWith('#');
+                const hasDot = destValue.includes('.');
+
+                console.log('Destination validation:', {value: destValue, isFullUrl, isPath, isHash, hasDot});
+
+                // If not full URL, not path, not anchor
+                if (!isFullUrl && !isPath && !isHash) {
+                    if (hasDot) {
+                        // Has dot - looks like a domain, add https://
+                        const correctedValue = 'https://' + destValue;
+                        destinationUrlInput.value = correctedValue;
+                        corrections.push('Destination URL: ' + correctedValue);
+                    } else {
+                        // No dot - assume it's a path, add /
+                        const correctedValue = '/' + destValue;
+                        destinationUrlInput.value = correctedValue;
+                        corrections.push('Destination URL: ' + correctedValue);
+                    }
+                }
+            }
+        }
+
+        // Check for infinite loop - Source and Destination are the same
+        if (sourceUrlInput && destinationUrlInput) {
+            const finalSource = sourceUrlInput.value.trim().toLowerCase();
+            const finalDest = destinationUrlInput.value.trim().toLowerCase();
+
+            if (finalSource && finalDest && finalSource === finalDest) {
+                if (typeof Craft !== 'undefined') {
+                    Craft.cp.displayError('Invalid Redirect: Source and Destination URLs cannot be identical - this would create an infinite loop!');
+                }
+                sourceUrlInput.classList.add('error');
+                destinationUrlInput.classList.add('error');
+                sourceUrlInput.focus();
+                return false;
+            }
+        }
+
+        // Show notification if any corrections made
+        if (corrections.length > 0 && typeof Craft !== 'undefined') {
+            Craft.cp.displayNotice('Auto-corrected: ' + corrections.join(', '));
+        }
+
+        return !validationFailed; // Return false if validation failed to prevent submit
+    }
+
+    // Simpler approach: Just validate on ANY button click that might save
+    document.addEventListener('click', function(e) {
+        const target = e.target;
+
+        // Check if it's a save/submit button
+        if (target.matches('button[type="submit"]') ||
+            target.matches('button.submit') ||
+            target.matches('.btn.submit') ||
+            target.closest('button[type="submit"]')) {
+            console.log('Potential save button clicked, validating');
+            const isValid = validateAndFixUrls();
+            if (!isValid) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }
+    }, true); // Use capture phase
+
+    // Also hook into keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // CMD+S or CTRL+S
+        if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+            console.log('Save shortcut detected, validating');
+            const isValid = validateAndFixUrls();
+            if (!isValid) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }
+    }, true);
+
+    // Remove error styling when user starts typing
+    if (sourceUrlInput) {
+        sourceUrlInput.addEventListener('input', function() {
+            this.classList.remove('error');
+        });
+    }
+
+    const destinationUrlInput = document.getElementById('destinationUrl');
+    if (destinationUrlInput) {
+        destinationUrlInput.addEventListener('input', function() {
+            this.classList.remove('error');
+        });
+    }
+
+    console.log('Validation hooks installed');
+
+    function updateSourceUrlInstructions() {
+        if (!matchTypeSelect || !sourceUrlInstructions) return;
+
+        const matchType = matchTypeSelect.value;
+        const srcMatch = srcMatchSelect ? srcMatchSelect.value : 'pathonly';
+        const isFullUrl = srcMatch === 'fullurl';
+
+        let instruction = '';
+
+        switch(matchType) {
+            case 'exact':
+                instruction = isFullUrl
+                    ? '<strong>Exact Match:</strong>
+Case-insensitive exact URL match. Enter:
+<code>https://example.com/old-page</code>
+(matches
+<code>https://example.com/old-page</code>
+only)'
+                    : '<strong>Exact Match:</strong>
+Case-insensitive exact path match. Enter:
+<code>/old-page</code>
+(matches
+<code>/old-page</code>
+only, not
+<code>/old-page-2</code>)';
+	                break;
+	            case 'regex':
+	                instruction = isFullUrl
+	                    ? '<strong>RegEx Match:</strong>
+Use regular expressions for advanced patterns. Enter:
+<code>^https://example\\.com/blog/(.*)</code>
+(matches
+<code>https://example.com/blog/anything</code>)'
+	                    : '<strong>RegEx Match:</strong>
+Use regular expressions for advanced patterns. Enter:
+<code>^/blog/(.*)</code>
+(matches
+<code>/blog/anything</code>,
+<code>/blog/2024/post</code>, etc.)';
+	                break;
+	            case 'wildcard':
+	                instruction = isFullUrl
+	                    ? '<strong>Wildcard Match:</strong>
+Simple wildcards using
+<code>*</code>. Enter:
+<code>https://example.com/blog/*</code>
+(matches
+<code>https://example.com/blog/post-1</code>,
+<code>https://example.com/blog/category/news</code>)'
+	                    : '<strong>Wildcard Match:</strong>
+Simple wildcards using
+<code>*</code>
+for "anything". Enter:
+<code>/blog/*</code>
+(matches
+<code>/blog/post-1</code>,
+<code>/blog/category/news</code>, etc.)';
+	                break;
+	            case 'prefix':
+	                instruction = isFullUrl
+	                    ? '<strong>Prefix Match:</strong>
+URL starts with pattern. Enter:
+<code>https://example.com/old-</code>
+(matches
+<code>https://example.com/old-page</code>,
+<code>https://example.com/old-blog</code>)'
+	                    : '<strong>Prefix Match:</strong>
+URL starts with pattern. Enter:
+<code>/old-</code>
+(matches
+<code>/old-page</code>,
+<code>/old-blog</code>,
+<code>/old-anything</code>)';
+	                break;
+	        }
+	
+	        sourceUrlInstructions.innerHTML = instruction;
+	
+	        // Show/hide regex tip
+	        if (regexTip) {
+	            regexTip.style.display = matchType === 'regex' ? 'block' : 'none';
+	        }
+	    }
+	
+	    // Initial display
+	    updateSrcMatchTip();
+	    updateSourceUrlInstructions();
+	
+	    if (matchTypeSelect) {
+	        matchTypeSelect.addEventListener('change', function() {
+	            // Toggle priority field (hr is inside the div, so it toggles automatically)
+	            if (priorityField) {
+	                priorityField.style.display = this.value === 'exact' ? 'none' : 'block';
+	            }
+	
+	            // Update Source URL instructions
+	            updateSourceUrlInstructions();
+	        });
+	    }
+	
+	    // Update tips and instructions when Source Match Mode changes
+	    if (srcMatchSelect) {
+	        srcMatchSelect.addEventListener('change', function() {
+	            updateSrcMatchTip();
+	            updateSourceUrlInstructions();
+	        });
+	    }
+	
+	    // Update Status Code tip based on selection
+	    const statusCodeSelect = document.getElementById('statusCode');
+	    const statusCodeTipText = document.getElementById('statusCodeTipText');
+	
+	    function updateStatusCodeTip() {
+	        if (!statusCodeSelect || !statusCodeTipText) return;
+	
+	        const code = parseInt(statusCodeSelect.value);
+	        let tip = '';
+	
+	        switch(code) {
+	            case 301:
+	                tip = '<strong>301 - Moved Permanently:</strong>
+Use when content has permanently moved. Search engines will update their index.
+<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301" target="_blank" rel="noopener">Learn more</a>';
+	                break;
+	            case 302:
+	                tip = '<strong>302 - Found (Temporary):</strong>
+Use for temporary redirects. Search engines keep the original URL.
+<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302" target="_blank" rel="noopener">Learn more</a>';
+	                break;
+	            case 303:
+	                tip = '<strong>303 - See Other:</strong>
+Redirect to a different resource, typically after a form submission.
+<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303" target="_blank" rel="noopener">Learn more</a>';
+	                break;
+	            case 307:
+	                tip = '<strong>307 - Temporary Redirect:</strong>
+Like 302 but guarantees the request method won\'t change (POST stays POST).
+<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307" target="_blank" rel="noopener">Learn more</a>';
+	                break;
+	            case 308:
+	                tip = '<strong>308 - Permanent Redirect:</strong>
+Like 301 but guarantees the request method won\'t change (POST stays POST).
+<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308" target="_blank" rel="noopener">Learn more</a>';
+	                break;
+	            case 410:
+	                tip = '<strong>410 - Gone:</strong>
+Content permanently deleted and won\'t come back. Search engines remove it from index.
+<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/410" target="_blank" rel="noopener">Learn more</a>';
+	                break;
+	        }
+	
+	        statusCodeTipText.innerHTML = tip;
+	    }
+	
+	    if (statusCodeSelect) {
+	        // Initial display
+	        updateStatusCodeTip();
+	
+	        statusCodeSelect.addEventListener('change', function() {
+	            updateStatusCodeTip();
+	        });
+	    }
+{% endjs %}

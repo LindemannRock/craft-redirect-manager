@@ -1,0 +1,217 @@
+{% extends "_layouts/cp" %}
+{% set title = "Map CSV Columns"|t('redirect-manager') %}
+{% set fullPageForm = false %}
+
+{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
+{% set crumbs = [
+    {
+        label: plugin.settings.pluginName|t('redirect-manager'),
+        url: url('redirect-manager'),
+    },
+    {
+        label: 'Settings'|t('redirect-manager'),
+        url: url('redirect-manager/settings'),
+    },
+    {
+        label: 'Import/Export'|t('redirect-manager'),
+        url: url('redirect-manager/import-export'),
+    },
+    {
+        label: 'Map Columns'|t('redirect-manager'),
+    },
+] %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+    <h2 style="margin-top: 0px;">{{ "Map CSV Columns"|t('redirect-manager') }}</h2>
+
+    <p>{{ "Your CSV has {count} rows. Map each CSV column to a redirect field."|t('redirect-manager', {count: rowCount}) }}</p>
+
+    {% if createBackup %}
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 4px; margin-bottom: 25px; border: 1px solid #a5d6a7;">
+            <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                <svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink: 0;">
+                    <path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm1 15H9v-2h2v2zm0-4H9V5h2v6z" fill="#28a745"/>
+                </svg>
+                <strong>{{ "Backup will be created automatically before importing to protect your existing redirects."|t('redirect-manager') }}</strong>
+            </p>
+        </div>
+    {% endif %}
+
+    <h3>{{ "Preview of CSV Data"|t('redirect-manager') }}</h3>
+    <div style="overflow-x: auto; margin-bottom: 30px;">
+        <table class="data fullwidth">
+            <thead>
+                <tr>
+                    {% for header in headers %}
+                        <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in previewRows %}
+                    <tr>
+                        {% for cell in row %}
+                            <td><code>{{ cell }}</code></td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if rowCount > 5 %}
+            <p class="light" style="margin-top: 10px;">{{ "Showing first 5 rows. {total} total rows will be imported."|t('redirect-manager', {total: rowCount}) }}</p>
+        {% endif %}
+    </div>
+
+    <hr>
+
+    <h3>{{ "Column Mapping"|t('redirect-manager') }}</h3>
+    <p>{{ "Map your CSV columns to redirect fields. Required fields must be mapped."|t('redirect-manager') }}</p>
+
+    <form method="post" action="{{ actionUrl('redirect-manager/import-export/preview') }}">
+        {{ csrfInput() }}
+
+        {% set fieldOptions = [
+            {value: '', label: '-- Do not import --'|t('redirect-manager')},
+            {value: 'sourceUrl', label: 'Source URL (required)'|t('redirect-manager')},
+            {value: 'destinationUrl', label: 'Destination URL (required)'|t('redirect-manager')},
+            {value: 'siteId', label: 'Site ID'|t('redirect-manager')},
+            {value: 'redirectSrcMatch', label: 'Source Match Mode (pathonly/fullurl)'|t('redirect-manager')},
+            {value: 'matchType', label: 'Match Type (exact/regex/wildcard/prefix)'|t('redirect-manager')},
+            {value: 'statusCode', label: 'Status Code (301/302/etc.)'|t('redirect-manager')},
+            {value: 'priority', label: 'Priority (0-9)'|t('redirect-manager')},
+            {value: 'enabled', label: 'Enabled (1/0)'|t('redirect-manager')},
+            {value: 'hitCount', label: 'Hit Count'|t('redirect-manager')},
+            {value: 'lastHit', label: 'Last Hit (datetime)'|t('redirect-manager')},
+        ] %}
+
+        <div class="field">
+            <div class="input">
+                <table class="editable fullwidth">
+                    <thead>
+                        <tr>
+                            <th style="width: 30%;">{{ "CSV Column"|t('redirect-manager') }}</th>
+                            <th style="width: 40%;">{{ "Maps to Field"|t('redirect-manager') }}</th>
+                            <th style="width: 30%;">{{ "Sample Data"|t('redirect-manager') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i, header in headers %}
+                            <tr>
+                                <td><strong>{{ header }}</strong></td>
+                                <td>
+                                    <div class="select fullwidth">
+                                        <select name="mapping[{{ i }}]" class="column-mapping">
+                                            {% for option in fieldOptions %}
+                                                {% set isMatch = false %}
+                                                {% set lowerHeader = header|lower %}
+
+                                                {# Auto-detect mapping based on header name #}
+                                                {# Support Retour CSV format and common variations #}
+                                                {% if option.value == 'sourceUrl' and (lowerHeader in ['sourceurl', 'source', 'from', 'old url', 'old_url', 'oldurl', 'legacy url pattern', 'legacy url', 'redirectsrcurl']) %}
+                                                    {% set isMatch = true %}
+                                                {% elseif option.value == 'destinationUrl' and (lowerHeader in ['destinationurl', 'destination', 'to', 'new url', 'new_url', 'newurl', 'redirect to', 'redirectdesturl']) %}
+                                                    {% set isMatch = true %}
+                                                {% elseif option.value == 'siteId' and (lowerHeader in ['siteid', 'site id', 'site', 'site_id']) %}
+                                                    {% set isMatch = true %}
+                                                {% elseif option.value == 'redirectSrcMatch' and (lowerHeader in ['redirectsrcmatch', 'sourcematch', 'source match', 'srcmatch', 'mode', 'legacy url match type']) %}
+                                                    {% set isMatch = true %}
+                                                {% elseif option.value == 'matchType' and (lowerHeader in ['matchtype', 'match type', 'type', 'match', 'redirectmatchtype', 'exactmatch', 'regexmatch']) %}
+                                                    {% set isMatch = true %}
+                                                {% elseif option.value == 'statusCode' and (lowerHeader in ['statuscode', 'status code', 'code', 'status', 'httpcode', 'http status', 'redirecthttpcode']) %}
+                                                    {% set isMatch = true %}
+                                                {% elseif option.value == 'priority' and (lowerHeader in ['priority', 'order', 'redirectorder']) %}
+                                                    {% set isMatch = true %}
+                                                {% elseif option.value == 'enabled' and (lowerHeader in ['enabled', 'active', 'status', 'redirectenabled']) %}
+                                                    {% set isMatch = true %}
+                                                {% elseif option.value == 'hitCount' and (lowerHeader in ['hitcount', 'hit count', 'hits', 'count', 'redirecthitcount']) %}
+                                                    {% set isMatch = true %}
+                                                {% elseif option.value == 'lastHit' and (lowerHeader in ['lasthit', 'last hit', 'last_hit', 'lastaccessed', 'last accessed']) %}
+                                                    {% set isMatch = true %}
+                                                {% endif %}
+
+                                                <option value="{{ option.value }}" {% if isMatch %}selected{% endif %}>{{ option.label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </td>
+                                <td>
+                                    <code class="light">{{ previewRows[0][i] ?? '-' }}</code>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="mappingErrors" style="display: none; background: #f8d7da; padding: 15px; border-radius: 4px; margin: 20px 0; border: 1px solid #f5c2c7;">
+            <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                <svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink: 0;">
+                    <circle cx="10" cy="10" r="9" fill="#dc3545"/>
+                    <text x="10" y="14" text-anchor="middle" font-size="14" font-weight="bold" fill="white">!</text>
+                </svg>
+                <strong id="mappingErrorText"></strong>
+            </p>
+        </div>
+
+        <div class="buttons">
+            <a href="{{ url('redirect-manager/import-export') }}" class="btn">{{ "Cancel"|t('redirect-manager') }}</a>
+            <button type="submit" class="btn submit" id="previewBtn">{{ "Preview Import"|t('redirect-manager') }}</button>
+        </div>
+    </form>
+
+    {% include 'redirect-manager/_components/plugin-credit.twig' %}
+{% endblock %}
+
+{% js %}
+    // Validate required fields are mapped before submitting
+    const previewBtn = document.getElementById('previewBtn');
+    const mappingErrorDiv = document.getElementById('mappingErrors');
+    const mappingErrorText = document.getElementById('mappingErrorText');
+    const form = document.querySelector('form');
+
+    form.addEventListener('submit', function(e) {
+        const mappings = document.querySelectorAll('.column-mapping');
+        const selectedValues = Array.from(mappings).map(m => m.value);
+
+        // Check required fields
+        const hasSourceUrl = selectedValues.includes('sourceUrl');
+        const hasDestinationUrl = selectedValues.includes('destinationUrl');
+
+        if (!hasSourceUrl || !hasDestinationUrl) {
+            e.preventDefault();
+
+            mappingErrorDiv.style.display = 'block';
+            let errors = [];
+            if (!hasSourceUrl) errors.push('Source URL');
+            if (!hasDestinationUrl) errors.push('Destination URL');
+
+            mappingErrorText.textContent = 'Required fields not mapped: ' + errors.join(', ');
+            mappingErrorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        // Check for duplicate mappings
+        const nonEmptyMappings = selectedValues.filter(v => v !== '');
+        const uniqueMappings = new Set(nonEmptyMappings);
+
+        if (nonEmptyMappings.length !== uniqueMappings.size) {
+            e.preventDefault();
+            mappingErrorDiv.style.display = 'block';
+            mappingErrorText.textContent = 'Error: You cannot map multiple CSV columns to the same field';
+            mappingErrorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        mappingErrorDiv.style.display = 'none';
+    });
+
+    // Clear error when user changes mapping
+    document.querySelectorAll('.column-mapping').forEach(select => {
+        select.addEventListener('change', function() {
+            mappingErrorDiv.style.display = 'none';
+        });
+    });
+{% endjs %}

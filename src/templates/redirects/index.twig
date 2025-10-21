@@ -1,0 +1,429 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{% set title = "Redirects"|t('redirect-manager') %}
+{% set fullPageForm = false %}
+{% set selectedSubnavItem = 'redirects' %}
+
+{# Get query parameters #}
+{% set search = craft.app.request.getParam('search', '') %}
+{% set statusFilter = craft.app.request.getParam('status', 'all') %}
+{% set matchTypeFilter = craft.app.request.getParam('matchType', 'all') %}
+{% set creationTypeFilter = craft.app.request.getParam('creationType', 'all') %}
+{% set sort = craft.app.request.getParam('sort', 'dateCreated') %}
+{% set dir = craft.app.request.getParam('dir', 'desc') %}
+{# Page, limit, offset, totalPages come from controller #}
+
+{% set crumbs = [
+    { label: craft.redirectManager.settings.pluginName, url: url('redirect-manager') }
+] %}
+
+{% block toolbar %}
+    <div id="toolbar" class="flex" style="align-items: flex-end;">
+        <div class="flex-grow">
+            <form method="get" action="{{ url('redirect-manager/redirects') }}">
+                <div class="flex">
+                    <div class="btngroup">
+                        <button type="button" class="btn menubtn statusmenubtn">
+                            <span class="status {{ statusFilter == 'all' ? 'all' : (statusFilter == 'enabled' ? 'green' : 'disabled') }}"></span>
+                            {{ statusFilter == 'all' ? 'All'|t('redirect-manager') : statusFilter|capitalize }}
+                        </button>
+                        <div class="menu">
+                            <ul>
+                                <li><a class="{{ statusFilter == 'all' ? 'sel' : '' }}" href="?status=all&matchType={{ matchTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+                                    <span class="status all"></span>All
+                                </a></li>
+                                <li><hr class="padded"></li>
+                                <li class="menu-header">Status</li>
+                                <li><a class="{{ statusFilter == 'enabled' ? 'sel' : '' }}" href="?status=enabled&matchType={{ matchTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+                                    <span class="status green"></span>Enabled
+                                </a></li>
+                                <li><a class="{{ statusFilter == 'disabled' ? 'sel' : '' }}" href="?status=disabled&matchType={{ matchTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+                                    <span class="status disabled"></span>Disabled
+                                </a></li>
+                                <li><hr class="padded"></li>
+                                <li class="menu-header">Match Type</li>
+                                <li><a class="{{ matchTypeFilter == 'all' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=all&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+                                    <span class="status {{ matchTypeFilter == 'all' ? 'blue' : 'disabled' }}"></span>All Types
+                                </a></li>
+                                <li><a class="{{ matchTypeFilter == 'exact' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=exact&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+                                    <span class="status {{ matchTypeFilter == 'exact' ? 'blue' : 'disabled' }}"></span>Exact Match
+                                </a></li>
+                                <li><a class="{{ matchTypeFilter == 'regex' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=regex&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+                                    <span class="status {{ matchTypeFilter == 'regex' ? 'blue' : 'disabled' }}"></span>RegEx Match
+                                </a></li>
+                                <li><a class="{{ matchTypeFilter == 'wildcard' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=wildcard&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+                                    <span class="status {{ matchTypeFilter == 'wildcard' ? 'blue' : 'disabled' }}"></span>Wildcard Match
+                                </a></li>
+                                <li><a class="{{ matchTypeFilter == 'prefix' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=prefix&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+                                    <span class="status {{ matchTypeFilter == 'prefix' ? 'blue' : 'disabled' }}"></span>Prefix Match
+                                </a></li>
+                                <li><hr class="padded"></li>
+                                <li class="menu-header">Creation Type</li>
+                                <li><a class="{{ creationTypeFilter == 'all' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType=all&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+                                    <span class="status {{ creationTypeFilter == 'all' ? 'blue' : 'disabled' }}"></span>All
+                                </a></li>
+                                <li><a class="{{ creationTypeFilter == 'manual' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType=manual&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+                                    <span class="status {{ creationTypeFilter == 'manual' ? 'blue' : 'disabled' }}"></span>Manual
+                                </a></li>
+                                <li><a class="{{ creationTypeFilter == 'entry-change' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType=entry-change&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+                                    <span class="status {{ creationTypeFilter == 'entry-change' ? 'blue' : 'disabled' }}"></span>Auto-created
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="search-container texticon flex-grow">
+                        <span class="texticon-icon search icon" aria-hidden="true"></span>
+                        <input type="text"
+                               class="clearable text fullwidth"
+                               name="search"
+                               value="{{ search }}"
+                               placeholder="{{ 'Search redirects...'|t('redirect-manager') }}"
+                               autocomplete="off"
+                               dir="ltr"
+                               aria-label="Search"
+                               {% if search %}autofocus{% endif %}>
+                        <button type="button" class="clear-btn {{ search ? '' : 'hidden' }}"
+                                title="Clear search"
+                                role="button"
+                                aria-label="Clear search"></button>
+                        <input type="hidden" name="status" value="{{ statusFilter }}">
+                        <input type="hidden" name="matchType" value="{{ matchTypeFilter }}">
+                        <input type="hidden" name="creationType" value="{{ creationTypeFilter }}">
+                        <input type="hidden" name="sort" value="{{ sort }}">
+                        <input type="hidden" name="dir" value="{{ dir }}">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <a href="{{ url('redirect-manager/redirects/new') }}" class="btn submit add icon" id="new-redirect-btn">
+            <span class="label-full">{{ 'New Redirect'|t('redirect-manager') }}</span>
+            <span class="label-short" style="display: none;">{{ 'New'|t('redirect-manager') }}</span>
+        </a>
+    </div>
+{% endblock %}
+
+{% css %}
+    @media (max-width: 768px) {
+        #new-redirect-btn .label-full {
+            display: none;
+        }
+        #new-redirect-btn .label-short {
+            display: inline;
+        }
+        #new-redirect-btn:before {
+            margin-inline-end: 0 !important;
+        }
+    }
+{% endcss %}
+
+{% block content %}
+    <style>
+        .page-info {
+            margin: 0 12px;
+            color: #596673;
+        }
+        .checkbox-cell {
+            width: 40px !important;
+            text-align: center;
+        }
+        .pagination {
+            gap: 4px;
+            align-items: center;
+        }
+        .menu-header {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #7c97b2;
+            padding: 8px 14px 4px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        /* Keep toolbar on one row even on smaller screens */
+        #toolbar.flex {
+            flex-wrap: nowrap;
+            gap: 8px;
+        }
+        #toolbar .flex-grow {
+            min-width: 0;
+            flex-shrink: 1;
+        }
+    </style>
+
+    <div id="elements" class="elements">
+        <div class="tableview tablepane">
+            <table class="data fullwidth">
+                <thead>
+                    <tr>
+                        <th class="checkbox-cell selectallcontainer">
+                            <div class="checkbox" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select all"></div>
+                        </th>
+                        <th scope="col" data-attribute="sourceUrl" class="orderable {{ sort == 'sourceUrl' ? 'ordered ' ~ dir : '' }}" style="width: 25%;">
+                            <button type="button" data-sort="sourceUrl">
+                                {{ 'Source URL'|t('redirect-manager') }}
+                            </button>
+                        </th>
+                        <th scope="col" style="width: 20%;">{{ 'Destination URL'|t('redirect-manager') }}</th>
+                        <th scope="col" style="width: 12%;">{{ 'Match'|t('redirect-manager') }}</th>
+                        <th scope="col" style="width: 10%;">{{ 'Type'|t('redirect-manager') }}</th>
+                        <th scope="col" data-attribute="statusCode" class="orderable {{ sort == 'statusCode' ? 'ordered ' ~ dir : '' }}" style="width: 8%;">
+                            <button type="button" data-sort="statusCode">
+                                {{ 'Status'|t('redirect-manager') }}
+                            </button>
+                        </th>
+                        <th scope="col" data-attribute="hitCount" class="orderable {{ sort == 'hitCount' ? 'ordered ' ~ dir : '' }}" style="width: 10%;">
+                            <button type="button" data-sort="hitCount">
+                                {{ 'Hits'|t('redirect-manager') }}
+                            </button>
+                        </th>
+                        <th scope="col" style="width: 10%;">{{ 'Enabled'|t('redirect-manager') }}</th>
+                        <th class="thin" style="width: 60px;">{{ 'Actions'|t('redirect-manager') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if redirects|length %}
+                        {% for redirect in redirects %}
+                            <tr data-id="{{ redirect.id }}" data-name="{{ redirect.sourceUrl }}">
+                                <td class="checkbox-cell">
+                                    <div class="checkbox" title="Select" tabindex="0" aria-checked="false" role="checkbox"></div>
+                                </td>
+                                <td>
+                                    <a class="label-link" href="{{ url('redirect-manager/redirects/' ~ redirect.id) }}">
+                                        <span>{{ redirect.sourceUrl }}</span>
+                                    </a>
+                                </td>
+                                <td>{{ redirect.destinationUrl }}</td>
+                                <td>{{ redirect.matchType|capitalize }}</td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 0.75rem; white-space: nowrap;">
+                                        {% if redirect.creationType == 'entry-change' %}
+                                            <span class="status blue" style="margin-inline-end: 0;"></span>
+                                            <span class="light">{{ 'Auto'|t('redirect-manager') }}</span>
+                                        {% else %}
+                                            <span class="status orange" style="margin-inline-end: 0;"></span>
+                                            <span class="light">{{ 'Manual'|t('redirect-manager') }}</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>{{ redirect.statusCode }}</td>
+                                <td>{{ redirect.hitCount }}</td>
+                                <td>
+                                    {% if redirect.enabled %}
+                                        <span class="status green"></span>
+                                    {% else %}
+                                        <span class="status disabled"></span>
+                                    {% endif %}
+                                </td>
+                                <td class="thin" style="text-align: right;">
+                                    <button type="button" class="btn icon delete" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}"></button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 2em;">
+                                {{ 'No redirects found.'|t('redirect-manager') }}
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="footer" class="flex-justify flex">
+        <div class="light">
+            <div class="pagination flex">
+                <nav class="flex" aria-label="redirect pagination">
+                    <button type="button" class="page-link prev-page {{ page <= 1 ? 'disabled' : '' }}" {{ page <= 1 ? 'disabled' : '' }} title="Previous Page"></button>
+                    <button type="button" class="page-link next-page {{ page >= totalPages ? 'disabled' : '' }}" {{ page >= totalPages ? 'disabled' : '' }} title="Next Page"></button>
+                </nav>
+                <div class="page-info">
+                    {% set endRange = min(offset + limit, totalCount) %}
+                    {% if totalCount == 0 %}
+                        No redirects
+                    {% else %}
+                        {{ offset + 1 }}–{{ endRange }} of {{ totalCount }} {{ totalCount == 1 ? 'redirect' : 'redirects' }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="flex flex-nowrap">
+            <button type="button" class="btn secondary" id="bulk-enable-btn" style="display: none;">
+                {{ 'Enable Selected'|t('redirect-manager') }}
+            </button>
+            <button type="button" class="btn secondary" id="bulk-disable-btn" style="display: none;">
+                {{ 'Disable Selected'|t('redirect-manager') }}
+            </button>
+            <button type="button" class="btn secondary" id="bulk-delete-btn" style="display: none;">
+                {{ 'Delete Selected'|t('redirect-manager') }}
+            </button>
+            <a href="{{ url('redirect-manager/import-export') }}" class="btn">
+                {{ 'Import'|t('redirect-manager') }}
+            </a>
+            <form method="post" action="{{ actionUrl('redirect-manager/import-export/export') }}" style="display: inline;">
+                {{ csrfInput() }}
+                <button type="submit" class="btn">
+                    {{ 'Export'|t('redirect-manager') }}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize menu buttons
+        document.querySelectorAll('.menubtn').forEach(btn => {
+            if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
+                new Craft.MenuBtn(btn);
+            } else if (typeof Garnish !== 'undefined' && Garnish.MenuBtn) {
+                new Garnish.MenuBtn(btn);
+            }
+        });
+
+        // Clear search
+        const clearBtn = document.querySelector('.clear-btn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                const searchInput = this.previousElementSibling.previousElementSibling;
+                searchInput.value = '';
+                searchInput.form.submit();
+            });
+        }
+
+        // Search on Enter
+        const searchInput = document.querySelector('input[name="search"]');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    this.form.submit();
+                }
+            });
+        }
+
+        // Sort buttons
+        document.querySelectorAll('th.orderable button').forEach(button => {
+            button.addEventListener('click', function() {
+                const sortField = this.dataset.sort;
+                const currentSort = '{{ sort }}';
+                const currentDir = '{{ dir }}';
+                let newDir = 'asc';
+
+                if (sortField === currentSort) {
+                    newDir = currentDir === 'asc' ? 'desc' : 'asc';
+                }
+
+                window.location.href = '?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType={{ creationTypeFilter }}&search={{ search }}&sort=' + sortField + '&dir=' + newDir + '&page=1';
+            });
+        });
+
+        // Pagination
+        document.querySelector('.prev-page:not(.disabled)')?.addEventListener('click', function() {
+            window.location.href = '?site={{ craft.app.request.getParam('site') }}&status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}&page={{ page - 1 }}';
+        });
+
+        document.querySelector('.next-page:not(.disabled)')?.addEventListener('click', function() {
+            window.location.href = '?site={{ craft.app.request.getParam('site') }}&status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}&page={{ page + 1 }}';
+        });
+
+        // Checkbox functionality
+        const selectAllCheckbox = document.querySelector('.selectallcontainer .checkbox');
+        const checkboxes = document.querySelectorAll('tbody .checkbox');
+        let selectedIds = new Set();
+
+        function toggleCheckbox(checkbox, checked) {
+            if (checked) {
+                checkbox.classList.add('checked');
+                checkbox.setAttribute('aria-checked', 'true');
+            } else {
+                checkbox.classList.remove('checked');
+                checkbox.setAttribute('aria-checked', 'false');
+            }
+        }
+
+        function updateBulkButtons() {
+            const hasSelection = selectedIds.size > 0;
+            const enableBtn = document.getElementById('bulk-enable-btn');
+            const disableBtn = document.getElementById('bulk-disable-btn');
+            const deleteBtn = document.getElementById('bulk-delete-btn');
+
+            [enableBtn, disableBtn, deleteBtn].forEach(btn => {
+                if (hasSelection) {
+                    btn.style.display = '';
+                    btn.removeAttribute('style');
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+        }
+
+        // Select all
+        selectAllCheckbox.addEventListener('click', function() {
+            const isChecked = !this.classList.contains('checked');
+            toggleCheckbox(this, isChecked);
+
+            checkboxes.forEach(checkbox => {
+                toggleCheckbox(checkbox, isChecked);
+                const id = checkbox.closest('tr').dataset.id;
+                if (isChecked) {
+                    selectedIds.add(id);
+                } else {
+                    selectedIds.delete(id);
+                }
+            });
+
+            updateBulkButtons();
+        });
+
+        // Individual checkboxes
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('click', function() {
+                const isChecked = !this.classList.contains('checked');
+                toggleCheckbox(this, isChecked);
+
+                const id = this.closest('tr').dataset.id;
+                if (isChecked) {
+                    selectedIds.add(id);
+                } else {
+                    selectedIds.delete(id);
+                }
+
+                updateBulkButtons();
+            });
+        });
+
+        // Bulk delete
+        document.getElementById('bulk-delete-btn')?.addEventListener('click', function() {
+            const ids = Array.from(selectedIds);
+            if (!confirm(`Delete ${ids.length} redirect${ids.length > 1 ? 's' : ''}?`)) return;
+
+            Craft.sendActionRequest('POST', 'redirect-manager/redirects/bulk-delete', {
+                data: { redirectIds: ids }
+            }).then(function(response) {
+                if (response.data.success) {
+                    Craft.cp.displayNotice(`Deleted ${response.data.deleted} redirects`);
+                    setTimeout(() => window.location.reload(), 1000);
+                }
+            });
+        });
+
+        // Individual delete
+        document.querySelectorAll('.btn.delete').forEach(deleteBtn => {
+            deleteBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const row = this.closest('tr');
+                const id = row.dataset.id;
+
+                if (!confirm('Delete this redirect?')) return;
+
+                Craft.sendActionRequest('POST', 'redirect-manager/redirects/delete', {
+                    data: { redirectId: id }
+                }).then(function(response) {
+                    if (response.data.success) {
+                        row.remove();
+                        Craft.cp.displayNotice('Redirect deleted');
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

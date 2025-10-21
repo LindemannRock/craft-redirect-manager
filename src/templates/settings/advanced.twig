@@ -1,0 +1,165 @@
+{% extends "redirect-manager/_layouts/settings" %}
+{% set title = "Advanced Settings"|t('redirect-manager') %}
+{% set fullPageForm = true %}
+{% set selectedSettingsItem = 'advanced' %}
+
+{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
+{% set crumbs = [
+    {
+        label: plugin.settings.pluginName|t('redirect-manager'),
+        url: url('redirect-manager'),
+    },
+    {
+        label: 'Settings'|t('redirect-manager'),
+        url: url('redirect-manager/settings'),
+    },
+    {
+        label: 'Advanced'|t('redirect-manager'),
+        url: url('redirect-manager/settings/advanced'),
+    },
+] %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+    <form method="post" accept-charset="UTF-8">
+        {{ actionInput('redirect-manager/settings/save') }}
+        {{ csrfInput() }}
+        {{ redirectInput('redirect-manager/settings/advanced') }}
+
+        <h2 style="margin-top: 0px;">{{ "API Settings"|t('redirect-manager') }}</h2>
+
+        {{ forms.lightswitchField({
+            label: 'Enable API Endpoint'|t('redirect-manager'),
+            instructions: 'Enable GraphQL endpoint for headless implementations<br><strong>Note:</strong> GraphQL API coming soon in future update.'|t('redirect-manager')|raw,
+            id: 'enableApiEndpoint',
+            name: 'settings[enableApiEndpoint]',
+            on: settings.enableApiEndpoint,
+            disabled: true,
+            tip: 'Coming soon - GraphQL API is planned for a future release'|t('redirect-manager'),
+            warning: settings.isOverriddenByConfig('enableApiEndpoint') ?
+                "This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+        <hr>
+
+        <h2>{{ "Cache Settings"|t('redirect-manager') }}</h2>
+
+        {{ forms.lightswitchField({
+            label: 'Enable Redirect Cache'|t('redirect-manager'),
+            instructions: 'Cache redirect lookups for improved performance. Recommended for production sites.'|t('redirect-manager'),
+            id: 'enableRedirectCache',
+            name: 'settings[enableRedirectCache]',
+            on: settings.enableRedirectCache,
+            disabled: settings.isOverriddenByConfig('enableRedirectCache'),
+            warning: settings.isOverriddenByConfig('enableRedirectCache') ?
+                "This is being overridden by the <code>enableRedirectCache</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+        {{ forms.textField({
+            label: 'Cache Duration'|t('redirect-manager'),
+            instructions: 'How long to cache redirect lookups in seconds (default: 3600 = 1 hour)'|t('redirect-manager'),
+            id: 'redirectCacheDuration',
+            name: 'settings[redirectCacheDuration]',
+            value: settings.redirectCacheDuration,
+            type: 'number',
+            min: 0,
+            disabled: settings.isOverriddenByConfig('redirectCacheDuration'),
+            warning: settings.isOverriddenByConfig('redirectCacheDuration') ?
+                "This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+        <hr>
+
+        <h2>{{ "Exclude Patterns & Headers"|t('redirect-manager') }}</h2>
+
+        <p>{{ "Configure URL patterns to exclude from redirect processing and headers to add to redirects."|t('redirect-manager') }}</p>
+
+        {{ forms.editableTableField({
+            label: 'Exclude Patterns'|t('redirect-manager'),
+            instructions: '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from Redirect Manager.'|t('redirect-manager'),
+            id: 'excludePatterns',
+            name: 'settings[excludePatterns]',
+            required: false,
+            allowAdd: true,
+            allowDelete: true,
+            allowReorder: true,
+            defaultValues: {
+                pattern: '',
+            },
+            cols: {
+                pattern: {
+                    heading: 'RegEx pattern to exclude'|t('redirect-manager'),
+                    type: 'singleline',
+                    width: '100%',
+                    code: true,
+                },
+            },
+            rows: settings.excludePatterns,
+            errors: settings.getErrors('excludePatterns'),
+            disabled: settings.isOverriddenByConfig('excludePatterns'),
+            warning: settings.isOverriddenByConfig('excludePatterns') ?
+                "This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+        <hr>
+
+        <h2>{{ "Additional Headers"|t('redirect-manager') }}</h2>
+
+        {{ forms.editableTableField({
+            label: 'Additional Headers'|t('redirect-manager'),
+            instructions: 'Additional headers to add to the redirected request'|t('redirect-manager'),
+            id: 'additionalHeaders',
+            name: 'settings[additionalHeaders]',
+            allowAdd: true,
+            allowDelete: true,
+            allowReorder: true,
+            required: false,
+            defaultValues: {
+                name: '',
+                value: '',
+            },
+            cols: {
+                name: {
+                    heading: 'Header Name'|t('redirect-manager'),
+                    type: 'singleline',
+                    width: '50%',
+                    code: true,
+                },
+                value: {
+                    heading: 'Header Value'|t('redirect-manager'),
+                    type: 'singleline',
+                    width: '50%',
+                    code: true,
+                },
+            },
+            rows: settings.additionalHeaders,
+            errors: settings.getErrors('additionalHeaders'),
+            disabled: settings.isOverriddenByConfig('additionalHeaders'),
+            warning: settings.isOverriddenByConfig('additionalHeaders') ?
+                "This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+        <div class="buttons">
+            <button type="submit" class="btn submit">{{ "Save Settings"|t('redirect-manager') }}</button>
+        </div>
+    </form>
+
+    <hr style="margin: 30px 0;">
+
+    <h3>{{ "Quick Setup"|t('redirect-manager') }}</h3>
+    <p>{{ "Apply recommended exclude patterns and SEO headers with one click."|t('redirect-manager') }}</p>
+
+    <form method="post" accept-charset="UTF-8">
+        {{ actionInput('redirect-manager/settings/apply-recommended') }}
+        {{ csrfInput() }}
+        <button type="submit" class="btn secondary">
+            {{ "Apply Recommended Settings"|t('redirect-manager') }}
+        </button>
+        <p class="light" style="margin-top: 10px;">
+            {{ "This will add recommended exclude patterns (admin/cms URLs, system resources) and SEO headers (X-Robots-Tag: noindex) to your current settings. No duplicates will be added."|t('redirect-manager') }}
+        </p>
+    </form>
+
+    {% include 'redirect-manager/_components/plugin-credit.twig' %}
+{% endblock %}

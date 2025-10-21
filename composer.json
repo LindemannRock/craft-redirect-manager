@@ -1,0 +1,53 @@
+{
+    "name": "lindemannrock/craft-redirect-manager",
+    "description": "Intelligent redirect management and 404 handling for Craft CMS",
+    "type": "craft-plugin",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "redirect",
+        "301",
+        "404",
+        "seo"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bilal Hary Lindemann",
+            "email": "bh@lindemannrock.com",
+            "homepage": "https://lindemannrock.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "email": "support@lindemannrock.com",
+        "issues": "https://github.com/LindemannRock/craft-redirect-manager/issues",
+        "source": "https://github.com/LindemannRock/craft-redirect-manager",
+        "docs": "https://github.com/LindemannRock/craft-redirect-manager/blob/main/README.md"
+    },
+    "require": {
+       "php": "^8.2",
+        "craftcms/cms": "^5.0.0",
+        "lindemannrock/craft-logging-library": "^5.0"
+    },
+    "require-dev": {
+        "craftcms/ecs": "dev-main",
+        "craftcms/phpstan": "dev-main"
+    },
+    "autoload": {
+        "psr-4": {
+            "lindemannrock\\redirectmanager\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Redirect Manager",
+        "handle": "redirect-manager",
+        "developer": "LindemannRock",
+        "developerUrl": "https://lindemannrock.com",
+        "documentationUrl": "https://github.com/LindemannRock/craft-redirect-manager/blob/main/README.md",
+        "changelogUrl": "https://github.com/LindemannRock/craft-redirect-manager/blob/main/CHANGELOG.md",
+        "class": "lindemannrock\\redirectmanager\\RedirectManager"
+    }
+}
