@@ -62,11 +62,22 @@ class ImportExportController extends Controller
         $this->requirePostRequest();
         $this->requirePermission('redirectManager:manageSettings');
 
-        // Get all redirects
-        $redirects = (new \craft\db\Query())
+        // Check if specific redirects were selected
+        $redirectIdsJson = Craft::$app->getRequest()->getBodyParam('redirectIds');
+        $redirectIds = $redirectIdsJson ? json_decode($redirectIdsJson, true) : null;
+
+        // Build query
+        $query = (new \craft\db\Query())
             ->from('{{%redirectmanager_redirects}}')
-            ->orderBy(['priority' => SORT_ASC, 'dateCreated' => SORT_DESC])
-            ->all();
+            ->orderBy(['priority' => SORT_ASC, 'dateCreated' => SORT_DESC]);
+
+        // Filter by selected IDs if provided
+        if ($redirectIds && is_array($redirectIds) && !empty($redirectIds)) {
+            $query->where(['in', 'id', $redirectIds]);
+        }
+
+        // Get redirects
+        $redirects = $query->all();
 
         // CSV headers
         $headers = [

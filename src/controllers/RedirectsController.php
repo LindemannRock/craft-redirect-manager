@@ -184,9 +184,78 @@ class RedirectsController extends Controller
             return $this->redirectToPostedUrl();
         }
 
-        Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Could not save redirect'));
+        // Service should have already set specific error message
+        // Only set generic error if none was set
+        $session = Craft::$app->getSession();
+        $hasError = false;
+        foreach ($session->getAllFlashes() as $key => $value) {
+            if (strpos($key, 'error') !== false) {
+                $hasError = true;
+                break;
+            }
+        }
 
-        return null;
+        if (!$hasError) {
+            $session->setError(Craft::t('redirect-manager', 'Could not save redirect'));
+        }
+
+        // Re-render edit form with submitted data
+        $matchTypes = RedirectManager::$plugin->matching->getMatchTypes();
+        $statusCodes = [
+            301 => '301 - Moved Permanently',
+            302 => '302 - Found (Temporary)',
+            303 => '303 - See Other',
+            307 => '307 - Temporary Redirect',
+            308 => '308 - Permanent Redirect',
+            410 => '410 - Gone',
+        ];
+
+        // Create RedirectRecord with submitted data (unsaved) for form repopulation
+        if ($redirectId) {
+            $redirect = RedirectRecord::findOne($redirectId);
+            if ($redirect) {
+                $redirect->setAttributes($attributes, false);
+            }
+        } else {
+            $redirect = new RedirectRecord();
+            $redirect->setAttributes($attributes, false);
+        }
+
+        // Add validation errors to record for inline display
+        $sourceUrl = trim($attributes['sourceUrl'] ?? '');
+        $destUrl = trim($attributes['destinationUrl'] ?? '');
+
+        // Validate Source URL
+        if (empty($sourceUrl)) {
+            $redirect->addError('sourceUrl', 'Source URL cannot be blank.');
+        } else {
+            $isPath = str_starts_with($sourceUrl, '/');
+            $isFullUrl = str_starts_with($sourceUrl, 'http://') || str_starts_with($sourceUrl, 'https://');
+
+            if (!$isPath && !$isFullUrl) {
+                $redirect->addError('sourceUrl', 'Source URL must be a path (/old-page) or full URL (https://example.com).');
+            }
+        }
+
+        // Validate Destination URL
+        if (empty($destUrl)) {
+            $redirect->addError('destinationUrl', 'Destination URL cannot be blank.');
+        } else {
+            $isPath = str_starts_with($destUrl, '/');
+            $isFullUrl = str_starts_with($destUrl, 'http://') || str_starts_with($destUrl, 'https://');
+            $isHash = str_starts_with($destUrl, '#');
+
+            if (!$isPath && !$isFullUrl && !$isHash) {
+                $redirect->addError('destinationUrl', 'Destination URL must be a path (/page), full URL (https://example.com), or anchor (#section).');
+            }
+        }
+
+        return $this->renderTemplate('redirect-manager/redirects/edit', [
+            'redirect' => $redirect,
+            'matchTypes' => $matchTypes,
+            'statusCodes' => $statusCodes,
+            'isNew' => !$redirectId,
+        ]);
     }
 
     /**
@@ -251,6 +320,56 @@ class RedirectsController extends Controller
         }
 
         return $this->asJson(['success' => false, 'error' => 'Could not update redirect']);
+    }
+
+    /**
+     * Bulk enable redirects
+     *
+     * @return Response
+     */
+    public function actionBulkEnable(): Response
+    {
+        $this->requirePostRequest();
+        $this->requirePermission('redirectManager:editRedirects');
+
+        $redirectIds = Craft::$app->getRequest()->getRequiredBodyParam('redirectIds');
+
+        $updated = 0;
+        foreach ($redirectIds as $redirectId) {
+            if (RedirectManager::$plugin->redirects->updateRedirect($redirectId, ['enabled' => true])) {
+                $updated++;
+            }
+        }
+
+        return $this->asJson([
+            'success' => true,
+            'updated' => $updated,
+        ]);
+    }
+
+    /**
+     * Bulk disable redirects
+     *
+     * @return Response
+     */
+    public function actionBulkDisable(): Response
+    {
+        $this->requirePostRequest();
+        $this->requirePermission('redirectManager:editRedirects');
+
+        $redirectIds = Craft::$app->getRequest()->getRequiredBodyParam('redirectIds');
+
+        $updated = 0;
+        foreach ($redirectIds as $redirectId) {
+            if (RedirectManager::$plugin->redirects->updateRedirect($redirectId, ['enabled' => false])) {
+                $updated++;
+            }
+        }
+
+        return $this->asJson([
+            'success' => true,
+            'updated' => $updated,
+        ]);
     }
 
     /**

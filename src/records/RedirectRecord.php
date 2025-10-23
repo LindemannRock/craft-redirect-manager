@@ -21,10 +21,14 @@ use yii\db\ActiveQueryInterface;
  * @property string $sourceUrl
  * @property string $sourceUrlParsed
  * @property string $destinationUrl
+ * @property string $redirectSrcMatch
  * @property string $matchType
  * @property int $statusCode
  * @property bool $enabled
  * @property int $priority
+ * @property string $creationType
+ * @property string $sourcePlugin
+ * @property int|null $elementId
  * @property int $hitCount
  * @property string|null $lastHit
  * @property string $uid

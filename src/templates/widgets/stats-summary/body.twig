@@ -1,0 +1,107 @@
+<div class="redirect-manager-widget">
+    {% if total > 0 %}
+        <div class="chart-container">
+            <canvas id="redirect-stats-chart" style="max-height: 250px;"></canvas>
+        </div>
+
+        <div class="widget-footer">
+            <a href="{{ cpUrl('redirect-manager/statistics') }}" class="go">{{ "View full statistics"|t('redirect-manager') }}</a>
+        </div>
+    {% else %}
+        <div class="zilch">
+            <p>{{ "No 404s recorded"|t('redirect-manager') }}</p>
+            <p class="light">{{ "404 errors will appear here when they occur."|t('redirect-manager') }}</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+// Load Chart.js if not already loaded
+if (typeof Chart === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js';
+    script.onload = function() {
+        initRedirectStatsChart();
+    };
+    document.head.appendChild(script);
+} else {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initRedirectStatsChart);
+    } else {
+        initRedirectStatsChart();
+    }
+}
+
+function initRedirectStatsChart() {
+    const ctx = document.getElementById('redirect-stats-chart');
+    if (!ctx) return;
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['{{ "Handled"|t('redirect-manager') }}', '{{ "Unhandled"|t('redirect-manager') }}'],
+            datasets: [{
+                data: [{{ totalHandled }}, {{ totalUnhandled }}],
+                backgroundColor: ['#10b981', '#ef4444'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: { size: 12 }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+</script>
+
+<style>
+.redirect-manager-widget {
+    padding: 0;
+}
+
+.chart-container {
+    text-align: center;
+    padding: 20px 20px 10px;
+}
+
+.chart-container canvas {
+    max-width: 100%;
+}
+
+.widget-footer {
+    text-align: center;
+    padding: 12px;
+    border-top: 1px solid #e3e5e8;
+}
+
+.widget-footer .go {
+    font-size: 13px;
+}
+
+.zilch {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.zilch p {
+    margin-bottom: 8px;
+}
+</style>

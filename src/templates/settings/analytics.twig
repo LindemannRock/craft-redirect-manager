@@ -1,0 +1,166 @@
+{% extends "redirect-manager/_layouts/settings" %}
+{% set title = "Analytics Settings"|t('redirect-manager') %}
+{% set fullPageForm = true %}
+{% set selectedSettingsItem = 'analytics' %}
+
+{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
+{% set crumbs = [
+    {
+        label: plugin.settings.pluginName|t('redirect-manager'),
+        url: url('redirect-manager'),
+    },
+    {
+        label: 'Settings'|t('redirect-manager'),
+        url: url('redirect-manager/settings'),
+    },
+    {
+        label: 'Analytics'|t('redirect-manager'),
+        url: url('redirect-manager/settings/analytics'),
+    },
+] %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+    {% set pluginName = plugin.settings.pluginName %}
+
+    {% include 'redirect-manager/_components/ip-salt-error' %}
+
+    <form method="post" accept-charset="UTF-8">
+        {{ actionInput('redirect-manager/settings/save') }}
+        {{ csrfInput() }}
+        {{ redirectInput('redirect-manager/settings/analytics') }}
+
+        <h2 style="margin-top: 0px;">{{ "Analytics"|t('redirect-manager') }}</h2>
+
+        {{ forms.lightswitchField({
+            label: "Enable Analytics"|t('redirect-manager'),
+            instructions: "Track 404 statistics and visitor data"|t('redirect-manager'),
+            id: 'enableAnalytics',
+            name: 'settings[enableAnalytics]',
+            on: settings.enableAnalytics ?? true,
+            toggle: 'analytics-settings',
+            disabled: settings.isOverriddenByConfig('enableAnalytics'),
+            warning: settings.isOverriddenByConfig('enableAnalytics') ?
+                "This is being overridden by the <code>enableAnalytics</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+        <div id="analytics-settings" class="{{ not (settings.enableAnalytics ?? true) ? 'hidden' }}">
+            <div class="field">
+                <p class="light">{{ "When enabled, Redirect Manager will track 404 errors including device types, browsers, geographic data, and bot traffic."|t('redirect-manager') }}</p>
+            </div>
+
+            <hr>
+
+            <h2>{{ "Geographic Detection"|t('redirect-manager') }}</h2>
+
+            {{ forms.lightswitchField({
+                label: "Enable Geographic Detection"|t('redirect-manager'),
+                instructions: "Detect visitor location for analytics"|t('redirect-manager'),
+                id: 'enableGeoDetection',
+                name: 'settings[enableGeoDetection]',
+                on: settings.enableGeoDetection ?? false,
+                disabled: settings.isOverriddenByConfig('enableGeoDetection'),
+                warning: settings.isOverriddenByConfig('enableGeoDetection') ?
+                    "This is being overridden by the <code>enableGeoDetection</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+            }) }}
+
+            <hr>
+
+            <h2>{{ "IP Address Privacy"|t('redirect-manager') }}</h2>
+
+            {{ forms.lightswitchField({
+                label: "Anonymize IP Addresses"|t('redirect-manager'),
+                instructions: "Mask IP addresses before storage for maximum privacy. <strong>IPv4</strong>: masks last octet (192.168.1.123 → 192.168.1.0). <strong>IPv6</strong>: masks last 80 bits. <strong>Trade-off</strong>: Reduces unique visitor accuracy (users on same subnet counted as one visitor). Geo-location still works normally."|t('redirect-manager')|raw,
+                id: 'anonymizeIpAddress',
+                name: 'settings[anonymizeIpAddress]',
+                on: settings.anonymizeIpAddress ?? false,
+                disabled: settings.isOverriddenByConfig('anonymizeIpAddress'),
+                warning: settings.isOverriddenByConfig('anonymizeIpAddress') ?
+                    "This is being overridden by the <code>anonymizeIpAddress</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+            }) }}
+
+            <div class="field">
+                <p class="light">
+                    <strong>Privacy Levels:</strong><br>
+                    • <strong>Disabled</strong> (default): Full IP hashed with salt (accurate unique visitors)<br>
+                    • <strong>Enabled</strong>: Subnet masked + hashed with salt (maximum privacy, less accurate)
+                </p>
+            </div>
+
+            <hr>
+
+            <h2>{{ "Additional Settings"|t('redirect-manager') }}</h2>
+
+            {{ forms.lightswitchField({
+                label: 'Strip Query String From Stats'|t('redirect-manager'),
+                instructions: 'Strip query strings from statistics URLs to consolidate similar requests'|t('redirect-manager'),
+                id: 'stripQueryStringFromStats',
+                name: 'settings[stripQueryStringFromStats]',
+                on: settings.stripQueryStringFromStats,
+                disabled: settings.isOverriddenByConfig('stripQueryStringFromStats'),
+                warning: settings.isOverriddenByConfig('stripQueryStringFromStats') ?
+                    "This is being overridden by the <code>stripQueryStringFromStats</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+            }) }}
+
+            <hr>
+
+            <h2>{{ "Data Retention"|t('redirect-manager') }}</h2>
+
+            {{ forms.textField({
+                label: 'Statistics Retention (Days)'|t('redirect-manager'),
+                instructions: 'Number of days to retain statistics (0 = keep forever)'|t('redirect-manager'),
+                id: 'statisticsRetention',
+                name: 'settings[statisticsRetention]',
+                type: 'number',
+                value: settings.statisticsRetention,
+                required: true,
+                disabled: settings.isOverriddenByConfig('statisticsRetention'),
+                warning: settings.isOverriddenByConfig('statisticsRetention') ?
+                    "This is being overridden by the <code>statisticsRetention</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+            }) }}
+
+            {{ forms.textField({
+                label: 'Statistics Limit'|t('redirect-manager'),
+                instructions: 'Maximum number of unique 404 records to retain'|t('redirect-manager'),
+                id: 'statisticsLimit',
+                name: 'settings[statisticsLimit]',
+                type: 'number',
+                value: settings.statisticsLimit,
+                required: true,
+                disabled: settings.isOverriddenByConfig('statisticsLimit'),
+                warning: settings.isOverriddenByConfig('statisticsLimit') ?
+                    "This is being overridden by the <code>statisticsLimit</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+            }) }}
+
+            {{ forms.lightswitchField({
+                label: 'Auto Trim Statistics'|t('redirect-manager'),
+                instructions: 'Automatically trim statistics to respect the limit'|t('redirect-manager'),
+                id: 'autoTrimStatistics',
+                name: 'settings[autoTrimStatistics]',
+                on: settings.autoTrimStatistics,
+                disabled: settings.isOverriddenByConfig('autoTrimStatistics'),
+                warning: settings.isOverriddenByConfig('autoTrimStatistics') ?
+                    "This is being overridden by the <code>autoTrimStatistics</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+            }) }}
+
+            <hr>
+
+            <h2>{{ "Performance & Caching"|t('redirect-manager') }}</h2>
+
+            <div class="field">
+                <p class="light">
+                    {{ "Configure device detection and redirect caching for better performance."|t('redirect-manager') }}
+                    <a href="{{ url('redirect-manager/settings/cache') }}">{{ "Go to Cache Settings"|t('redirect-manager') }}</a>
+                </p>
+            </div>
+
+        </div>{# end #analytics-settings #}
+
+        <div class="buttons">
+            <button type="submit" class="btn submit">{{ "Save Settings"|t('redirect-manager') }}</button>
+        </div>
+    </form>
+
+    {% include 'redirect-manager/_components/plugin-credit.twig' %}
+{% endblock %}

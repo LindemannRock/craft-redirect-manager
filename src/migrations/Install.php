@@ -41,7 +41,9 @@ class Install extends Migration
                 'statusCode' => $this->integer()->notNull()->defaultValue(301),
                 'enabled' => $this->boolean()->notNull()->defaultValue(true),
                 'priority' => $this->integer()->notNull()->defaultValue(0),
-                'creationType' => $this->string(20)->notNull()->defaultValue('manual'),
+                'creationType' => $this->string(50)->notNull()->defaultValue('manual'),
+                'sourcePlugin' => $this->string(50)->notNull()->defaultValue('redirect-manager'),
+                'elementId' => $this->integer()->null(),
                 'hitCount' => $this->integer()->notNull()->defaultValue(0),
                 'lastHit' => $this->dateTime(),
                 'uid' => $this->uid(),
@@ -74,11 +76,16 @@ class Install extends Migration
                 'id' => $this->primaryKey(),
                 'pluginName' => $this->string(255)->notNull()->defaultValue('Redirect Manager'),
                 'autoCreateRedirects' => $this->boolean()->notNull()->defaultValue(true),
+                'undoWindowMinutes' => $this->integer()->notNull()->defaultValue(60),
                 'redirectSrcMatch' => $this->string(20)->notNull()->defaultValue('pathonly'),
                 'stripQueryString' => $this->boolean()->notNull()->defaultValue(false),
                 'preserveQueryString' => $this->boolean()->notNull()->defaultValue(false),
                 'setNoCacheHeaders' => $this->boolean()->notNull()->defaultValue(true),
-                'recordRemoteIp' => $this->boolean()->notNull()->defaultValue(true),
+                'enableAnalytics' => $this->boolean()->notNull()->defaultValue(true),
+                'anonymizeIpAddress' => $this->boolean()->notNull()->defaultValue(false),
+                'enableGeoDetection' => $this->boolean()->notNull()->defaultValue(false),
+                'cacheDeviceDetection' => $this->boolean()->notNull()->defaultValue(true),
+                'deviceDetectionCacheDuration' => $this->integer()->notNull()->defaultValue(3600),
                 'stripQueryStringFromStats' => $this->boolean()->notNull()->defaultValue(true),
                 'statisticsLimit' => $this->integer()->notNull()->defaultValue(1000),
                 'statisticsRetention' => $this->integer()->notNull()->defaultValue(30),
@@ -107,17 +114,37 @@ class Install extends Migration
         }
 
         // Create statistics table
-        if (!$this->db->tableExists('{{%redirectmanager_statistics}}')) {
-            $this->createTable('{{%redirectmanager_statistics}}', [
+        if (!$this->db->tableExists('{{%redirectmanager_analytics}}')) {
+            $this->createTable('{{%redirectmanager_analytics}}', [
                 'id' => $this->primaryKey(),
                 'siteId' => $this->integer(),
                 'url' => $this->string(500)->notNull(),
                 'urlParsed' => $this->string(500)->notNull(),
                 'handled' => $this->boolean()->notNull()->defaultValue(false),
+                'sourcePlugin' => $this->string(50)->notNull()->defaultValue('redirect-manager'),
                 'count' => $this->integer()->notNull()->defaultValue(1),
                 'referrer' => $this->string(500),
-                'remoteIp' => $this->string(45),
+                'ip' => $this->string(64)->null(),
                 'userAgent' => $this->string(500),
+                // Device detection fields
+                'deviceType' => $this->string(50)->null(),
+                'deviceBrand' => $this->string(50)->null(),
+                'deviceModel' => $this->string(100)->null(),
+                'browser' => $this->string(100)->null(),
+                'browserVersion' => $this->string(20)->null(),
+                'browserEngine' => $this->string(50)->null(),
+                'osName' => $this->string(50)->null(),
+                'osVersion' => $this->string(50)->null(),
+                'clientType' => $this->string(50)->null(),
+                'isRobot' => $this->boolean()->defaultValue(false),
+                'isMobileApp' => $this->boolean()->defaultValue(false),
+                'botName' => $this->string(100)->null(),
+                // Geographic data
+                'country' => $this->string(2)->null(),
+                'city' => $this->string(100)->null(),
+                'region' => $this->string(100)->null(),
+                'latitude' => $this->decimal(10, 8)->null(),
+                'longitude' => $this->decimal(11, 8)->null(),
                 'lastHit' => $this->dateTime()->notNull(),
                 'uid' => $this->uid(),
                 'dateCreated' => $this->dateTime()->notNull(),
@@ -125,16 +152,24 @@ class Install extends Migration
             ]);
 
             // Add indexes for performance
-            $this->createIndex(null, '{{%redirectmanager_statistics}}', ['urlParsed'], false);
-            $this->createIndex(null, '{{%redirectmanager_statistics}}', ['handled'], false);
-            $this->createIndex(null, '{{%redirectmanager_statistics}}', ['siteId'], false);
-            $this->createIndex(null, '{{%redirectmanager_statistics}}', ['lastHit'], false);
-            $this->createIndex(null, '{{%redirectmanager_statistics}}', ['count'], false);
+            $this->createIndex(null, '{{%redirectmanager_analytics}}', ['urlParsed'], false);
+            $this->createIndex(null, '{{%redirectmanager_analytics}}', ['handled'], false);
+            $this->createIndex(null, '{{%redirectmanager_analytics}}', ['siteId'], false);
+            $this->createIndex(null, '{{%redirectmanager_analytics}}', ['lastHit'], false);
+            $this->createIndex(null, '{{%redirectmanager_analytics}}', ['count'], false);
+            $this->createIndex(null, '{{%redirectmanager_analytics}}', ['sourcePlugin'], false);
+            // Device detection indexes
+            $this->createIndex(null, '{{%redirectmanager_analytics}}', ['isRobot'], false);
+            $this->createIndex(null, '{{%redirectmanager_analytics}}', ['deviceType'], false);
+            $this->createIndex(null, '{{%redirectmanager_analytics}}', ['browser'], false);
+            $this->createIndex(null, '{{%redirectmanager_analytics}}', ['osName'], false);
+            // Geographic indexes
+            $this->createIndex(null, '{{%redirectmanager_analytics}}', ['country'], false);
 
             // Add foreign key for siteId
             $this->addForeignKey(
                 null,
-                '{{%redirectmanager_statistics}}',
+                '{{%redirectmanager_analytics}}',
                 ['siteId'],
                 Table::SITES,
                 ['id'],
@@ -182,7 +217,7 @@ class Install extends Migration
     {
         // Drop tables in reverse order
         $this->dropTableIfExists('{{%redirectmanager_import_history}}');
-        $this->dropTableIfExists('{{%redirectmanager_statistics}}');
+        $this->dropTableIfExists('{{%redirectmanager_analytics}}');
         $this->dropTableIfExists('{{%redirectmanager_settings}}');
         $this->dropTableIfExists('{{%redirectmanager_redirects}}');
 

@@ -62,17 +62,49 @@ class SettingsController extends Controller
     }
 
     /**
-     * Statistics settings
+     * Analytics settings
      *
      * @return Response
      */
-    public function actionStatistics(): Response
+    public function actionAnalytics(): Response
     {
         $this->requirePermission('redirectManager:manageSettings');
 
         $settings = RedirectManager::$plugin->getSettings();
 
-        return $this->renderTemplate('redirect-manager/settings/statistics', [
+        return $this->renderTemplate('redirect-manager/settings/analytics', [
+            'settings' => $settings,
+        ]);
+    }
+
+    /**
+     * Interface settings
+     *
+     * @return Response
+     */
+    public function actionInterface(): Response
+    {
+        $this->requirePermission('redirectManager:manageSettings');
+
+        $settings = RedirectManager::$plugin->getSettings();
+
+        return $this->renderTemplate('redirect-manager/settings/interface', [
+            'settings' => $settings,
+        ]);
+    }
+
+    /**
+     * Cache settings
+     *
+     * @return Response
+     */
+    public function actionCache(): Response
+    {
+        $this->requirePermission('redirectManager:manageSettings');
+
+        $settings = RedirectManager::$plugin->getSettings();
+
+        return $this->renderTemplate('redirect-manager/settings/cache', [
             'settings' => $settings,
         ]);
     }
@@ -122,7 +154,14 @@ class SettingsController extends Controller
         // Validate
         if (!$settings->validate()) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Could not save settings.'));
-            return null;
+
+            // Get the section to re-render the correct template with errors
+            $section = $this->request->getBodyParam('section', 'general');
+            $template = "redirect-manager/settings/{$section}";
+
+            return $this->renderTemplate($template, [
+                'settings' => $settings,
+            ]);
         }
 
         // Save settings to database

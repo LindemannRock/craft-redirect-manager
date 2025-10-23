@@ -118,25 +118,27 @@
                         <th class="checkbox-cell selectallcontainer">
                             <div class="checkbox" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select all"></div>
                         </th>
-                        <th scope="col" data-attribute="url" class="orderable {{ sort == 'url' ? 'ordered ' ~ dir : '' }}" style="width: 28%;">
+                        <th scope="col" data-attribute="url" class="orderable {{ sort == 'url' ? 'ordered ' ~ dir : '' }}">
                             <button type="button" data-sort="url">
                                 {{ 'URL'|t('redirect-manager') }}
                             </button>
                         </th>
-                        <th scope="col" style="width: 8%;">{{ 'Site'|t('redirect-manager') }}</th>
-                        <th scope="col" style="width: 8%;">{{ 'Handled'|t('redirect-manager') }}</th>
-                        <th scope="col" data-attribute="count" class="orderable {{ sort == 'count' ? 'ordered ' ~ dir : '' }}" style="width: 8%;">
+                        <th scope="col">{{ 'Site'|t('redirect-manager') }}</th>
+                        <th scope="col">{{ 'Handled'|t('redirect-manager') }}</th>
+                        <th scope="col" data-attribute="count" class="orderable {{ sort == 'count' ? 'ordered ' ~ dir : '' }}">
                             <button type="button" data-sort="count">
                                 {{ 'Count'|t('redirect-manager') }}
                             </button>
                         </th>
-                        <th scope="col" style="width: 11%;">{{ 'Remote IP'|t('redirect-manager') }}</th>
-                        <th scope="col" data-attribute="lastHit" class="orderable {{ sort == 'lastHit' ? 'ordered ' ~ dir : '' }}" style="width: 14%;">
+                        <th scope="col">{{ 'Device'|t('redirect-manager') }}</th>
+                        <th scope="col">{{ 'Browser'|t('redirect-manager') }}</th>
+                        <th scope="col" title="Bot traffic">{{ 'Bot'|t('redirect-manager') }}</th>
+                        <th scope="col" data-attribute="lastHit" class="orderable {{ sort == 'lastHit' ? 'ordered ' ~ dir : '' }}">
                             <button type="button" data-sort="lastHit">
                                 {{ 'Last Hit'|t('redirect-manager') }}
                             </button>
                         </th>
-                        <th scope="col" style="width: 13%;">{{ 'Referrer'|t('redirect-manager') }}</th>
+                        <th scope="col">{{ 'Referrer'|t('redirect-manager') }}</th>
                         <th class="thin" style="width: 90px;">{{ 'Actions'|t('redirect-manager') }}</th>
                     </tr>
                 </thead>
@@ -171,20 +173,17 @@
                                     {% endif %}
                                 </td>
                                 <td>{{ stat.count }}</td>
+                                <td>{{ stat.deviceType ? stat.deviceType|capitalize : '-' }}</td>
+                                <td>{{ stat.browser ?: '-' }}</td>
                                 <td>
-                                    {% if stat.remoteIp %}
-                                        <a href="https://whatismyipaddress.com/ip/{{ stat.remoteIp }}"
-                                           target="_blank"
-                                           rel="noopener noreferrer"
-                                           title="{{ 'Lookup IP address'|t('redirect-manager') }}">
-                                            <code>{{ stat.remoteIp }}</code>
-                                        </a>
+                                    {% if stat.isRobot %}
+                                        <span class="status orange" title="{{ stat.botName ?: 'Bot' }}"></span>
                                     {% else %}
-                                        <code>-</code>
+                                        -
                                     {% endif %}
                                 </td>
                                 <td>{{ stat.lastHit|date('Y-m-d H:i:s') }}</td>
-                                <td>{{ stat.referrer ? stat.referrer|slice(0, 40) : '-' }}</td>
+                                <td>{{ stat.referrer ?: '-' }}</td>
                                 <td class="thin" style="text-align: right; white-space: nowrap;">
                                     <div style="display: inline-flex; gap: 8px;">
                                         {% if stat.handled and stat.redirectId %}
@@ -207,7 +206,7 @@
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="9" style="text-align: center; padding: 2em;">
+                            <td colspan="11" style="text-align: center; padding: 2em;">
                                 {{ 'No statistics found.'|t('redirect-manager') }}
                             </td>
                         </tr>
@@ -219,9 +218,9 @@
 
     {% set totalPages = (totalCount / limit)|round(0, 'ceil') %}
 
-    <div id="footer" class="flex-justify flex">
+    <div id="footer" class="flex flex-justify">
         <div class="light">
-            <div class="pagination flex">
+            <div class="flex pagination">
                 <nav class="flex" aria-label="statistics pagination">
                     <button type="button" class="page-link prev-page {{ page <= 1 ? 'disabled' : '' }}" {{ page <= 1 ? 'disabled' : '' }} title="Previous Page"></button>
                     <button type="button" class="page-link next-page {{ page >= totalPages ? 'disabled' : '' }}" {{ page >= totalPages ? 'disabled' : '' }} title="Next Page"></button>
@@ -237,15 +236,16 @@
             </div>
         </div>
         <div class="flex flex-nowrap">
-            <button type="button" class="btn secondary" id="bulk-delete-btn" style="display: none;">
-                {{ 'Delete Selected'|t('redirect-manager') }}
+            <button type="button" class="btn secondary" id="clear-btn">
+                <span id="clear-label">{{ 'Clear All'|t('redirect-manager') }}</span>
             </button>
-            <button type="button" class="btn secondary" id="clear-all-btn">
-                {{ 'Clear All'|t('redirect-manager') }}
-            </button>
-            <a href="{{ url('redirect-manager/dashboard/export-csv') }}" class="btn">
-                {{ 'Export CSV'|t('redirect-manager') }}
-            </a>
+            <form method="post" action="{{ actionUrl('redirect-manager/statistics/export-csv') }}" style="display: inline;" id="export-form">
+                {{ csrfInput() }}
+                <input type="hidden" name="statisticIds" id="export-statistic-ids" value="">
+                <button type="submit" class="btn" id="export-btn">
+                    <span id="export-label">{{ 'Export'|t('redirect-manager') }}</span>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -321,12 +321,19 @@
 
         function updateBulkButtons() {
             const hasSelection = selectedIds.size > 0;
-            const btn = document.getElementById('bulk-delete-btn');
+            const clearLabel = document.getElementById('clear-label');
+            const exportLabel = document.getElementById('export-label');
+            const exportStatisticIds = document.getElementById('export-statistic-ids');
+
             if (hasSelection) {
-                btn.style.display = '';
-                btn.removeAttribute('style');
+                const count = selectedIds.size;
+                clearLabel.textContent = `{{ 'Clear'|t('redirect-manager') }} (${count})`;
+                exportLabel.textContent = `{{ 'Export'|t('redirect-manager') }} (${count})`;
+                exportStatisticIds.value = JSON.stringify(Array.from(selectedIds));
             } else {
-                btn.style.display = 'none';
+                clearLabel.textContent = '{{ 'Clear All'|t('redirect-manager') }}';
+                exportLabel.textContent = '{{ 'Export'|t('redirect-manager') }}';
+                exportStatisticIds.value = '';
             }
         }
 
@@ -365,22 +372,38 @@
             });
         });
 
-        // Bulk delete
-        document.getElementById('bulk-delete-btn')?.addEventListener('click', function() {
+        // Clear button - handles both selected items and clear all
+        document.getElementById('clear-btn')?.addEventListener('click', function() {
             const ids = Array.from(selectedIds);
-            if (!confirm(`Delete ${ids.length} statistic${ids.length > 1 ? 's' : ''}?`)) return;
 
-            // Create array of promises for each delete
-            const deletePromises = ids.map(id =>
-                Craft.sendActionRequest('POST', 'redirect-manager/statistics/delete', {
-                    data: { statisticId: id }
-                })
-            );
+            if (ids.length > 0) {
+                // Delete selected items
+                if (!confirm(`Delete ${ids.length} statistic${ids.length > 1 ? 's' : ''}?`)) return;
 
-            Promise.all(deletePromises).then(() => {
-                Craft.cp.displayNotice(`Deleted ${ids.length} statistics`);
-                setTimeout(() => window.location.reload(), 1000);
-            });
+                // Create array of promises for each delete
+                const deletePromises = ids.map(id =>
+                    Craft.sendActionRequest('POST', 'redirect-manager/statistics/delete', {
+                        data: { statisticId: id }
+                    })
+                );
+
+                Promise.all(deletePromises).then(() => {
+                    Craft.cp.displayNotice(`Deleted ${ids.length} statistics`);
+                    setTimeout(() => window.location.reload(), 1000);
+                });
+            } else {
+                // Clear all
+                if (!confirm('Are you sure you want to clear ALL statistics? This cannot be undone.')) return;
+
+                Craft.sendActionRequest('POST', 'redirect-manager/statistics/clear-all', {
+                    data: {}
+                }).then(function(response) {
+                    if (response.data.success) {
+                        Craft.cp.displayNotice(`Cleared ${response.data.deleted} statistics`);
+                        setTimeout(() => window.location.reload(), 1000);
+                    }
+                });
+            }
         });
 
         // Individual delete
@@ -403,18 +426,5 @@
             });
         });
 
-        // Clear all
-        document.getElementById('clear-all-btn')?.addEventListener('click', function() {
-            if (!confirm('Are you sure you want to clear ALL statistics? This cannot be undone.')) return;
-
-            Craft.sendActionRequest('POST', 'redirect-manager/statistics/clear-all', {
-                data: {}
-            }).then(function(response) {
-                if (response.data.success) {
-                    Craft.cp.displayNotice(`Cleared ${response.data.deleted} statistics`);
-                    setTimeout(() => window.location.reload(), 1000);
-                }
-            });
-        });
     </script>
 {% endblock %}

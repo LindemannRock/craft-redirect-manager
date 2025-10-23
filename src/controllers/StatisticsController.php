@@ -133,7 +133,13 @@ class StatisticsController extends Controller
         $handledCount = RedirectManager::$plugin->statistics->getStatisticsCount($siteId, true);
         $unhandledCount = RedirectManager::$plugin->statistics->getStatisticsCount($siteId, false);
 
-        return $this->renderTemplate('redirect-manager/statistics/index', [
+        // Get device analytics
+        $deviceBreakdown = RedirectManager::$plugin->statistics->getDeviceBreakdown($siteId, 30);
+        $browserBreakdown = RedirectManager::$plugin->statistics->getBrowserBreakdown($siteId, 30);
+        $osBreakdown = RedirectManager::$plugin->statistics->getOsBreakdown($siteId, 30);
+        $botStats = RedirectManager::$plugin->statistics->getBotStats($siteId, 30);
+
+        return $this->renderTemplate('redirect-manager/analytics/index', [
             'chartData' => $chartData,
             'mostCommon' => $mostCommon,
             'recentHandled' => $recentHandled,
@@ -141,6 +147,10 @@ class StatisticsController extends Controller
             'totalCount' => $totalCount,
             'handledCount' => $handledCount,
             'unhandledCount' => $unhandledCount,
+            'deviceBreakdown' => $deviceBreakdown,
+            'browserBreakdown' => $browserBreakdown,
+            'osBreakdown' => $osBreakdown,
+            'botStats' => $botStats,
         ]);
     }
 
@@ -214,11 +224,14 @@ class StatisticsController extends Controller
      */
     public function actionExportCsv(): Response
     {
+        $this->requirePostRequest();
         $this->requirePermission('redirectManager:viewStatistics');
 
-        $siteId = Craft::$app->getRequest()->getQueryParam('siteId');
+        // Check if specific statistics were selected
+        $statisticIdsJson = Craft::$app->getRequest()->getBodyParam('statisticIds');
+        $statisticIds = $statisticIdsJson ? json_decode($statisticIdsJson, true) : null;
 
-        $csv = RedirectManager::$plugin->statistics->exportToCsv($siteId);
+        $csv = RedirectManager::$plugin->statistics->exportToCsv(null, $statisticIds);
 
         $filename = 'redirect-statistics-' . date('Y-m-d-His') . '.csv';
 

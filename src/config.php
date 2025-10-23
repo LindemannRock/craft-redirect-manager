@@ -13,6 +13,8 @@
  * you do for 'general.php'
  */
 
+use craft\helpers\App;
+
 return [
     // Plugin Name
     // The public-facing name of the plugin
@@ -21,6 +23,12 @@ return [
     // Auto Create Redirects
     // Controls whether redirects are automatically created when entry URIs change
     'autoCreateRedirects' => true,
+
+    // Undo Window
+    // Time window in minutes for detecting immediate undo (A → B → A)
+    // Options: 30, 60, 120, 240 (default: 60)
+    // If editor changes slug back within this window, the redirect is cancelled instead of creating a pair
+    'undoWindowMinutes' => 60,
 
     // Redirect Source Match
     // Should the legacy URL be matched by path ('pathonly') or full URL ('fullurl')
@@ -38,9 +46,32 @@ return [
     // Should no-cache headers be set on redirect responses
     'setNoCacheHeaders' => true,
 
-    // Record Remote IP
-    // Should anonymous IP addresses be recorded for 404s
-    'recordRemoteIp' => true,
+    // Enable Analytics
+    // Track 404 statistics including device, browser, and visitor data (master switch)
+    // When enabled, IP addresses are always captured and hashed with salt
+    'enableAnalytics' => true,
+
+    // IP Privacy Protection
+    // Generate salt with: php craft redirect-manager/security/generate-salt
+    // Store in .env as: REDIRECT_MANAGER_IP_SALT="your-64-char-salt"
+    'ipHashSalt' => App::env('REDIRECT_MANAGER_IP_SALT'),
+
+    // Anonymize IP Addresses
+    // Mask IP addresses before hashing (subnet masking for maximum privacy)
+    // IPv4: masks last octet (192.168.1.123 → 192.168.1.0)
+    // IPv6: masks last 80 bits
+    // Trade-off: Reduces unique visitor accuracy (users on same subnet counted as one)
+    'anonymizeIpAddress' => false,
+
+    // Enable Geographic Detection
+    // Detect visitor location (country, city) from IP addresses using ip-api.com
+    // Free service with 45 requests per minute limit
+    'enableGeoDetection' => false,
+
+    // Cache Device Detection
+    // Cache device detection results for better performance
+    'cacheDeviceDetection' => true,
+    'deviceDetectionCacheDuration' => 3600, // 1 hour
 
     // Strip Query String From Stats
     // Should query strings be stripped from statistics URLs

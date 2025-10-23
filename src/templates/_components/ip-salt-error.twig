@@ -1,0 +1,32 @@
+{#
+  IP Hash Salt Error Component
+
+  Displays error banner when IP hash salt is missing and analytics is enabled.
+  Include this at the top of settings pages.
+#}
+
+{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
+{% set actualSalt = plugin.settings.ipHashSalt ?? null %}
+{% set saltIsMissing = not actualSalt or actualSalt == '$REDIRECT_MANAGER_IP_SALT' %}
+
+{% if plugin.settings.enableAnalytics and saltIsMissing %}
+    <div class="error-summary" tabindex="-1" style="margin-bottom: 24px;">
+        <div>
+            <span class="notification-icon" data-icon="alert" aria-label="error" role="img"></span>
+            <h2>Configuration Required</h2>
+        </div>
+        <ul class="errors">
+            <li>
+                <strong>IP hash salt is missing.</strong> Statistics tracking requires a secure salt for privacy protection.
+                <br><br>
+                <strong>Run this command in your terminal:</strong>
+                <br>
+                <code style="background: #fff; padding: 8px 12px; border-radius: 4px; display: inline-block; margin: 8px 0; border: 1px solid #ddd;">php craft redirect-manager/security/generate-salt</code>
+                <br><br>
+                This will automatically add <code>REDIRECT_MANAGER_IP_SALT</code> to your <code>.env</code> file.
+                <br>
+                <strong style="color: #d97706;">⚠️ Important:</strong> Copy the same salt to staging and production environments.
+            </li>
+        </ul>
+    </div>
+{% endif %}

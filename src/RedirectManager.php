@@ -18,6 +18,8 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\ElementEvent;
 use craft\events\ExceptionEvent;
+use craft\events\RegisterComponentTypesEvent;
+use craft\services\Dashboard;
 use craft\services\Elements;
 use craft\services\UserPermissions;
 use craft\utilities\ClearCaches;
@@ -28,8 +30,11 @@ use lindemannrock\redirectmanager\models\Settings;
 use lindemannrock\redirectmanager\services\RedirectsService;
 use lindemannrock\redirectmanager\services\StatisticsService;
 use lindemannrock\redirectmanager\services\MatchingService;
+use lindemannrock\redirectmanager\services\DeviceDetectionService;
 use lindemannrock\redirectmanager\jobs\CleanupStatisticsJob;
 use lindemannrock\redirectmanager\variables\RedirectManagerVariable;
+use lindemannrock\redirectmanager\widgets\StatsSummaryWidget;
+use lindemannrock\redirectmanager\widgets\Unhandled404sWidget;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\logginglibrary\LoggingLibrary;
 use yii\base\Event;
@@ -44,6 +49,7 @@ use yii\base\Event;
  * @property-read RedirectsService $redirects
  * @property-read StatisticsService $statistics
  * @property-read MatchingService $matching
+ * @property-read DeviceDetectionService $deviceDetection
  * @property-read Settings $settings
  * @method Settings getSettings()
  */
@@ -85,6 +91,7 @@ class RedirectManager extends Plugin
             'pluginHandle' => $this->handle,
             'pluginName' => $settings->pluginName ?? $this->name,
             'logLevel' => $settings->logLevel ?? 'error',
+            'itemsPerPage' => $settings->itemsPerPage ?? 50,
             'permissions' => ['redirectManager:viewLogs'],
         ]);
 
@@ -102,6 +109,7 @@ class RedirectManager extends Plugin
             'redirects' => RedirectsService::class,
             'statistics' => StatisticsService::class,
             'matching' => MatchingService::class,
+            'deviceDetection' => DeviceDetectionService::class,
         ]);
 
         // Schedule statistics cleanup if retention is enabled
@@ -145,6 +153,16 @@ class RedirectManager extends Plugin
                     'heading' => Craft::t('redirect-manager', 'Redirect Manager'),
                     'permissions' => $this->getPluginPermissions(),
                 ];
+            }
+        );
+
+        // Register dashboard widgets
+        Event::on(
+            Dashboard::class,
+            Dashboard::EVENT_REGISTER_WIDGET_TYPES,
+            function(RegisterComponentTypesEvent $event) {
+                $event->types[] = StatsSummaryWidget::class;
+                $event->types[] = Unhandled404sWidget::class;
             }
         );
 
@@ -194,8 +212,8 @@ class RedirectManager extends Plugin
                     'url' => 'redirect-manager/redirects',
                 ],
                 'statistics' => [
-                    'label' => Craft::t('redirect-manager', 'Statistics'),
-                    'url' => 'redirect-manager/statistics',
+                    'label' => Craft::t('redirect-manager', 'Analytics'),
+                    'url' => 'redirect-manager/analytics',
                 ],
                 'import-export' => [
                     'label' => Craft::t('redirect-manager', 'Import/Export'),
@@ -299,8 +317,9 @@ class RedirectManager extends Plugin
             'redirect-manager/redirects/new' => 'redirect-manager/redirects/edit',
             'redirect-manager/redirects/<redirectId:\d+>' => 'redirect-manager/redirects/edit',
 
-            // Statistics routes (charts/analytics)
-            'redirect-manager/statistics' => 'redirect-manager/statistics/statistics',
+            // Analytics routes (charts/analytics)
+            'redirect-manager/analytics' => 'redirect-manager/statistics/statistics',
+            'redirect-manager/statistics' => 'redirect-manager/statistics/statistics', // Legacy route for backward compatibility
 
             // Import/Export routes
             'redirect-manager/import-export' => 'redirect-manager/import-export/index',

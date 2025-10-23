@@ -20,9 +20,10 @@ use yii\db\ActiveQueryInterface;
  * @property string $url
  * @property string $urlParsed
  * @property bool $handled
+ * @property string $sourcePlugin
  * @property int $count
  * @property string|null $referrer
- * @property string|null $remoteIp
+ * @property string|null $ip
  * @property string $lastHit
  * @property string $uid
  * @property string $dateCreated
@@ -39,7 +40,7 @@ class StatisticRecord extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%redirectmanager_statistics}}';
+        return '{{%redirectmanager_analytics}}';
     }
 
     /**

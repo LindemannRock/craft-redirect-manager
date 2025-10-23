@@ -22,14 +22,17 @@
 {% import "_includes/forms" as forms %}
 
 {% block content %}
-    <form method="post" accept-charset="UTF-8">
-        {{ actionInput('redirect-manager/settings/save') }}
-        {{ csrfInput() }}
-        {{ redirectInput('redirect-manager/settings/general') }}
 
-        <h2 style="margin-top: 0px;">{{ "Plugin Settings"|t('redirect-manager') }}</h2>
+	{% include 'redirect-manager/_components/ip-salt-error' %}
+    
+	<form method="post" accept-charset="UTF-8">
+		{{ actionInput('redirect-manager/settings/save') }}
+		{{ csrfInput() }}
+		{{ redirectInput('redirect-manager/settings/general') }}
 
-        {{ forms.textField({
+		<h2 style="margin-top: 0px;">{{ "Plugin Settings"|t('redirect-manager') }}</h2>
+
+		{{ forms.textField({
             label: "Plugin Name"|t('redirect-manager'),
             instructions: "The name of the plugin as it appears in the Control Panel menu"|t('redirect-manager'),
             id: 'pluginName',
@@ -41,11 +44,11 @@
                 "This is being overridden by the <code>pluginName</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
 
-        <hr>
+		<hr>
 
-        <h2>{{ "Redirect Settings"|t('redirect-manager') }}</h2>
+		<h2>{{ "Redirect Settings"|t('redirect-manager') }}</h2>
 
-        {{ forms.lightswitchField({
+		{{ forms.lightswitchField({
             label: 'Auto Create Redirects'|t('redirect-manager'),
             instructions: 'Automatically create redirects when entry URIs change'|t('redirect-manager'),
             id: 'autoCreateRedirects',
@@ -56,7 +59,24 @@
                 "This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
 
-        {{ forms.selectField({
+		{{ forms.selectField({
+            label: 'Undo Window'|t('redirect-manager'),
+            instructions: 'How long to detect and cancel immediate slug changes back and forth (A → B → A). Prevents creating unnecessary redirect pairs when editors quickly fix mistakes.'|t('redirect-manager'),
+            id: 'undoWindowMinutes',
+            name: 'settings[undoWindowMinutes]',
+            value: settings.undoWindowMinutes,
+            options: [
+                {value: 30, label: '30 minutes'|t('redirect-manager')},
+                {value: 60, label: '1 hour'|t('redirect-manager')},
+                {value: 120, label: '2 hours'|t('redirect-manager')},
+                {value: 240, label: '4 hours'|t('redirect-manager')},
+            ],
+            disabled: settings.isOverriddenByConfig('undoWindowMinutes'),
+            warning: settings.isOverriddenByConfig('undoWindowMinutes') ?
+                "This is being overridden by the <code>undoWindowMinutes</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+		{{ forms.selectField({
             label: 'Default Source Match Mode'|t('redirect-manager'),
             instructions: 'Default mode for new redirects. Each redirect can override this individually.'|t('redirect-manager'),
             id: 'redirectSrcMatch',
@@ -71,11 +91,11 @@
                 "This is being overridden by the <code>redirectSrcMatch</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
 
-        <hr>
+		<hr>
 
-        <h2>{{ "Query String Handling"|t('redirect-manager') }}</h2>
+		<h2>{{ "Query String Handling"|t('redirect-manager') }}</h2>
 
-        {{ forms.lightswitchField({
+		{{ forms.lightswitchField({
             label: 'Strip Query String'|t('redirect-manager'),
             instructions: 'Strip query string from all 404 URLs before evaluation'|t('redirect-manager'),
             id: 'stripQueryString',
@@ -86,7 +106,7 @@
                 "This is being overridden by the <code>stripQueryString</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
 
-        {{ forms.lightswitchField({
+		{{ forms.lightswitchField({
             label: 'Preserve Query String'|t('redirect-manager'),
             instructions: 'Preserve and pass query string to destination URL'|t('redirect-manager'),
             id: 'preserveQueryString',
@@ -97,11 +117,11 @@
                 "This is being overridden by the <code>preserveQueryString</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
 
-        <hr>
+		<hr>
 
-        <h2>{{ "HTTP Headers"|t('redirect-manager') }}</h2>
+		<h2>{{ "HTTP Headers"|t('redirect-manager') }}</h2>
 
-        {{ forms.lightswitchField({
+		{{ forms.lightswitchField({
             label: 'Set No-Cache Headers'|t('redirect-manager'),
             instructions: 'Set no-cache headers on redirect responses'|t('redirect-manager'),
             id: 'setNoCacheHeaders',
@@ -112,23 +132,23 @@
                 "This is being overridden by the <code>setNoCacheHeaders</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
 
-        <hr>
+		<hr>
 
-        <h2>{{ "Logging Settings"|t('redirect-manager') }}</h2>
+		<h2>{{ "Logging Settings"|t('redirect-manager') }}</h2>
 
-        {% set logOptions = [
+		{% set logOptions = [
             {value: 'error', label: 'Error (Critical errors only)'|t('redirect-manager')},
             {value: 'warning', label: 'Warning (Errors and warnings)'|t('redirect-manager')},
             {value: 'info', label: 'Info (General information)'|t('redirect-manager')},
         ] %}
 
-        {% if craft.app.config.general.devMode %}
-            {% set logOptions = logOptions|merge([
+		{% if craft.app.config.general.devMode %}
+			{% set logOptions = logOptions|merge([
                 {value: 'debug', label: 'Debug (Detailed debugging)'|t('redirect-manager')}
             ]) %}
-        {% endif %}
+		{% endif %}
 
-        {{ forms.selectField({
+		{{ forms.selectField({
             label: 'Log Level'|t('redirect-manager'),
             instructions: 'Choose what types of messages to log. Debug level requires devMode to be enabled.'|t('redirect-manager'),
             id: 'logLevel',
@@ -140,10 +160,10 @@
                 "This is being overridden by the <code>logLevel</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
 
-        <div class="buttons">
-            <button type="submit" class="btn submit">{{ "Save Settings"|t('redirect-manager') }}</button>
-        </div>
-    </form>
+		<div class="buttons">
+			<button type="submit" class="btn submit">{{ "Save Settings"|t('redirect-manager') }}</button>
+		</div>
+	</form>
 
-    {% include 'redirect-manager/_components/plugin-credit.twig' %}
+	{% include 'redirect-manager/_components/plugin-credit.twig' %}
 {% endblock %}

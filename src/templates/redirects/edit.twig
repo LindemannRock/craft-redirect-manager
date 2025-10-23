@@ -6,6 +6,7 @@
 
 {% set crumbs = [
     { label: craft.redirectManager.settings.pluginName, url: url('redirect-manager') },
+    { label: 'Redirects'|t('redirect-manager'), url: url('redirect-manager/redirects') },
     { label: isNew ? 'New redirect'|t('redirect-manager') : redirect.sourceUrl }
 ] %}
 
@@ -26,19 +27,25 @@
 				<span class="required" aria-label="Required"></span>
 			</label>
 			<div class="instructions">
-				<p id="srcMatchInstructions">{{ 'Choose whether to match by path only or full URL.'|t('redirect-manager') }}</p>
+				{% set srcMatchValue = redirect ? redirect.redirectSrcMatch : (craft.app.request.getParam('redirectSrcMatch') ?: craft.redirectManager.settings.redirectSrcMatch) %}
+				<p id="srcMatchInstructions">
+					{% if srcMatchValue == 'fullurl' %}
+						{{ 'Match by complete URL including domain (e.g., https://example.com/old-page).'|t('redirect-manager') }}
+					{% else %}
+						{{ 'Match by path only (e.g., /old-page). Works across all domains.'|t('redirect-manager') }}
+					{% endif %}
+				</p>
 			</div>
 		</div>
 		<div class="input">
 			<div class="select">
-				{% set srcMatchValue = redirect ? redirect.redirectSrcMatch : (craft.app.request.getParam('redirectSrcMatch') ?: craft.redirectManager.settings.redirectSrcMatch) %}
 				<select id="redirectSrcMatch" name="redirectSrcMatch" required>
 					<option value="pathonly" {% if srcMatchValue == 'pathonly' %} selected {% endif %}>{{ 'Path Only'|t('redirect-manager') }}</option>
 					<option value="fullurl" {% if srcMatchValue == 'fullurl' %} selected {% endif %}>{{ 'Full URL'|t('redirect-manager') }}</option>
 				</select>
 			</div>
 		</div>
-		<p id="pathOnlyTip" class="notice has-icon" style="display: none; margin-top: 10px;">
+		<p id="pathOnlyTip" class="notice has-icon" style="display: {{ srcMatchValue == 'pathonly' ? 'block' : 'none' }}; margin-top: 10px;">
 			<span class="icon" aria-hidden="true"></span>
 			<span class="visually-hidden">Tip:
 			</span>
@@ -62,11 +69,17 @@
 				<span class="required" aria-label="Required"></span>
 			</label>
 			<div class="instructions">
-				<p id="sourceUrlInstructions">{{ 'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.'|t('redirect-manager') }}</p>
+				<p id="sourceUrlInstructions">
+					{% if srcMatchValue == 'fullurl' %}
+						{{ 'Enter the full URL to match (e.g., https://example.com/old-page).'|t('redirect-manager') }}
+					{% else %}
+						{{ 'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.'|t('redirect-manager') }}
+					{% endif %}
+				</p>
 			</div>
 		</div>
 		<div class="input ltr">
-			<input type="text" id="sourceUrl" name="sourceUrl" value="{{ redirect ? redirect.sourceUrl : craft.app.request.getParam('sourceUrl') }}" required class="text fullwidth">
+			<input type="text" id="sourceUrl" name="sourceUrl" value="{{ redirect ? redirect.sourceUrl : craft.app.request.getParam('sourceUrl') }}" placeholder="{{ srcMatchValue == 'fullurl' ? 'https://example.com/old-page' : '/old-page' }}" required class="text fullwidth">
 		</div>
 		{% if redirect and redirect.getErrors('sourceUrl') %}
 			<ul class="errors">
@@ -87,10 +100,11 @@
 
 	{{ forms.textField({
         label: 'Destination URL'|t('redirect-manager'),
-        instructions: 'The URL to redirect to (can be relative or absolute)'|t('redirect-manager'),
+        instructions: 'Full URL (https://example.com) or path (/page)'|t('redirect-manager'),
         id: 'destinationUrl',
         name: 'destinationUrl',
         value: redirect ? redirect.destinationUrl : null,
+        placeholder: '/page or https://example.com',
         required: true,
         errors: redirect ? redirect.getErrors('destinationUrl') : null
     }) }}
@@ -213,382 +227,271 @@
 {% endblock %}
 
 {% js %}
-// Update Source URL instructions based on Match Type and Source Match Mode
+    // Simple form behavior - show/hide fields, server handles validation
     const matchTypeSelect = document.getElementById('matchType');
     const priorityField = document.getElementById('priority-field');
-    const srcMatchSelect = document.getElementById('redirectSrcMatch');
+    const regexTip = document.getElementById('regexTip');
+    const statusCodeSelect = document.getElementById('statusCode');
+    const statusCodeTipText = document.getElementById('statusCodeTipText');
+    const redirectSrcMatchSelect = document.getElementById('redirectSrcMatch');
     const pathOnlyTip = document.getElementById('pathOnlyTip');
     const sourceUrlInput = document.getElementById('sourceUrl');
     const sourceUrlInstructions = document.getElementById('sourceUrlInstructions');
-    const regexTip = document.getElementById('regexTip');
+    const srcMatchInstructions = document.getElementById('srcMatchInstructions');
 
-    function updateSrcMatchTip() {
-        if (!srcMatchSelect || !pathOnlyTip) return;
-
-        const isPathOnly = srcMatchSelect.value === 'pathonly';
-
-        // Show tip only when "Path Only" is selected
-        pathOnlyTip.style.display = isPathOnly ? 'block' : 'none';
+    // Show/hide priority field based on match type
+    if (matchTypeSelect && priorityField) {
+        matchTypeSelect.addEventListener('change', function() {
+            priorityField.style.display = this.value === 'exact' ? 'none' : 'block';
+        });
     }
 
-    // Auto-fix URLs before form submission
-    // Returns false if validation fails (should prevent submit)
-    function validateAndFixUrls() {
-        console.log('validateAndFixUrls called');
-        const destinationUrlInput = document.getElementById('destinationUrl');
-        const corrections = [];
-        let validationFailed = false;
+    // Show/hide regex tip
+    if (matchTypeSelect && regexTip) {
+        matchTypeSelect.addEventListener('change', function() {
+            regexTip.style.display = this.value === 'regex' ? 'block' : 'none';
+            updateSourceMatchInstructions(); // Update instructions when match type changes
+        });
+    }
 
-        // VALIDATE SOURCE URL
-        if (sourceUrlInput && srcMatchSelect) {
-            let sourceValue = sourceUrlInput.value.trim();
+    // Update instructions based on Source Match Mode and Match Type
+    function updateSourceMatchInstructions() {
+        if (!redirectSrcMatchSelect) return;
 
-            // Empty check
-            if (!sourceValue) {
-                if (typeof Craft !== 'undefined') {
-                    Craft.cp.displayError('Source URL is required');
-                }
-                sourceUrlInput.classList.add('error');
-                sourceUrlInput.focus();
-                return false;
-            }
+        const mode = redirectSrcMatchSelect.value;
+        const matchType = matchTypeSelect ? matchTypeSelect.value : 'exact';
 
-            const isFullUrl = sourceValue.startsWith('http://') || sourceValue.startsWith('https://');
-            const isPath = sourceValue.startsWith('/');
-            const mode = srcMatchSelect.value;
-            const hasDot = sourceValue.includes('.');
+        // Always hide pathOnlyTip for non-exact matches
+        if (matchType !== 'exact' && pathOnlyTip) {
+            pathOnlyTip.style.display = 'none';
+        }
 
-            console.log('Source validation:', {value: sourceValue, isFullUrl, isPath, mode, hasDot});
-
-            // FULL URL MODE VALIDATION
-            if (mode === 'fullurl') {
-                if (isFullUrl) {
-                    // Already a full URL - validate it has a domain
-                    try {
-                        const url = new URL(sourceValue);
-                        if (!url.hostname || !url.hostname.includes('.')) {
-                            throw new Error('No TLD');
-                        }
-                        // Valid full URL
-                    } catch(e) {
-                        if (typeof Craft !== 'undefined') {
-                            Craft.cp.displayError('Invalid full URL: Must be a valid URL with domain and TLD (e.g., https://example.com/page)');
-                        }
-                        sourceUrlInput.classList.add('error');
-                        sourceUrlInput.focus();
-                        return false;
-                    }
-                } else if (isPath) {
-                    // User entered a path but we're in Full URL mode
-                    if (typeof Craft !== 'undefined') {
-                        Craft.cp.displayError('Invalid Source URL: Full URL mode requires a domain. Either add domain (e.g., https://example.com' + sourceValue + ') or switch to Path Only mode.');
-                    }
-                    sourceUrlInput.classList.add('error');
-                    sourceUrlInput.focus();
-                    return false;
-                } else if (hasDot) {
-                    // Looks like a domain, add https://
-                    const correctedValue = 'https://' + sourceValue;
-                    // Validate the corrected URL
-                    try {
-                        const url = new URL(correctedValue);
-                        if (!url.hostname || !url.hostname.includes('.')) {
-                            throw new Error('No TLD');
-                        }
-                        sourceUrlInput.value = correctedValue;
-                        corrections.push('Source URL: ' + correctedValue);
-                    } catch(e) {
-                        if (typeof Craft !== 'undefined') {
-                            Craft.cp.displayError('Invalid domain: Must include a valid TLD (e.g., example.com)');
-                        }
-                        sourceUrlInput.classList.add('error');
-                        sourceUrlInput.focus();
-                        return false;
-                    }
+        // Check match type and update instructions accordingly
+        if (matchType === 'regex') {
+            // Regex mode
+            if (srcMatchInstructions) {
+                if (mode === 'pathonly') {
+                    srcMatchInstructions.textContent = '{{ 'Match by path pattern (regex). Works across all domains.'|t('redirect-manager') }}';
                 } else {
-                    // No dot, no slash, no protocol = invalid in Full URL mode
-                    if (typeof Craft !== 'undefined') {
-                        Craft.cp.displayError('Invalid Source URL: Full URL mode requires a domain with TLD (e.g., example.com)');
-                    }
-                    sourceUrlInput.classList.add('error');
-                    sourceUrlInput.focus();
-                    return false;
+                    srcMatchInstructions.textContent = '{{ 'Match by full URL pattern (regex) including domain.'|t('redirect-manager') }}';
                 }
             }
+            if (sourceUrlInstructions) {
+                if (mode === 'pathonly') {
+                    sourceUrlInstructions.textContent = '{{ 'Enter a regex pattern to match paths (e.g., ^/blog/.* or /category/[^/]+).'|t('redirect-manager') }}';
+                } else {
+                    sourceUrlInstructions.textContent = '{{ 'Enter a regex pattern to match full URLs (e.g., ^https://example.com/blog/.*).'|t('redirect-manager') }}';
+                }
+            }
+            if (sourceUrlInput) {
+                sourceUrlInput.placeholder = mode === 'pathonly' ? '^/blog/.*' : '^https://example.com/blog/.*';
+            }
+        } else if (matchType === 'wildcard') {
+            // Wildcard mode
+            if (srcMatchInstructions) {
+                if (mode === 'pathonly') {
+                    srcMatchInstructions.textContent = '{{ 'Match by path pattern (wildcard). Works across all domains.'|t('redirect-manager') }}';
+                } else {
+                    srcMatchInstructions.textContent = '{{ 'Match by full URL pattern (wildcard) including domain.'|t('redirect-manager') }}';
+                }
+            }
+            if (sourceUrlInstructions) {
+                if (mode === 'pathonly') {
+                    sourceUrlInstructions.textContent = '{{ 'Enter a wildcard pattern to match paths. Use * for any characters (e.g., /blog/* or /category/*/posts).'|t('redirect-manager') }}';
+                } else {
+                    sourceUrlInstructions.textContent = '{{ 'Enter a wildcard pattern to match full URLs. Use * for any characters (e.g., https://example.com/blog/*).'|t('redirect-manager') }}';
+                }
+            }
+            if (sourceUrlInput) {
+                sourceUrlInput.placeholder = mode === 'pathonly' ? '/blog/*' : 'https://example.com/blog/*';
+            }
+        } else if (matchType === 'begins_with' || matchType === 'prefix') {
+            // Prefix/Begins With mode
+            if (srcMatchInstructions) {
+                if (mode === 'pathonly') {
+                    srcMatchInstructions.textContent = '{{ 'Match any path starting with the pattern. Works across all domains.'|t('redirect-manager') }}';
+                } else {
+                    srcMatchInstructions.textContent = '{{ 'Match any URL starting with the pattern including domain.'|t('redirect-manager') }}';
+                }
+            }
+            if (sourceUrlInstructions) {
+                if (mode === 'pathonly') {
+                    sourceUrlInstructions.textContent = '{{ 'Enter the starting path (e.g., /blog matches /blog, /blog/post, /blog/category).'|t('redirect-manager') }}';
+                } else {
+                    sourceUrlInstructions.textContent = '{{ 'Enter the starting URL (e.g., https://example.com/blog matches all URLs starting with it).'|t('redirect-manager') }}';
+                }
+            }
+            if (sourceUrlInput) {
+                sourceUrlInput.placeholder = mode === 'pathonly' ? '/blog' : 'https://example.com/blog';
+            }
+        } else if (matchType === 'contains') {
+            // Contains mode
+            if (srcMatchInstructions) {
+                if (mode === 'pathonly') {
+                    srcMatchInstructions.textContent = '{{ 'Match any path containing the pattern. Works across all domains.'|t('redirect-manager') }}';
+                } else {
+                    srcMatchInstructions.textContent = '{{ 'Match any URL containing the pattern including domain.'|t('redirect-manager') }}';
+                }
+            }
+            if (sourceUrlInstructions) {
+                if (mode === 'pathonly') {
+                    sourceUrlInstructions.textContent = '{{ 'Enter text to match anywhere in the path (e.g., old-post matches /blog/old-post/123).'|t('redirect-manager') }}';
+                } else {
+                    sourceUrlInstructions.textContent = '{{ 'Enter text to match anywhere in the URL (e.g., old-post matches any URL containing it).'|t('redirect-manager') }}';
+                }
+            }
+            if (sourceUrlInput) {
+                sourceUrlInput.placeholder = mode === 'pathonly' ? 'old-post' : 'old-post';
+            }
+        } else {
+            // Exact match mode (default)
+            if (mode === 'pathonly') {
+                if (pathOnlyTip) pathOnlyTip.style.display = 'block';
+                if (srcMatchInstructions) {
+                    srcMatchInstructions.textContent = '{{ 'Match by path only (e.g., /old-page). Works across all domains.'|t('redirect-manager') }}';
+                }
+                if (sourceUrlInstructions) {
+                    sourceUrlInstructions.textContent = '{{ 'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.'|t('redirect-manager') }}';
+                }
+                if (sourceUrlInput) {
+                    sourceUrlInput.placeholder = '/old-page';
+                }
+            } else {
+                if (srcMatchInstructions) {
+                    srcMatchInstructions.textContent = '{{ 'Match by complete URL including domain (e.g., https://example.com/old-page).'|t('redirect-manager') }}';
+                }
+                if (sourceUrlInstructions) {
+                    sourceUrlInstructions.textContent = '{{ 'Enter the full URL to match (e.g., https://example.com/old-page).'|t('redirect-manager') }}';
+                }
+                if (sourceUrlInput) {
+                    sourceUrlInput.placeholder = 'https://example.com/old-page';
+                }
+            }
+        }
+    }
 
-            // PATH ONLY MODE VALIDATION
-            else if (mode === 'pathonly') {
-                if (!isPath && !isFullUrl) {
-                    // Add leading /
-                    const correctedValue = '/' + sourceValue;
+    // Initialize and watch for changes
+    if (redirectSrcMatchSelect) {
+        updateSourceMatchInstructions();
+        redirectSrcMatchSelect.addEventListener('change', updateSourceMatchInstructions);
+    }
+
+    // Auto-complete URL fields on form submit
+    $('form').on('submit', function(e) {
+        const sourceUrlInput = document.getElementById('sourceUrl');
+        const destinationUrlInput = document.getElementById('destinationUrl');
+        const srcMatchMode = redirectSrcMatchSelect ? redirectSrcMatchSelect.value : 'pathonly';
+        const corrections = [];
+
+        // Function to extract path from URL
+        function extractPath(url) {
+            try {
+                const urlObj = new URL(url.startsWith('http') ? url : 'https://' + url);
+                return urlObj.pathname + urlObj.search + urlObj.hash;
+            } catch (e) {
+                return url;
+            }
+        }
+
+        // Auto-correct Source URL based on match mode
+        if (sourceUrlInput && sourceUrlInput.value) {
+            let value = sourceUrlInput.value.trim();
+
+            if (srcMatchMode === 'pathonly') {
+                // Path only mode: everything should become a path
+                if (value.startsWith('http://') || value.startsWith('https://')) {
+                    // Full URL entered - extract just the path
+                    const path = extractPath(value);
+                    sourceUrlInput.value = path;
+                    corrections.push('Source URL: Converted to path → ' + path);
+                } else if (!value.startsWith('/') && value.includes('.')) {
+                    // Looks like a domain without protocol (e.g., example.com/page)
+                    const path = extractPath(value);
+                    sourceUrlInput.value = path;
+                    corrections.push('Source URL: Converted to path → ' + path);
+                } else if (!value.startsWith('/')) {
+                    // Plain text without slash - add slash
+                    sourceUrlInput.value = '/' + value;
+                    corrections.push('Source URL: Added / → /' + value);
+                }
+            } else {
+                // Full URL mode: only auto-correct if it looks like a domain
+                if (!value.startsWith('http://') && !value.startsWith('https://') && value.includes('.')) {
+                    // Has a dot - looks like a domain, add https://
+                    const correctedValue = 'https://' + value;
                     sourceUrlInput.value = correctedValue;
-                    corrections.push('Source URL: ' + correctedValue);
+                    corrections.push('Source URL: Added https:// → ' + correctedValue);
                 }
-                // Full URLs are OK - backend will convert them
+                // Otherwise, leave as-is and let server-side validation handle it
             }
         }
 
-        // VALIDATE DESTINATION URL
-        if (destinationUrlInput) {
-            let destValue = destinationUrlInput.value.trim();
-            if (destValue) {
-                const isFullUrl = destValue.startsWith('http://') || destValue.startsWith('https://');
-                const isPath = destValue.startsWith('/');
-                const isHash = destValue.startsWith('#');
-                const hasDot = destValue.includes('.');
+        // Auto-correct Destination URL (same logic as shortlink-manager)
+        function autoCorrectUrl(input, fieldName) {
+            if (!input || !input.value) {
+                return;
+            }
 
-                console.log('Destination validation:', {value: destValue, isFullUrl, isPath, isHash, hasDot});
+            let value = input.value.trim();
 
-                // If not full URL, not path, not anchor
-                if (!isFullUrl && !isPath && !isHash) {
-                    if (hasDot) {
-                        // Has dot - looks like a domain, add https://
-                        const correctedValue = 'https://' + destValue;
-                        destinationUrlInput.value = correctedValue;
-                        corrections.push('Destination URL: ' + correctedValue);
-                    } else {
-                        // No dot - assume it's a path, add /
-                        const correctedValue = '/' + destValue;
-                        destinationUrlInput.value = correctedValue;
-                        corrections.push('Destination URL: ' + correctedValue);
-                    }
-                }
+            // Skip if already valid
+            if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/')) {
+                return;
+            }
+
+            // Has dot - looks like a domain, add https://
+            if (value.includes('.')) {
+                const correctedValue = 'https://' + value;
+                input.value = correctedValue;
+                corrections.push(fieldName + ': Added https:// → ' + correctedValue);
+            } else {
+                // No dot - assume it's a path, add /
+                const correctedValue = '/' + value;
+                input.value = correctedValue;
+                corrections.push(fieldName + ': Added / → ' + correctedValue);
             }
         }
 
-        // Check for infinite loop - Source and Destination are the same
-        if (sourceUrlInput && destinationUrlInput) {
-            const finalSource = sourceUrlInput.value.trim().toLowerCase();
-            const finalDest = destinationUrlInput.value.trim().toLowerCase();
-
-            if (finalSource && finalDest && finalSource === finalDest) {
-                if (typeof Craft !== 'undefined') {
-                    Craft.cp.displayError('Invalid Redirect: Source and Destination URLs cannot be identical - this would create an infinite loop!');
-                }
-                sourceUrlInput.classList.add('error');
-                destinationUrlInput.classList.add('error');
-                sourceUrlInput.focus();
-                return false;
-            }
-        }
+        autoCorrectUrl(destinationUrlInput, 'Destination URL');
 
         // Show notification if any corrections made
-        if (corrections.length > 0 && typeof Craft !== 'undefined') {
-            Craft.cp.displayNotice('Auto-corrected: ' + corrections.join(', '));
+        if (corrections.length > 0) {
+            Craft.cp.displayNotice(corrections.join('<br>'));
+        }
+    });
+
+    // Update status code tip
+    function updateStatusCodeTip() {
+        if (!statusCodeSelect || !statusCodeTipText) return;
+        const code = parseInt(statusCodeSelect.value);
+        let tip = '';
+
+        switch(code) {
+            case 301:
+                tip = '<strong>301 - Moved Permanently:</strong> Use when content has permanently moved. Search engines will update their index. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301" target="_blank" rel="noopener">Learn more</a>';
+                break;
+            case 302:
+                tip = '<strong>302 - Found (Temporary):</strong> Use for temporary redirects. Search engines keep the original URL. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302" target="_blank" rel="noopener">Learn more</a>';
+                break;
+            case 303:
+                tip = '<strong>303 - See Other:</strong> Redirect to a different resource, typically after a form submission. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303" target="_blank" rel="noopener">Learn more</a>';
+                break;
+            case 307:
+                tip = '<strong>307 - Temporary Redirect:</strong> Like 302 but guarantees the request method won\'t change (POST stays POST). <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307" target="_blank" rel="noopener">Learn more</a>';
+                break;
+            case 308:
+                tip = '<strong>308 - Permanent Redirect:</strong> Like 301 but guarantees the request method won\'t change (POST stays POST). <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308" target="_blank" rel="noopener">Learn more</a>';
+                break;
+            case 410:
+                tip = '<strong>410 - Gone:</strong> Content permanently deleted and won\'t come back. Search engines remove it from index. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/410" target="_blank" rel="noopener">Learn more</a>';
+                break;
         }
 
-        return !validationFailed; // Return false if validation failed to prevent submit
+        statusCodeTipText.innerHTML = tip;
     }
 
-    // Simpler approach: Just validate on ANY button click that might save
-    document.addEventListener('click', function(e) {
-        const target = e.target;
-
-        // Check if it's a save/submit button
-        if (target.matches('button[type="submit"]') ||
-            target.matches('button.submit') ||
-            target.matches('.btn.submit') ||
-            target.closest('button[type="submit"]')) {
-            console.log('Potential save button clicked, validating');
-            const isValid = validateAndFixUrls();
-            if (!isValid) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-        }
-    }, true); // Use capture phase
-
-    // Also hook into keyboard shortcuts
-    document.addEventListener('keydown', function(e) {
-        // CMD+S or CTRL+S
-        if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-            console.log('Save shortcut detected, validating');
-            const isValid = validateAndFixUrls();
-            if (!isValid) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-        }
-    }, true);
-
-    // Remove error styling when user starts typing
-    if (sourceUrlInput) {
-        sourceUrlInput.addEventListener('input', function() {
-            this.classList.remove('error');
-        });
+    if (statusCodeSelect) {
+        updateStatusCodeTip();
+        statusCodeSelect.addEventListener('change', updateStatusCodeTip);
     }
-
-    const destinationUrlInput = document.getElementById('destinationUrl');
-    if (destinationUrlInput) {
-        destinationUrlInput.addEventListener('input', function() {
-            this.classList.remove('error');
-        });
-    }
-
-    console.log('Validation hooks installed');
-
-    function updateSourceUrlInstructions() {
-        if (!matchTypeSelect || !sourceUrlInstructions) return;
-
-        const matchType = matchTypeSelect.value;
-        const srcMatch = srcMatchSelect ? srcMatchSelect.value : 'pathonly';
-        const isFullUrl = srcMatch === 'fullurl';
-
-        let instruction = '';
-
-        switch(matchType) {
-            case 'exact':
-                instruction = isFullUrl
-                    ? '<strong>Exact Match:</strong>
-Case-insensitive exact URL match. Enter:
-<code>https://example.com/old-page</code>
-(matches
-<code>https://example.com/old-page</code>
-only)'
-                    : '<strong>Exact Match:</strong>
-Case-insensitive exact path match. Enter:
-<code>/old-page</code>
-(matches
-<code>/old-page</code>
-only, not
-<code>/old-page-2</code>)';
-	                break;
-	            case 'regex':
-	                instruction = isFullUrl
-	                    ? '<strong>RegEx Match:</strong>
-Use regular expressions for advanced patterns. Enter:
-<code>^https://example\\.com/blog/(.*)</code>
-(matches
-<code>https://example.com/blog/anything</code>)'
-	                    : '<strong>RegEx Match:</strong>
-Use regular expressions for advanced patterns. Enter:
-<code>^/blog/(.*)</code>
-(matches
-<code>/blog/anything</code>,
-<code>/blog/2024/post</code>, etc.)';
-	                break;
-	            case 'wildcard':
-	                instruction = isFullUrl
-	                    ? '<strong>Wildcard Match:</strong>
-Simple wildcards using
-<code>*</code>. Enter:
-<code>https://example.com/blog/*</code>
-(matches
-<code>https://example.com/blog/post-1</code>,
-<code>https://example.com/blog/category/news</code>)'
-	                    : '<strong>Wildcard Match:</strong>
-Simple wildcards using
-<code>*</code>
-for "anything". Enter:
-<code>/blog/*</code>
-(matches
-<code>/blog/post-1</code>,
-<code>/blog/category/news</code>, etc.)';
-	                break;
-	            case 'prefix':
-	                instruction = isFullUrl
-	                    ? '<strong>Prefix Match:</strong>
-URL starts with pattern. Enter:
-<code>https://example.com/old-</code>
-(matches
-<code>https://example.com/old-page</code>,
-<code>https://example.com/old-blog</code>)'
-	                    : '<strong>Prefix Match:</strong>
-URL starts with pattern. Enter:
-<code>/old-</code>
-(matches
-<code>/old-page</code>,
-<code>/old-blog</code>,
-<code>/old-anything</code>)';
-	                break;
-	        }
-	
-	        sourceUrlInstructions.innerHTML = instruction;
-	
-	        // Show/hide regex tip
-	        if (regexTip) {
-	            regexTip.style.display = matchType === 'regex' ? 'block' : 'none';
-	        }
-	    }
-	
-	    // Initial display
-	    updateSrcMatchTip();
-	    updateSourceUrlInstructions();
-	
-	    if (matchTypeSelect) {
-	        matchTypeSelect.addEventListener('change', function() {
-	            // Toggle priority field (hr is inside the div, so it toggles automatically)
-	            if (priorityField) {
-	                priorityField.style.display = this.value === 'exact' ? 'none' : 'block';
-	            }
-	
-	            // Update Source URL instructions
-	            updateSourceUrlInstructions();
-	        });
-	    }
-	
-	    // Update tips and instructions when Source Match Mode changes
-	    if (srcMatchSelect) {
-	        srcMatchSelect.addEventListener('change', function() {
-	            updateSrcMatchTip();
-	            updateSourceUrlInstructions();
-	        });
-	    }
-	
-	    // Update Status Code tip based on selection
-	    const statusCodeSelect = document.getElementById('statusCode');
-	    const statusCodeTipText = document.getElementById('statusCodeTipText');
-	
-	    function updateStatusCodeTip() {
-	        if (!statusCodeSelect || !statusCodeTipText) return;
-	
-	        const code = parseInt(statusCodeSelect.value);
-	        let tip = '';
-	
-	        switch(code) {
-	            case 301:
-	                tip = '<strong>301 - Moved Permanently:</strong>
-Use when content has permanently moved. Search engines will update their index.
-<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301" target="_blank" rel="noopener">Learn more</a>';
-	                break;
-	            case 302:
-	                tip = '<strong>302 - Found (Temporary):</strong>
-Use for temporary redirects. Search engines keep the original URL.
-<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302" target="_blank" rel="noopener">Learn more</a>';
-	                break;
-	            case 303:
-	                tip = '<strong>303 - See Other:</strong>
-Redirect to a different resource, typically after a form submission.
-<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303" target="_blank" rel="noopener">Learn more</a>';
-	                break;
-	            case 307:
-	                tip = '<strong>307 - Temporary Redirect:</strong>
-Like 302 but guarantees the request method won\'t change (POST stays POST).
-<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307" target="_blank" rel="noopener">Learn more</a>';
-	                break;
-	            case 308:
-	                tip = '<strong>308 - Permanent Redirect:</strong>
-Like 301 but guarantees the request method won\'t change (POST stays POST).
-<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308" target="_blank" rel="noopener">Learn more</a>';
-	                break;
-	            case 410:
-	                tip = '<strong>410 - Gone:</strong>
-Content permanently deleted and won\'t come back. Search engines remove it from index.
-<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/410" target="_blank" rel="noopener">Learn more</a>';
-	                break;
-	        }
-	
-	        statusCodeTipText.innerHTML = tip;
-	    }
-	
-	    if (statusCodeSelect) {
-	        // Initial display
-	        updateStatusCodeTip();
-	
-	        statusCodeSelect.addEventListener('change', function() {
-	            updateStatusCodeTip();
-	        });
-	    }
 {% endjs %}

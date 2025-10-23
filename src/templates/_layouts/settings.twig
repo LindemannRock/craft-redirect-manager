@@ -13,8 +13,18 @@
                 </a>
             </li>
             <li>
-                <a href="{{ url('redirect-manager/settings/statistics') }}" {% if selectedSettingsItem == 'statistics' %}class="sel"{% endif %} data-nav-item="statistics">
-                    {{ 'Statistics'|t('redirect-manager') }}
+                <a href="{{ url('redirect-manager/settings/analytics') }}" {% if selectedSettingsItem == 'analytics' %}class="sel"{% endif %} data-nav-item="analytics">
+                    {{ 'Analytics'|t('redirect-manager') }}
+                </a>
+            </li>
+            <li>
+                <a href="{{ url('redirect-manager/settings/interface') }}" {% if selectedSettingsItem == 'interface' %}class="sel"{% endif %} data-nav-item="interface">
+                    {{ 'Interface'|t('redirect-manager') }}
+                </a>
+            </li>
+            <li>
+                <a href="{{ url('redirect-manager/settings/cache') }}" {% if selectedSettingsItem == 'cache' %}class="sel"{% endif %} data-nav-item="cache">
+                    {{ 'Cache'|t('redirect-manager') }}
                 </a>
             </li>
             <li>

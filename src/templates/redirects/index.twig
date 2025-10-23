@@ -158,25 +158,26 @@
                         <th class="checkbox-cell selectallcontainer">
                             <div class="checkbox" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select all"></div>
                         </th>
-                        <th scope="col" data-attribute="sourceUrl" class="orderable {{ sort == 'sourceUrl' ? 'ordered ' ~ dir : '' }}" style="width: 25%;">
+                        <th scope="col" data-attribute="sourceUrl" class="orderable {{ sort == 'sourceUrl' ? 'ordered ' ~ dir : '' }}">
                             <button type="button" data-sort="sourceUrl">
                                 {{ 'Source URL'|t('redirect-manager') }}
                             </button>
                         </th>
-                        <th scope="col" style="width: 20%;">{{ 'Destination URL'|t('redirect-manager') }}</th>
-                        <th scope="col" style="width: 12%;">{{ 'Match'|t('redirect-manager') }}</th>
-                        <th scope="col" style="width: 10%;">{{ 'Type'|t('redirect-manager') }}</th>
-                        <th scope="col" data-attribute="statusCode" class="orderable {{ sort == 'statusCode' ? 'ordered ' ~ dir : '' }}" style="width: 8%;">
+                        <th scope="col">{{ 'Destination URL'|t('redirect-manager') }}</th>
+                        <th scope="col">{{ 'Match'|t('redirect-manager') }}</th>
+                        <th scope="col">{{ 'Type'|t('redirect-manager') }}</th>
+                        <th scope="col">{{ 'Source'|t('redirect-manager') }}</th>
+                        <th scope="col" data-attribute="statusCode" class="orderable {{ sort == 'statusCode' ? 'ordered ' ~ dir : '' }}">
                             <button type="button" data-sort="statusCode">
                                 {{ 'Status'|t('redirect-manager') }}
                             </button>
                         </th>
-                        <th scope="col" data-attribute="hitCount" class="orderable {{ sort == 'hitCount' ? 'ordered ' ~ dir : '' }}" style="width: 10%;">
+                        <th scope="col" data-attribute="hitCount" class="orderable {{ sort == 'hitCount' ? 'ordered ' ~ dir : '' }}">
                             <button type="button" data-sort="hitCount">
                                 {{ 'Hits'|t('redirect-manager') }}
                             </button>
                         </th>
-                        <th scope="col" style="width: 10%;">{{ 'Enabled'|t('redirect-manager') }}</th>
+                        <th scope="col">{{ 'Enabled'|t('redirect-manager') }}</th>
                         <th class="thin" style="width: 60px;">{{ 'Actions'|t('redirect-manager') }}</th>
                     </tr>
                 </thead>
@@ -195,15 +196,32 @@
                                 <td>{{ redirect.destinationUrl }}</td>
                                 <td>{{ redirect.matchType|capitalize }}</td>
                                 <td>
-                                    <div style="display: flex; align-items: center; gap: 0.75rem; white-space: nowrap;">
-                                        {% if redirect.creationType == 'entry-change' %}
-                                            <span class="status blue" style="margin-inline-end: 0;"></span>
-                                            <span class="light">{{ 'Auto'|t('redirect-manager') }}</span>
-                                        {% else %}
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                                        {% if redirect.creationType == 'manual' %}
                                             <span class="status orange" style="margin-inline-end: 0;"></span>
                                             <span class="light">{{ 'Manual'|t('redirect-manager') }}</span>
+                                        {% else %}
+                                            <span class="status blue" style="margin-inline-end: 0;"></span>
+                                            <span class="light">{{ 'Auto'|t('redirect-manager') }}</span>
                                         {% endif %}
                                     </div>
+                                </td>
+                                <td>
+                                    <span class="light">
+                                        {% if redirect.sourcePlugin == 'redirect-manager' %}
+                                            {% if redirect.creationType == 'entry-change' %}
+                                                {{ 'Entry Changes'|t('redirect-manager') }}
+                                            {% else %}
+                                                {{ 'User'|t('redirect-manager') }}
+                                            {% endif %}
+                                        {% elseif redirect.sourcePlugin == 'shortlink-manager' %}
+                                            {{ 'ShortLink Manager'|t('redirect-manager') }}
+                                        {% elseif redirect.sourcePlugin == 'smart-links' %}
+                                            {{ 'Smart Links'|t('redirect-manager') }}
+                                        {% else %}
+                                            {{ redirect.sourcePlugin|replace({'-': ' '})|title }}
+                                        {% endif %}
+                                    </span>
                                 </td>
                                 <td>{{ redirect.statusCode }}</td>
                                 <td>{{ redirect.hitCount }}</td>
@@ -221,7 +239,7 @@
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="8" style="text-align: center; padding: 2em;">
+                            <td colspan="10" style="text-align: center; padding: 2em;">
                                 {{ 'No redirects found.'|t('redirect-manager') }}
                             </td>
                         </tr>
@@ -231,9 +249,9 @@
         </div>
     </div>
 
-    <div id="footer" class="flex-justify flex">
+    <div id="footer" class="flex flex-justify">
         <div class="light">
-            <div class="pagination flex">
+            <div class="flex pagination">
                 <nav class="flex" aria-label="redirect pagination">
                     <button type="button" class="page-link prev-page {{ page <= 1 ? 'disabled' : '' }}" {{ page <= 1 ? 'disabled' : '' }} title="Previous Page"></button>
                     <button type="button" class="page-link next-page {{ page >= totalPages ? 'disabled' : '' }}" {{ page >= totalPages ? 'disabled' : '' }} title="Next Page"></button>
@@ -248,23 +266,36 @@
                 </div>
             </div>
         </div>
+        <div id="actions-container" class="flex" style="display: none;">
+            <div>
+                <button type="button" class="btn menubtn secondary" id="bulk-actions-btn" aria-label="Set status">
+                    {{ 'Set status'|t('app') }}
+                </button>
+                <div class="menu">
+                    <ul>
+                        <li><a id="bulk-enable-action">{{ 'Enable'|t('redirect-manager') }}</a></li>
+                        <li><a id="bulk-disable-action">{{ 'Disable'|t('redirect-manager') }}</a></li>
+                    </ul>
+                </div>
+            </div>
+            <form>
+                <button type="button" class="btn secondary menubtn" data-icon="settings" title="Actions" id="settings-btn"></button>
+                <div class="menu">
+                    <ul>
+                        <li><a id="bulk-delete-action" class="error">{{ 'Delete…'|t('app') }}</a></li>
+                    </ul>
+                </div>
+            </form>
+        </div>
         <div class="flex flex-nowrap">
-            <button type="button" class="btn secondary" id="bulk-enable-btn" style="display: none;">
-                {{ 'Enable Selected'|t('redirect-manager') }}
-            </button>
-            <button type="button" class="btn secondary" id="bulk-disable-btn" style="display: none;">
-                {{ 'Disable Selected'|t('redirect-manager') }}
-            </button>
-            <button type="button" class="btn secondary" id="bulk-delete-btn" style="display: none;">
-                {{ 'Delete Selected'|t('redirect-manager') }}
-            </button>
             <a href="{{ url('redirect-manager/import-export') }}" class="btn">
                 {{ 'Import'|t('redirect-manager') }}
             </a>
-            <form method="post" action="{{ actionUrl('redirect-manager/import-export/export') }}" style="display: inline;">
+            <form method="post" action="{{ actionUrl('redirect-manager/import-export/export') }}" style="display: inline;" id="export-form">
                 {{ csrfInput() }}
-                <button type="submit" class="btn">
-                    {{ 'Export'|t('redirect-manager') }}
+                <input type="hidden" name="redirectIds" id="export-redirect-ids" value="">
+                <button type="submit" class="btn" id="export-btn">
+                    <span id="export-label">{{ 'Export'|t('redirect-manager') }}</span>
                 </button>
             </form>
         </div>
@@ -342,18 +373,20 @@
 
         function updateBulkButtons() {
             const hasSelection = selectedIds.size > 0;
-            const enableBtn = document.getElementById('bulk-enable-btn');
-            const disableBtn = document.getElementById('bulk-disable-btn');
-            const deleteBtn = document.getElementById('bulk-delete-btn');
+            const actionsContainer = document.getElementById('actions-container');
+            const exportLabel = document.getElementById('export-label');
+            const exportRedirectIds = document.getElementById('export-redirect-ids');
 
-            [enableBtn, disableBtn, deleteBtn].forEach(btn => {
-                if (hasSelection) {
-                    btn.style.display = '';
-                    btn.removeAttribute('style');
-                } else {
-                    btn.style.display = 'none';
-                }
-            });
+            if (hasSelection) {
+                actionsContainer.style.display = '';
+                const count = selectedIds.size;
+                exportLabel.textContent = `{{ 'Export'|t('redirect-manager') }} (${count})`;
+                exportRedirectIds.value = JSON.stringify(Array.from(selectedIds));
+            } else {
+                actionsContainer.style.display = 'none';
+                exportLabel.textContent = '{{ 'Export'|t('redirect-manager') }}';
+                exportRedirectIds.value = '';
+            }
         }
 
         // Select all
@@ -391,8 +424,59 @@
             });
         });
 
+        // Initialize bulk actions menu button
+        const bulkActionsBtn = document.getElementById('bulk-actions-btn');
+        if (bulkActionsBtn) {
+            if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
+                new Craft.MenuBtn(bulkActionsBtn);
+            } else if (typeof Garnish !== 'undefined' && Garnish.MenuBtn) {
+                new Garnish.MenuBtn(bulkActionsBtn);
+            }
+        }
+
+        // Initialize settings menu button
+        const settingsBtn = document.getElementById('settings-btn');
+        if (settingsBtn) {
+            if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
+                new Craft.MenuBtn(settingsBtn);
+            } else if (typeof Garnish !== 'undefined' && Garnish.MenuBtn) {
+                new Garnish.MenuBtn(settingsBtn);
+            }
+        }
+
+        // Bulk enable
+        document.getElementById('bulk-enable-action')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            const ids = Array.from(selectedIds);
+
+            Craft.sendActionRequest('POST', 'redirect-manager/redirects/bulk-enable', {
+                data: { redirectIds: ids }
+            }).then(function(response) {
+                if (response.data.success) {
+                    Craft.cp.displayNotice(`Enabled ${response.data.updated} redirect${response.data.updated > 1 ? 's' : ''}`);
+                    setTimeout(() => window.location.reload(), 1000);
+                }
+            });
+        });
+
+        // Bulk disable
+        document.getElementById('bulk-disable-action')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            const ids = Array.from(selectedIds);
+
+            Craft.sendActionRequest('POST', 'redirect-manager/redirects/bulk-disable', {
+                data: { redirectIds: ids }
+            }).then(function(response) {
+                if (response.data.success) {
+                    Craft.cp.displayNotice(`Disabled ${response.data.updated} redirect${response.data.updated > 1 ? 's' : ''}`);
+                    setTimeout(() => window.location.reload(), 1000);
+                }
+            });
+        });
+
         // Bulk delete
-        document.getElementById('bulk-delete-btn')?.addEventListener('click', function() {
+        document.getElementById('bulk-delete-action')?.addEventListener('click', function(e) {
+            e.preventDefault();
             const ids = Array.from(selectedIds);
             if (!confirm(`Delete ${ids.length} redirect${ids.length > 1 ? 's' : ''}?`)) return;
 

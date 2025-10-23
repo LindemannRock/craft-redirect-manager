@@ -16,11 +16,16 @@ Intelligent redirect management and 404 handling for Craft CMS.
   - RegEx Match - Full regular expression support
   - Wildcard Match - Simple * wildcards
   - Prefix Match - URL starts with pattern
-- **Statistics Tracking** - Track all 404s (handled and unhandled)
+- **Rich Analytics** - Track 404s with device detection, browsers, OS, geographic data, and bot identification
+- **Device Detection** - Powered by Matomo DeviceDetector for accurate device, browser, and OS identification
+- **Bot Filtering** - Identify and filter bot traffic (GoogleBot, BingBot, etc.)
+- **Geographic Detection** - Track visitor location (country, city) via ip-api.com
 - **Auto-Redirect Creation** - Automatically creates redirects when entry URIs change
-- **Smart Caching** - Fast redirect lookups with tag-based cache invalidation
-- **CSV Export** - Export statistics for analysis
+- **Smart Caching** - Fast redirect lookups and device detection with configurable caching
+- **CSV Export** - Export comprehensive statistics including device and geo data
 - **Multi-Site Support** - Site-specific or global redirects
+- **Plugin Integration** - Pluggable architecture allowing other plugins to integrate 404 handling
+- **Privacy-First** - IP hashing with salt, optional subnet masking, GDPR-friendly
 - **Logging Integration** - Uses logging-library for consistent logs
 
 ## Requirements
@@ -28,6 +33,7 @@ Intelligent redirect management and 404 handling for Craft CMS.
 - Craft CMS 5.0 or later
 - PHP 8.2 or later
 - [Logging Library](https://github.com/LindemannRock/craft-logging-library) 5.0 or greater (installed automatically as dependency)
+- [Matomo Device Detector](https://github.com/matomo-org/device-detector) 6.4 or greater (installed automatically as dependency)
 
 ## Installation
 
@@ -58,6 +64,58 @@ composer require lindemannrock/craft-redirect-manager
 2. Search for "Redirect Manager"
 3. Click "Install"
 
+### Important: IP Privacy Protection
+
+Redirect Manager uses **privacy-focused IP hashing** with a secure salt:
+
+- ✅ **Rainbow-table proof** - Salted SHA256 prevents pre-computed attacks
+- ✅ **Unique visitor tracking** - Same IP = same hash
+- ✅ **Maximum privacy** - Original IPs never stored, unrecoverable
+- ✅ **Optional subnet masking** - Additional anonymization layer
+
+**Setup Instructions:**
+1. Generate salt: `php craft redirect-manager/security/generate-salt`
+2. Command automatically adds `REDIRECT_MANAGER_IP_SALT` to your `.env` file
+3. **Manually copy** the salt value to staging/production `.env` files
+4. **Never regenerate** the salt in production
+
+**How It Works:**
+- Plugin automatically reads salt from `.env` (no config file needed!)
+- Config file can override if needed: `'ipHashSalt' => App::env('REDIRECT_MANAGER_IP_SALT')`
+- If no salt found, error banner shown in settings
+
+**Security Notes:**
+- Never commit the salt to version control
+- Store salt securely (password manager recommended)
+- Use the SAME salt across all environments (dev/staging/production)
+- Changing the salt will break unique visitor tracking history
+
+### Local Development: Analytics Location Override
+
+When running locally (DDEV, localhost), analytics will **default to Dubai, UAE** because local IPs can't be geolocated. To set your actual location for testing:
+
+```bash
+# Add to your .env file:
+REDIRECT_MANAGER_DEFAULT_COUNTRY=US
+REDIRECT_MANAGER_DEFAULT_CITY=New York
+```
+
+**Supported locations:**
+
+- **US**: New York, Los Angeles, Chicago, San Francisco
+- **GB**: London, Manchester
+- **AE**: Dubai, Abu Dhabi (default: Dubai)
+- **SA**: Riyadh, Jeddah
+- **DE**: Berlin, Munich
+- **FR**: Paris
+- **CA**: Toronto, Vancouver
+- **AU**: Sydney, Melbourne
+- **JP**: Tokyo
+- **SG**: Singapore
+- **IN**: Mumbai, Delhi
+
+**Note:** This only affects local/private IPs (127.0.0.1, localhost, etc.). Production analytics will use real IP geolocation via ip-api.com.
+
 ## Configuration
 
 ### Config File
@@ -70,11 +128,20 @@ return [
     // Auto create redirects when entry URIs change
     'autoCreateRedirects' => true,
 
+    // Analytics (master switch - controls device detection, geo, IP tracking)
+    'enableAnalytics' => true,
+    'enableGeoDetection' => false,  // Track visitor location
+    'anonymizeIpAddress' => false,  // Subnet masking for privacy
+
     // Statistics retention in days (0 = keep forever)
     'statisticsRetention' => 30,
-
-    // Maximum statistics records
     'statisticsLimit' => 1000,
+
+    // Performance & Caching
+    'enableRedirectCache' => true,
+    'redirectCacheDuration' => 3600,  // 1 hour
+    'cacheDeviceDetection' => true,
+    'deviceDetectionCacheDuration' => 3600,  // 1 hour
 
     // Preserve query strings in redirects
     'preserveQueryString' => false,
@@ -284,9 +351,10 @@ php craft console/controller/eval \
 
 ### Statistics Not Recording
 
-1. Check **Settings → Statistics → Record Remote IP** is enabled
+1. Check **Settings → Analytics → Enable Analytics** is enabled (master switch)
 2. Check statistics limit hasn't been reached
-3. Check database: `SELECT * FROM redirectmanager_statistics`
+3. Ensure IP hash salt is configured (run: `php craft redirect-manager/security/generate-salt`)
+4. Check database: `SELECT * FROM redirectmanager_analytics`
 
 ### Auto-Redirects Not Creating
 
@@ -322,6 +390,171 @@ Available events:
 - `EVENT_BEFORE_DELETE_REDIRECT`
 - `EVENT_AFTER_DELETE_REDIRECT`
 
+## Plugin Integration
+
+Redirect Manager provides a **pluggable architecture** that allows other plugins to integrate their 404 handling, similar to how plugins use the Logging Library.
+
+### RedirectHandlingTrait - What It Provides
+
+The trait provides **2 methods** that other plugins can use:
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `handleRedirect404(string $url, string $source, array $context)` | `?array` | Check if a redirect exists for a 404 URL |
+| `createRedirectRule(array $attributes)` | `bool` | Create a new redirect in Redirect Manager |
+
+**Important:** The trait does NOT provide handler functions like `handleDeletedItem()` or `handle404()`. Those are examples of functions **you write** in your own plugin that call the trait's methods.
+
+### Integration Method 1: Handle 404s
+
+When your plugin encounters a 404, check if Redirect Manager has a matching redirect.
+
+**Example implementation (you write this code):**
+
+```php
+use lindemannrock\redirectmanager\traits\RedirectHandlingTrait;
+
+class MyController extends Controller
+{
+    use RedirectHandlingTrait;
+
+    /**
+     * Your custom 404 handler (not provided by trait)
+     */
+    private function handle404(): Response
+    {
+        $url = Craft::$app->getRequest()->getUrl();
+
+        // Call the trait's handleRedirect404() method
+        $redirect = $this->handleRedirect404($url, 'my-plugin', [
+            'type' => 'custom-404',
+            'context' => 'additional-metadata'
+        ]);
+
+        if ($redirect) {
+            // Redirect found! Use it
+            return $this->redirect($redirect['destinationUrl'], $redirect['statusCode']);
+        }
+
+        // No redirect found, use your fallback
+        return $this->redirect('/', 302);
+    }
+}
+```
+
+**What happens:**
+1. Your plugin encounters a 404 (e.g., `/my-plugin/xyz` doesn't exist)
+2. You call `handleRedirect404()` to check if a redirect exists
+3. Redirect Manager searches for matching redirects
+4. Statistics are recorded with your plugin as the source
+5. Returns redirect data if found, or `null` if not
+
+### Integration Method 2: Push Redirects
+
+Your plugin can automatically create redirects when certain events occur (item deleted, slug changed, link expired, etc.).
+
+**Example implementation (you write this code):**
+
+```php
+use lindemannrock\redirectmanager\traits\RedirectHandlingTrait;
+
+class MyService extends Component
+{
+    use RedirectHandlingTrait;
+
+    /**
+     * Your custom deletion handler (not provided by trait)
+     *
+     * This is example code showing how YOU would implement auto-redirect creation.
+     * The function name "handleDeletedItem" is just an example - name it whatever you want.
+     */
+    public function handleDeletedItem($item): void
+    {
+        // Your business logic here
+        if ($item->hits === 0) {
+            return; // Don't create redirect for unused items
+        }
+
+        // Call the trait's createRedirectRule() method
+        $this->createRedirectRule([
+            'sourceUrl' => '/items/' . $item->slug,
+            'sourceUrlParsed' => '/items/' . $item->slug,
+            'destinationUrl' => '/items',
+            'matchType' => 'exact',              // exact|regex|wildcard|prefix
+            'statusCode' => 301,
+            'siteId' => $item->siteId,
+            'enabled' => true,
+            'priority' => 0,
+            'creationType' => 'item-deleted',    // What happened (max 50 chars)
+            'sourcePlugin' => 'my-plugin',       // Your plugin handle in kebab-case (max 50 chars)
+        ]);
+    }
+}
+```
+
+**Important Constraints:**
+- `creationType` - Maximum 50 characters (e.g., `'code-change'`, `'item-deleted'`, `'smart-link-expired'`)
+- `sourcePlugin` - Maximum 50 characters, **always kebab-case** (e.g., `'shortlink-manager'`, `'smart-links'`, `'my-plugin'`)
+- `elementId` - (Optional) Element ID if redirect was created by element URI change. Used to track and clean up redirect chains.
+- `sourceUrl` / `sourceUrlParsed` - Maximum 255 characters
+- `destinationUrl` - Maximum 500 characters
+
+**Plugin Handle Format:**
+- ✅ `'shortlink-manager'` (correct)
+- ✅ `'smart-links'` (correct)
+- ❌ `'ShortLink Manager'` (wrong - never use title case)
+- ❌ `'shortlink_manager'` (wrong - use kebab-case, not snake_case)
+
+**What happens:**
+1. Your plugin detects an event (deletion, slug change, etc.)
+2. You call `createRedirectRule()` to push a redirect to Redirect Manager
+3. Redirect Manager validates and saves the redirect
+4. Cache is invalidated
+5. Future requests to the old URL will be redirected
+
+### Source Plugin Tracking
+
+All 404s tracked through external plugins are recorded with their source plugin identifier:
+
+```php
+// The second parameter ('shortlink-manager') becomes the source
+$redirect = $this->handleRedirect404($url, 'shortlink-manager', [
+    'type' => 'shortlink-not-found',
+    'code' => 'abc123'
+]);
+```
+
+**Statistics dashboard shows breakdown by source:**
+```
+Redirect Manager: 145 (handled: 98)
+ShortLink Manager: 67 (handled: 54)
+Smart Links: 43 (handled: 38)
+```
+
+This helps you identify which plugin or area is generating the most 404s.
+
+### Real-World Example: ShortLink Manager
+
+See how ShortLink Manager integrates:
+
+**404 Handling:** [`RedirectController::redirectToNotFound()`](https://github.com/LindemannRock/craft-shortlink-manager/blob/main/src/controllers/RedirectController.php)
+- Calls `handleRedirect404()` when shortlink not found
+- Executes redirect if found
+- Falls back to configured URL if not
+
+**Auto-Redirect Creation:** [`ShortLinksService`](https://github.com/LindemannRock/craft-shortlink-manager/blob/main/src/services/ShortLinksService.php)
+- `handleCodeChange()` - Creates redirect when shortlink code changes
+- `handleExpiredShortLink()` - Creates redirect when shortlink expires
+- `handleDeletedShortLink()` - Creates redirect when shortlink deleted (if has traffic)
+
+### Benefits
+
+✅ **Centralized 404 Tracking** - See all 404s across your entire site in one dashboard
+✅ **Auto-Healing** - Broken links automatically fixed when redirects exist
+✅ **Source Attribution** - Know which plugin or area is generating 404s
+✅ **Loose Coupling** - Plugins work independently, integration is optional
+✅ **Easy Integration** - Add trait, write your handlers, call the methods, done!
+
 ## API
 
 ### Services
@@ -335,12 +568,23 @@ $plugin->redirects->createRedirect([...]);
 $plugin->redirects->updateRedirect($id, [...]);
 $plugin->redirects->deleteRedirect($id);
 $plugin->redirects->findRedirect($fullUrl, $pathOnly);
+$plugin->redirects->handleExternal404($url, $context); // For plugin integration
 
 // Statistics
-$plugin->statistics->record404($url, $handled);
+$plugin->statistics->record404($url, $handled, $context); // Context tracks source plugin
 $plugin->statistics->getAllStatistics($siteId, $limit);
 $plugin->statistics->getChartData($siteId, $days);
+$plugin->statistics->getDeviceBreakdown($siteId, $days);
+$plugin->statistics->getBrowserBreakdown($siteId, $days);
+$plugin->statistics->getOsBreakdown($siteId, $days);
+$plugin->statistics->getBotStats($siteId, $days);
+$plugin->statistics->getLocationFromIp($ip);
 $plugin->statistics->exportToCsv($siteId);
+
+// Device Detection
+$plugin->deviceDetection->detectDevice($userAgent);
+$plugin->deviceDetection->isMobileDevice($deviceInfo);
+$plugin->deviceDetection->isBot($deviceInfo);
 
 // Matching
 $plugin->matching->matches($matchType, $pattern, $url);

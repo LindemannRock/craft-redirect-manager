@@ -19,35 +19,38 @@
 ] %}
 
 {% block content %}
-    <h2 style="margin-top: 0px;">{{ "Test URL Redirects"|t('redirect-manager') }}</h2>
 
-    <p>{{ "Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic."|t('redirect-manager') }}</p>
+	{% include 'redirect-manager/_components/ip-salt-error' %}
 
-    <div class="field">
-        <div class="heading">
-            <label for="testUrl">{{ "Test URL"|t('redirect-manager') }}</label>
-            <div class="instructions">
-                <p>{{ "Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)"|t('redirect-manager') }}</p>
-            </div>
-        </div>
-        <div class="input ltr">
-            <input type="text" id="testUrl" class="text fullwidth" placeholder="/old-page or https://example.com/old-page">
-        </div>
-    </div>
+	<h2 style="margin-top: 0px;">{{ "Test URL Redirects"|t('redirect-manager') }}</h2>
 
-    <button type="button" id="testButton" class="btn submit">{{ "Test URL"|t('redirect-manager') }}</button>
+	<p>{{ "Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic."|t('redirect-manager') }}</p>
 
-    <div id="testResults" style="display: none; margin-top: 30px;">
-        <hr>
-        <h3 id="resultsTitle"></h3>
-        <div id="resultsContent"></div>
-    </div>
+	<div class="field">
+		<div class="heading">
+			<label for="testUrl">{{ "Test URL"|t('redirect-manager') }}</label>
+			<div class="instructions">
+				<p>{{ "Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)"|t('redirect-manager') }}</p>
+			</div>
+		</div>
+		<div class="input ltr">
+			<input type="text" id="testUrl" class="text fullwidth" placeholder="/old-page or https://example.com/old-page">
+		</div>
+	</div>
 
-    {% include 'redirect-manager/_components/plugin-credit.twig' %}
+	<button type="button" id="testButton" class="btn submit">{{ "Test URL"|t('redirect-manager') }}</button>
+
+	<div id="testResults" style="display: none; margin-top: 30px;">
+		<hr>
+		<h3 id="resultsTitle"></h3>
+		<div id="resultsContent"></div>
+	</div>
+
+	{% include 'redirect-manager/_components/plugin-credit.twig' %}
 {% endblock %}
 
 {% js %}
-    const testButton = document.getElementById('testButton');
+const testButton = document.getElementById('testButton');
     const testUrlInput = document.getElementById('testUrl');
     const testResults = document.getElementById('testResults');
     const resultsTitle = document.getElementById('resultsTitle');
@@ -61,81 +64,103 @@
             resultsTitle.innerHTML = '⚠️ Validation Error';
             resultsTitle.style.color = '#dc3545';
             resultsContent.innerHTML = '<p style="color: #dc3545;">Please enter a URL to test</p>';
-            return;
-        }
+		            return;
+		        }
+	
+		        // Auto-fix ambiguous URLs
+		        const isFullUrl = testUrl.startsWith('http://') || testUrl.startsWith('https://');
+		        const isPath = testUrl.startsWith('/');
+	
+		        if (!isFullUrl && !isPath) {
+		            // Ambiguous - looks like a domain without protocol or a path without /
+		            // Assume it's meant to be a full URL if it contains a dot (domain-like)
+		            if (testUrl.includes('.')) {
+		                testUrl = 'https://' + testUrl;
+		                testUrlInput.value = testUrl; // Update the input to show what we're testing
+		            } else {
+		                // No dot - assume it's a path
+		                testUrl = '/' + testUrl;
+		                testUrlInput.value = testUrl;
+		            }
+		        }
+	
+		        testButton.disabled = true;
+		        testButton.textContent = 'Testing...';
+	
+		        fetch('{{ actionUrl('redirect-manager/settings/test-url') }}', {
+		            method: 'POST',
+		            headers: {
+		                'Content-Type': 'application/json',
+		                'Accept': 'application/json',
+		                'X-CSRF-Token': '{{ craft.app.request.csrfToken }}',
+		            },
+		            body: JSON.stringify({
+		                testUrl: testUrl
+		            })
+		        })
+		        .then(response => response.json())
+		        .then(data => {
+		            testButton.disabled = false;
+		            testButton.textContent = 'Test URL';
+	
+		            testResults.style.display = 'block';
+	
+		            if (data.matched) {
+		                // Match found
+		                resultsTitle.innerHTML = '✅ Match Found!';
+		                resultsTitle.style.color = '#28a745';
+	
+		                const r = data.redirect;
+		                resultsContent.innerHTML = `
+<p style="padding: 15px; background: #e8f5e9; border-left: 4px solid #28a745; margin: 15px 0;">
+	<strong>This URL would redirect:</strong><br>
+	<code>${testUrl}</code>
+	→
+	<code>${r.destinationUrl}</code>
+</p>
+<dl style="display: grid; grid-template-columns: 200px 1fr; gap: 10px; margin: 20px 0;">
+	<dt>
+		<strong>Redirect ID:</strong>
+	</dt>
+	<dd>
+		<a href="${Craft.getUrl('redirect-manager/redirects/' + r.id)}">#${r.id}</a>
+	</dd>
 
-        // Auto-fix ambiguous URLs
-        const isFullUrl = testUrl.startsWith('http://') || testUrl.startsWith('https://');
-        const isPath = testUrl.startsWith('/');
+	<dt>
+		<strong>Source URL:</strong>
+	</dt>
+	<dd>
+		<code>${r.sourceUrl}</code>
+	</dd>
 
-        if (!isFullUrl && !isPath) {
-            // Ambiguous - looks like a domain without protocol or a path without /
-            // Assume it's meant to be a full URL if it contains a dot (domain-like)
-            if (testUrl.includes('.')) {
-                testUrl = 'https://' + testUrl;
-                testUrlInput.value = testUrl; // Update the input to show what we're testing
-            } else {
-                // No dot - assume it's a path
-                testUrl = '/' + testUrl;
-                testUrlInput.value = testUrl;
-            }
-        }
+	<dt>
+		<strong>Destination URL:</strong>
+	</dt>
+	<dd>
+		<code>${r.destinationUrl}</code>
+	</dd>
 
-        testButton.disabled = true;
-        testButton.textContent = 'Testing...';
+	<dt>
+		<strong>Match Type:</strong>
+	</dt>
+	<dd>${r.matchType}</dd>
 
-        fetch('{{ actionUrl('redirect-manager/settings/test-url') }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-Token': '{{ craft.app.request.csrfToken }}',
-            },
-            body: JSON.stringify({
-                testUrl: testUrl
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            testButton.disabled = false;
-            testButton.textContent = 'Test URL';
+	<dt>
+		<strong>Source Match Mode:</strong>
+	</dt>
+	<dd>${r.redirectSrcMatch === 'pathonly' ? 'Path Only' : 'Full URL'}</dd>
 
-            testResults.style.display = 'block';
+	<dt>
+		<strong>Status Code:</strong>
+	</dt>
+	<dd>${r.statusCode}</dd>
 
-            if (data.matched) {
-                // Match found
-                resultsTitle.innerHTML = '✅ Match Found!';
-                resultsTitle.style.color = '#28a745';
-
-                const r = data.redirect;
-                resultsContent.innerHTML = `
-                    <p style="padding: 15px; background: #e8f5e9; border-left: 4px solid #28a745; margin: 15px 0;">
-                        <strong>This URL would redirect:</strong><br>
-                        <code>${testUrl}</code> → <code>${r.destinationUrl}</code>
-                    </p>
-                    <dl style="display: grid; grid-template-columns: 200px 1fr; gap: 10px; margin: 20px 0;">
-                        <dt><strong>Redirect ID:</strong></dt>
-                        <dd><a href="${Craft.getUrl('redirect-manager/redirects/' + r.id)}">#${r.id}</a></dd>
-
-                        <dt><strong>Source URL:</strong></dt>
-                        <dd><code>${r.sourceUrl}</code></dd>
-
-                        <dt><strong>Destination URL:</strong></dt>
-                        <dd><code>${r.destinationUrl}</code></dd>
-
-                        <dt><strong>Match Type:</strong></dt>
-                        <dd>${r.matchType}</dd>
-
-                        <dt><strong>Source Match Mode:</strong></dt>
-                        <dd>${r.redirectSrcMatch === 'pathonly' ? 'Path Only' : 'Full URL'}</dd>
-
-                        <dt><strong>Status Code:</strong></dt>
-                        <dd>${r.statusCode}</dd>
-
-                        <dt><strong>Priority:</strong></dt>
-                        <dd>${r.priority}</dd>
-                    </dl>
-                `;
+	<dt>
+		<strong>Priority:</strong>
+	</dt>
+	<dd>${r.priority}</dd>
+</dl>
+`;
             } else {
                 // No match
                 resultsTitle.innerHTML = '❌ No Match Found';
@@ -153,14 +178,16 @@
                 }
 
                 resultsContent.innerHTML = `
-                    <p style="padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; margin: 15px 0;">
-                        <strong>No redirect configured for this URL.</strong><br>
-                        Visiting <code>${testUrl}</code> would result in a 404 error and be logged in statistics.
-                    </p>
-                    <p style="margin-top: 15px;">
-                        <a href="${Craft.getUrl('redirect-manager/redirects/new', createParams)}" class="btn">Create Redirect for This URL</a>
-                    </p>
-                `;
+<p style="padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; margin: 15px 0;">
+	<strong>No redirect configured for this URL.</strong><br>
+	Visiting
+	<code>${testUrl}</code>
+	would result in a 404 error and be logged in statistics.
+</p>
+<p style="margin-top: 15px;">
+	<a href="${Craft.getUrl('redirect-manager/redirects/new', createParams)}" class="btn">Create Redirect for This URL</a>
+</p>
+`;
             }
         })
         .catch(error => {
@@ -171,14 +198,14 @@
             resultsTitle.innerHTML = '⚠️ Error';
             resultsTitle.style.color = '#dc3545';
             resultsContent.innerHTML = `<p style="color: #dc3545;">${error.message}</p>`;
-        });
-    });
-
-    // Allow Enter key to trigger test
-    testUrlInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            testButton.click();
-        }
-    });
+		        });
+		    });
+	
+		    // Allow Enter key to trigger test
+		    testUrlInput.addEventListener('keypress', function(e) {
+		        if (e.key === 'Enter') {
+		            e.preventDefault();
+		            testButton.click();
+		        }
+		    });
 {% endjs %}

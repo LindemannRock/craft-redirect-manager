@@ -1,0 +1,130 @@
+{% extends "redirect-manager/_layouts/settings" %}
+{% set title = "Cache Settings"|t('redirect-manager') %}
+{% set fullPageForm = true %}
+{% set selectedSettingsItem = 'cache' %}
+
+{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
+{% set crumbs = [
+    {
+        label: plugin.settings.pluginName|t('redirect-manager'),
+        url: url('redirect-manager'),
+    },
+    {
+        label: 'Settings'|t('redirect-manager'),
+        url: url('redirect-manager/settings'),
+    },
+    {
+        label: 'Cache'|t('redirect-manager'),
+        url: url('redirect-manager/settings/cache'),
+    },
+] %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+	{% include 'redirect-manager/_components/ip-salt-error' %}
+
+	<form method="post" accept-charset="UTF-8">
+		{{ actionInput('redirect-manager/settings/save') }}
+		{{ csrfInput() }}
+		{{ redirectInput('redirect-manager/settings/cache') }}
+
+		<h2 style="margin-top: 0px;">{{ "Device Detection Caching"|t('redirect-manager') }}</h2>
+
+		{% if settings.enableAnalytics ?? true %}
+
+			{{ forms.lightswitchField({
+                label: "Cache Device Detection"|t('redirect-manager'),
+                instructions: "Cache device detection results for better performance"|t('redirect-manager'),
+                id: 'cacheDeviceDetection',
+                name: 'settings[cacheDeviceDetection]',
+                on: settings.cacheDeviceDetection ?? true,
+                toggle: 'device-cache-settings',
+                disabled: settings.isOverriddenByConfig('cacheDeviceDetection'),
+                warning: settings.isOverriddenByConfig('cacheDeviceDetection') ?
+                    "This is being overridden by the <code>cacheDeviceDetection</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+            }) }}
+
+			<div id="device-cache-settings" class="{{ not (settings.cacheDeviceDetection ?? true) ? 'hidden' }}">
+				{{ forms.textField({
+	                label: "Device Detection Cache Duration"|t('redirect-manager'),
+	                instructions: "Cache duration in seconds. Default: 3600 (1 hour)"|t('redirect-manager'),
+	                id: 'deviceDetectionCacheDuration',
+	                name: 'settings[deviceDetectionCacheDuration]',
+	                value: settings.deviceDetectionCacheDuration ?? 3600,
+	                type: 'number',
+	                min: 0,
+	                disabled: settings.isOverriddenByConfig('deviceDetectionCacheDuration'),
+	                warning: settings.isOverriddenByConfig('deviceDetectionCacheDuration') ?
+	                    "This is being overridden by the <code>deviceDetectionCacheDuration</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+	            }) }}
+
+				<div class="field">
+					<p class="light">
+						<strong>How it works:</strong><br>
+						• Device detection parses user-agent strings to identify devices, browsers, and operating systems<br>
+						• Results are cached to avoid re-parsing the same user-agent repeatedly<br>
+						• Recommended to keep enabled for production sites
+					</p>
+				</div>
+			</div>
+
+			<hr>
+		{% else %}
+
+			<div class="field">
+				<p class="light" style="color: #999;">
+					{{ "Device detection caching is only available when Analytics is enabled. Go to"|t('redirect-manager') }}
+					<a href="{{ url('redirect-manager/settings/analytics') }}">{{ "Analytics Settings"|t('redirect-manager') }}</a>
+					{{ "to enable analytics."|t('redirect-manager') }}
+				</p>
+			</div>
+
+			<hr>
+		{% endif %}
+
+		<h2>{{ "Redirect Caching"|t('redirect-manager') }}</h2>
+
+		{{ forms.lightswitchField({
+            label: 'Enable Redirect Cache'|t('redirect-manager'),
+            instructions: 'Cache redirect lookups for improved performance. Recommended for production sites.'|t('redirect-manager'),
+            id: 'enableRedirectCache',
+            name: 'settings[enableRedirectCache]',
+            on: settings.enableRedirectCache,
+            toggle: 'redirect-cache-settings',
+            disabled: settings.isOverriddenByConfig('enableRedirectCache'),
+            warning: settings.isOverriddenByConfig('enableRedirectCache') ?
+                "This is being overridden by the <code>enableRedirectCache</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+		<div id="redirect-cache-settings" class="{{ not settings.enableRedirectCache ? 'hidden' }}">
+			{{ forms.textField({
+	            label: 'Redirect Cache Duration'|t('redirect-manager'),
+	            instructions: 'How long to cache redirect lookups in seconds (default: 3600 = 1 hour)'|t('redirect-manager'),
+	            id: 'redirectCacheDuration',
+	            name: 'settings[redirectCacheDuration]',
+	            value: settings.redirectCacheDuration,
+	            type: 'number',
+	            min: 0,
+	            disabled: settings.isOverriddenByConfig('redirectCacheDuration'),
+	            warning: settings.isOverriddenByConfig('redirectCacheDuration') ?
+	                "This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+	        }) }}
+
+			<div class="field">
+				<p class="light">
+					<strong>Tips:</strong><br>
+					• Higher values reduce database queries but may show outdated redirects<br>
+					• Clear cache after making redirect changes for immediate effect<br>
+					• Set to 0 to disable caching (not recommended for production)
+				</p>
+			</div>
+		</div>
+
+		<div class="buttons">
+			<button type="submit" class="btn submit">{{ "Save Settings"|t('redirect-manager') }}</button>
+		</div>
+	</form>
+
+	{% include 'redirect-manager/_components/plugin-credit.twig' %}
+{% endblock %}

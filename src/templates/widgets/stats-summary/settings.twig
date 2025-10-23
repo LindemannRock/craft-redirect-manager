@@ -1,0 +1,13 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.textField({
+    label: 'Number of Days'|t('redirect-manager'),
+    instructions: 'Show statistics for the last X days (1-365)'|t('redirect-manager'),
+    id: 'days',
+    name: 'days',
+    value: widget.days,
+    type: 'number',
+    min: 1,
+    max: 365,
+    size: 3
+}) }}

@@ -12,6 +12,7 @@ use Craft;
 use craft\base\Model;
 use craft\db\Query;
 use craft\helpers\Db;
+use craft\helpers\App;
 use craft\validators\ArrayValidator;
 
 /**
@@ -34,6 +35,11 @@ class Settings extends Model
     public bool $autoCreateRedirects = true;
 
     /**
+     * @var int Time window in minutes for detecting immediate undo (30, 60, 120, 240)
+     */
+    public int $undoWindowMinutes = 60;
+
+    /**
      * @var string Should the legacy URL be matched by path or full URL
      */
     public string $redirectSrcMatch = 'pathonly';
@@ -54,9 +60,34 @@ class Settings extends Model
     public bool $setNoCacheHeaders = true;
 
     /**
-     * @var bool Should anonymous IP addresses be recorded for 404s
+     * @var bool Enable analytics tracking (master switch - controls IP tracking, device detection, geo detection)
      */
-    public bool $recordRemoteIp = true;
+    public bool $enableAnalytics = true;
+
+    /**
+     * @var bool Should IP addresses be anonymized before hashing
+     */
+    public bool $anonymizeIpAddress = false;
+
+    /**
+     * @var bool Enable geographic detection from IP addresses
+     */
+    public bool $enableGeoDetection = false;
+
+    /**
+     * @var bool Cache device detection results
+     */
+    public bool $cacheDeviceDetection = true;
+
+    /**
+     * @var int Device detection cache duration in seconds
+     */
+    public int $deviceDetectionCacheDuration = 3600; // 1 hour
+
+    /**
+     * @var string|null IP hash salt from .env
+     */
+    public ?string $ipHashSalt = null;
 
     /**
      * @var bool Should query strings be stripped from statistics URLs
@@ -131,6 +162,19 @@ class Settings extends Model
     /**
      * @inheritdoc
      */
+    public function init(): void
+    {
+        parent::init();
+
+        // Fallback to .env if ipHashSalt not set by config file
+        if ($this->ipHashSalt === null) {
+            $this->ipHashSalt = App::env('REDIRECT_MANAGER_IP_SALT');
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules(): array
     {
         return [
@@ -142,7 +186,9 @@ class Settings extends Model
                     'stripQueryString',
                     'preserveQueryString',
                     'setNoCacheHeaders',
-                    'recordRemoteIp',
+                    'enableAnalytics',
+                    'anonymizeIpAddress',
+                    'enableGeoDetection',
                     'stripQueryStringFromStats',
                     'autoTrimStatistics',
                     'enableApiEndpoint',
@@ -162,8 +208,11 @@ class Settings extends Model
             ['redirectsDisplayLimit', 'default', 'value' => 100],
             ['statisticsDisplayLimit', 'integer', 'min' => 1],
             ['statisticsDisplayLimit', 'default', 'value' => 100],
-            ['itemsPerPage', 'integer', 'min' => 1],
+            ['itemsPerPage', 'integer', 'min' => 10, 'max' => 500],
             ['itemsPerPage', 'default', 'value' => 100],
+            ['undoWindowMinutes', 'integer'],
+            ['undoWindowMinutes', 'in', 'range' => [30, 60, 120, 240]],
+            ['undoWindowMinutes', 'default', 'value' => 60],
             [
                 ['excludePatterns', 'additionalHeaders'],
                 ArrayValidator::class,
@@ -212,7 +261,9 @@ class Settings extends Model
                 'stripQueryString',
                 'preserveQueryString',
                 'setNoCacheHeaders',
-                'recordRemoteIp',
+                'enableAnalytics',
+                'anonymizeIpAddress',
+                'enableGeoDetection',
                 'stripQueryStringFromStats',
                 'autoTrimStatistics',
                 'enableApiEndpoint',
@@ -234,6 +285,7 @@ class Settings extends Model
                 'statisticsDisplayLimit',
                 'itemsPerPage',
                 'redirectCacheDuration',
+                'undoWindowMinutes',
             ];
 
             foreach ($integerFields as $field) {
@@ -272,6 +324,16 @@ class Settings extends Model
         $db = Craft::$app->getDb();
         $attributes = $this->getAttributes();
 
+        // Exclude config-only attributes that shouldn't be saved to database
+        unset($attributes['ipHashSalt']); // This comes from .env, not database
+
+        // Remove attributes that are overridden by config file
+        foreach (array_keys($attributes) as $attribute) {
+            if ($this->isOverriddenByConfig($attribute)) {
+                unset($attributes[$attribute]);
+            }
+        }
+
         // Handle JSON array serialization
         if (isset($attributes['excludePatterns'])) {
             $attributes['excludePatterns'] = json_encode($attributes['excludePatterns']);
@@ -282,6 +344,9 @@ class Settings extends Model
 
         // Update timestamp
         $attributes['dateUpdated'] = Db::prepareDateForDb(new \DateTime());
+
+        // Log what we're trying to save
+        Craft::info('Attempting to save settings', 'redirect-manager', ['attributes' => array_keys($attributes)]);
 
         // Update existing settings (always row id=1)
         try {
@@ -294,9 +359,21 @@ class Settings extends Model
                 return true;
             }
 
+            Craft::error('Database update returned false', 'redirect-manager');
             return false;
         } catch (\Exception $e) {
-            Craft::error('Failed to save settings', 'redirect-manager', ['error' => $e->getMessage()]);
+            $errorMsg = $e->getMessage();
+            Craft::error('Failed to save settings - Exception: ' . $errorMsg, 'redirect-manager');
+            Craft::error('Exception details', 'redirect-manager', [
+                'message' => $errorMsg,
+                'code' => $e->getCode(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Also check if column exists
+            $columnsQuery = $db->createCommand("SHOW COLUMNS FROM {{%redirectmanager_settings}} LIKE 'undoWindowMinutes'")->queryAll();
+            Craft::error('Column check', 'redirect-manager', ['columnExists' => !empty($columnsQuery)]);
+
             return false;
         }
     }

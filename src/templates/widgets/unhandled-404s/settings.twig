@@ -1,0 +1,13 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.textField({
+    label: 'Number of 404s'|t('redirect-manager'),
+    instructions: 'How many unhandled 404s to display (5-50)'|t('redirect-manager'),
+    id: 'limit',
+    name: 'limit',
+    value: widget.limit,
+    type: 'number',
+    min: 5,
+    max: 50,
+    size: 3
+}) }}

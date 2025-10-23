@@ -1,0 +1,75 @@
+{% extends "redirect-manager/_layouts/settings" %}
+{% set title = "Interface Settings"|t('redirect-manager') %}
+{% set fullPageForm = true %}
+{% set selectedSettingsItem = 'interface' %}
+
+{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
+{% set crumbs = [
+    {
+        label: plugin.settings.pluginName|t('redirect-manager'),
+        url: url('redirect-manager'),
+    },
+    {
+        label: 'Settings'|t('redirect-manager'),
+        url: url('redirect-manager/settings'),
+    },
+    {
+        label: 'Interface'|t('redirect-manager'),
+        url: url('redirect-manager/settings/interface'),
+    },
+] %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+	{% include 'redirect-manager/_components/ip-salt-error' %}
+
+	<form method="post" accept-charset="UTF-8">
+		{{ actionInput('redirect-manager/settings/save') }}
+		{{ csrfInput() }}
+		{{ redirectInput('redirect-manager/settings/interface') }}
+		{{ hiddenInput('section', 'interface') }}
+
+		<h2 style="margin-top: 0px;">{{ "Interface Settings"|t('redirect-manager') }}</h2>
+
+		{{ forms.textField({
+            label: 'Items Per Page'|t('redirect-manager'),
+            instructions: 'Number of items to display per page in lists'|t('redirect-manager'),
+            id: 'itemsPerPage',
+            name: 'settings[itemsPerPage]',
+            type: 'number',
+            value: settings.itemsPerPage,
+            min: 10,
+            max: 500,
+            required: true,
+            disabled: settings.isOverriddenByConfig('itemsPerPage'),
+            warning: settings.isOverriddenByConfig('itemsPerPage') ?
+                "This is being overridden by the <code>itemsPerPage</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+            errors: settings.getErrors('itemsPerPage')
+        }) }}
+
+		{{ forms.selectField({
+            label: 'Dashboard Refresh Interval'|t('redirect-manager'),
+            instructions: 'How often to refresh dashboard data'|t('redirect-manager'),
+            id: 'refreshIntervalSecs',
+            name: 'settings[refreshIntervalSecs]',
+            value: settings.refreshIntervalSecs,
+            required: true,
+            options: {
+                5: '5 seconds'|t('redirect-manager'),
+                15: '15 seconds'|t('redirect-manager'),
+                30: '30 seconds'|t('redirect-manager'),
+                60: '60 seconds (1 minute)'|t('redirect-manager'),
+            },
+            disabled: settings.isOverriddenByConfig('refreshIntervalSecs'),
+            warning: settings.isOverriddenByConfig('refreshIntervalSecs') ?
+                "This is being overridden by the <code>refreshIntervalSecs</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+		<div class="buttons">
+			<button type="submit" class="btn submit">{{ "Save Settings"|t('redirect-manager') }}</button>
+		</div>
+	</form>
+
+	{% include 'redirect-manager/_components/plugin-credit.twig' %}
+{% endblock %}

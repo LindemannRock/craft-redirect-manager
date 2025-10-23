@@ -1,5 +1,5 @@
 {% extends "_layouts/cp" %}
-{% set title = "Statistics"|t('redirect-manager') %}
+{% set title = "Analytics"|t('redirect-manager') %}
 {% set selectedSubnavItem = 'statistics' %}
 
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
@@ -9,8 +9,8 @@
         url: url('redirect-manager'),
     },
     {
-        label: 'Statistics'|t('redirect-manager'),
-        url: url('redirect-manager/statistics'),
+        label: 'Analytics'|t('redirect-manager'),
+        url: url('redirect-manager/analytics'),
     },
 ] %}
 
@@ -83,6 +83,69 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <h2 style="margin: 30px 0 20px;">{{ "Traffic Analysis"|t('redirect-manager') }}</h2>
+
+        <div class="analytics-charts two-columns">
+            <div class="chart-container">
+                <h3>{{ "Bot vs Human Traffic"|t('redirect-manager') }}</h3>
+                <canvas id="bot-chart"></canvas>
+                <div style="text-align: center; margin-top: 10px; color: #666;">
+                    <strong>{{ botStats.botPercentage }}%</strong> of traffic is from bots
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>{{ "Top Bots"|t('redirect-manager') }}</h3>
+                <div class="table-scroll-container">
+                    <table class="data fullwidth">
+                        <thead>
+                            <tr>
+                                <th>{{ "Bot Name"|t('redirect-manager') }}</th>
+                                <th>{{ "404s"|t('redirect-manager') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if botStats.topBots|length > 0 %}
+                                {% for bot in botStats.topBots %}
+                                    <tr>
+                                        <td>{{ bot.botName }}</td>
+                                        <td>{{ bot.count }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="2" style="text-align: center; color: #999;">
+                                        {{ "No bot data available"|t('redirect-manager') }}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <h2 style="margin: 30px 0 20px;">{{ "Device Analytics"|t('redirect-manager') }}</h2>
+
+        <div class="analytics-charts two-columns">
+            <div class="chart-container">
+                <h3>{{ "Device Types"|t('redirect-manager') }}</h3>
+                <canvas id="device-chart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3>{{ "Browser Usage"|t('redirect-manager') }}</h3>
+                <canvas id="browser-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="analytics-charts" style="margin-top: 30px;">
+            <div class="chart-container">
+                <h3>{{ "Operating Systems"|t('redirect-manager') }}</h3>
+                <canvas id="os-chart"></canvas>
             </div>
         </div>
 
@@ -172,8 +235,23 @@
         margin-bottom: 30px;
     }
 
+    .analytics-charts.two-columns {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 1024px) {
+        .analytics-charts.two-columns {
+            grid-template-columns: 1fr;
+        }
+    }
+
     .chart-container.full-width {
         grid-column: 1 / -1;
+    }
+
+    .chart-container h3 {
+        margin: 0 0 20px;
+        font-size: 16px;
     }
 
     .chart-container {
@@ -181,10 +259,19 @@
         border: 1px solid #e3e5e8;
         border-radius: 4px;
         padding: 24px;
+        min-width: 0; /* Allow flex/grid item to shrink below content size */
+        overflow: hidden; /* Prevent content from pushing out */
     }
 
     .chart-container canvas {
         max-height: 300px;
+        max-width: 100%;
+    }
+
+    /* Ensure chart wrapper respects container size */
+    .chart-container > canvas {
+        display: block;
+        box-sizing: border-box;
     }
 
     .table-scroll-container {
@@ -195,7 +282,8 @@
     }
 
     .table-scroll-container table {
-        min-width: 600px;
+        min-width: 100%;
+        width: 100%;
     }
 {% endcss %}
 
@@ -211,6 +299,12 @@
     }
 
     function initCharts() {
+        // Chart colors
+        const chartColors = [
+            '#0d78f2', '#27ae60', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c',
+            '#34495e', '#e67e22', '#3498db', '#2ecc71', '#c0392b', '#f1c40f'
+        ];
+
         // Prepare chart data
         const chartData = {{ chartData|json_encode|raw }};
 
@@ -260,6 +354,118 @@
                                 pointStyle: 'circle',
                                 padding: 20
                             }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Bot vs Human Traffic Chart
+        const botStats = {{ botStats|json_encode|raw }};
+        if (botStats && botStats.chart) {
+            new Chart(document.getElementById('bot-chart'), {
+                type: 'doughnut',
+                data: {
+                    labels: botStats.chart.labels,
+                    datasets: [{
+                        data: botStats.chart.values,
+                        backgroundColor: [chartColors[1], chartColors[2]]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Device Types Chart
+        const deviceData = {{ deviceBreakdown|json_encode|raw }};
+        if (deviceData && deviceData.labels && deviceData.labels.length > 0) {
+            new Chart(document.getElementById('device-chart'), {
+                type: 'doughnut',
+                data: {
+                    labels: deviceData.labels,
+                    datasets: [{
+                        data: deviceData.values,
+                        backgroundColor: chartColors.slice(0, deviceData.labels.length)
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Browser Usage Chart
+        const browserData = {{ browserBreakdown|json_encode|raw }};
+        if (browserData && browserData.labels && browserData.labels.length > 0) {
+            const browserCtx = document.getElementById('browser-chart');
+            if (browserCtx) {
+                browserCtx.parentElement.style.minHeight = '300px';
+            }
+            new Chart(browserCtx, {
+                type: 'bar',
+                data: {
+                    labels: browserData.labels,
+                    datasets: [{
+                        label: '{{ "404s"|t('redirect-manager') }}',
+                        data: browserData.values,
+                        backgroundColor: chartColors[0],
+                        borderColor: chartColors[0],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                precision: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Operating Systems Chart
+        const osData = {{ osBreakdown|json_encode|raw }};
+        if (osData && osData.labels && osData.labels.length > 0) {
+            new Chart(document.getElementById('os-chart'), {
+                type: 'doughnut',
+                data: {
+                    labels: osData.labels,
+                    datasets: [{
+                        data: osData.values,
+                        backgroundColor: chartColors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
                         }
                     }
                 }
