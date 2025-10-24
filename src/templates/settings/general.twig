@@ -24,7 +24,7 @@
 {% block content %}
 
 	{% include 'redirect-manager/_components/ip-salt-error' %}
-    
+
 	<form method="post" accept-charset="UTF-8">
 		{{ actionInput('redirect-manager/settings/save') }}
 		{{ csrfInput() }}
@@ -124,6 +124,7 @@
 		{{ forms.lightswitchField({
             label: 'Set No-Cache Headers'|t('redirect-manager'),
             instructions: 'Set no-cache headers on redirect responses'|t('redirect-manager'),
+            tip: 'To add additional custom headers, visit <a href="' ~ url('redirect-manager/settings/advanced') ~ '">Advanced Settings</a>.'|t('redirect-manager')|raw,
             id: 'setNoCacheHeaders',
             name: 'settings[setNoCacheHeaders]',
             on: settings.setNoCacheHeaders,
