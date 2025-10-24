@@ -1,5 +1,8 @@
 {% import "_includes/forms" as forms %}
 
+{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
+{% set pluginName = plugin.settings.pluginName %}
+
 <div style="margin-bottom: 32px;">
     <h2>{{ pluginName }} {{ "Overview"|t('redirect-manager') }}</h2>
     <p class="light">{{ "Monitor 404 handling, manage redirects, and optimize cache performance."|t('redirect-manager') }}</p>
@@ -23,7 +26,7 @@
                         {% if coverage == 100 %}{{ 'All Active'|t('redirect-manager') }}{% elseif coverage >= 90 %}{{ 'Good'|t('redirect-manager') }}{% else %}{{ 'Check'|t('redirect-manager') }}{% endif %}
                     </div>
                 </div>
-                <div style="font-size: 14px; color: #4b5563; margin-bottom: 12px;">{{ "Active redirects"|t('redirect-manager') }}</div>
+                <div style="font-size: 14px; color: #4b5563; margin-bottom: 12px;">{{ "Active {pluginName}"|t('redirect-manager', {pluginName: pluginName|lower}) }}</div>
                 <div style="margin-top: auto;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                         <div style="padding: 12px; background: rgba(255,255,255,0.9); border: 1px solid #e5e7eb; border-radius: 8px; text-align: center;">

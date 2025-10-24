@@ -1,7 +1,11 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
-{% set title = "Redirects"|t('redirect-manager') %}
+{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
+{% set pluginName = plugin.settings.pluginName %}
+{% set singularName = pluginName matches '/s$/' ? pluginName|slice(0, -1) : pluginName %}
+
+{% set title = pluginName|t('redirect-manager') %}
 {% set fullPageForm = false %}
 {% set selectedSubnavItem = 'redirects' %}
 
@@ -15,7 +19,7 @@
 {# Page, limit, offset, totalPages come from controller #}
 
 {% set crumbs = [
-    { label: craft.redirectManager.settings.pluginName, url: url('redirect-manager') }
+    { label: pluginName, url: url('redirect-manager') }
 ] %}
 
 {% block toolbar %}
@@ -78,7 +82,7 @@
                                class="clearable text fullwidth"
                                name="search"
                                value="{{ search }}"
-                               placeholder="{{ 'Search redirects...'|t('redirect-manager') }}"
+                               placeholder="{{ 'Search {pluginName}...'|t('redirect-manager', {pluginName: pluginName|lower}) }}"
                                autocomplete="off"
                                dir="ltr"
                                aria-label="Search"
@@ -97,7 +101,7 @@
             </form>
         </div>
         <a href="{{ url('redirect-manager/redirects/new') }}" class="btn submit add icon" id="new-redirect-btn">
-            <span class="label-full">{{ 'New Redirect'|t('redirect-manager') }}</span>
+            <span class="label-full">{{ 'New {singularName}'|t('redirect-manager', {singularName: singularName}) }}</span>
             <span class="label-short" style="display: none;">{{ 'New'|t('redirect-manager') }}</span>
         </a>
     </div>

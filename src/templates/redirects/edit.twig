@@ -1,13 +1,17 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
-{% set title = isNew ? 'New redirect'|t('redirect-manager') : 'Edit redirect'|t('redirect-manager') %}
+{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
+{% set pluginName = plugin.settings.pluginName %}
+{% set singularName = pluginName matches '/s$/' ? pluginName|slice(0, -1) : pluginName %}
+
+{% set title = isNew ? 'New {singularName}'|t('redirect-manager', {singularName: singularName}) : 'Edit {singularName}'|t('redirect-manager', {singularName: singularName}) %}
 {% set selectedSubnavItem = 'redirects' %}
 
 {% set crumbs = [
-    { label: craft.redirectManager.settings.pluginName, url: url('redirect-manager') },
-    { label: 'Redirects'|t('redirect-manager'), url: url('redirect-manager/redirects') },
-    { label: isNew ? 'New redirect'|t('redirect-manager') : redirect.sourceUrl }
+    { label: pluginName, url: url('redirect-manager') },
+    { label: pluginName, url: url('redirect-manager/redirects') },
+    { label: isNew ? 'New {singularName}'|t('redirect-manager', {singularName: singularName}) : redirect.sourceUrl }
 ] %}
 
 {% set fullPageForm = true %}
