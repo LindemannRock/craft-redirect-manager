@@ -60,17 +60,11 @@ class RedirectManagerUtility extends Utility
             ->where(['enabled' => true])
             ->count();
 
-        // Get 404 stats
-        $total404s = 0;
-        $handled = 0;
-        $unhandled = 0;
-
-        if ($settings->enableAnalytics) {
-            $chartData = RedirectManager::$plugin->analytics->getChartData(null, 7);
-            $total404s = array_sum(array_column($chartData, 'handled')) + array_sum(array_column($chartData, 'unhandled'));
-            $handled = array_sum(array_column($chartData, 'handled'));
-            $unhandled = array_sum(array_column($chartData, 'unhandled'));
-        }
+        // Get 404 stats (core functionality - always show)
+        $chartData = RedirectManager::$plugin->analytics->getChartData(null, 7);
+        $total404s = array_sum(array_column($chartData, 'handled')) + array_sum(array_column($chartData, 'unhandled'));
+        $handled = array_sum(array_column($chartData, 'handled'));
+        $unhandled = array_sum(array_column($chartData, 'unhandled'));
 
         // Get cache file counts
         $deviceCacheFiles = 0;

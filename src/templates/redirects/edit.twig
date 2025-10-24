@@ -10,7 +10,7 @@
 
 {% set crumbs = [
     { label: pluginName, url: url('redirect-manager') },
-    { label: pluginName, url: url('redirect-manager/redirects') },
+    { label: 'Redirects'|t('redirect-manager'), url: url('redirect-manager/redirects') },
     { label: isNew ? 'New {singularName}'|t('redirect-manager', {singularName: singularName}) : redirect.sourceUrl }
 ] %}
 
@@ -231,7 +231,7 @@
 {% endblock %}
 
 {% js %}
-    // Simple form behavior - show/hide fields, server handles validation
+// Simple form behavior - show/hide fields, server handles validation
     const matchTypeSelect = document.getElementById('matchType');
     const priorityField = document.getElementById('priority-field');
     const regexTip = document.getElementById('regexTip');
@@ -472,30 +472,42 @@
 
         switch(code) {
             case 301:
-                tip = '<strong>301 - Moved Permanently:</strong> Use when content has permanently moved. Search engines will update their index. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301" target="_blank" rel="noopener">Learn more</a>';
-                break;
-            case 302:
-                tip = '<strong>302 - Found (Temporary):</strong> Use for temporary redirects. Search engines keep the original URL. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302" target="_blank" rel="noopener">Learn more</a>';
-                break;
-            case 303:
-                tip = '<strong>303 - See Other:</strong> Redirect to a different resource, typically after a form submission. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303" target="_blank" rel="noopener">Learn more</a>';
-                break;
-            case 307:
-                tip = '<strong>307 - Temporary Redirect:</strong> Like 302 but guarantees the request method won\'t change (POST stays POST). <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307" target="_blank" rel="noopener">Learn more</a>';
-                break;
-            case 308:
-                tip = '<strong>308 - Permanent Redirect:</strong> Like 301 but guarantees the request method won\'t change (POST stays POST). <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308" target="_blank" rel="noopener">Learn more</a>';
-                break;
-            case 410:
-                tip = '<strong>410 - Gone:</strong> Content permanently deleted and won\'t come back. Search engines remove it from index. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/410" target="_blank" rel="noopener">Learn more</a>';
-                break;
-        }
-
-        statusCodeTipText.innerHTML = tip;
-    }
-
-    if (statusCodeSelect) {
-        updateStatusCodeTip();
-        statusCodeSelect.addEventListener('change', updateStatusCodeTip);
-    }
+                tip = '<strong>301 - Moved Permanently:</strong>
+Use when content has permanently moved. Search engines will update their index.
+<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301" target="_blank" rel="noopener">Learn more</a>';
+			                break;
+			            case 302:
+			                tip = '<strong>302 - Found (Temporary):</strong>
+Use for temporary redirects. Search engines keep the original URL.
+<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302" target="_blank" rel="noopener">Learn more</a>';
+			                break;
+			            case 303:
+			                tip = '<strong>303 - See Other:</strong>
+Redirect to a different resource, typically after a form submission.
+<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303" target="_blank" rel="noopener">Learn more</a>';
+			                break;
+			            case 307:
+			                tip = '<strong>307 - Temporary Redirect:</strong>
+Like 302 but guarantees the request method won\'t change (POST stays POST).
+<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307" target="_blank" rel="noopener">Learn more</a>';
+			                break;
+			            case 308:
+			                tip = '<strong>308 - Permanent Redirect:</strong>
+Like 301 but guarantees the request method won\'t change (POST stays POST).
+<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308" target="_blank" rel="noopener">Learn more</a>';
+			                break;
+			            case 410:
+			                tip = '<strong>410 - Gone:</strong>
+Content permanently deleted and won\'t come back. Search engines remove it from index.
+<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/410" target="_blank" rel="noopener">Learn more</a>';
+			                break;
+			        }
+	
+			        statusCodeTipText.innerHTML = tip;
+			    }
+	
+			    if (statusCodeSelect) {
+			        updateStatusCodeTip();
+			        statusCodeSelect.addEventListener('change', updateStatusCodeTip);
+			    }
 {% endjs %}

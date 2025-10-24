@@ -43,7 +43,7 @@
         </div>
 
         <!-- 404 Performance Card -->
-        {% set successRate = total404s > 0 ? ((handled / total404s) * 100)|round : 0 %}
+        {% set successRate = total404s > 0 ? ((handled / total404s) * 100)|round : 100 %}
         <div class="pane" style="padding: 24px; margin-block: 0; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); display: flex; flex-direction: column; height: 100%;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
                 <div style="width: 12px; height: 12px; border-radius: 50%; background: {% if successRate >= 90 %}#10b981{% elseif successRate >= 70 %}#f59e0b{% else %}#ef4444{% endif %};"></div>
@@ -102,7 +102,9 @@
             <h3>{{ "Navigation"|t('redirect-manager') }}</h3>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <a href="{{ url('redirect-manager/redirects') }}" class="btn">{{ "Manage Redirects"|t('redirect-manager') }}</a>
-                <a href="{{ url('redirect-manager/analytics') }}" class="btn">{{ "View Analytics"|t('redirect-manager') }}</a>
+                {% if settings.enableAnalytics %}
+                    <a href="{{ url('redirect-manager/analytics') }}" class="btn">{{ "View Analytics"|t('redirect-manager') }}</a>
+                {% endif %}
             </div>
         </div>
 
@@ -122,13 +124,15 @@
             </div>
         </div>
 
-        <hr style="margin: 24px 0;">
+        {% if settings.enableAnalytics %}
+            <hr style="margin: 24px 0;">
 
-        <div>
-            <h3>{{ "Analytics Data Management"|t('redirect-manager') }}</h3>
-            <p class="light">{{ "Permanently delete all analytics tracking data. This action cannot be undone!"|t('redirect-manager') }}</p>
-            <button type="button" class="btn submit" id="clear-all-analytics" style="background: #dc2626; border-color: #dc2626; color: white;">{{ "Clear All Analytics"|t('redirect-manager') }}</button>
-        </div>
+            <div>
+                <h3>{{ "Analytics Data Management"|t('redirect-manager') }}</h3>
+                <p class="light">{{ "Permanently delete all analytics tracking data. This action cannot be undone!"|t('redirect-manager') }}</p>
+                <button type="button" class="btn submit" id="clear-all-analytics" style="background: #dc2626; border-color: #dc2626; color: white;">{{ "Clear All Analytics"|t('redirect-manager') }}</button>
+            </div>
+        {% endif %}
     </div>
 </div>
 
@@ -185,6 +189,7 @@ $('#clear-all-caches').on('click', function() {
     });
 });
 
+{% if settings.enableAnalytics %}
 $('#clear-all-analytics').on('click', function() {
     if (!confirm('{{ "Are you sure you want to permanently delete ALL analytics data? This action cannot be undone!"|t('redirect-manager')|e('js') }}')) return;
     if (!confirm('{{ "This will delete all 404 tracking data. Are you absolutely sure?"|t('redirect-manager')|e('js') }}')) return;
@@ -202,4 +207,5 @@ $('#clear-all-analytics').on('click', function() {
         complete: function() { $btn.removeClass('loading').prop('disabled', false); }
     });
 });
+{% endif %}
 {% endjs %}

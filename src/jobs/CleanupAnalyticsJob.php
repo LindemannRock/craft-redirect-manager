@@ -24,6 +24,11 @@ use lindemannrock\redirectmanager\RedirectManager;
 class CleanupAnalyticsJob extends BaseJob
 {
     /**
+     * @var bool Whether to reschedule after completion
+     */
+    public bool $reschedule = false;
+
+    /**
      * @inheritdoc
      */
     public function execute($queue): void
@@ -43,8 +48,12 @@ class CleanupAnalyticsJob extends BaseJob
             $trimmed = RedirectManager::$plugin->analytics->trimAnalytics();
         }
 
-        // Re-queue this job to run again in 24 hours
-        Craft::$app->queue->delay(86400)->push(new self());
+        Craft::info('Analytics cleanup completed', 'redirect-manager', ['deleted' => $deleted]);
+
+        // Reschedule if needed
+        if ($this->reschedule) {
+            $this->scheduleNextCleanup();
+        }
     }
 
     /**
@@ -53,9 +62,30 @@ class CleanupAnalyticsJob extends BaseJob
     protected function defaultDescription(): ?string
     {
         $settings = RedirectManager::$plugin->getSettings();
-        return Craft::t('redirect-manager', '{pluginName}: Trimming redirect analytics ({limit})', [
+        return Craft::t('redirect-manager', '{pluginName}: Cleaning up old analytics', [
             'pluginName' => $settings->pluginName,
-            'limit' => $settings->analyticsLimit,
         ]);
+    }
+
+    /**
+     * Schedule the next cleanup (runs every 24 hours)
+     */
+    private function scheduleNextCleanup(): void
+    {
+        $settings = RedirectManager::$plugin->getSettings();
+
+        // Only reschedule if analytics is enabled and retention is set
+        if (!$settings->enableAnalytics || $settings->analyticsRetention <= 0) {
+            return;
+        }
+
+        // Schedule for 24 hours from now
+        $delay = 86400; // 24 hours
+
+        $job = new self([
+            'reschedule' => true,
+        ]);
+
+        Craft::$app->getQueue()->delay($delay)->push($job);
     }
 }

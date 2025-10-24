@@ -14,66 +14,61 @@
 
 {% set crumbs = [
     { label: craft.redirectManager.settings.pluginName, url: url('redirect-manager') },
-    { label: 'Dashboard'|t('redirect-manager'), url: url('redirect-manager/analytics') }
+    { label: 'Dashboard'|t('redirect-manager'), url: url('redirect-manager/dashboard') }
 ] %}
 
 {% block toolbar %}
-    <div id="toolbar" class="flex" style="align-items: flex-end;">
-        <div class="flex-grow">
-            <form method="get" action="{{ url('redirect-manager/analytics') }}">
-                <div class="flex">
-                    <div class="btngroup">
-                        <button type="button" class="btn menubtn statusmenubtn">
-                            <span class="status {{ handledFilter == 'all' ? 'all' : (handledFilter == 'handled' ? 'green' : 'red') }}"></span>
-                            {{ handledFilter == 'all' ? 'All'|t('redirect-manager') : handledFilter|capitalize }}
-                        </button>
-                        <div class="menu">
-                            <ul>
-                                <li><a class="{{ handledFilter == 'all' ? 'sel' : '' }}" href="?handled=all&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-                                    <span class="status all"></span>All ({{ allCount }})
-                                </a></li>
-                                <li><hr class="padded"></li>
-                                <li class="menu-header">404 Status</li>
-                                <li><a class="{{ handledFilter == 'handled' ? 'sel' : '' }}" href="?handled=handled&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-                                    <span class="status green"></span>Handled ({{ handledCount }})
-                                </a></li>
-                                <li><a class="{{ handledFilter == 'unhandled' ? 'sel' : '' }}" href="?handled=unhandled&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-                                    <span class="status red"></span>Unhandled ({{ unhandledCount }})
-                                </a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="search-container texticon flex-grow">
-                        <span class="texticon-icon search icon" aria-hidden="true"></span>
-                        <input type="text"
-                               class="clearable text fullwidth"
-                               name="search"
-                               value="{{ search }}"
-                               placeholder="{{ 'Search URLs...'|t('redirect-manager') }}"
-                               autocomplete="off"
-                               dir="ltr"
-                               aria-label="Search"
-                               {% if search %}autofocus{% endif %}>
-                        <button type="button" class="clear-btn {{ search ? '' : 'hidden' }}"
-                                title="Clear search"
-                                role="button"
-                                aria-label="Clear search"></button>
-                        <input type="hidden" name="handled" value="{{ handledFilter }}">
-                        <input type="hidden" name="sort" value="{{ sort }}">
-                        <input type="hidden" name="dir" value="{{ dir }}">
-                    </div>
-                </div>
-            </form>
-        </div>
-        <a href="{{ url('redirect-manager/redirects/new') }}" class="btn submit add icon" id="new-redirect-btn">
-            <span class="label-full">{{ 'New Redirect'|t('redirect-manager') }}</span>
-            <span class="label-short" style="display: none;">{{ 'New'|t('redirect-manager') }}</span>
-        </a>
-    </div>
+	<div id="toolbar" class="flex" style="align-items: flex-end;">
+		<div class="flex-grow">
+			<form method="get" action="{{ url('redirect-manager/analytics') }}">
+				<div class="flex">
+					<div class="btngroup">
+						<button type="button" class="btn menubtn statusmenubtn">
+							<span class="status {{ handledFilter == 'all' ? 'all' : (handledFilter == 'handled' ? 'green' : 'red') }}"></span>
+							{{ handledFilter == 'all' ? 'All'|t('redirect-manager') : handledFilter|capitalize }}
+						</button>
+						<div class="menu">
+							<ul>
+								<li>
+									<a class="{{ handledFilter == 'all' ? 'sel' : '' }}" href="?handled=all&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+										<span class="status all"></span>All ({{ allCount }})
+									</a>
+								</li>
+								<li><hr class="padded"></li>
+								<li class="menu-header">404 Status</li>
+								<li>
+									<a class="{{ handledFilter == 'handled' ? 'sel' : '' }}" href="?handled=handled&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+										<span class="status green"></span>Handled ({{ handledCount }})
+									</a>
+								</li>
+								<li>
+									<a class="{{ handledFilter == 'unhandled' ? 'sel' : '' }}" href="?handled=unhandled&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+										<span class="status red"></span>Unhandled ({{ unhandledCount }})
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+					<div class="search-container texticon flex-grow">
+						<span class="texticon-icon search icon" aria-hidden="true"></span>
+						<input type="text" class="clearable text fullwidth" name="search" value="{{ search }}" placeholder="{{ 'Search URLs...'|t('redirect-manager') }}" autocomplete="off" dir="ltr" aria-label="Search" {% if search %} autofocus {% endif %}>
+						<button type="button" class="clear-btn {{ search ? '' : 'hidden' }}" title="Clear search" role="button" aria-label="Clear search"></button>
+						<input type="hidden" name="handled" value="{{ handledFilter }}">
+						<input type="hidden" name="sort" value="{{ sort }}">
+						<input type="hidden" name="dir" value="{{ dir }}">
+					</div>
+				</div>
+			</form>
+		</div>
+		<a href="{{ url('redirect-manager/redirects/new') }}" class="btn submit add icon" id="new-redirect-btn">
+			<span class="label-full">{{ 'New Redirect'|t('redirect-manager') }}</span>
+			<span class="label-short" style="display: none;">{{ 'New'|t('redirect-manager') }}</span>
+		</a>
+	</div>
 {% endblock %}
 
 {% css %}
-    @media (max-width: 768px) {
+@media (max-width: 768px) {
         #new-redirect-btn .label-full {
             display: none;
         }
@@ -87,344 +82,330 @@
 {% endcss %}
 
 {% block content %}
-    <style>
-        .page-info {
-            margin: 0 12px;
-            color: #596673;
-        }
-        .checkbox-cell {
-            width: 40px !important;
-            text-align: center;
-        }
-        .pagination {
-            gap: 4px;
-            align-items: center;
-        }
-        .menu-header {
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #7c97b2;
-            padding: 8px 14px 4px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-    </style>
+	<style>
+		.page-info {
+			margin: 0 12px;
+			color: #596673;
+		}
+		.checkbox-cell {
+			width: 40px !important;
+			text-align: center;
+		}
+		.pagination {
+			gap: 4px;
+			align-items: center;
+		}
+		.menu-header {
+			font-size: 11px;
+			text-transform: uppercase;
+			color: #7c97b2;
+			padding: 8px 14px 4px;
+			font-weight: 600;
+			letter-spacing: 0.5px;
+		}
+	</style>
 
-    <div id="elements" class="elements">
-        <div class="tableview tablepane">
-            <table class="data fullwidth">
-                <thead>
-                    <tr>
-                        <th class="checkbox-cell selectallcontainer">
-                            <div class="checkbox" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select all"></div>
-                        </th>
-                        <th scope="col" data-attribute="url" class="orderable {{ sort == 'url' ? 'ordered ' ~ dir : '' }}">
-                            <button type="button" data-sort="url">
-                                {{ 'URL'|t('redirect-manager') }}
-                            </button>
-                        </th>
-                        <th scope="col">{{ 'Site'|t('redirect-manager') }}</th>
-                        <th scope="col">{{ 'Handled'|t('redirect-manager') }}</th>
-                        <th scope="col" data-attribute="count" class="orderable {{ sort == 'count' ? 'ordered ' ~ dir : '' }}">
-                            <button type="button" data-sort="count">
-                                {{ 'Count'|t('redirect-manager') }}
-                            </button>
-                        </th>
-                        <th scope="col">{{ 'Device'|t('redirect-manager') }}</th>
-                        <th scope="col">{{ 'Browser'|t('redirect-manager') }}</th>
-                        <th scope="col" title="Bot traffic">{{ 'Bot'|t('redirect-manager') }}</th>
-                        <th scope="col" data-attribute="lastHit" class="orderable {{ sort == 'lastHit' ? 'ordered ' ~ dir : '' }}">
-                            <button type="button" data-sort="lastHit">
-                                {{ 'Last Hit'|t('redirect-manager') }}
-                            </button>
-                        </th>
-                        <th scope="col">{{ 'Referrer'|t('redirect-manager') }}</th>
-                        <th class="thin" style="width: 90px;">{{ 'Actions'|t('redirect-manager') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if analytics|length %}
-                        {% for stat in analytics %}
-                            <tr data-id="{{ stat.id }}">
-                                <td class="checkbox-cell">
-                                    <div class="checkbox" title="Select" tabindex="0" aria-checked="false" role="checkbox"></div>
-                                </td>
-                                <td>
-                                    <a class="label-link" href="{{ stat.url }}" target="_blank" rel="noopener noreferrer" title="{{ 'Visit URL'|t('redirect-manager') }}">
-                                        <span><code>{{ stat.url }}</code></span>
-                                    </a>
-                                </td>
-                                <td>
-                                    {% set site = craft.app.sites.getSiteById(stat.siteId) %}
-                                    <span class="light">{{ site ? site.name : '-' }}</span>
-                                </td>
-                                <td>
-                                    {% if stat.handled %}
-                                        {% if stat.redirectId %}
-                                            <a href="{{ url('redirect-manager/redirects/' ~ stat.redirectId) }}"
-                                               title="{{ 'Edit handling redirect'|t('redirect-manager') }}">
-                                                <span class="status green"></span>
-                                            </a>
-                                        {% else %}
-                                            <span class="status green"></span>
-                                        {% endif %}
-                                    {% else %}
-                                        <span class="status red"></span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ stat.count }}</td>
-                                <td>{{ stat.deviceType ? stat.deviceType|capitalize : '-' }}</td>
-                                <td>{{ stat.browser ?: '-' }}</td>
-                                <td>
-                                    {% if stat.isRobot %}
-                                        <span class="status orange" title="{{ stat.botName ?: 'Bot' }}"></span>
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </td>
-                                <td>{{ stat.lastHit|date('Y-m-d H:i:s') }}</td>
-                                <td>{{ stat.referrer ?: '-' }}</td>
-                                <td class="thin" style="text-align: right; white-space: nowrap;">
-                                    <div style="display: inline-flex; gap: 8px;">
-                                        {% if stat.handled and stat.redirectId %}
-                                            <a href="{{ url('redirect-manager/redirects/' ~ stat.redirectId) }}"
-                                               class="btn icon edit"
-                                               title="{{ 'Edit handling redirect'|t('redirect-manager') }}"
-                                               aria-label="{{ 'Edit handling redirect'|t('redirect-manager') }}"
-                                               role="button"></a>
-                                        {% elseif not stat.handled %}
-                                            <a href="{{ url('redirect-manager/redirects/new', { sourceUrl: stat.url }) }}"
-                                               class="btn submit icon add"
-                                               title="{{ 'Create redirect'|t('redirect-manager') }}"
-                                               aria-label="{{ 'Create redirect'|t('redirect-manager') }}"
-                                               role="button"></a>
-                                        {% endif %}
-                                        <button type="button" class="btn icon delete" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}"></button>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="11" style="text-align: center; padding: 2em;">
-                                {{ 'No analytics found.'|t('redirect-manager') }}
-                            </td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+	<div id="elements" class="elements">
+		<div class="tableview tablepane">
+			<table class="data fullwidth">
+				<thead>
+					<tr>
+						<th class="checkbox-cell selectallcontainer">
+							<div class="checkbox" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select all"></div>
+						</th>
+						<th scope="col" data-attribute="url" class="orderable {{ sort == 'url' ? 'ordered ' ~ dir : '' }}">
+							<button type="button" data-sort="url">
+								{{ 'URL'|t('redirect-manager') }}
+							</button>
+						</th>
+						<th scope="col">{{ 'Site'|t('redirect-manager') }}</th>
+						<th scope="col">{{ 'Handled'|t('redirect-manager') }}</th>
+						<th scope="col" data-attribute="count" class="orderable {{ sort == 'count' ? 'ordered ' ~ dir : '' }}">
+							<button type="button" data-sort="count">
+								{{ 'Count'|t('redirect-manager') }}
+							</button>
+						</th>
+						<th scope="col">{{ 'Device'|t('redirect-manager') }}</th>
+						<th scope="col">{{ 'Browser'|t('redirect-manager') }}</th>
+						<th scope="col" title="Bot traffic">{{ 'Bot'|t('redirect-manager') }}</th>
+						<th scope="col" data-attribute="lastHit" class="orderable {{ sort == 'lastHit' ? 'ordered ' ~ dir : '' }}">
+							<button type="button" data-sort="lastHit">
+								{{ 'Last Hit'|t('redirect-manager') }}
+							</button>
+						</th>
+						<th scope="col">{{ 'Referrer'|t('redirect-manager') }}</th>
+						<th class="thin" style="width: 90px;">{{ 'Actions'|t('redirect-manager') }}</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% if analytics|length %}
+						{% for stat in analytics %}
+							<tr data-id="{{ stat.id }}">
+								<td class="checkbox-cell">
+									<div class="checkbox" title="Select" tabindex="0" aria-checked="false" role="checkbox"></div>
+								</td>
+								<td>
+									<a class="label-link" href="{{ stat.url }}" target="_blank" rel="noopener noreferrer" title="{{ 'Visit URL'|t('redirect-manager') }}">
+										<span>
+											<code>{{ stat.url }}</code>
+										</span>
+									</a>
+								</td>
+								<td>
+									{% set site = craft.app.sites.getSiteById(stat.siteId) %}
+									<span class="light">{{ site ? site.name : '-' }}</span>
+								</td>
+								<td>
+									{% if stat.handled %}
+										{% if stat.redirectId %}
+											<a href="{{ url('redirect-manager/redirects/' ~ stat.redirectId) }}" title="{{ 'Edit handling redirect'|t('redirect-manager') }}">
+												<span class="status green"></span>
+											</a>
+										{% else %}
+											<span class="status green"></span>
+										{% endif %}
+									{% else %}
+										<span class="status red"></span>
+									{% endif %}
+								</td>
+								<td>{{ stat.count }}</td>
+								<td>{{ stat.deviceType ? stat.deviceType|capitalize : '-' }}</td>
+								<td>{{ stat.browser ?: '-' }}</td>
+								<td>
+									{% if stat.isRobot %}
+										<span class="status orange" title="{{ stat.botName ?: 'Bot' }}"></span>
+									{% else %}
+										-
+									{% endif %}
+								</td>
+								<td>{{ stat.lastHit|date('Y-m-d H:i:s') }}</td>
+								<td>{{ stat.referrer ?: '-' }}</td>
+								<td class="thin" style="text-align: right; white-space: nowrap;">
+									<div style="display: inline-flex; gap: 8px;">
+										{% if stat.handled and stat.redirectId %}
+											<a href="{{ url('redirect-manager/redirects/' ~ stat.redirectId) }}" class="btn icon edit" title="{{ 'Edit handling redirect'|t('redirect-manager') }}" aria-label="{{ 'Edit handling redirect'|t('redirect-manager') }}" role="button"></a>
+										{% elseif not stat.handled %}
+											<a href="{{ url('redirect-manager/redirects/new', { sourceUrl: stat.url }) }}" class="btn submit icon add" title="{{ 'Create redirect'|t('redirect-manager') }}" aria-label="{{ 'Create redirect'|t('redirect-manager') }}" role="button"></a>
+										{% endif %}
+										<button type="button" class="btn icon delete" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}"></button>
+									</div>
+								</td>
+							</tr>
+						{% endfor %}
+					{% else %}
+						<tr>
+							<td colspan="11" style="text-align: center; padding: 2em;">
+								{{ 'No analytics found.'|t('redirect-manager') }}
+							</td>
+						</tr>
+					{% endif %}
+				</tbody>
+			</table>
+		</div>
+	</div>
 
-    {% set totalPages = (totalCount / limit)|round(0, 'ceil') %}
+	{% set totalPages = (totalCount / limit)|round(0, 'ceil') %}
 
-    <div id="footer" class="flex flex-justify">
-        <div class="light">
-            <div class="flex pagination">
-                <nav class="flex" aria-label="analytics pagination">
-                    <button type="button" class="page-link prev-page {{ page <= 1 ? 'disabled' : '' }}" {{ page <= 1 ? 'disabled' : '' }} title="Previous Page"></button>
-                    <button type="button" class="page-link next-page {{ page >= totalPages ? 'disabled' : '' }}" {{ page >= totalPages ? 'disabled' : '' }} title="Next Page"></button>
-                </nav>
-                <div class="page-info">
-                    {% set endRange = min(offset + limit, totalCount) %}
-                    {% if totalCount == 0 %}
-                        No 404s
-                    {% else %}
-                        {{ offset + 1 }}–{{ endRange }} of {{ totalCount }} {{ totalCount == 1 ? '404' : '404s' }}
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        <div class="flex flex-nowrap">
-            <button type="button" class="btn secondary" id="clear-btn">
-                <span id="clear-label">{{ 'Clear All'|t('redirect-manager') }}</span>
-            </button>
-            <form method="post" action="{{ actionUrl('redirect-manager/analytics/export-csv') }}" style="display: inline;" id="export-form">
-                {{ csrfInput() }}
-                <input type="hidden" name="analyticsIds" id="export-analytics-ids" value="">
-                <button type="submit" class="btn" id="export-btn">
-                    <span id="export-label">{{ 'Export'|t('redirect-manager') }}</span>
-                </button>
-            </form>
-        </div>
-    </div>
+	<div id="footer" class="flex flex-justify">
+		<div class="light">
+			<div class="flex pagination">
+				<nav class="flex" aria-label="analytics pagination">
+					<button{{'ClearAll'|t('redirect-manager')}}</span type="button" class="page-link prev-page {{ page <= 1 ? 'disabled' : '' }}" {{ page <= 1 ? 'disabled' : '' }} title="Previous Page"></button> <button type="button" class="page-link next-page {{ page >= totalPages ? 'disabled' : '' }}" {{ page >= totalPages ? 'disabled' : '' }} title="Next Page"></button> </nav> <div class="page-info"> {% set endRange = min(offset + limit, totalCount) %} {% if totalCount == 0 %} no 404s {% else %} {{ offset + 1 }} – {{ endRange }} of {{ totalCount }} {{ totalCount == 1 ? '404' : '404s' }} {% endif %} </div> </div> </div> <div class="flex flex-nowrap"> <button type="button" class="btn secondary" id="clear-btn"> <span id="clear-label">></button>
+					<form method="post" action="{{ actionUrl('redirect-manager/analytics/export-csv') }}" style="display: inline;" id="export-form">
+						{{ csrfInput() }}
+						<input type="hidden" name="analyticsIds" id="export-analytics-ids" value="">
+						<button type="submit" class="btn" id="export-btn">
+							<span id="export-label">{{ 'Export'|t('redirect-manager') }}</span>
+						</button>
+					</form>
+				</div>
+			</div>
 
-    <script>
-        // Initialize menu buttons
-        document.querySelectorAll('.menubtn').forEach(btn => {
-            if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
-                new Craft.MenuBtn(btn);
-            } else if (typeof Garnish !== 'undefined' && Garnish.MenuBtn) {
-                new Garnish.MenuBtn(btn);
-            }
-        });
+			<script>
+				// Initialize menu buttons
+document.querySelectorAll('.menubtn').forEach(btn => {
+if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
+new Craft.MenuBtn(btn);
+} else if (typeof Garnish !== 'undefined' && Garnish.MenuBtn) {
+new Garnish.MenuBtn(btn);
+}
+});
 
-        // Clear search
-        const clearBtn = document.querySelector('.clear-btn');
-        if (clearBtn) {
-            clearBtn.addEventListener('click', function() {
-                const searchInput = this.previousElementSibling.previousElementSibling;
-                searchInput.value = '';
-                searchInput.form.submit();
-            });
-        }
+// Clear search
+const clearBtn = document.querySelector('.clear-btn');
+if (clearBtn) {
+clearBtn.addEventListener('click', function () {
+const searchInput = this.previousElementSibling.previousElementSibling;
+searchInput.value = '';
+searchInput.form.submit();
+});
+}
 
-        // Search on Enter
-        const searchInput = document.querySelector('input[name="search"]');
-        if (searchInput) {
-            searchInput.addEventListener('keyup', function(e) {
-                if (e.key === 'Enter') {
-                    this.form.submit();
-                }
-            });
-        }
+// Search on Enter
+const searchInput = document.querySelector('input[name="search"]');
+if (searchInput) {
+searchInput.addEventListener('keyup', function (e) {
+if (e.key === 'Enter') {
+this.form.submit();
+}
+});
+}
 
-        // Sort buttons
-        document.querySelectorAll('th.orderable button').forEach(button => {
-            button.addEventListener('click', function() {
-                const sortField = this.dataset.sort;
-                const currentSort = '{{ sort }}';
-                const currentDir = '{{ dir }}';
-                let newDir = 'asc';
+// Sort buttons
+document.querySelectorAll('th.orderable button').forEach(button => {
+button.addEventListener('click', function () {
+const sortField = this.dataset.sort;
+const currentSort = '{{ sort }}';
+const currentDir = '{{ dir }}';
+let newDir = 'asc';
 
-                if (sortField === currentSort) {
-                    newDir = currentDir === 'asc' ? 'desc' : 'asc';
-                }
+if (sortField === currentSort) {
+newDir = currentDir === 'asc' ? 'desc' : 'asc';
+}
 
-                window.location.href = '?handled={{ handledFilter }}&search={{ search }}&sort=' + sortField + '&dir=' + newDir + '&page=1';
-            });
-        });
+window.location.href = '?handled= {{ handledFilter }}&search= {{ search }}&sort=' + sortField + '&dir=' + newDir + '&page=1';
+});
+});
 
-        // Pagination
-        document.querySelector('.prev-page:not(.disabled)')?.addEventListener('click', function() {
-            window.location.href = '?handled={{ handledFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}&page={{ page - 1 }}';
-        });
+// Pagination
+document.querySelector('.prev-page:not(.disabled)') ?. addEventListener('click', function () {
+window.location.href = '?handled= {{ handledFilter }}&search= {{ search }}&sort= {{ sort }}&dir= {{ dir }}&page= {{ page - 1 }}';
+});
 
-        document.querySelector('.next-page:not(.disabled)')?.addEventListener('click', function() {
-            window.location.href = '?handled={{ handledFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}&page={{ page + 1 }}';
-        });
+document.querySelector('.next-page:not(.disabled)') ?. addEventListener('click', function () {
+window.location.href = '?handled= {{ handledFilter }}&search= {{ search }}&sort= {{ sort }}&dir= {{ dir }}&page= {{ page + 1 }}';
+});
 
-        // Checkbox functionality
-        const selectAllCheckbox = document.querySelector('.selectallcontainer .checkbox');
-        const checkboxes = document.querySelectorAll('tbody .checkbox');
-        let selectedIds = new Set();
+// Checkbox functionality
+const selectAllCheckbox = document.querySelector('.selectallcontainer .checkbox');
+const checkboxes = document.querySelectorAll('tbody .checkbox');
+let selectedIds = new Set();
 
-        function toggleCheckbox(checkbox, checked) {
-            if (checked) {
-                checkbox.classList.add('checked');
-                checkbox.setAttribute('aria-checked', 'true');
-            } else {
-                checkbox.classList.remove('checked');
-                checkbox.setAttribute('aria-checked', 'false');
-            }
-        }
+function toggleCheckbox(checkbox, checked) {
+if (checked) {
+checkbox.classList.add('checked');
+checkbox.setAttribute('aria-checked', 'true');
+} else {
+checkbox.classList.remove('checked');
+checkbox.setAttribute('aria-checked', 'false');
+}
+}
 
-        function updateBulkButtons() {
-            const hasSelection = selectedIds.size > 0;
-            const clearLabel = document.getElementById('clear-label');
-            const exportLabel = document.getElementById('export-label');
-            const exportAnalyticsIds = document.getElementById('export-analytics-ids');
+function updateBulkButtons() {
+const hasSelection = selectedIds.size > 0;
+const clearLabel = document.getElementById('clear-label');
+const exportLabel = document.getElementById('export-label');
+const exportAnalyticsIds = document.getElementById('export-analytics-ids');
 
-            if (hasSelection) {
-                const count = selectedIds.size;
-                clearLabel.textContent = `{{ 'Clear'|t('redirect-manager') }} (${count})`;
-                exportLabel.textContent = `{{ 'Export'|t('redirect-manager') }} (${count})`;
-                exportAnalyticsIds.value = JSON.stringify(Array.from(selectedIds));
-            } else {
-                clearLabel.textContent = '{{ 'Clear All'|t('redirect-manager') }}';
-                exportLabel.textContent = '{{ 'Export'|t('redirect-manager') }}';
-                exportAnalyticsIds.value = '';
-            }
-        }
+if (hasSelection) {
+const count = selectedIds.size;
+clearLabel.textContent = `{{ 'Clear'|t('redirect-manager') }} (${count})`;
+exportLabel.textContent = `{{ 'Export'|t('redirect-manager') }} (${count})`;
+exportAnalyticsIds.value = JSON.stringify(Array.from(selectedIds));
+} else {
+clearLabel.textContent = '{{ 'Clear All'|t('redirect-manager') }}';
+exportLabel.textContent = '{{ 'Export'|t('redirect-manager') }}';
+exportAnalyticsIds.value = '';
+}
+}
 
-        // Select all
-        selectAllCheckbox.addEventListener('click', function() {
-            const isChecked = !this.classList.contains('checked');
-            toggleCheckbox(this, isChecked);
+// Select all
+selectAllCheckbox.addEventListener('click', function () {
+const isChecked = !this.classList.contains('checked');
+toggleCheckbox(this, isChecked);
 
-            checkboxes.forEach(checkbox => {
-                toggleCheckbox(checkbox, isChecked);
-                const id = checkbox.closest('tr').dataset.id;
-                if (isChecked) {
-                    selectedIds.add(id);
-                } else {
-                    selectedIds.delete(id);
-                }
-            });
+checkboxes.forEach(checkbox => {
+toggleCheckbox(checkbox, isChecked);
+const id = checkbox.closest('tr').dataset.id;
+if (isChecked) {
+selectedIds.add(id);
+} else {
+selectedIds.delete(id);
+}
+});
 
-            updateBulkButtons();
-        });
+updateBulkButtons();
+});
 
-        // Individual checkboxes
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('click', function() {
-                const isChecked = !this.classList.contains('checked');
-                toggleCheckbox(this, isChecked);
+// Individual checkboxes
+checkboxes.forEach(checkbox => {
+checkbox.addEventListener('click', function () {
+const isChecked = !this.classList.contains('checked');
+toggleCheckbox(this, isChecked);
 
-                const id = this.closest('tr').dataset.id;
-                if (isChecked) {
-                    selectedIds.add(id);
-                } else {
-                    selectedIds.delete(id);
-                }
+const id = this.closest('tr').dataset.id;
+if (isChecked) {
+selectedIds.add(id);
+} else {
+selectedIds.delete(id);
+} updateBulkButtons();
+});
+});
 
-                updateBulkButtons();
-            });
-        });
+// Clear button - handles both selected items and clear all
+document.getElementById('clear-btn') ?. addEventListener('click', function () {
+const ids = Array.from(selectedIds);
 
-        // Clear button - handles both selected items and clear all
-        document.getElementById('clear-btn')?.addEventListener('click', function() {
-            const ids = Array.from(selectedIds);
+if (ids.length > 0) { // Delete selected items
+if (!confirm(`Delete ${
+ids.length
+} analytics record${
+ids.length > 1 ? 's' : ''
+}?`)) 
+return;
 
-            if (ids.length > 0) {
-                // Delete selected items
-                if (!confirm(`Delete ${ids.length} analytics record${ids.length > 1 ? 's' : ''}?`)) return;
 
-                // Create array of promises for each delete
-                const deletePromises = ids.map(id =>
-                    Craft.sendActionRequest('POST', 'redirect-manager/analytics/delete', {
-                        data: { analyticId: id }
-                    })
-                );
+// Create array of promises for each delete
+const deletePromises = ids.map(id => Craft.sendActionRequest('POST', 'redirect-manager/analytics/delete', {
+data: {
+analyticId: id
+}
+}));
 
-                Promise.all(deletePromises).then(() => {
-                    Craft.cp.displayNotice(`Deleted ${ids.length} analytics`);
-                    setTimeout(() => window.location.reload(), 1000);
-                });
-            } else {
-                // Clear all
-                if (!confirm('Are you sure you want to clear ALL analytics? This cannot be undone.')) return;
+Promise.all(deletePromises).then(() => {
+Craft.cp.displayNotice (`Deleted ${
+ids.length
+} analytics`);
+setTimeout(() => window.location.reload(), 1000);
+});
+} else { // Clear all
+if (!confirm('Are you sure you want to clear ALL analytics? This cannot be undone.')) 
+return;
 
-                Craft.sendActionRequest('POST', 'redirect-manager/analytics/clear-all', {
-                    data: {}
-                }).then(function(response) {
-                    if (response.data.success) {
-                        Craft.cp.displayNotice(`Cleared ${response.data.deleted} analytics`);
-                        setTimeout(() => window.location.reload(), 1000);
-                    }
-                });
-            }
-        });
 
-        // Individual delete
-        document.querySelectorAll('.btn.delete').forEach(deleteBtn => {
-            deleteBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const row = this.closest('tr');
-                const id = row.dataset.id;
+Craft.sendActionRequest('POST', 'redirect-manager/analytics/clear-all', {data: {}}).then(function (response) {
+if (response.data.success) {
+Craft.cp.displayNotice (`Cleared ${
+response.data.deleted
+} analytics`);
+setTimeout(() => window.location.reload(), 1000);
+}
+});
+}
+});
 
-                if (!confirm('Delete this analytics record?')) return;
+// Individual delete
+document.querySelectorAll('.btn.delete').forEach(deleteBtn => {
+deleteBtn.addEventListener('click', function (e) {
+e.preventDefault();
+const row = this.closest('tr');
+const id = row.dataset.id;
 
-                Craft.sendActionRequest('POST', 'redirect-manager/analytics/delete', {
-                    data: { analyticId: id }
-                }).then(function(response) {
-                    if (response.data.success) {
-                        row.remove();
-                        Craft.cp.displayNotice('Analytics record deleted');
-                    }
-                });
-            });
-        });
+if (!confirm('Delete this analytics record?')) 
+return;
 
-    </script>
-{% endblock %}
+
+Craft.sendActionRequest('POST', 'redirect-manager/analytics/delete', {
+data: {
+analyticId: id
+}
+}).then(function (response) {
+if (response.data.success) {
+row.remove();
+Craft.cp.displayNotice('Analytics record deleted');
+}
+});
+});
+});
+			</script>
+		{% endblock %}

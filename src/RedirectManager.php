@@ -222,15 +222,19 @@ class RedirectManager extends Plugin
                     'label' => Craft::t('redirect-manager', 'Redirects'),
                     'url' => 'redirect-manager/redirects',
                 ],
-                'analytics' => [
-                    'label' => Craft::t('redirect-manager', 'Analytics'),
-                    'url' => 'redirect-manager/analytics',
-                ],
                 'import-export' => [
                     'label' => Craft::t('redirect-manager', 'Import/Export'),
                     'url' => 'redirect-manager/import-export',
                 ],
             ];
+
+            // Add analytics if enabled
+            if ($this->getSettings()->enableAnalytics) {
+                $item['subnav']['analytics'] = [
+                    'label' => Craft::t('redirect-manager', 'Analytics'),
+                    'url' => 'redirect-manager/analytics',
+                ];
+            }
 
             // Add logs section using the logging library
             if (Craft::$app->getPlugins()->isPluginInstalled('logging-library') &&
@@ -381,21 +385,27 @@ class RedirectManager extends Plugin
     {
         $settings = $this->getSettings();
 
-        // Only schedule cleanup if retention is enabled (> 0)
-        if ($settings->analyticsRetention > 0) {
-            // Check if a cleanup job is already in the queue
+        // Only schedule cleanup if analytics is enabled and retention is set
+        if ($settings->enableAnalytics && $settings->analyticsRetention > 0) {
+            // Check if a cleanup job is already scheduled (within next 24 hours)
             $existingJob = (new \craft\db\Query())
                 ->from('{{%queue}}')
-                ->where(['like', 'job', 'CleanupAnalyticsJob'])
-                ->andWhere(['<=', 'timePushed', time() + 86400])
+                ->where(['like', 'job', 'redirectmanager'])
+                ->andWhere(['like', 'job', 'CleanupAnalyticsJob'])
+                ->andWhere(['<=', 'timePushed', time() + 86400]) // Within next 24 hours
                 ->exists();
 
             if (!$existingJob) {
-                $job = new CleanupAnalyticsJob();
+                $job = new CleanupAnalyticsJob([
+                    'reschedule' => true,
+                ]);
+
+                // Add to queue with a small initial delay
+                // The job will re-queue itself to run every 24 hours
                 Craft::$app->queue->delay(5 * 60)->push($job);
 
                 Craft::info(
-                    Craft::t('redirect-manager', 'Scheduled initial analytics cleanup job'),
+                    Craft::t('redirect-manager', 'Scheduled initial analytics cleanup job (will run every 24 hours)'),
                     __METHOD__
                 );
             }

@@ -5,10 +5,9 @@
 
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
 {% set crumbs = [
-    {
-        label: plugin.settings.pluginName|t('redirect-manager'),
-        url: url('redirect-manager'),
-    },
+    { label: plugin.settings.pluginName|t('redirect-manager'),url: url('redirect-manager'),},
+    { label: 'Import/Export'|t('redirect-manager'), url: url('redirect-manager/import-export') }
+
 ] %}
 
 {% set tabs = {
@@ -25,60 +24,82 @@
 {% import "_includes/forms" as forms %}
 
 {% block content %}
-    <div id="import-export">
-    <h2 style="margin-top: 0px;">{{ "Export Redirects"|t('redirect-manager') }}</h2>
+	<div id="import-export">
+		<h2 style="margin-top: 0px;">{{ "Export Redirects"|t('redirect-manager') }}</h2>
 
-    <p>{{ "Download all your current redirects as a CSV file for backup or migration to another site."|t('redirect-manager') }}</p>
+		<p>{{ "Download all your current redirects as a CSV file for backup or migration to another site."|t('redirect-manager') }}</p>
 
-    <form method="post" action="{{ actionUrl('redirect-manager/import-export/export') }}" style="margin-bottom: 50px;">
-        {{ csrfInput() }}
+		<form method="post" action="{{ actionUrl('redirect-manager/import-export/export') }}" style="margin-bottom: 50px;">
+			{{ csrfInput() }}
 
-        <button type="submit" class="btn secondary">
-            {{ "Export All Redirects as CSV"|t('redirect-manager') }}
-        </button>
-    </form>
+			<button type="submit" class="btn secondary">
+				{{ "Export All Redirects as CSV"|t('redirect-manager') }}
+			</button>
+		</form>
 
-    <hr>
+		<hr>
 
-    <h2>{{ "Import Redirects"|t('redirect-manager') }}</h2>
+		<h2>{{ "Import Redirects"|t('redirect-manager') }}</h2>
 
-    {% set csvFormatTip %}
-        <h4>{{ "CSV Format"|t('redirect-manager') }}</h4>
-        <p><strong>{{ "Required columns:"|t('redirect-manager') }}</strong></p>
-        <ul>
-            <li>{{ "sourceUrl"|t('redirect-manager') }} - {{ "The URL to redirect from"|t('redirect-manager') }}</li>
-            <li>{{ "destinationUrl"|t('redirect-manager') }} - {{ "The URL to redirect to"|t('redirect-manager') }}</li>
-        </ul>
-        <p><strong>{{ "Optional columns:"|t('redirect-manager') }}</strong></p>
-        <ul>
-            <li>{{ "statusCode"|t('redirect-manager') }} - {{ "HTTP status (301, 302, etc.)"|t('redirect-manager') }}</li>
-            <li>{{ "matchType"|t('redirect-manager') }} - {{ "exact, regex, wildcard, or prefix"|t('redirect-manager') }}</li>
-            <li>{{ "redirectSrcMatch"|t('redirect-manager') }} - {{ "pathonly or fullurl (default: pathonly)"|t('redirect-manager') }}</li>
-            <li>{{ "siteId"|t('redirect-manager') }} - {{ "Site ID (blank = all sites)"|t('redirect-manager') }}</li>
-            <li>{{ "priority"|t('redirect-manager') }} - {{ "0-9 (default: 0)"|t('redirect-manager') }}</li>
-            <li>{{ "enabled"|t('redirect-manager') }} - {{ "1 or 0 (default: 1)"|t('redirect-manager') }}</li>
-        </ul>
-        <p><strong>{{ "Example:"|t('redirect-manager') }}</strong></p>
-        <pre style="background: #f3f4f6; padding: 8px; border-radius: 4px; font-size: 12px;">sourceUrl,destinationUrl,statusCode,matchType
+		{% set csvFormatTip %}
+		<h4>{{ "CSV Format"|t('redirect-manager') }}</h4>
+		<p>
+			<strong>{{ "Required columns:"|t('redirect-manager') }}</strong>
+		</p>
+		<ul>
+			<li>{{ "sourceUrl"|t('redirect-manager') }}
+				-
+				{{ "The URL to redirect from"|t('redirect-manager') }}</li>
+			<li>{{ "destinationUrl"|t('redirect-manager') }}
+				-
+				{{ "The URL to redirect to"|t('redirect-manager') }}</li>
+		</ul>
+		<p>
+			<strong>{{ "Optional columns:"|t('redirect-manager') }}</strong>
+		</p>
+		<ul>
+			<li>{{ "statusCode"|t('redirect-manager') }}
+				-
+				{{ "HTTP status (301, 302, etc.)"|t('redirect-manager') }}</li>
+			<li>{{ "matchType"|t('redirect-manager') }}
+				-
+				{{ "exact, regex, wildcard, or prefix"|t('redirect-manager') }}</li>
+			<li>{{ "redirectSrcMatch"|t('redirect-manager') }}
+				-
+				{{ "pathonly or fullurl (default: pathonly)"|t('redirect-manager') }}</li>
+			<li>{{ "siteId"|t('redirect-manager') }}
+				-
+				{{ "Site ID (blank = all sites)"|t('redirect-manager') }}</li>
+			<li>{{ "priority"|t('redirect-manager') }}
+				-
+				{{ "0-9 (default: 0)"|t('redirect-manager') }}</li>
+			<li>{{ "enabled"|t('redirect-manager') }}
+				-
+				{{ "1 or 0 (default: 1)"|t('redirect-manager') }}</li>
+		</ul>
+		<p>
+			<strong>{{ "Example:"|t('redirect-manager') }}</strong>
+		</p>
+		<pre style="background: #f3f4f6; padding: 8px; border-radius: 4px; font-size: 12px;">sourceUrl,destinationUrl,statusCode,matchType
 "/old-page","/new-page","301","exact"
 "/blog/*","/articles/*","301","wildcard"
 "^/legacy-(.*)","$1","301","regex"</pre>
-    {% endset %}
+		{% endset %}
 
-    <div class="field">
-        <div class="heading">
-            <label>{{ "Import from CSV"|t('redirect-manager') }}</label>
-            <span class="info">{{ csvFormatTip|raw }}</span>
-            <div class="instructions">
-                <p>{{ "Import redirects from a CSV file. You'll be able to map columns and preview before importing."|t('redirect-manager') }}</p>
-            </div>
-        </div>
-    </div>
+		<div class="field">
+			<div class="heading">
+				<label>{{ "Import from CSV"|t('redirect-manager') }}</label>
+				<span class="info">{{ csvFormatTip|raw }}</span>
+				<div class="instructions">
+					<p>{{ "Import redirects from a CSV file. You'll be able to map columns and preview before importing."|t('redirect-manager') }}</p>
+				</div>
+			</div>
+		</div>
 
-    <form method="post" action="{{ actionUrl('redirect-manager/import-export/upload') }}" enctype="multipart/form-data" id="uploadForm">
-        {{ csrfInput() }}
+		<form method="post" action="{{ actionUrl('redirect-manager/import-export/upload') }}" enctype="multipart/form-data" id="uploadForm">
+			{{ csrfInput() }}
 
-        {{ forms.fileField({
+			{{ forms.fileField({
             label: 'CSV File'|t('redirect-manager'),
             instructions: 'Select a CSV file to import redirects'|t('redirect-manager'),
             id: 'csvFile',
@@ -86,7 +107,7 @@
             required: true,
         }) }}
 
-        {{ forms.selectField({
+			{{ forms.selectField({
             label: 'CSV Delimiter'|t('redirect-manager'),
             instructions: 'Character used to separate values in your CSV'|t('redirect-manager'),
             id: 'delimiter',
@@ -101,7 +122,7 @@
             required: true,
         }) }}
 
-        {{ forms.lightswitchField({
+			{{ forms.lightswitchField({
             label: 'Create Backup Before Import'|t('redirect-manager'),
             instructions: 'Automatically backup existing redirects before importing (recommended)'|t('redirect-manager'),
             id: 'createBackup',
@@ -109,100 +130,111 @@
             on: true,
         }) }}
 
-        <div class="buttons">
-            <button type="submit" class="btn submit">{{ "Upload & Map Columns"|t('redirect-manager') }}</button>
-        </div>
-    </form>
-    </div>
+			<div class="buttons">
+				<button type="submit" class="btn submit">{{ "Upload & Map Columns"|t('redirect-manager') }}</button>
+			</div>
+		</form>
+	</div>
 
-    <div id="history" class="hidden">
-        <h2>{{ "Backup History"|t('redirect-manager') }}</h2>
-        <p>{{ "Backups are automatically created when you import redirects (if enabled). You can restore or download any backup."|t('redirect-manager') }}</p>
+	<div id="history" class="hidden">
+		<h2>{{ "Backup History"|t('redirect-manager') }}</h2>
+		<p>{{ "Backups are automatically created when you import redirects (if enabled). You can restore or download any backup."|t('redirect-manager') }}</p>
 
-        {% set backupHistory = craft.redirectManager.getBackupHistory() %}
+		{% set backupHistory = craft.redirectManager.getBackupHistory() %}
 
-        {% if backupHistory|length > 0 %}
-            <table class="data fullwidth">
-                <thead>
-                    <tr>
-                        <th>{{ "Date"|t('redirect-manager') }}</th>
-                        <th>{{ "Imported"|t('redirect-manager') }}</th>
-                        <th>{{ "Duplicates"|t('redirect-manager') }}</th>
-                        <th>{{ "Errors"|t('redirect-manager') }}</th>
-                        <th>{{ "Backup File"|t('redirect-manager') }}</th>
-                        <th>{{ "Imported By"|t('redirect-manager') }}</th>
-                        <th class="thin">{{ "Actions"|t('redirect-manager') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for history in backupHistory %}
-                        <tr>
-                            <td>{{ history.dateCreated|datetime('short') }}</td>
-                            <td style="color: #28a745;"><strong>{{ history.importedCount }}</strong></td>
-                            <td style="color: #f59e0b;">{{ history.duplicatesCount }}</td>
-                            <td style="color: #dc3545;">{{ history.errorsCount }}</td>
-                            <td>
-                                {% if history.backupPath %}
-                                    <code style="font-size: 11px;">{{ history.backupPath|split('/')|last }}</code>
-                                {% else %}
-                                    <span class="light">-</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if history.importedBy %}
-                                    {% set user = craft.users.id(history.importedBy).one() %}
-                                    {{ user ? user.fullName : 'User #' ~ history.importedBy }}
-                                {% else %}
-                                    <span class="light">System</span>
-                                {% endif %}
-                            </td>
-                            <td class="thin">
-                                {% if history.backupPath %}
-                                    <button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('redirect-manager') }}"></button>
-                                    <div class="menu" data-align="right">
-                                        <ul>
-                                            <li><a href="#" class="restore-backup" data-id="{{ history.id }}" data-date="{{ history.dateCreated|datetime('short') }}">
-                                                <span class="icon" aria-hidden="true">{{ svg('@appicons/share.svg') }}</span>
-                                                {{ "Restore"|t('redirect-manager') }}
-                                            </a></li>
-                                            <li><a href="{{ actionUrl('redirect-manager/import-export/download-backup', {id: history.id}) }}">
-                                                <span class="icon" aria-hidden="true">{{ svg('@appicons/download.svg') }}</span>
-                                                {{ "Download"|t('redirect-manager') }}
-                                            </a></li>
-                                            <li><hr></li>
-                                            <li><a href="#" class="delete-backup error" data-id="{{ history.id }}">
-                                                <span class="icon" aria-hidden="true">{{ svg('@appicons/trash.svg') }}</span>
-                                                {{ "Delete"|t('redirect-manager') }}
-                                            </a></li>
-                                        </ul>
-                                    </div>
-                                {% else %}
-                                    <span class="light">No backup</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p class="light" style="text-align: center; padding: 40px;">{{ "No backup history yet. Backups are created automatically when you import redirects."|t('redirect-manager') }}</p>
-        {% endif %}
+		{% if backupHistory|length > 0 %}
+			<table class="data fullwidth">
+				<thead>
+					<tr>
+						<th>{{ "Date"|t('redirect-manager') }}</th>
+						<th>{{ "Imported"|t('redirect-manager') }}</th>
+						<th>{{ "Duplicates"|t('redirect-manager') }}</th>
+						<th>{{ "Errors"|t('redirect-manager') }}</th>
+						<th>{{ "Backup File"|t('redirect-manager') }}</th>
+						<th>{{ "Imported By"|t('redirect-manager') }}</th>
+						<th class="thin">{{ "Actions"|t('redirect-manager') }}</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for history in backupHistory %}
+						<tr>
+							<td>{{ history.dateCreated|datetime('short') }}</td>
+							<td style="color: #28a745;">
+								<strong>{{ history.importedCount }}</strong>
+							</td>
+							<td style="color: #f59e0b;">{{ history.duplicatesCount }}</td>
+							<td style="color: #dc3545;">{{ history.errorsCount }}</td>
+							<td>
+								{% if history.backupPath %}
+									<code style="font-size: 11px;">{{ history.backupPath|split('/')|last }}</code>
+								{% else %}
+									<span class="light">-</span>
+								{% endif %}
+							</td>
+							<td>
+								{% if history.importedBy %}
+									{% set user = craft.users.id(history.importedBy).one() %}
+									{{ user ? user.fullName : 'User #' ~ history.importedBy }}
+								{% else %}
+									<span class="light">System</span>
+								{% endif %}
+							</td>
+							<td class="thin">
+								{% if history.backupPath %}
+									<button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('redirect-manager') }}"></button>
+									<div class="menu" data-align="right">
+										<ul>
+											<li>
+												<a href="#" class="restore-backup" data-id="{{ history.id }}" data-date="{{ history.dateCreated|datetime('short') }}">
+													<span class="icon" aria-hidden="true">{{ svg('@appicons/share.svg') }}</span>
+													{{ "Restore"|t('redirect-manager') }}
+												</a>
+											</li>
+											<li>
+												<a href="{{ actionUrl('redirect-manager/import-export/download-backup', {id: history.id}) }}">
+													<span class="icon" aria-hidden="true">{{ svg('@appicons/download.svg') }}</span>
+													{{ "Download"|t('redirect-manager') }}
+												</a>
+											</li>
+											<li><hr></li>
+											<li>
+												<a href="#" class="delete-backup error" data-id="{{ history.id }}">
+													<span class="icon" aria-hidden="true">{{ svg('@appicons/trash.svg') }}</span>
+													{{ "Delete"|t('redirect-manager') }}
+												</a>
+											</li>
+										</ul>
+									</div>
+								{% else %}
+									<span class="light">No backup</span>
+								{% endif %}
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% else %}
+			<p class="light" style="text-align: center; padding: 40px;">{{ "No backup history yet. Backups are created automatically when you import redirects."|t('redirect-manager') }}</p>
+		{% endif %}
 
-        <div style="margin-top: 2rem; padding: 1rem; background: #f3f4f6; border-radius: 4px;">
-            <p class="light" style="margin: 0; display: flex; align-items: flex-start; gap: 8px;">
-                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" style="flex-shrink: 0; margin-top: 2px;">
-                    <circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                    <text x="8" y="12" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor">i</text>
-                </svg>
-                <span><strong>{{ "Backup Location:"|t('redirect-manager') }}</strong> <code>{{ craft.app.path.getRuntimePath() }}/redirect-manager/backups</code></span>
-            </p>
-        </div>
-    </div>
+		<div style="margin-top: 2rem; padding: 1rem; background: #f3f4f6; border-radius: 4px;">
+			<p class="light" style="margin: 0; display: flex; align-items: flex-start; gap: 8px;">
+				<svg aria-hidden="true" width="16" height="16" viewbox="0 0 16 16" style="flex-shrink: 0; margin-top: 2px;">
+					<circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/>
+					<text x="8" y="12" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor">i</text>
+				</svg>
+				<span>
+					<strong>{{ "Backup Location:"|t('redirect-manager') }}</strong>
+					<code>{{ craft.app.path.getRuntimePath() }}/redirect-manager/backups</code>
+				</span>
+			</p>
+		</div>
+	</div>
 
 {% endblock %}
 
 {% js %}
-    // Initialize menu buttons
+// Initialize menu buttons
     document.querySelectorAll('.menubtn').forEach(btn => {
         if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
             new Craft.MenuBtn(btn);
