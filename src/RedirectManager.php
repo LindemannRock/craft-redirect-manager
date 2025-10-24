@@ -22,6 +22,7 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\services\Dashboard;
 use craft\services\Elements;
 use craft\services\UserPermissions;
+use craft\services\Utilities;
 use craft\utilities\ClearCaches;
 use craft\web\ErrorHandler;
 use craft\web\UrlManager;
@@ -33,6 +34,7 @@ use lindemannrock\redirectmanager\services\MatchingService;
 use lindemannrock\redirectmanager\services\DeviceDetectionService;
 use lindemannrock\redirectmanager\jobs\CleanupStatisticsJob;
 use lindemannrock\redirectmanager\variables\RedirectManagerVariable;
+use lindemannrock\redirectmanager\utilities\RedirectManagerUtility;
 use lindemannrock\redirectmanager\widgets\StatsSummaryWidget;
 use lindemannrock\redirectmanager\widgets\Unhandled404sWidget;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
@@ -163,6 +165,15 @@ class RedirectManager extends Plugin
             function(RegisterComponentTypesEvent $event) {
                 $event->types[] = StatsSummaryWidget::class;
                 $event->types[] = Unhandled404sWidget::class;
+            }
+        );
+
+        // Register utilities
+        Event::on(
+            Utilities::class,
+            Utilities::EVENT_REGISTER_UTILITIES,
+            function(RegisterComponentTypesEvent $event) {
+                $event->types[] = RedirectManagerUtility::class;
             }
         );
 

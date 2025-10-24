@@ -320,4 +320,126 @@ class SettingsController extends Controller
             'message' => 'No matching redirect found. This URL would show a 404.',
         ]);
     }
+
+    /**
+     * Clear redirect cache
+     */
+    public function actionClearRedirectCache(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        try {
+            // Clear redirect cache using Craft's cache component
+            Craft::$app->cache->delete('redirect-manager-redirects');
+
+            return $this->asJson([
+                'success' => true,
+                'message' => Craft::t('redirect-manager', 'Redirect cache cleared.')
+            ]);
+        } catch (\Exception $e) {
+            return $this->asJson(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Clear device detection cache
+     */
+    public function actionClearDeviceCache(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        try {
+            $cachePath = Craft::$app->path->getRuntimePath() . '/redirect-manager/cache/device/';
+            $cleared = 0;
+
+            if (is_dir($cachePath)) {
+                $files = glob($cachePath . '*.cache');
+                foreach ($files as $file) {
+                    if (@unlink($file)) {
+                        $cleared++;
+                    }
+                }
+            }
+
+            return $this->asJson([
+                'success' => true,
+                'message' => Craft::t('redirect-manager', 'Cleared {count} device caches.', ['count' => $cleared])
+            ]);
+        } catch (\Exception $e) {
+            return $this->asJson(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Clear all caches
+     */
+    public function actionClearAllCaches(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        try {
+            $cleared = 0;
+
+            // Clear redirect cache
+            Craft::$app->cache->delete('redirect-manager-redirects');
+
+            // Clear device detection cache
+            $devicePath = Craft::$app->path->getRuntimePath() . '/redirect-manager/cache/device/';
+            if (is_dir($devicePath)) {
+                $files = glob($devicePath . '*.cache');
+                foreach ($files as $file) {
+                    if (@unlink($file)) {
+                        $cleared++;
+                    }
+                }
+            }
+
+            return $this->asJson([
+                'success' => true,
+                'message' => Craft::t('redirect-manager', 'Cleared redirect cache and {count} device caches.', ['count' => $cleared])
+            ]);
+        } catch (\Exception $e) {
+            return $this->asJson(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Clear all analytics data
+     */
+    public function actionClearAllAnalytics(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        // Require admin permission
+        if (!Craft::$app->getUser()->getIsAdmin()) {
+            return $this->asJson([
+                'success' => false,
+                'error' => Craft::t('redirect-manager', 'Only administrators can clear analytics data.')
+            ]);
+        }
+
+        try {
+            // Get count before deleting
+            $count = (new \craft\db\Query())
+                ->from('{{%redirectmanager_analytics}}')
+                ->count();
+
+            // Delete all analytics records
+            Craft::$app->db->createCommand()
+                ->delete('{{%redirectmanager_analytics}}')
+                ->execute();
+
+            return $this->asJson([
+                'success' => true,
+                'message' => Craft::t('redirect-manager', 'Deleted {count} analytics records.', ['count' => $count])
+            ]);
+        } catch (\Exception $e) {
+            return $this->asJson(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
 }
+
