@@ -83,7 +83,7 @@
 			</div>
 		</div>
 		<div class="input ltr">
-			<input type="text" id="sourceUrl" name="sourceUrl" value="{{ redirect ? redirect.sourceUrl : craft.app.request.getParam('sourceUrl') }}" placeholder="{{ srcMatchValue == 'fullurl' ? 'https://example.com/old-page' : '/old-page' }}" required class="text fullwidth">
+			<input type="text" id="sourceUrl" name="sourceUrl" value="{{ redirect ? redirect.sourceUrl : craft.app.request.getParam('sourceUrl') }}" placeholder="{{ srcMatchValue == 'fullurl' ? 'https://example.com/old-page' : '/old-page' }}" required class="text fullwidth{% if redirect and redirect.getErrors('sourceUrl') %} error{% endif %}">
 		</div>
 		{% if redirect and redirect.getErrors('sourceUrl') %}
 			<ul class="errors">
@@ -252,6 +252,9 @@
 
     // Show/hide regex tip
     if (matchTypeSelect && regexTip) {
+        // Initialize regex tip visibility on page load
+        regexTip.style.display = matchTypeSelect.value === 'regex' ? 'block' : 'none';
+
         matchTypeSelect.addEventListener('change', function() {
             regexTip.style.display = this.value === 'regex' ? 'block' : 'none';
             updateSourceMatchInstructions(); // Update instructions when match type changes
@@ -361,6 +364,7 @@
                     sourceUrlInput.placeholder = '/old-page';
                 }
             } else {
+                if (pathOnlyTip) pathOnlyTip.style.display = 'none';
                 if (srcMatchInstructions) {
                     srcMatchInstructions.textContent = '{{ 'Match by complete URL including domain (e.g., https://example.com/old-page).'|t('redirect-manager') }}';
                 }
@@ -380,90 +384,6 @@
         redirectSrcMatchSelect.addEventListener('change', updateSourceMatchInstructions);
     }
 
-    // Auto-complete URL fields on form submit
-    $('form').on('submit', function(e) {
-        const sourceUrlInput = document.getElementById('sourceUrl');
-        const destinationUrlInput = document.getElementById('destinationUrl');
-        const srcMatchMode = redirectSrcMatchSelect ? redirectSrcMatchSelect.value : 'pathonly';
-        const corrections = [];
-
-        // Function to extract path from URL
-        function extractPath(url) {
-            try {
-                const urlObj = new URL(url.startsWith('http') ? url : 'https://' + url);
-                return urlObj.pathname + urlObj.search + urlObj.hash;
-            } catch (e) {
-                return url;
-            }
-        }
-
-        // Auto-correct Source URL based on match mode
-        if (sourceUrlInput && sourceUrlInput.value) {
-            let value = sourceUrlInput.value.trim();
-
-            if (srcMatchMode === 'pathonly') {
-                // Path only mode: everything should become a path
-                if (value.startsWith('http://') || value.startsWith('https://')) {
-                    // Full URL entered - extract just the path
-                    const path = extractPath(value);
-                    sourceUrlInput.value = path;
-                    corrections.push('Source URL: Converted to path → ' + path);
-                } else if (!value.startsWith('/') && value.includes('.')) {
-                    // Looks like a domain without protocol (e.g., example.com/page)
-                    const path = extractPath(value);
-                    sourceUrlInput.value = path;
-                    corrections.push('Source URL: Converted to path → ' + path);
-                } else if (!value.startsWith('/')) {
-                    // Plain text without slash - add slash
-                    sourceUrlInput.value = '/' + value;
-                    corrections.push('Source URL: Added / → /' + value);
-                }
-            } else {
-                // Full URL mode: only auto-correct if it looks like a domain
-                if (!value.startsWith('http://') && !value.startsWith('https://') && value.includes('.')) {
-                    // Has a dot - looks like a domain, add https://
-                    const correctedValue = 'https://' + value;
-                    sourceUrlInput.value = correctedValue;
-                    corrections.push('Source URL: Added https:// → ' + correctedValue);
-                }
-                // Otherwise, leave as-is and let server-side validation handle it
-            }
-        }
-
-        // Auto-correct Destination URL (same logic as shortlink-manager)
-        function autoCorrectUrl(input, fieldName) {
-            if (!input || !input.value) {
-                return;
-            }
-
-            let value = input.value.trim();
-
-            // Skip if already valid
-            if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/')) {
-                return;
-            }
-
-            // Has dot - looks like a domain, add https://
-            if (value.includes('.')) {
-                const correctedValue = 'https://' + value;
-                input.value = correctedValue;
-                corrections.push(fieldName + ': Added https:// → ' + correctedValue);
-            } else {
-                // No dot - assume it's a path, add /
-                const correctedValue = '/' + value;
-                input.value = correctedValue;
-                corrections.push(fieldName + ': Added / → ' + correctedValue);
-            }
-        }
-
-        autoCorrectUrl(destinationUrlInput, 'Destination URL');
-
-        // Show notification if any corrections made
-        if (corrections.length > 0) {
-            Craft.cp.displayNotice(corrections.join('<br>'));
-        }
-    });
-
     // Update status code tip
     function updateStatusCodeTip() {
         if (!statusCodeSelect || !statusCodeTipText) return;
@@ -472,42 +392,30 @@
 
         switch(code) {
             case 301:
-                tip = '<strong>301 - Moved Permanently:</strong>
-Use when content has permanently moved. Search engines will update their index.
-<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301" target="_blank" rel="noopener">Learn more</a>';
-			                break;
-			            case 302:
-			                tip = '<strong>302 - Found (Temporary):</strong>
-Use for temporary redirects. Search engines keep the original URL.
-<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302" target="_blank" rel="noopener">Learn more</a>';
-			                break;
-			            case 303:
-			                tip = '<strong>303 - See Other:</strong>
-Redirect to a different resource, typically after a form submission.
-<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303" target="_blank" rel="noopener">Learn more</a>';
-			                break;
-			            case 307:
-			                tip = '<strong>307 - Temporary Redirect:</strong>
-Like 302 but guarantees the request method won\'t change (POST stays POST).
-<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307" target="_blank" rel="noopener">Learn more</a>';
-			                break;
-			            case 308:
-			                tip = '<strong>308 - Permanent Redirect:</strong>
-Like 301 but guarantees the request method won\'t change (POST stays POST).
-<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308" target="_blank" rel="noopener">Learn more</a>';
-			                break;
-			            case 410:
-			                tip = '<strong>410 - Gone:</strong>
-Content permanently deleted and won\'t come back. Search engines remove it from index.
-<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/410" target="_blank" rel="noopener">Learn more</a>';
-			                break;
-			        }
-	
-			        statusCodeTipText.innerHTML = tip;
-			    }
-	
-			    if (statusCodeSelect) {
-			        updateStatusCodeTip();
-			        statusCodeSelect.addEventListener('change', updateStatusCodeTip);
-			    }
+                tip = '<strong>301 - Moved Permanently:</strong> Use when content has permanently moved. Search engines will update their index. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301" target="_blank" rel="noopener">Learn more</a>';
+                break;
+            case 302:
+                tip = '<strong>302 - Found (Temporary):</strong> Use for temporary redirects. Search engines keep the original URL. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302" target="_blank" rel="noopener">Learn more</a>';
+                break;
+            case 303:
+                tip = '<strong>303 - See Other:</strong> Redirect to a different resource, typically after a form submission. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303" target="_blank" rel="noopener">Learn more</a>';
+                break;
+            case 307:
+                tip = '<strong>307 - Temporary Redirect:</strong> Like 302 but guarantees the request method won\'t change (POST stays POST). <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307" target="_blank" rel="noopener">Learn more</a>';
+                break;
+            case 308:
+                tip = '<strong>308 - Permanent Redirect:</strong> Like 301 but guarantees the request method won\'t change (POST stays POST). <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308" target="_blank" rel="noopener">Learn more</a>';
+                break;
+            case 410:
+                tip = '<strong>410 - Gone:</strong> Content permanently deleted and won\'t come back. Search engines remove it from index. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/410" target="_blank" rel="noopener">Learn more</a>';
+                break;
+        }
+
+        statusCodeTipText.innerHTML = tip;
+    }
+
+    if (statusCodeSelect) {
+        updateStatusCodeTip();
+        statusCodeSelect.addEventListener('change', updateStatusCodeTip);
+    }
 {% endjs %}

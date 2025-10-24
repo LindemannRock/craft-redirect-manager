@@ -221,33 +221,9 @@ class RedirectsController extends Controller
             $redirect->setAttributes($attributes, false);
         }
 
-        // Add validation errors to record for inline display
-        $sourceUrl = trim($attributes['sourceUrl'] ?? '');
-        $destUrl = trim($attributes['destinationUrl'] ?? '');
-
-        // Validate Source URL
-        if (empty($sourceUrl)) {
-            $redirect->addError('sourceUrl', 'Source URL cannot be blank.');
-        } else {
-            $isPath = str_starts_with($sourceUrl, '/');
-            $isFullUrl = str_starts_with($sourceUrl, 'http://') || str_starts_with($sourceUrl, 'https://');
-
-            if (!$isPath && !$isFullUrl) {
-                $redirect->addError('sourceUrl', 'Source URL must be a path (/old-page) or full URL (https://example.com).');
-            }
-        }
-
-        // Validate Destination URL
-        if (empty($destUrl)) {
-            $redirect->addError('destinationUrl', 'Destination URL cannot be blank.');
-        } else {
-            $isPath = str_starts_with($destUrl, '/');
-            $isFullUrl = str_starts_with($destUrl, 'http://') || str_starts_with($destUrl, 'https://');
-            $isHash = str_starts_with($destUrl, '#');
-
-            if (!$isPath && !$isFullUrl && !$isHash) {
-                $redirect->addError('destinationUrl', 'Destination URL must be a path (/page), full URL (https://example.com), or anchor (#section).');
-            }
+        // Validate using the record's built-in validation
+        if (!$redirect->validate()) {
+            // Validation failed - errors are already on the record
         }
 
         return $this->renderTemplate('redirect-manager/redirects/edit', [
