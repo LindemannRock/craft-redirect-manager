@@ -66,7 +66,7 @@ class RedirectManagerUtility extends Utility
         $unhandled = 0;
 
         if ($settings->enableAnalytics) {
-            $chartData = RedirectManager::$plugin->statistics->getChartData(null, 7);
+            $chartData = RedirectManager::$plugin->analytics->getChartData(null, 7);
             $total404s = array_sum(array_column($chartData, 'handled')) + array_sum(array_column($chartData, 'unhandled'));
             $handled = array_sum(array_column($chartData, 'handled'));
             $unhandled = array_sum(array_column($chartData, 'unhandled'));

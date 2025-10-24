@@ -96,10 +96,10 @@ class Unhandled404sWidget extends Widget
         }
 
         // Get unhandled 404s
-        $statistics = RedirectManager::$plugin->statistics->getAllStatistics(null, $this->limit);
+        $analytics = RedirectManager::$plugin->analytics->getAllAnalytics(null, $this->limit);
 
         // Filter only unhandled ones
-        $unhandled404s = array_filter($statistics, function($stat) {
+        $unhandled404s = array_filter($analytics, function($stat) {
             return !$stat['handled'];
         });
 

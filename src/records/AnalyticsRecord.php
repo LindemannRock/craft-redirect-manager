@@ -13,7 +13,7 @@ use craft\records\Site;
 use yii\db\ActiveQueryInterface;
 
 /**
- * Statistic Record
+ * Analytics Record
  *
  * @property int $id
  * @property int|null $siteId
@@ -33,7 +33,7 @@ use yii\db\ActiveQueryInterface;
  * @package   RedirectManager
  * @since     1.0.0
  */
-class StatisticRecord extends ActiveRecord
+class AnalyticsRecord extends ActiveRecord
 {
     /**
      * @inheritdoc
@@ -44,7 +44,7 @@ class StatisticRecord extends ActiveRecord
     }
 
     /**
-     * Returns the statistic's site
+     * Returns the analytics record's site
      *
      * @return ActiveQueryInterface
      */

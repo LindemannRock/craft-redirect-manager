@@ -87,12 +87,12 @@ class Install extends Migration
                 'cacheDeviceDetection' => $this->boolean()->notNull()->defaultValue(true),
                 'deviceDetectionCacheDuration' => $this->integer()->notNull()->defaultValue(3600),
                 'stripQueryStringFromStats' => $this->boolean()->notNull()->defaultValue(true),
-                'statisticsLimit' => $this->integer()->notNull()->defaultValue(1000),
-                'statisticsRetention' => $this->integer()->notNull()->defaultValue(30),
-                'autoTrimStatistics' => $this->boolean()->notNull()->defaultValue(true),
+                'analyticsLimit' => $this->integer()->notNull()->defaultValue(1000),
+                'analyticsRetention' => $this->integer()->notNull()->defaultValue(30),
+                'autoTrimAnalytics' => $this->boolean()->notNull()->defaultValue(true),
                 'refreshIntervalSecs' => $this->integer()->notNull()->defaultValue(5),
                 'redirectsDisplayLimit' => $this->integer()->notNull()->defaultValue(100),
-                'statisticsDisplayLimit' => $this->integer()->notNull()->defaultValue(100),
+                'analyticsDisplayLimit' => $this->integer()->notNull()->defaultValue(100),
                 'itemsPerPage' => $this->integer()->notNull()->defaultValue(100),
                 'enableApiEndpoint' => $this->boolean()->notNull()->defaultValue(false),
                 'excludePatterns' => $this->text()->null()->comment('JSON array'),
@@ -113,7 +113,7 @@ class Install extends Migration
             ]);
         }
 
-        // Create statistics table
+        // Create analytics table
         if (!$this->db->tableExists('{{%redirectmanager_analytics}}')) {
             $this->createTable('{{%redirectmanager_analytics}}', [
                 'id' => $this->primaryKey(),

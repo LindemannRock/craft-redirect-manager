@@ -118,14 +118,14 @@ class RedirectsService extends Component
 
         if ($redirect) {
             // Record the 404 BEFORE executing redirect (since redirect ends the script)
-            RedirectManager::$plugin->statistics->record404($originalPath, true);
+            RedirectManager::$plugin->analytics->record404($originalPath, true);
             // Pass original fullUrl to preserve query string
             $this->executeRedirect($redirect, $originalFullUrl, $pathOnlyForMatching);
         }
 
         // Record unhandled 404 if no redirect was found
         if (!$redirect) {
-            RedirectManager::$plugin->statistics->record404($originalPath, false);
+            RedirectManager::$plugin->analytics->record404($originalPath, false);
         }
     }
 
@@ -167,7 +167,7 @@ class RedirectsService extends Component
      * Handle 404 from external plugin
      *
      * This method allows other plugins to integrate with Redirect Manager's 404 handling
-     * by checking for matching redirects and tracking statistics with source plugin information.
+     * by checking for matching redirects and tracking analytics with source plugin information.
      *
      * @param string $url The 404 URL
      * @param array $context Context data (source plugin, metadata)
@@ -191,7 +191,7 @@ class RedirectsService extends Component
         $redirect = $this->findRedirect($fullUrl, $pathOnly);
 
         // Record 404 with source tracking
-        RedirectManager::$plugin->statistics->record404(
+        RedirectManager::$plugin->analytics->record404(
             $pathOnly,
             (bool)$redirect,
             $context
@@ -983,8 +983,8 @@ class RedirectsService extends Component
                 'to' => $nextRedirect['destinationUrl'],
             ]);
 
-            // Record statistics for this URL in the chain as handled
-            RedirectManager::$plugin->statistics->record404($searchUrl, true);
+            // Record analytics for this URL in the chain as handled
+            RedirectManager::$plugin->analytics->record404($searchUrl, true);
 
             $currentUrl = $nextRedirect['destinationUrl'];
             $chain[] = $currentUrl;

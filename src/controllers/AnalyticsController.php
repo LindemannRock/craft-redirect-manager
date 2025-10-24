@@ -14,13 +14,13 @@ use lindemannrock\redirectmanager\RedirectManager;
 use yii\web\Response;
 
 /**
- * Statistics Controller
+ * Analytics Controller
  *
  * @author    LindemannRock
  * @package   RedirectManager
  * @since     1.0.0
  */
-class StatisticsController extends Controller
+class AnalyticsController extends Controller
 {
     /**
      * Dashboard - 404 list with filters
@@ -29,7 +29,7 @@ class StatisticsController extends Controller
      */
     public function actionDashboard(): Response
     {
-        $this->requirePermission('redirectManager:viewStatistics');
+        $this->requirePermission('redirectManager:viewAnalytics');
 
         $request = Craft::$app->getRequest();
         $settings = RedirectManager::$plugin->getSettings();
@@ -45,7 +45,7 @@ class StatisticsController extends Controller
 
         // Build query
         $query = (new \craft\db\Query())
-            ->from(\lindemannrock\redirectmanager\records\StatisticRecord::tableName());
+            ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName());
 
         // Apply handled filter
         if ($handledFilter === 'handled') {
@@ -74,11 +74,11 @@ class StatisticsController extends Controller
         // Apply pagination
         $query->limit($limit)->offset($offset);
 
-        // Get statistics
-        $statistics = $query->all();
+        // Get analytics
+        $analytics = $query->all();
 
-        // Add redirect ID to each handled statistic
-        foreach ($statistics as &$stat) {
+        // Add redirect ID to each handled analytic
+        foreach ($analytics as &$stat) {
             if ($stat['handled']) {
                 $redirectId = (new \craft\db\Query())
                     ->select('id')
@@ -90,12 +90,12 @@ class StatisticsController extends Controller
         }
 
         // Get overall counts
-        $allCount = RedirectManager::$plugin->statistics->getStatisticsCount();
-        $handledCount = RedirectManager::$plugin->statistics->getStatisticsCount(null, true);
-        $unhandledCount = RedirectManager::$plugin->statistics->getStatisticsCount(null, false);
+        $allCount = RedirectManager::$plugin->analytics->getAnalyticsCount();
+        $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount(null, true);
+        $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount(null, false);
 
         return $this->renderTemplate('redirect-manager/dashboard/index', [
-            'statistics' => $statistics,
+            'analytics' => $analytics,
             'settings' => $settings,
             'totalCount' => $totalCount,
             'allCount' => $allCount,
@@ -108,36 +108,36 @@ class StatisticsController extends Controller
     }
 
     /**
-     * Statistics - Charts and analytics
+     * Analytics index - Charts and analytics
      *
      * @return Response
      */
-    public function actionStatistics(): Response
+    public function actionIndex(): Response
     {
-        $this->requirePermission('redirectManager:viewStatistics');
+        $this->requirePermission('redirectManager:viewAnalytics');
 
         $siteId = Craft::$app->getRequest()->getQueryParam('siteId');
 
         // Get chart data (last 30 days)
-        $chartData = RedirectManager::$plugin->statistics->getChartData($siteId, 30);
+        $chartData = RedirectManager::$plugin->analytics->getChartData($siteId, 30);
 
         // Get most common 404s
-        $mostCommon = RedirectManager::$plugin->statistics->getMostCommon404s($siteId, 10);
+        $mostCommon = RedirectManager::$plugin->analytics->getMostCommon404s($siteId, 10);
 
         // Get recent 404s
-        $recentHandled = RedirectManager::$plugin->statistics->getRecent404s($siteId, 5, true);
-        $recentUnhandled = RedirectManager::$plugin->statistics->getRecent404s($siteId, 5, false);
+        $recentHandled = RedirectManager::$plugin->analytics->getRecent404s($siteId, 5, true);
+        $recentUnhandled = RedirectManager::$plugin->analytics->getRecent404s($siteId, 5, false);
 
         // Get counts
-        $totalCount = RedirectManager::$plugin->statistics->getStatisticsCount($siteId);
-        $handledCount = RedirectManager::$plugin->statistics->getStatisticsCount($siteId, true);
-        $unhandledCount = RedirectManager::$plugin->statistics->getStatisticsCount($siteId, false);
+        $totalCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId);
+        $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, true);
+        $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, false);
 
         // Get device analytics
-        $deviceBreakdown = RedirectManager::$plugin->statistics->getDeviceBreakdown($siteId, 30);
-        $browserBreakdown = RedirectManager::$plugin->statistics->getBrowserBreakdown($siteId, 30);
-        $osBreakdown = RedirectManager::$plugin->statistics->getOsBreakdown($siteId, 30);
-        $botStats = RedirectManager::$plugin->statistics->getBotStats($siteId, 30);
+        $deviceBreakdown = RedirectManager::$plugin->analytics->getDeviceBreakdown($siteId, 30);
+        $browserBreakdown = RedirectManager::$plugin->analytics->getBrowserBreakdown($siteId, 30);
+        $osBreakdown = RedirectManager::$plugin->analytics->getOsBreakdown($siteId, 30);
+        $botStats = RedirectManager::$plugin->analytics->getBotStats($siteId, 30);
 
         return $this->renderTemplate('redirect-manager/analytics/index', [
             'chartData' => $chartData,
@@ -175,26 +175,26 @@ class StatisticsController extends Controller
     }
 
     /**
-     * Delete a statistic
+     * Delete an analytic
      *
      * @return Response
      */
     public function actionDelete(): Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:viewStatistics');
+        $this->requirePermission('redirectManager:viewAnalytics');
 
-        $statisticId = Craft::$app->getRequest()->getRequiredBodyParam('statisticId');
+        $analyticId = Craft::$app->getRequest()->getRequiredBodyParam('analyticId');
 
-        if (RedirectManager::$plugin->statistics->deleteStatistic($statisticId)) {
+        if (RedirectManager::$plugin->analytics->deleteAnalytic($analyticId)) {
             return $this->asJson(['success' => true]);
         }
 
-        return $this->asJson(['success' => false, 'error' => 'Could not delete statistic']);
+        return $this->asJson(['success' => false, 'error' => 'Could not delete analytic']);
     }
 
     /**
-     * Clear all statistics
+     * Clear all analytics
      *
      * @return Response
      */
@@ -205,10 +205,10 @@ class StatisticsController extends Controller
 
         $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
 
-        $deleted = RedirectManager::$plugin->statistics->clearStatistics($siteId);
+        $deleted = RedirectManager::$plugin->analytics->clearAnalytics($siteId);
 
         Craft::$app->getSession()->setNotice(
-            Craft::t('redirect-manager', '{count} statistics cleared', ['count' => $deleted])
+            Craft::t('redirect-manager', '{count} analytics cleared', ['count' => $deleted])
         );
 
         return $this->asJson([
@@ -218,22 +218,22 @@ class StatisticsController extends Controller
     }
 
     /**
-     * Export statistics to CSV
+     * Export analytics to CSV
      *
      * @return Response
      */
     public function actionExportCsv(): Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:viewStatistics');
+        $this->requirePermission('redirectManager:viewAnalytics');
 
-        // Check if specific statistics were selected
-        $statisticIdsJson = Craft::$app->getRequest()->getBodyParam('statisticIds');
-        $statisticIds = $statisticIdsJson ? json_decode($statisticIdsJson, true) : null;
+        // Check if specific analytics were selected
+        $analyticsIdsJson = Craft::$app->getRequest()->getBodyParam('analyticsIds');
+        $analyticsIds = $analyticsIdsJson ? json_decode($analyticsIdsJson, true) : null;
 
-        $csv = RedirectManager::$plugin->statistics->exportToCsv(null, $statisticIds);
+        $csv = RedirectManager::$plugin->analytics->exportToCsv(null, $analyticsIds);
 
-        $filename = 'redirect-statistics-' . date('Y-m-d-His') . '.csv';
+        $filename = 'redirect-analytics-' . date('Y-m-d-His') . '.csv';
 
         return Craft::$app->getResponse()
             ->sendContentAsFile($csv, $filename, [
@@ -248,12 +248,12 @@ class StatisticsController extends Controller
      */
     public function actionGetChartData(): Response
     {
-        $this->requirePermission('redirectManager:viewStatistics');
+        $this->requirePermission('redirectManager:viewAnalytics');
 
         $siteId = Craft::$app->getRequest()->getQueryParam('siteId');
         $days = (int)Craft::$app->getRequest()->getQueryParam('days', 30);
 
-        $chartData = RedirectManager::$plugin->statistics->getChartData($siteId, $days);
+        $chartData = RedirectManager::$plugin->analytics->getChartData($siteId, $days);
 
         return $this->asJson([
             'success' => true,

@@ -14,7 +14,7 @@ return [
     // Navigation
     'Dashboard' => 'Dashboard',
     'Redirects' => 'Redirects',
-    'Statistics' => 'Statistics',
+    'Analytics' => 'Analytics',
     'Settings' => 'Settings',
     'Logs' => 'Logs',
 
@@ -23,7 +23,7 @@ return [
     'Create redirects' => 'Create redirects',
     'Edit redirects' => 'Edit redirects',
     'Delete redirects' => 'Delete redirects',
-    'View statistics' => 'View statistics',
+    'View analytics' => 'View analytics',
     'View logs' => 'View logs',
     'Manage settings' => 'Manage settings',
 
@@ -44,7 +44,7 @@ return [
     'Wildcard Match' => 'Wildcard Match',
     'Prefix Match' => 'Prefix Match',
 
-    // Statistics
+    // Analytics
     'URL' => 'URL',
     'Handled' => 'Handled',
     'Count' => 'Count',
@@ -52,8 +52,8 @@ return [
     '404 Not Found' => '404 Not Found',
 
     // Messages
-    'Scheduled initial statistics cleanup job' => 'Scheduled initial statistics cleanup job',
+    'Scheduled initial analytics cleanup job' => 'Scheduled initial analytics cleanup job',
     'Redirect saved successfully' => 'Redirect saved successfully',
     'Redirect deleted successfully' => 'Redirect deleted successfully',
-    'Statistics cleared successfully' => 'Statistics cleared successfully',
+    'Analytics cleared successfully' => 'Analytics cleared successfully',
 ];

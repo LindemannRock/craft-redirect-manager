@@ -30,7 +30,7 @@
                             <span class="badge">{{ stat.count|number }}</span>
                         </td>
                         <td class="thin actions-cell">
-                            <a href="{{ cpUrl('redirect-manager/statistics') }}#url-{{ stat.url|url_encode }}"
+                            <a href="{{ cpUrl('redirect-manager/analytics') }}#url-{{ stat.url|url_encode }}"
                                class="btn small"
                                title="{{ 'View details'|t('redirect-manager') }}">
                                 {{ svg('@app/icons/arrow-right.svg') }}
@@ -42,7 +42,7 @@
         </table>
 
         <div class="widget-footer">
-            <a href="{{ cpUrl('redirect-manager/statistics') }}" class="go">{{ "View all 404s"|t('redirect-manager') }}</a>
+            <a href="{{ cpUrl('redirect-manager/analytics') }}" class="go">{{ "View all 404s"|t('redirect-manager') }}</a>
         </div>
     {% else %}
         <div class="zilch">

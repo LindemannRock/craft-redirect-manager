@@ -22,7 +22,7 @@ Intelligent redirect management and 404 handling for Craft CMS.
 - **Geographic Detection** - Track visitor location (country, city) via ip-api.com
 - **Auto-Redirect Creation** - Automatically creates redirects when entry URIs change
 - **Smart Caching** - Fast redirect lookups and device detection with configurable caching
-- **CSV Export** - Export comprehensive statistics including device and geo data
+- **CSV Export** - Export comprehensive analytics including device and geo data
 - **Multi-Site Support** - Site-specific or global redirects
 - **Plugin Integration** - Pluggable architecture allowing other plugins to integrate 404 handling
 - **Privacy-First** - IP hashing with salt, optional subnet masking, GDPR-friendly
@@ -133,9 +133,9 @@ return [
     'enableGeoDetection' => false,  // Track visitor location
     'anonymizeIpAddress' => false,  // Subnet masking for privacy
 
-    // Statistics retention in days (0 = keep forever)
-    'statisticsRetention' => 30,
-    'statisticsLimit' => 1000,
+    // Analytics retention in days (0 = keep forever)
+    'analyticsRetention' => 30,
+    'analyticsLimit' => 1000,
 
     // Performance & Caching
     'enableRedirectCache' => true,
@@ -161,11 +161,11 @@ return [
     ],
     'production' => [
         'logLevel' => 'error',
-        'statisticsRetention' => 90,
+        'analyticsRetention' => 90,
     ],
     'dev' => [
         'logLevel' => 'debug',
-        'statisticsRetention' => 7,
+        'analyticsRetention' => 7,
     ],
 ];
 ```
@@ -226,17 +226,17 @@ Source: ^/blog/(\d+)/(.*)$
 Destination: /article/$1/$2
 ```
 
-### Viewing Statistics
+### Viewing Analytics
 
 **Dashboard:**
-- Navigate to **Redirect Manager → Statistics**
+- Navigate to **Redirect Manager → Analytics**
 - View handled vs unhandled 404s
 - See most common 404s
 - Create redirects from unhandled 404s with one click
 
 **Export CSV:**
 ```
-Redirect Manager → Statistics → Export CSV
+Redirect Manager → Analytics → Export CSV
 ```
 
 ### Automatic Entry Redirects
@@ -270,8 +270,8 @@ curl -I http://your-site.test/test-redirect
 # Visit a non-existent page:
 curl -I http://your-site.test/page-that-does-not-exist
 
-# Check statistics:
-# CP → Redirect Manager → Statistics
+# Check analytics:
+# CP → Redirect Manager → Analytics
 # Should show the 404 with "Handled: No"
 ```
 
@@ -296,7 +296,7 @@ curl -I http://your-site.test/old-blog/any-post
 # Should redirect to /blog/
 ```
 
-### 5. Test Statistics Cleanup
+### 5. Test Analytics Cleanup
 
 ```php
 # Run cleanup job manually:
@@ -304,7 +304,7 @@ php craft queue/run
 
 # Or test the service directly:
 php craft console/controller/eval \
-  "echo lindemannrock\redirectmanager\RedirectManager::\$plugin->statistics->cleanupOldStatistics();"
+  "echo lindemannrock\redirectmanager\RedirectManager::\$plugin->analytics->cleanupOldAnalytics();"
 ```
 
 ## Permissions
@@ -313,7 +313,7 @@ php craft console/controller/eval \
 - **Create redirects** - Create new redirects
 - **Edit redirects** - Modify existing redirects
 - **Delete redirects** - Remove redirects
-- **View statistics** - Access 404 statistics
+- **View analytics** - Access 404 analytics
 - **View logs** - Access plugin logs
 - **Manage settings** - Change plugin settings
 
@@ -349,10 +349,10 @@ php craft console/controller/eval \
    php craft clear-caches/all
    ```
 
-### Statistics Not Recording
+### Analytics Not Recording
 
 1. Check **Settings → Analytics → Enable Analytics** is enabled (master switch)
-2. Check statistics limit hasn't been reached
+2. Check analytics limit hasn't been reached
 3. Ensure IP hash salt is configured (run: `php craft redirect-manager/security/generate-salt`)
 4. Check database: `SELECT * FROM redirectmanager_analytics`
 
@@ -446,7 +446,7 @@ class MyController extends Controller
 1. Your plugin encounters a 404 (e.g., `/my-plugin/xyz` doesn't exist)
 2. You call `handleRedirect404()` to check if a redirect exists
 3. Redirect Manager searches for matching redirects
-4. Statistics are recorded with your plugin as the source
+4. Analytics are recorded with your plugin as the source
 5. Returns redirect data if found, or `null` if not
 
 ### Integration Method 2: Push Redirects
@@ -524,7 +524,7 @@ $redirect = $this->handleRedirect404($url, 'shortlink-manager', [
 ]);
 ```
 
-**Statistics dashboard shows breakdown by source:**
+**Analytics dashboard shows breakdown by source:**
 ```
 Redirect Manager: 145 (handled: 98)
 ShortLink Manager: 67 (handled: 54)
@@ -570,16 +570,16 @@ $plugin->redirects->deleteRedirect($id);
 $plugin->redirects->findRedirect($fullUrl, $pathOnly);
 $plugin->redirects->handleExternal404($url, $context); // For plugin integration
 
-// Statistics
-$plugin->statistics->record404($url, $handled, $context); // Context tracks source plugin
-$plugin->statistics->getAllStatistics($siteId, $limit);
-$plugin->statistics->getChartData($siteId, $days);
-$plugin->statistics->getDeviceBreakdown($siteId, $days);
-$plugin->statistics->getBrowserBreakdown($siteId, $days);
-$plugin->statistics->getOsBreakdown($siteId, $days);
-$plugin->statistics->getBotStats($siteId, $days);
-$plugin->statistics->getLocationFromIp($ip);
-$plugin->statistics->exportToCsv($siteId);
+// Analytics
+$plugin->analytics->record404($url, $handled, $context); // Context tracks source plugin
+$plugin->analytics->getAllAnalytics($siteId, $limit);
+$plugin->analytics->getChartData($siteId, $days);
+$plugin->analytics->getDeviceBreakdown($siteId, $days);
+$plugin->analytics->getBrowserBreakdown($siteId, $days);
+$plugin->analytics->getOsBreakdown($siteId, $days);
+$plugin->analytics->getBotStats($siteId, $days);
+$plugin->analytics->getLocationFromIp($ip);
+$plugin->analytics->exportToCsv($siteId);
 
 // Device Detection
 $plugin->deviceDetection->detectDevice($userAgent);

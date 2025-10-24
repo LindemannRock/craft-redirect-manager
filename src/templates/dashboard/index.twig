@@ -14,13 +14,13 @@
 
 {% set crumbs = [
     { label: craft.redirectManager.settings.pluginName, url: url('redirect-manager') },
-    { label: 'Dashboard'|t('redirect-manager'), url: url('redirect-manager/statistics') }
+    { label: 'Dashboard'|t('redirect-manager'), url: url('redirect-manager/analytics') }
 ] %}
 
 {% block toolbar %}
     <div id="toolbar" class="flex" style="align-items: flex-end;">
         <div class="flex-grow">
-            <form method="get" action="{{ url('redirect-manager/statistics') }}">
+            <form method="get" action="{{ url('redirect-manager/analytics') }}">
                 <div class="flex">
                     <div class="btngroup">
                         <button type="button" class="btn menubtn statusmenubtn">
@@ -143,8 +143,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% if statistics|length %}
-                        {% for stat in statistics %}
+                    {% if analytics|length %}
+                        {% for stat in analytics %}
                             <tr data-id="{{ stat.id }}">
                                 <td class="checkbox-cell">
                                     <div class="checkbox" title="Select" tabindex="0" aria-checked="false" role="checkbox"></div>
@@ -207,7 +207,7 @@
                     {% else %}
                         <tr>
                             <td colspan="11" style="text-align: center; padding: 2em;">
-                                {{ 'No statistics found.'|t('redirect-manager') }}
+                                {{ 'No analytics found.'|t('redirect-manager') }}
                             </td>
                         </tr>
                     {% endif %}
@@ -221,7 +221,7 @@
     <div id="footer" class="flex flex-justify">
         <div class="light">
             <div class="flex pagination">
-                <nav class="flex" aria-label="statistics pagination">
+                <nav class="flex" aria-label="analytics pagination">
                     <button type="button" class="page-link prev-page {{ page <= 1 ? 'disabled' : '' }}" {{ page <= 1 ? 'disabled' : '' }} title="Previous Page"></button>
                     <button type="button" class="page-link next-page {{ page >= totalPages ? 'disabled' : '' }}" {{ page >= totalPages ? 'disabled' : '' }} title="Next Page"></button>
                 </nav>
@@ -239,9 +239,9 @@
             <button type="button" class="btn secondary" id="clear-btn">
                 <span id="clear-label">{{ 'Clear All'|t('redirect-manager') }}</span>
             </button>
-            <form method="post" action="{{ actionUrl('redirect-manager/statistics/export-csv') }}" style="display: inline;" id="export-form">
+            <form method="post" action="{{ actionUrl('redirect-manager/analytics/export-csv') }}" style="display: inline;" id="export-form">
                 {{ csrfInput() }}
-                <input type="hidden" name="statisticIds" id="export-statistic-ids" value="">
+                <input type="hidden" name="analyticsIds" id="export-analytics-ids" value="">
                 <button type="submit" class="btn" id="export-btn">
                     <span id="export-label">{{ 'Export'|t('redirect-manager') }}</span>
                 </button>
@@ -323,17 +323,17 @@
             const hasSelection = selectedIds.size > 0;
             const clearLabel = document.getElementById('clear-label');
             const exportLabel = document.getElementById('export-label');
-            const exportStatisticIds = document.getElementById('export-statistic-ids');
+            const exportAnalyticsIds = document.getElementById('export-analytics-ids');
 
             if (hasSelection) {
                 const count = selectedIds.size;
                 clearLabel.textContent = `{{ 'Clear'|t('redirect-manager') }} (${count})`;
                 exportLabel.textContent = `{{ 'Export'|t('redirect-manager') }} (${count})`;
-                exportStatisticIds.value = JSON.stringify(Array.from(selectedIds));
+                exportAnalyticsIds.value = JSON.stringify(Array.from(selectedIds));
             } else {
                 clearLabel.textContent = '{{ 'Clear All'|t('redirect-manager') }}';
                 exportLabel.textContent = '{{ 'Export'|t('redirect-manager') }}';
-                exportStatisticIds.value = '';
+                exportAnalyticsIds.value = '';
             }
         }
 
@@ -378,28 +378,28 @@
 
             if (ids.length > 0) {
                 // Delete selected items
-                if (!confirm(`Delete ${ids.length} statistic${ids.length > 1 ? 's' : ''}?`)) return;
+                if (!confirm(`Delete ${ids.length} analytics record${ids.length > 1 ? 's' : ''}?`)) return;
 
                 // Create array of promises for each delete
                 const deletePromises = ids.map(id =>
-                    Craft.sendActionRequest('POST', 'redirect-manager/statistics/delete', {
-                        data: { statisticId: id }
+                    Craft.sendActionRequest('POST', 'redirect-manager/analytics/delete', {
+                        data: { analyticId: id }
                     })
                 );
 
                 Promise.all(deletePromises).then(() => {
-                    Craft.cp.displayNotice(`Deleted ${ids.length} statistics`);
+                    Craft.cp.displayNotice(`Deleted ${ids.length} analytics`);
                     setTimeout(() => window.location.reload(), 1000);
                 });
             } else {
                 // Clear all
-                if (!confirm('Are you sure you want to clear ALL statistics? This cannot be undone.')) return;
+                if (!confirm('Are you sure you want to clear ALL analytics? This cannot be undone.')) return;
 
-                Craft.sendActionRequest('POST', 'redirect-manager/statistics/clear-all', {
+                Craft.sendActionRequest('POST', 'redirect-manager/analytics/clear-all', {
                     data: {}
                 }).then(function(response) {
                     if (response.data.success) {
-                        Craft.cp.displayNotice(`Cleared ${response.data.deleted} statistics`);
+                        Craft.cp.displayNotice(`Cleared ${response.data.deleted} analytics`);
                         setTimeout(() => window.location.reload(), 1000);
                     }
                 });
@@ -413,14 +413,14 @@
                 const row = this.closest('tr');
                 const id = row.dataset.id;
 
-                if (!confirm('Delete this statistic?')) return;
+                if (!confirm('Delete this analytics record?')) return;
 
-                Craft.sendActionRequest('POST', 'redirect-manager/statistics/delete', {
-                    data: { statisticId: id }
+                Craft.sendActionRequest('POST', 'redirect-manager/analytics/delete', {
+                    data: { analyticId: id }
                 }).then(function(response) {
                     if (response.data.success) {
                         row.remove();
-                        Craft.cp.displayNotice('Statistic deleted');
+                        Craft.cp.displayNotice('Analytics record deleted');
                     }
                 });
             });

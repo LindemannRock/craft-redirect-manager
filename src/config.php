@@ -47,7 +47,7 @@ return [
     'setNoCacheHeaders' => true,
 
     // Enable Analytics
-    // Track 404 statistics including device, browser, and visitor data (master switch)
+    // Track 404 analytics including device, browser, and visitor data (master switch)
     // When enabled, IP addresses are always captured and hashed with salt
     'enableAnalytics' => true,
 
@@ -74,20 +74,20 @@ return [
     'deviceDetectionCacheDuration' => 3600, // 1 hour
 
     // Strip Query String From Stats
-    // Should query strings be stripped from statistics URLs
+    // Should query strings be stripped from analytics URLs
     'stripQueryStringFromStats' => true,
 
-    // Statistics Limit
+    // Analytics Limit
     // Maximum number of unique 404 records to retain
-    'statisticsLimit' => 1000,
+    'analyticsLimit' => 1000,
 
-    // Statistics Retention
-    // Number of days to retain statistics (0 = keep forever)
-    'statisticsRetention' => 30,
+    // Analytics Retention
+    // Number of days to retain analytics (0 = keep forever)
+    'analyticsRetention' => 30,
 
-    // Auto Trim Statistics
-    // Whether statistics should be automatically trimmed
-    'autoTrimStatistics' => true,
+    // Auto Trim Analytics
+    // Whether analytics should be automatically trimmed
+    'autoTrimAnalytics' => true,
 
     // Refresh Interval
     // Dashboard refresh interval in seconds
@@ -97,9 +97,9 @@ return [
     // How many redirects to display in the CP
     'redirectsDisplayLimit' => 100,
 
-    // Statistics Display Limit
-    // How many statistics to display in the CP
-    'statisticsDisplayLimit' => 100,
+    // Analytics Display Limit
+    // How many analytics to display in the CP
+    'analyticsDisplayLimit' => 100,
 
     // Items Per Page
     // Items per page in list views

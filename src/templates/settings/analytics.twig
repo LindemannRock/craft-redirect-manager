@@ -35,7 +35,7 @@
 
         {{ forms.lightswitchField({
             label: "Enable Analytics"|t('redirect-manager'),
-            instructions: "Track 404 statistics and visitor data"|t('redirect-manager'),
+            instructions: "Track 404 analytics and visitor data"|t('redirect-manager'),
             id: 'enableAnalytics',
             name: 'settings[enableAnalytics]',
             on: settings.enableAnalytics ?? true,
@@ -94,7 +94,7 @@
 
             {{ forms.lightswitchField({
                 label: 'Strip Query String From Stats'|t('redirect-manager'),
-                instructions: 'Strip query strings from statistics URLs to consolidate similar requests'|t('redirect-manager'),
+                instructions: 'Strip query strings from analytics URLs to consolidate similar requests'|t('redirect-manager'),
                 id: 'stripQueryStringFromStats',
                 name: 'settings[stripQueryStringFromStats]',
                 on: settings.stripQueryStringFromStats,
@@ -108,40 +108,40 @@
             <h2>{{ "Data Retention"|t('redirect-manager') }}</h2>
 
             {{ forms.textField({
-                label: 'Statistics Retention (Days)'|t('redirect-manager'),
-                instructions: 'Number of days to retain statistics (0 = keep forever)'|t('redirect-manager'),
-                id: 'statisticsRetention',
-                name: 'settings[statisticsRetention]',
+                label: 'Analytics Retention (Days)'|t('redirect-manager'),
+                instructions: 'Number of days to retain analytics (0 = keep forever)'|t('redirect-manager'),
+                id: 'analyticsRetention',
+                name: 'settings[analyticsRetention]',
                 type: 'number',
-                value: settings.statisticsRetention,
+                value: settings.analyticsRetention,
                 required: true,
-                disabled: settings.isOverriddenByConfig('statisticsRetention'),
-                warning: settings.isOverriddenByConfig('statisticsRetention') ?
-                    "This is being overridden by the <code>statisticsRetention</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+                disabled: settings.isOverriddenByConfig('analyticsRetention'),
+                warning: settings.isOverriddenByConfig('analyticsRetention') ?
+                    "This is being overridden by the <code>analyticsRetention</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
             }) }}
 
             {{ forms.textField({
-                label: 'Statistics Limit'|t('redirect-manager'),
+                label: 'Analytics Limit'|t('redirect-manager'),
                 instructions: 'Maximum number of unique 404 records to retain'|t('redirect-manager'),
-                id: 'statisticsLimit',
-                name: 'settings[statisticsLimit]',
+                id: 'analyticsLimit',
+                name: 'settings[analyticsLimit]',
                 type: 'number',
-                value: settings.statisticsLimit,
+                value: settings.analyticsLimit,
                 required: true,
-                disabled: settings.isOverriddenByConfig('statisticsLimit'),
-                warning: settings.isOverriddenByConfig('statisticsLimit') ?
-                    "This is being overridden by the <code>statisticsLimit</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+                disabled: settings.isOverriddenByConfig('analyticsLimit'),
+                warning: settings.isOverriddenByConfig('analyticsLimit') ?
+                    "This is being overridden by the <code>analyticsLimit</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
             }) }}
 
             {{ forms.lightswitchField({
-                label: 'Auto Trim Statistics'|t('redirect-manager'),
-                instructions: 'Automatically trim statistics to respect the limit'|t('redirect-manager'),
-                id: 'autoTrimStatistics',
-                name: 'settings[autoTrimStatistics]',
-                on: settings.autoTrimStatistics,
-                disabled: settings.isOverriddenByConfig('autoTrimStatistics'),
-                warning: settings.isOverriddenByConfig('autoTrimStatistics') ?
-                    "This is being overridden by the <code>autoTrimStatistics</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+                label: 'Auto Trim Analytics'|t('redirect-manager'),
+                instructions: 'Automatically trim analytics to respect the limit'|t('redirect-manager'),
+                id: 'autoTrimAnalytics',
+                name: 'settings[autoTrimAnalytics]',
+                on: settings.autoTrimAnalytics,
+                disabled: settings.isOverriddenByConfig('autoTrimAnalytics'),
+                warning: settings.isOverriddenByConfig('autoTrimAnalytics') ?
+                    "This is being overridden by the <code>autoTrimAnalytics</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
             }) }}
 
             <hr>

@@ -13,9 +13,9 @@ use craft\base\Widget;
 use lindemannrock\redirectmanager\RedirectManager;
 
 /**
- * Redirect Manager Statistics Summary Widget
+ * Redirect Manager Analytics Summary Widget
  */
-class StatsSummaryWidget extends Widget
+class AnalyticsSummaryWidget extends Widget
 {
     /**
      * @var int Number of days to show stats for
@@ -95,8 +95,8 @@ class StatsSummaryWidget extends Widget
             return '<p class="light">' . Craft::t('redirect-manager', 'Analytics are disabled in plugin settings.') . '</p>';
         }
 
-        // Get statistics data
-        $chartData = RedirectManager::$plugin->statistics->getChartData(null, $this->days);
+        // Get analytics data
+        $chartData = RedirectManager::$plugin->analytics->getChartData(null, $this->days);
 
         // Calculate totals
         $totalHandled = array_sum(array_column($chartData, 'handled'));

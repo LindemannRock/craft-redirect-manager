@@ -90,24 +90,24 @@ class Settings extends Model
     public ?string $ipHashSalt = null;
 
     /**
-     * @var bool Should query strings be stripped from statistics URLs
+     * @var bool Should query strings be stripped from analytics URLs
      */
     public bool $stripQueryStringFromStats = true;
 
     /**
      * @var int Maximum number of unique 404 records to retain
      */
-    public int $statisticsLimit = 1000;
+    public int $analyticsLimit = 1000;
 
     /**
-     * @var int Number of days to retain statistics (0 = keep forever)
+     * @var int Number of days to retain analytics (0 = keep forever)
      */
-    public int $statisticsRetention = 30;
+    public int $analyticsRetention = 30;
 
     /**
-     * @var bool Whether statistics should be automatically trimmed
+     * @var bool Whether analytics should be automatically trimmed
      */
-    public bool $autoTrimStatistics = true;
+    public bool $autoTrimAnalytics = true;
 
     /**
      * @var int Dashboard refresh interval in seconds
@@ -120,9 +120,9 @@ class Settings extends Model
     public int $redirectsDisplayLimit = 100;
 
     /**
-     * @var int How many statistics to display in the CP
+     * @var int How many analytics to display in the CP
      */
-    public int $statisticsDisplayLimit = 100;
+    public int $analyticsDisplayLimit = 100;
 
     /**
      * @var int Items per page in list views
@@ -190,7 +190,7 @@ class Settings extends Model
                     'anonymizeIpAddress',
                     'enableGeoDetection',
                     'stripQueryStringFromStats',
-                    'autoTrimStatistics',
+                    'autoTrimAnalytics',
                     'enableApiEndpoint',
                 ],
                 'boolean',
@@ -198,16 +198,16 @@ class Settings extends Model
             ['redirectSrcMatch', 'default', 'value' => 'pathonly'],
             ['redirectSrcMatch', 'string'],
             ['redirectSrcMatch', 'in', 'range' => ['pathonly', 'fullurl']],
-            ['statisticsLimit', 'integer', 'min' => 1],
-            ['statisticsLimit', 'default', 'value' => 1000],
-            ['statisticsRetention', 'integer', 'min' => 0],
-            ['statisticsRetention', 'default', 'value' => 30],
+            ['analyticsLimit', 'integer', 'min' => 1],
+            ['analyticsLimit', 'default', 'value' => 1000],
+            ['analyticsRetention', 'integer', 'min' => 0],
+            ['analyticsRetention', 'default', 'value' => 30],
             ['refreshIntervalSecs', 'integer', 'min' => 0],
             ['refreshIntervalSecs', 'default', 'value' => 5],
             ['redirectsDisplayLimit', 'integer', 'min' => 1],
             ['redirectsDisplayLimit', 'default', 'value' => 100],
-            ['statisticsDisplayLimit', 'integer', 'min' => 1],
-            ['statisticsDisplayLimit', 'default', 'value' => 100],
+            ['analyticsDisplayLimit', 'integer', 'min' => 1],
+            ['analyticsDisplayLimit', 'default', 'value' => 100],
             ['itemsPerPage', 'integer', 'min' => 10, 'max' => 500],
             ['itemsPerPage', 'default', 'value' => 100],
             ['undoWindowMinutes', 'integer'],
@@ -265,7 +265,7 @@ class Settings extends Model
                 'anonymizeIpAddress',
                 'enableGeoDetection',
                 'stripQueryStringFromStats',
-                'autoTrimStatistics',
+                'autoTrimAnalytics',
                 'enableApiEndpoint',
                 'enableRedirectCache',
             ];
@@ -278,11 +278,11 @@ class Settings extends Model
 
             // Convert integer fields
             $integerFields = [
-                'statisticsLimit',
-                'statisticsRetention',
+                'analyticsLimit',
+                'analyticsRetention',
                 'refreshIntervalSecs',
                 'redirectsDisplayLimit',
-                'statisticsDisplayLimit',
+                'analyticsDisplayLimit',
                 'itemsPerPage',
                 'redirectCacheDuration',
                 'undoWindowMinutes',

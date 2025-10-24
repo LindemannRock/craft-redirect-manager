@@ -29,13 +29,13 @@ use craft\web\UrlManager;
 use craft\web\twig\variables\CraftVariable;
 use lindemannrock\redirectmanager\models\Settings;
 use lindemannrock\redirectmanager\services\RedirectsService;
-use lindemannrock\redirectmanager\services\StatisticsService;
+use lindemannrock\redirectmanager\services\AnalyticsService;
 use lindemannrock\redirectmanager\services\MatchingService;
 use lindemannrock\redirectmanager\services\DeviceDetectionService;
-use lindemannrock\redirectmanager\jobs\CleanupStatisticsJob;
+use lindemannrock\redirectmanager\jobs\CleanupAnalyticsJob;
 use lindemannrock\redirectmanager\variables\RedirectManagerVariable;
 use lindemannrock\redirectmanager\utilities\RedirectManagerUtility;
-use lindemannrock\redirectmanager\widgets\StatsSummaryWidget;
+use lindemannrock\redirectmanager\widgets\AnalyticsSummaryWidget;
 use lindemannrock\redirectmanager\widgets\Unhandled404sWidget;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\logginglibrary\LoggingLibrary;
@@ -49,7 +49,7 @@ use yii\base\Event;
  * @since     1.0.0
  *
  * @property-read RedirectsService $redirects
- * @property-read StatisticsService $statistics
+ * @property-read AnalyticsService $analytics
  * @property-read MatchingService $matching
  * @property-read DeviceDetectionService $deviceDetection
  * @property-read Settings $settings
@@ -109,13 +109,13 @@ class RedirectManager extends Plugin
         // Register services
         $this->setComponents([
             'redirects' => RedirectsService::class,
-            'statistics' => StatisticsService::class,
+            'analytics' => AnalyticsService::class,
             'matching' => MatchingService::class,
             'deviceDetection' => DeviceDetectionService::class,
         ]);
 
-        // Schedule statistics cleanup if retention is enabled
-        $this->scheduleStatisticsCleanup();
+        // Schedule analytics cleanup if retention is enabled
+        $this->scheduleAnalyticsCleanup();
 
         // Register translations
         Craft::$app->i18n->translations['redirect-manager'] = [
@@ -163,7 +163,7 @@ class RedirectManager extends Plugin
             Dashboard::class,
             Dashboard::EVENT_REGISTER_WIDGET_TYPES,
             function(RegisterComponentTypesEvent $event) {
-                $event->types[] = StatsSummaryWidget::class;
+                $event->types[] = AnalyticsSummaryWidget::class;
                 $event->types[] = Unhandled404sWidget::class;
             }
         );
@@ -222,7 +222,7 @@ class RedirectManager extends Plugin
                     'label' => Craft::t('redirect-manager', 'Redirects'),
                     'url' => 'redirect-manager/redirects',
                 ],
-                'statistics' => [
+                'analytics' => [
                     'label' => Craft::t('redirect-manager', 'Analytics'),
                     'url' => 'redirect-manager/analytics',
                 ],
@@ -319,9 +319,9 @@ class RedirectManager extends Plugin
     {
         return [
             // Dashboard routes (404 list)
-            'redirect-manager' => 'redirect-manager/statistics/dashboard',
-            'redirect-manager/dashboard' => 'redirect-manager/statistics/dashboard',
-            'redirect-manager/dashboard/export-csv' => 'redirect-manager/statistics/export-csv',
+            'redirect-manager' => 'redirect-manager/analytics/dashboard',
+            'redirect-manager/dashboard' => 'redirect-manager/analytics/dashboard',
+            'redirect-manager/dashboard/export-csv' => 'redirect-manager/analytics/export-csv',
 
             // Redirects routes
             'redirect-manager/redirects' => 'redirect-manager/redirects/index',
@@ -329,8 +329,7 @@ class RedirectManager extends Plugin
             'redirect-manager/redirects/<redirectId:\d+>' => 'redirect-manager/redirects/edit',
 
             // Analytics routes (charts/analytics)
-            'redirect-manager/analytics' => 'redirect-manager/statistics/statistics',
-            'redirect-manager/statistics' => 'redirect-manager/statistics/statistics', // Legacy route for backward compatibility
+            'redirect-manager/analytics' => 'redirect-manager/analytics/index',
 
             // Import/Export routes
             'redirect-manager/import-export' => 'redirect-manager/import-export/index',
@@ -363,8 +362,8 @@ class RedirectManager extends Plugin
             'redirectManager:deleteRedirects' => [
                 'label' => Craft::t('redirect-manager', 'Delete redirects'),
             ],
-            'redirectManager:viewStatistics' => [
-                'label' => Craft::t('redirect-manager', 'View statistics'),
+            'redirectManager:viewAnalytics' => [
+                'label' => Craft::t('redirect-manager', 'View analytics'),
             ],
             'redirectManager:viewLogs' => [
                 'label' => Craft::t('redirect-manager', 'View logs'),
@@ -376,27 +375,27 @@ class RedirectManager extends Plugin
     }
 
     /**
-     * Schedule statistics cleanup job
+     * Schedule analytics cleanup job
      */
-    private function scheduleStatisticsCleanup(): void
+    private function scheduleAnalyticsCleanup(): void
     {
         $settings = $this->getSettings();
 
         // Only schedule cleanup if retention is enabled (> 0)
-        if ($settings->statisticsRetention > 0) {
+        if ($settings->analyticsRetention > 0) {
             // Check if a cleanup job is already in the queue
             $existingJob = (new \craft\db\Query())
                 ->from('{{%queue}}')
-                ->where(['like', 'job', 'CleanupStatisticsJob'])
+                ->where(['like', 'job', 'CleanupAnalyticsJob'])
                 ->andWhere(['<=', 'timePushed', time() + 86400])
                 ->exists();
 
             if (!$existingJob) {
-                $job = new CleanupStatisticsJob();
+                $job = new CleanupAnalyticsJob();
                 Craft::$app->queue->delay(5 * 60)->push($job);
 
                 Craft::info(
-                    Craft::t('redirect-manager', 'Scheduled initial statistics cleanup job'),
+                    Craft::t('redirect-manager', 'Scheduled initial analytics cleanup job'),
                     __METHOD__
                 );
             }

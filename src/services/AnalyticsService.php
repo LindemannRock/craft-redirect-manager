@@ -12,20 +12,20 @@ use Craft;
 use craft\base\Component;
 use craft\db\Query;
 use craft\helpers\Db;
-use lindemannrock\redirectmanager\records\StatisticRecord;
+use lindemannrock\redirectmanager\records\AnalyticsRecord;
 use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 
 /**
- * Statistics Service
+ * Analytics Service
  *
- * Tracks 404 errors and provides statistics data
+ * Tracks 404 errors and provides analytics data
  *
  * @author    LindemannRock
  * @package   RedirectManager
  * @since     1.0.0
  */
-class StatisticsService extends Component
+class AnalyticsService extends Component
 {
     use LoggingTrait;
 
@@ -104,7 +104,7 @@ class StatisticsService extends Component
 
         // Check if record exists
         $existing = (new Query())
-            ->from(StatisticRecord::tableName())
+            ->from(AnalyticsRecord::tableName())
             ->where([
                 'urlParsed' => $urlParsed,
                 'siteId' => $siteId,
@@ -115,7 +115,7 @@ class StatisticsService extends Component
             // Update existing record
             Craft::$app->getDb()->createCommand()
                 ->update(
-                    StatisticRecord::tableName(),
+                    AnalyticsRecord::tableName(),
                     [
                         'count' => new \yii\db\Expression('[[count]] + 1'),
                         'handled' => $handled,
@@ -149,10 +149,10 @@ class StatisticsService extends Component
                 )
                 ->execute();
 
-            $this->logDebug('Updated 404 statistic', ['url' => $urlParsed, 'count' => $existing['count'] + 1, 'source' => $sourcePlugin]);
+            $this->logDebug('Updated 404 analytics record', ['url' => $urlParsed, 'count' => $existing['count'] + 1, 'source' => $sourcePlugin]);
         } else {
             // Create new record
-            $record = new StatisticRecord();
+            $record = new AnalyticsRecord();
             $record->siteId = $siteId;
             $record->url = $url;
             $record->urlParsed = $urlParsed;
@@ -184,30 +184,30 @@ class StatisticsService extends Component
             $record->lastHit = Db::prepareDateForDb(new \DateTime());
 
             if ($record->save()) {
-                $this->logDebug('Created 404 statistic', ['url' => $urlParsed, 'source' => $sourcePlugin]);
+                $this->logDebug('Created 404 analytics record', ['url' => $urlParsed, 'source' => $sourcePlugin]);
 
-                // Check if we need to trim statistics
-                if ($settings->autoTrimStatistics) {
-                    $this->trimStatistics();
+                // Check if we need to trim analytics
+                if ($settings->autoTrimAnalytics) {
+                    $this->trimAnalytics();
                 }
             } else {
-                $this->logError('Failed to save 404 statistic', ['errors' => $record->getErrors()]);
+                $this->logError('Failed to save 404 analytics record', ['errors' => $record->getErrors()]);
             }
         }
     }
 
     /**
-     * Get all statistics
+     * Get all analytics
      *
      * @param int|null $siteId
      * @param int|null $limit
      * @param string $orderBy
      * @return array
      */
-    public function getAllStatistics(?int $siteId = null, ?int $limit = null, string $orderBy = 'lastHit DESC'): array
+    public function getAllAnalytics(?int $siteId = null, ?int $limit = null, string $orderBy = 'lastHit DESC'): array
     {
         $query = (new Query())
-            ->from(StatisticRecord::tableName());
+            ->from(AnalyticsRecord::tableName());
 
         if ($siteId !== null) {
             $query->where(['siteId' => $siteId]);
@@ -232,7 +232,7 @@ class StatisticsService extends Component
     public function getUnhandled404s(?int $siteId = null, ?int $limit = null): array
     {
         $query = (new Query())
-            ->from(StatisticRecord::tableName())
+            ->from(AnalyticsRecord::tableName())
             ->where(['handled' => false]);
 
         if ($siteId !== null) {
@@ -258,7 +258,7 @@ class StatisticsService extends Component
     public function getHandled404s(?int $siteId = null, ?int $limit = null): array
     {
         $query = (new Query())
-            ->from(StatisticRecord::tableName())
+            ->from(AnalyticsRecord::tableName())
             ->where(['handled' => true]);
 
         if ($siteId !== null) {
@@ -275,16 +275,16 @@ class StatisticsService extends Component
     }
 
     /**
-     * Get statistics count
+     * Get analytics count
      *
      * @param int|null $siteId
      * @param bool|null $handled
      * @return int
      */
-    public function getStatisticsCount(?int $siteId = null, ?bool $handled = null): int
+    public function getAnalyticsCount(?int $siteId = null, ?bool $handled = null): int
     {
         $query = (new Query())
-            ->from(StatisticRecord::tableName());
+            ->from(AnalyticsRecord::tableName());
 
         if ($siteId !== null) {
             $query->where(['siteId' => $siteId]);
@@ -298,7 +298,7 @@ class StatisticsService extends Component
     }
 
     /**
-     * Get statistics for dashboard charts
+     * Get analytics for dashboard charts
      *
      * @param int|null $siteId
      * @param int $days Number of days to look back
@@ -315,7 +315,7 @@ class StatisticsService extends Component
                 'SUM(CASE WHEN handled = 1 THEN 1 ELSE 0 END) as handled',
                 'SUM(CASE WHEN handled = 0 THEN 1 ELSE 0 END) as unhandled',
             ])
-            ->from(StatisticRecord::tableName())
+            ->from(AnalyticsRecord::tableName())
             ->where(['>=', 'lastHit', Db::prepareDateForDb($date)])
             ->groupBy('DATE(lastHit)')
             ->orderBy('date ASC');
@@ -338,7 +338,7 @@ class StatisticsService extends Component
     public function getMostCommon404s(?int $siteId = null, int $limit = 10, ?bool $handled = null): array
     {
         $query = (new Query())
-            ->from(StatisticRecord::tableName())
+            ->from(AnalyticsRecord::tableName())
             ->orderBy(['count' => SORT_DESC])
             ->limit($limit);
 
@@ -364,7 +364,7 @@ class StatisticsService extends Component
     public function getRecent404s(?int $siteId = null, int $limit = 10, ?bool $handled = null): array
     {
         $query = (new Query())
-            ->from(StatisticRecord::tableName())
+            ->from(AnalyticsRecord::tableName())
             ->orderBy(['lastHit' => SORT_DESC])
             ->limit($limit);
 
@@ -380,22 +380,22 @@ class StatisticsService extends Component
     }
 
     /**
-     * Delete a statistic by ID
+     * Delete an analytic by ID
      *
      * @param int $id
      * @return bool
      */
-    public function deleteStatistic(int $id): bool
+    public function deleteAnalytic(int $id): bool
     {
-        $record = StatisticRecord::findOne($id);
+        $record = AnalyticsRecord::findOne($id);
 
         if (!$record) {
-            $this->logError('Statistic not found', ['id' => $id]);
+            $this->logError('Analytics record not found', ['id' => $id]);
             return false;
         }
 
         if ($record->delete()) {
-            $this->logInfo('Statistic deleted', ['id' => $id]);
+            $this->logInfo('Analytics record deleted', ['id' => $id]);
             return true;
         }
 
@@ -403,15 +403,15 @@ class StatisticsService extends Component
     }
 
     /**
-     * Clear all statistics
+     * Clear all analytics
      *
      * @param int|null $siteId
      * @return int Number of records deleted
      */
-    public function clearStatistics(?int $siteId = null): int
+    public function clearAnalytics(?int $siteId = null): int
     {
         $command = Craft::$app->getDb()->createCommand()
-            ->delete(StatisticRecord::tableName());
+            ->delete(AnalyticsRecord::tableName());
 
         if ($siteId !== null) {
             $command->where(['siteId' => $siteId]);
@@ -419,24 +419,24 @@ class StatisticsService extends Component
 
         $count = $command->execute();
 
-        $this->logInfo('Statistics cleared', ['count' => $count, 'siteId' => $siteId]);
+        $this->logInfo('Analytics cleared', ['count' => $count, 'siteId' => $siteId]);
 
         return $count;
     }
 
     /**
-     * Trim statistics to respect the limit
+     * Trim analytics to respect the limit
      *
      * @return int Number of records deleted
      */
-    public function trimStatistics(): int
+    public function trimAnalytics(): int
     {
         $settings = RedirectManager::$plugin->getSettings();
-        $limit = $settings->statisticsLimit;
+        $limit = $settings->analyticsLimit;
 
         // Get current count
         $currentCount = (new Query())
-            ->from(StatisticRecord::tableName())
+            ->from(AnalyticsRecord::tableName())
             ->count();
 
         if ($currentCount <= $limit) {
@@ -446,7 +446,7 @@ class StatisticsService extends Component
         // Get IDs to delete (oldest by lastHit, lowest count)
         $idsToDelete = (new Query())
             ->select(['id'])
-            ->from(StatisticRecord::tableName())
+            ->from(AnalyticsRecord::tableName())
             ->orderBy(['lastHit' => SORT_ASC, 'count' => SORT_ASC])
             ->limit($currentCount - $limit)
             ->column();
@@ -457,23 +457,23 @@ class StatisticsService extends Component
 
         // Delete the records
         $deleted = Craft::$app->getDb()->createCommand()
-            ->delete(StatisticRecord::tableName(), ['in', 'id', $idsToDelete])
+            ->delete(AnalyticsRecord::tableName(), ['in', 'id', $idsToDelete])
             ->execute();
 
-        $this->logInfo('Trimmed statistics', ['deleted' => $deleted]);
+        $this->logInfo('Trimmed analytics', ['deleted' => $deleted]);
 
         return $deleted;
     }
 
     /**
-     * Clean up old statistics based on retention setting
+     * Clean up old analytics based on retention setting
      *
      * @return int Number of records deleted
      */
-    public function cleanupOldStatistics(): int
+    public function cleanupOldAnalytics(): int
     {
         $settings = RedirectManager::$plugin->getSettings();
-        $retention = $settings->statisticsRetention;
+        $retention = $settings->analyticsRetention;
 
         if ($retention <= 0) {
             return 0;
@@ -483,45 +483,45 @@ class StatisticsService extends Component
 
         $deleted = Craft::$app->getDb()->createCommand()
             ->delete(
-                StatisticRecord::tableName(),
+                AnalyticsRecord::tableName(),
                 ['<', 'lastHit', Db::prepareDateForDb($date)]
             )
             ->execute();
 
         if ($deleted > 0) {
-            $this->logInfo('Cleaned up old statistics', ['deleted' => $deleted, 'retention' => $retention]);
+            $this->logInfo('Cleaned up old analytics', ['deleted' => $deleted, 'retention' => $retention]);
         }
 
         return $deleted;
     }
 
     /**
-     * Export statistics to CSV
+     * Export analytics to CSV
      *
      * @param int|null $siteId
      * @return string CSV content
      */
-    public function exportToCsv(?int $siteId = null, ?array $statisticIds = null): string
+    public function exportToCsv(?int $siteId = null, ?array $analyticsIds = null): string
     {
         // If specific IDs provided, fetch only those
-        if ($statisticIds && is_array($statisticIds) && !empty($statisticIds)) {
+        if ($analyticsIds && is_array($analyticsIds) && !empty($analyticsIds)) {
             $query = (new \craft\db\Query())
-                ->from(StatisticRecord::tableName())
-                ->where(['in', 'id', $statisticIds])
+                ->from(AnalyticsRecord::tableName())
+                ->where(['in', 'id', $analyticsIds])
                 ->orderBy(['lastHit' => SORT_DESC]);
 
             if ($siteId) {
                 $query->andWhere(['siteId' => $siteId]);
             }
 
-            $statistics = $query->all();
+            $analytics = $query->all();
         } else {
-            $statistics = $this->getAllStatistics($siteId);
+            $analytics = $this->getAllAnalytics($siteId);
         }
 
         $csv = "URL,Handled,Count,Referrer,Remote IP,User Agent,Last Hit,Date Created\n";
 
-        foreach ($statistics as $stat) {
+        foreach ($analytics as $stat) {
             $csv .= sprintf(
                 '"%s","%s","%s","%s","%s","%s","%s","%s"' . "\n",
                 str_replace('"', '""', $stat['url']),
@@ -551,7 +551,7 @@ class StatisticsService extends Component
 
         $query = (new Query())
             ->select(['deviceType', 'COUNT(*) as count'])
-            ->from(StatisticRecord::tableName())
+            ->from(AnalyticsRecord::tableName())
             ->where(['not', ['deviceType' => null]])
             ->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)])
             ->groupBy('deviceType')
@@ -584,7 +584,7 @@ class StatisticsService extends Component
 
         $query = (new Query())
             ->select(['browser', 'COUNT(*) as count'])
-            ->from(StatisticRecord::tableName())
+            ->from(AnalyticsRecord::tableName())
             ->where(['not', ['browser' => null]])
             ->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)])
             ->groupBy('browser')
@@ -616,7 +616,7 @@ class StatisticsService extends Component
 
         $query = (new Query())
             ->select(['osName', 'COUNT(*) as count'])
-            ->from(StatisticRecord::tableName())
+            ->from(AnalyticsRecord::tableName())
             ->where(['not', ['osName' => null]])
             ->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)])
             ->groupBy('osName')
@@ -646,7 +646,7 @@ class StatisticsService extends Component
         $date = (new \DateTime())->modify("-{$days} days");
 
         $query = (new Query())
-            ->from(StatisticRecord::tableName())
+            ->from(AnalyticsRecord::tableName())
             ->where(['>=', 'lastHit', Db::prepareDateForDb($date)]);
 
         if ($siteId) {

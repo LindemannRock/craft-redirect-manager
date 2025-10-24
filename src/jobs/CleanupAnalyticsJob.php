@@ -13,15 +13,15 @@ use craft\queue\BaseJob;
 use lindemannrock\redirectmanager\RedirectManager;
 
 /**
- * Cleanup Statistics Job
+ * Cleanup Analytics Job
  *
- * Automatically cleans up old statistics based on retention settings
+ * Automatically cleans up old analytics based on retention settings
  *
  * @author    LindemannRock
  * @package   RedirectManager
  * @since     1.0.0
  */
-class CleanupStatisticsJob extends BaseJob
+class CleanupAnalyticsJob extends BaseJob
 {
     /**
      * @inheritdoc
@@ -31,16 +31,16 @@ class CleanupStatisticsJob extends BaseJob
         $settings = RedirectManager::$plugin->getSettings();
 
         // Only run if retention is enabled
-        if ($settings->statisticsRetention <= 0) {
+        if ($settings->analyticsRetention <= 0) {
             return;
         }
 
-        // Clean up old statistics
-        $deleted = RedirectManager::$plugin->statistics->cleanupOldStatistics();
+        // Clean up old analytics
+        $deleted = RedirectManager::$plugin->analytics->cleanupOldAnalytics();
 
         // Also trim if auto-trim is enabled
-        if ($settings->autoTrimStatistics) {
-            $trimmed = RedirectManager::$plugin->statistics->trimStatistics();
+        if ($settings->autoTrimAnalytics) {
+            $trimmed = RedirectManager::$plugin->analytics->trimAnalytics();
         }
 
         // Re-queue this job to run again in 24 hours
@@ -53,9 +53,9 @@ class CleanupStatisticsJob extends BaseJob
     protected function defaultDescription(): ?string
     {
         $settings = RedirectManager::$plugin->getSettings();
-        return Craft::t('redirect-manager', '{pluginName}: Trimming redirect statistics ({limit})', [
+        return Craft::t('redirect-manager', '{pluginName}: Trimming redirect analytics ({limit})', [
             'pluginName' => $settings->pluginName,
-            'limit' => $settings->statisticsLimit,
+            'limit' => $settings->analyticsLimit,
         ]);
     }
 }
