@@ -14,6 +14,7 @@ use craft\db\Query;
 use craft\helpers\Db;
 use craft\helpers\App;
 use craft\validators\ArrayValidator;
+use lindemannrock\logginglibrary\traits\LoggingTrait;
 
 /**
  * Settings Model
@@ -24,6 +25,8 @@ use craft\validators\ArrayValidator;
  */
 class Settings extends Model
 {
+    use LoggingTrait;
+
     /**
      * @var string The public-facing name of the plugin
      */
@@ -165,6 +168,7 @@ class Settings extends Model
     public function init(): void
     {
         parent::init();
+        $this->setLoggingHandle('redirect-manager');
 
         // Fallback to .env if ipHashSalt not set by config file
         if ($this->ipHashSalt === null) {
@@ -246,7 +250,7 @@ class Settings extends Model
                 ->where(['id' => 1])
                 ->one();
         } catch (\Exception $e) {
-            Craft::error('Failed to load settings from database', 'redirect-manager', ['error' => $e->getMessage()]);
+            $settings->logError('Failed to load settings from database', ['error' => $e->getMessage()]);
             return $settings;
         }
 
@@ -317,7 +321,7 @@ class Settings extends Model
     public function saveToDatabase(): bool
     {
         if (!$this->validate()) {
-            Craft::error('Settings validation failed', 'redirect-manager', ['errors' => $this->getErrors()]);
+            $this->logError('Settings validation failed', ['errors' => $this->getErrors()]);
             return false;
         }
 
@@ -346,7 +350,7 @@ class Settings extends Model
         $attributes['dateUpdated'] = Db::prepareDateForDb(new \DateTime());
 
         // Log what we're trying to save
-        Craft::info('Attempting to save settings', 'redirect-manager', ['attributes' => array_keys($attributes)]);
+        $this->logDebug('Attempting to save settings', ['attributes' => array_keys($attributes)]);
 
         // Update existing settings (always row id=1)
         try {
@@ -355,24 +359,22 @@ class Settings extends Model
                 ->execute();
 
             if ($result !== false) {
-                Craft::info('Settings saved successfully to database', 'redirect-manager');
+                $this->logInfo('Settings saved successfully to database');
                 return true;
             }
 
-            Craft::error('Database update returned false', 'redirect-manager');
+            $this->logError('Database update returned false');
             return false;
         } catch (\Exception $e) {
-            $errorMsg = $e->getMessage();
-            Craft::error('Failed to save settings - Exception: ' . $errorMsg, 'redirect-manager');
-            Craft::error('Exception details', 'redirect-manager', [
-                'message' => $errorMsg,
+            $this->logError('Failed to save settings', [
+                'error' => $e->getMessage(),
                 'code' => $e->getCode(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
             // Also check if column exists
             $columnsQuery = $db->createCommand("SHOW COLUMNS FROM {{%redirectmanager_settings}} LIKE 'undoWindowMinutes'")->queryAll();
-            Craft::error('Column check', 'redirect-manager', ['columnExists' => !empty($columnsQuery)]);
+            $this->logError('Column check', ['columnExists' => !empty($columnsQuery)]);
 
             return false;
         }

@@ -11,6 +11,7 @@ namespace lindemannrock\redirectmanager\services;
 use Craft;
 use craft\base\Component;
 use DeviceDetector\DeviceDetector;
+use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
 
 /**
@@ -20,10 +21,21 @@ use lindemannrock\redirectmanager\RedirectManager;
  */
 class DeviceDetectionService extends Component
 {
+    use LoggingTrait;
+
     /**
      * @var DeviceDetector|null
      */
     private ?DeviceDetector $_detector = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+        $this->setLoggingHandle('redirect-manager');
+    }
 
     /**
      * Detect device information from user agent

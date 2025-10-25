@@ -10,6 +10,7 @@ namespace lindemannrock\redirectmanager\controllers;
 
 use Craft;
 use craft\web\Controller;
+use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
 use yii\web\Response;
 
@@ -22,6 +23,17 @@ use yii\web\Response;
  */
 class AnalyticsController extends Controller
 {
+    use LoggingTrait;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+        $this->setLoggingHandle('redirect-manager');
+    }
+
     /**
      * Dashboard - 404 list with filters
      *

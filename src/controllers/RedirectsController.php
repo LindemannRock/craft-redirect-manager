@@ -10,6 +10,7 @@ namespace lindemannrock\redirectmanager\controllers;
 
 use Craft;
 use craft\web\Controller;
+use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\records\RedirectRecord;
 use yii\web\Response;
@@ -23,6 +24,17 @@ use yii\web\Response;
  */
 class RedirectsController extends Controller
 {
+    use LoggingTrait;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+        $this->setLoggingHandle('redirect-manager');
+    }
+
     /**
      * List all redirects
      *

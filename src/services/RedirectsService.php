@@ -263,7 +263,7 @@ class RedirectsService extends Component
             $destination = UrlHelper::siteUrl($destination);
         }
 
-        $this->logInfo('Executing redirect', [
+        $this->logDebug('Executing redirect', [
             'from' => $pathOnly,
             'to' => $destination,
             'statusCode' => $statusCode,

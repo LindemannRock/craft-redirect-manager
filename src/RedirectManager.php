@@ -196,10 +196,7 @@ class RedirectManager extends Plugin
         // Install event listeners for 404 handling and entry changes
         $this->installEventListeners();
 
-        Craft::info(
-            Craft::t('redirect-manager', '{name} plugin loaded', ['name' => $this->name]),
-            __METHOD__
-        );
+        // DO NOT log in init() - it's called on every request
     }
 
     /**
@@ -264,7 +261,7 @@ class RedirectManager extends Plugin
         try {
             return Settings::loadFromDatabase();
         } catch (\Exception $e) {
-            Craft::info('Could not load settings from database', __METHOD__, ['error' => $e->getMessage()]);
+            $this->logInfo('Could not load settings from database', ['error' => $e->getMessage()]);
             return new Settings();
         }
     }
@@ -337,6 +334,8 @@ class RedirectManager extends Plugin
 
             // Import/Export routes
             'redirect-manager/import-export' => 'redirect-manager/import-export/index',
+            'redirect-manager/import-export/map' => 'redirect-manager/import-export/map',
+            'redirect-manager/import-export/preview' => 'redirect-manager/import-export/preview',
 
             // Settings routes
             'redirect-manager/settings' => 'redirect-manager/settings/index',
@@ -404,10 +403,7 @@ class RedirectManager extends Plugin
                 // The job will re-queue itself to run every 24 hours
                 Craft::$app->queue->delay(5 * 60)->push($job);
 
-                Craft::info(
-                    Craft::t('redirect-manager', 'Scheduled initial analytics cleanup job (will run every 24 hours)'),
-                    __METHOD__
-                );
+                $this->logInfo('Scheduled initial analytics cleanup job', ['interval' => '24 hours']);
             }
         }
     }

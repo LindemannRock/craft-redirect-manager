@@ -213,13 +213,7 @@ class ImportExportController extends Controller
             ]);
 
             // Redirect to column mapping
-            return $this->renderTemplate('redirect-manager/import-export/map', [
-                'headers' => $headers,
-                'previewRows' => $previewRows,
-                'rowCount' => $rowCount,
-                'delimiter' => $delimiter,
-                'createBackup' => $createBackup,
-            ]);
+            return $this->redirect('redirect-manager/import-export/map');
 
         } catch (\Exception $e) {
             $this->logError('Failed to parse CSV', ['error' => $e->getMessage()]);
@@ -229,14 +223,69 @@ class ImportExportController extends Controller
     }
 
     /**
-     * Preview import with mapped columns
+     * Map CSV columns
+     *
+     * @return Response
+     */
+    public function actionMap(): Response
+    {
+        $this->requirePermission('redirectManager:manageSettings');
+
+        // Get data from session
+        $importData = Craft::$app->getSession()->get('redirect-import');
+
+        if (!$importData) {
+            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'No import data found. Please upload a CSV file.'));
+            return $this->redirect('redirect-manager/import-export');
+        }
+
+        // Parse CSV to get preview rows
+        $previewRows = [];
+        try {
+            $handle = fopen($importData['filePath'], 'r');
+            fgetcsv($handle, 0, $importData['delimiter']); // Skip headers
+
+            $rowCount = 0;
+            while (($row = fgetcsv($handle, 0, $importData['delimiter'])) !== false && $rowCount < 5) {
+                $previewRows[] = $row;
+                $rowCount++;
+            }
+            fclose($handle);
+        } catch (\Exception $e) {
+            $this->logError('Failed to read CSV for mapping', ['error' => $e->getMessage()]);
+        }
+
+        return $this->renderTemplate('redirect-manager/import-export/map', [
+            'headers' => $importData['headers'],
+            'previewRows' => $previewRows,
+            'rowCount' => $importData['rowCount'],
+            'delimiter' => $importData['delimiter'],
+            'createBackup' => $importData['createBackup'],
+        ]);
+    }
+
+    /**
+     * Preview import with mapped columns (POST - process mapping)
      *
      * @return Response
      */
     public function actionPreview(): Response
     {
-        $this->requirePostRequest();
         $this->requirePermission('redirectManager:manageSettings');
+
+        // If GET request, show preview from session
+        if (!Craft::$app->getRequest()->getIsPost()) {
+            $previewData = Craft::$app->getSession()->get('redirect-preview');
+
+            if (!$previewData) {
+                Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'No preview data found. Please map columns first.'));
+                return $this->redirect('redirect-manager/import-export');
+            }
+
+            return $this->renderTemplate('redirect-manager/import-export/preview', $previewData);
+        }
+
+        // POST request - process column mapping
 
         $importData = Craft::$app->getSession()->get('redirect-import');
 
@@ -427,7 +476,8 @@ class ImportExportController extends Controller
             'errors' => count($errorRows),
         ];
 
-        return $this->renderTemplate('redirect-manager/import-export/preview', [
+        // Store preview data in session for rendering
+        Craft::$app->getSession()->set('redirect-preview', [
             'summary' => $summary,
             'validRows' => $validRows,
             'duplicateRows' => $duplicateRows,
@@ -435,6 +485,15 @@ class ImportExportController extends Controller
             'existingCount' => $existingCount,
             'createBackup' => $importData['createBackup'],
         ]);
+
+        // Store validated data for the import action
+        Craft::$app->getSession()->set('redirect-import-validated', [
+            'validRows' => $validRows,
+            'createBackup' => $importData['createBackup'],
+        ]);
+
+        // Redirect to preview page
+        return $this->redirect('redirect-manager/import-export/preview');
     }
 
     /**

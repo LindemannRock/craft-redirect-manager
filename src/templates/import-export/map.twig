@@ -1,16 +1,14 @@
 {% extends "_layouts/cp" %}
 {% set title = "Map CSV Columns"|t('redirect-manager') %}
 {% set fullPageForm = false %}
+{% set selectedSubnavItem = 'import-export' %}
+
 
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
 {% set crumbs = [
     {
         label: plugin.settings.pluginName|t('redirect-manager'),
         url: url('redirect-manager'),
-    },
-    {
-        label: 'Settings'|t('redirect-manager'),
-        url: url('redirect-manager/settings'),
     },
     {
         label: 'Import/Export'|t('redirect-manager'),

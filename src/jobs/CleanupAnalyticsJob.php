@@ -10,6 +10,7 @@ namespace lindemannrock\redirectmanager\jobs;
 
 use Craft;
 use craft\queue\BaseJob;
+use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
 
 /**
@@ -23,10 +24,21 @@ use lindemannrock\redirectmanager\RedirectManager;
  */
 class CleanupAnalyticsJob extends BaseJob
 {
+    use LoggingTrait;
+
     /**
      * @var bool Whether to reschedule after completion
      */
     public bool $reschedule = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+        $this->setLoggingHandle('redirect-manager');
+    }
 
     /**
      * @inheritdoc
@@ -48,7 +60,7 @@ class CleanupAnalyticsJob extends BaseJob
             $trimmed = RedirectManager::$plugin->analytics->trimAnalytics();
         }
 
-        Craft::info('Analytics cleanup completed', 'redirect-manager', ['deleted' => $deleted]);
+        $this->logInfo('Analytics cleanup completed', ['deleted' => $deleted]);
 
         // Reschedule if needed
         if ($this->reschedule) {
