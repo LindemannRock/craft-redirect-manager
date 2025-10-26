@@ -221,14 +221,49 @@ class Settings extends Model
                 ['excludePatterns', 'additionalHeaders'],
                 ArrayValidator::class,
             ],
-            ['logLevel', 'string'],
-            ['logLevel', 'in', 'range' => ['debug', 'info', 'warning', 'error']],
-            ['logLevel', 'default', 'value' => 'error'],
+            [['logLevel'], 'in', 'range' => ['debug', 'info', 'warning', 'error']],
+            [['logLevel'], 'validateLogLevel'],
             ['enableRedirectCache', 'boolean'],
             ['enableRedirectCache', 'default', 'value' => true],
             ['redirectCacheDuration', 'integer', 'min' => 0],
             ['redirectCacheDuration', 'default', 'value' => 3600],
         ];
+    }
+
+    /**
+     * Validate log level - debug requires devMode
+     */
+    public function validateLogLevel($attribute, $params, $validator)
+    {
+        $logLevel = $this->$attribute;
+
+        // Reset session warning when devMode is true - allows warning to show again if devMode changes
+        if (Craft::$app->getConfig()->getGeneral()->devMode && !Craft::$app->getRequest()->getIsConsoleRequest()) {
+            Craft::$app->getSession()->remove('rm_debug_config_warning');
+        }
+
+        // Debug level is only allowed when devMode is enabled
+        if ($logLevel === 'debug' && !Craft::$app->getConfig()->getGeneral()->devMode) {
+            $this->$attribute = 'info';
+
+            if ($this->isOverriddenByConfig('logLevel')) {
+                if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+                    if (Craft::$app->getSession()->get('rm_debug_config_warning') === null) {
+                        $this->logWarning('Log level "debug" from config file changed to "info" because devMode is disabled', [
+                            'configFile' => 'config/redirect-manager.php'
+                        ]);
+                        Craft::$app->getSession()->set('rm_debug_config_warning', true);
+                    }
+                } else {
+                    $this->logWarning('Log level "debug" from config file changed to "info" because devMode is disabled', [
+                        'configFile' => 'config/redirect-manager.php'
+                    ]);
+                }
+            } else {
+                $this->logWarning('Log level automatically changed from "debug" to "info" because devMode is disabled');
+                $this->saveToDatabase();
+            }
+        }
     }
 
     /**
