@@ -16,129 +16,169 @@
 use craft\helpers\App;
 
 return [
-    // Plugin Name
-    // The public-facing name of the plugin
-    'pluginName' => 'Redirect Manager',
+    // Global settings
+    '*' => [
+        // ========================================
+        // GENERAL SETTINGS
+        // ========================================
+        // Basic plugin configuration and redirect behavior
 
-    // Auto Create Redirects
-    // Controls whether redirects are automatically created when entry URIs change
-    'autoCreateRedirects' => true,
+        'pluginName' => 'Redirect Manager',
 
-    // Undo Window
-    // Time window in minutes for detecting immediate undo (A → B → A)
-    // Options: 30, 60, 120, 240 (default: 60)
-    // If editor changes slug back within this window, the redirect is cancelled instead of creating a pair
-    'undoWindowMinutes' => 60,
+        // IP Privacy Protection
+        // Generate salt with: php craft redirect-manager/security/generate-salt
+        // Store in .env as: REDIRECT_MANAGER_IP_SALT="your-64-char-salt"
+        'ipHashSalt' => App::env('REDIRECT_MANAGER_IP_SALT'),
 
-    // Redirect Source Match
-    // Should the legacy URL be matched by path ('pathonly') or full URL ('fullurl')
-    'redirectSrcMatch' => 'pathonly',
+        // Auto Create Redirects
+        // Controls whether redirects are automatically created when entry URIs change
+        'autoCreateRedirects' => true,
 
-    // Strip Query String
-    // Should the query string be stripped from all 404 URLs before evaluation
-    'stripQueryString' => false,
+        // Undo Window
+        // Time window in minutes for detecting immediate undo (A → B → A)
+        // Options: 30, 60, 120, 240 (default: 60)
+        // If editor changes slug back within this window, the redirect is cancelled instead of creating a pair
+        'undoWindowMinutes' => 60,
 
-    // Preserve Query String
-    // Should the query string be preserved and passed to the destination
-    'preserveQueryString' => false,
+        // Redirect Source Match
+        // Should the legacy URL be matched by path ('pathonly') or full URL ('fullurl')
+        'redirectSrcMatch' => 'pathonly',
 
-    // Set No-Cache Headers
-    // Should no-cache headers be set on redirect responses
-    'setNoCacheHeaders' => true,
+        // Strip Query String
+        // Should the query string be stripped from all 404 URLs before evaluation
+        'stripQueryString' => false,
 
-    // Enable Analytics
-    // Track 404 analytics including device, browser, and visitor data (master switch)
-    // When enabled, IP addresses are always captured and hashed with salt
-    'enableAnalytics' => true,
+        // Preserve Query String
+        // Should the query string be preserved and passed to the destination
+        'preserveQueryString' => false,
 
-    // IP Privacy Protection
-    // Generate salt with: php craft redirect-manager/security/generate-salt
-    // Store in .env as: REDIRECT_MANAGER_IP_SALT="your-64-char-salt"
-    'ipHashSalt' => App::env('REDIRECT_MANAGER_IP_SALT'),
+        // Set No-Cache Headers
+        // Should no-cache headers be set on redirect responses
+        'setNoCacheHeaders' => true,
 
-    // Anonymize IP Addresses
-    // Mask IP addresses before hashing (subnet masking for maximum privacy)
-    // IPv4: masks last octet (192.168.1.123 → 192.168.1.0)
-    // IPv6: masks last 80 bits
-    // Trade-off: Reduces unique visitor accuracy (users on same subnet counted as one)
-    'anonymizeIpAddress' => false,
+        // Logging Settings
+        'logLevel' => 'error',             // Log level: 'debug', 'info', 'warning', 'error'
 
-    // Enable Geographic Detection
-    // Detect visitor location (country, city) from IP addresses using ip-api.com
-    // Free service with 45 requests per minute limit
-    'enableGeoDetection' => false,
 
-    // Cache Device Detection
-    // Cache device detection results for better performance
-    'cacheDeviceDetection' => true,
-    'deviceDetectionCacheDuration' => 3600, // 1 hour
+        // ========================================
+        // ANALYTICS SETTINGS
+        // ========================================
+        // 404 tracking, device detection, and data retention
 
-    // Strip Query String From Stats
-    // Should query strings be stripped from analytics URLs
-    'stripQueryStringFromStats' => true,
+        // Enable Analytics
+        // Track 404 analytics including device, browser, and visitor data (master switch)
+        // When enabled, IP addresses are always captured and hashed with salt
+        'enableAnalytics' => true,
 
-    // Analytics Limit
-    // Maximum number of unique 404 records to retain
-    'analyticsLimit' => 1000,
+        // Anonymize IP Addresses
+        // Mask IP addresses before hashing (subnet masking for maximum privacy)
+        // IPv4: masks last octet (192.168.1.123 → 192.168.1.0)
+        // IPv6: masks last 80 bits
+        // Trade-off: Reduces unique visitor accuracy (users on same subnet counted as one)
+        'anonymizeIpAddress' => false,
 
-    // Analytics Retention
-    // Number of days to retain analytics (0 = keep forever)
-    'analyticsRetention' => 30,
+        // Enable Geographic Detection
+        // Detect visitor location (country, city) from IP addresses using ip-api.com
+        // Free service with 45 requests per minute limit
+        'enableGeoDetection' => false,
 
-    // Auto Trim Analytics
-    // Whether analytics should be automatically trimmed
-    'autoTrimAnalytics' => true,
+        // Strip Query String From Stats
+        // Should query strings be stripped from analytics URLs
+        'stripQueryStringFromStats' => true,
 
-    // Refresh Interval
-    // Dashboard refresh interval in seconds
-    'refreshIntervalSecs' => 5,
+        // Analytics Limit
+        // Maximum number of unique 404 records to retain
+        'analyticsLimit' => 1000,
 
-    // Redirects Display Limit
-    // How many redirects to display in the CP
-    'redirectsDisplayLimit' => 100,
+        // Analytics Retention
+        // Number of days to retain analytics (0 = keep forever)
+        'analyticsRetention' => 30,
 
-    // Analytics Display Limit
-    // How many analytics to display in the CP
-    'analyticsDisplayLimit' => 100,
+        // Auto Trim Analytics
+        // Whether analytics should be automatically trimmed
+        'autoTrimAnalytics' => true,
 
-    // Items Per Page
-    // Items per page in list views
-    'itemsPerPage' => 100,
 
-    // Enable API Endpoint
-    // Whether to enable the GraphQL endpoint
-    'enableApiEndpoint' => false,
+        // ========================================
+        // INTERFACE SETTINGS
+        // ========================================
+        // Control panel display options
 
-    // Exclude Patterns
-    // Regular expressions to exclude URLs from redirect handling
-    // Note: Don't exclude static assets - you want to track missing CSS/JS/images to fix them!
-    'excludePatterns' => [
-        // Recommended exclusions (uncomment as needed):
-        // ['pattern' => '^/admin'],                    // Craft admin panel
-        // ['pattern' => '^/cms'],                      // Custom admin URLs
-        // ['pattern' => '^/cpresources'],              // Admin panel resources
-        // ['pattern' => '^/actions'],                  // Craft controller actions
-        // ['pattern' => '^/\\.well-known'],            // Security/verification files
+        'refreshIntervalSecs' => 5,        // Dashboard refresh interval in seconds
+        'redirectsDisplayLimit' => 100,    // How many redirects to display in the CP
+        'analyticsDisplayLimit' => 100,    // How many analytics to display in the CP
+        'itemsPerPage' => 100,             // Items per page in list views
+
+
+        // ========================================
+        // CACHE SETTINGS
+        // ========================================
+        // Performance and caching configuration
+
+        // Redirect Cache
+        'enableRedirectCache' => true,     // Enable caching of redirect lookups
+        'redirectCacheDuration' => 3600,   // How long to cache redirect lookups (1 hour)
+
+        // Device Detection Cache
+        'cacheDeviceDetection' => true,    // Cache device detection results
+        'deviceDetectionCacheDuration' => 3600, // Device detection cache duration (1 hour)
+
+
+        // ========================================
+        // ADVANCED SETTINGS
+        // ========================================
+        // API endpoints, exclusion patterns, and custom headers
+
+        // Enable API Endpoint
+        // Whether to enable the GraphQL endpoint
+        'enableApiEndpoint' => false,
+
+        // Exclude Patterns
+        // Regular expressions to exclude URLs from redirect handling
+        // Note: Don't exclude static assets - you want to track missing CSS/JS/images to fix them!
+        'excludePatterns' => [
+            // Recommended exclusions (uncomment as needed):
+            // ['pattern' => '^/admin'],                    // Craft admin panel
+            // ['pattern' => '^/cms'],                      // Custom admin URLs
+            // ['pattern' => '^/cpresources'],              // Admin panel resources
+            // ['pattern' => '^/actions'],                  // Craft controller actions
+            // ['pattern' => '^/\\.well-known'],            // Security/verification files
+        ],
+
+        // Additional Headers
+        // Additional HTTP headers to add to redirect responses
+        // Note: Cache headers are controlled by the 'setNoCacheHeaders' setting
+        'additionalHeaders' => [
+            // Recommended headers (uncomment as needed):
+            // ['name' => 'X-Robots-Tag', 'value' => 'noindex, nofollow'], // IMPORTANT: Prevents search engines from indexing old URLs
+            // ['name' => 'X-Redirect-By', 'value' => 'Redirect Manager'],  // Debugging/tracking
+        ],
     ],
 
-    // Additional Headers
-    // Additional HTTP headers to add to redirect responses
-    // Note: Cache headers are controlled by the 'setNoCacheHeaders' setting
-    'additionalHeaders' => [
-        // Recommended headers (uncomment as needed):
-        // ['name' => 'X-Robots-Tag', 'value' => 'noindex, nofollow'], // IMPORTANT: Prevents search engines from indexing old URLs
-        // ['name' => 'X-Redirect-By', 'value' => 'Redirect Manager'],  // Debugging/tracking
+    // Dev environment settings
+    'dev' => [
+        'logLevel' => 'debug',             // More verbose logging in dev
+        'analyticsRetention' => 30,        // Keep less data in dev
+        'cacheDeviceDetection' => false,   // No cache - testing
+        'enableRedirectCache' => true,
+        'redirectCacheDuration' => 60,     // 1 minute - see changes quickly
     ],
 
-    // Log Level
-    // Log level for the logging library (debug, info, warning, error)
-    'logLevel' => 'error',
+    // Staging environment settings
+    'staging' => [
+        'logLevel' => 'info',              // Moderate logging in staging
+        'analyticsRetention' => 90,
+        'cacheDeviceDetection' => true,
+        'deviceDetectionCacheDuration' => 1800, // 30 minutes
+        'redirectCacheDuration' => 3600,   // 1 hour
+    ],
 
-    // Enable Redirect Cache
-    // Enable caching of redirect lookups for improved performance
-    'enableRedirectCache' => true,
-
-    // Redirect Cache Duration
-    // How long to cache redirect lookups in seconds (default: 1 hour)
-    'redirectCacheDuration' => 3600,
+    // Production environment settings
+    'production' => [
+        'logLevel' => 'error',             // Only errors in production
+        'analyticsRetention' => 365,       // Keep more data in production
+        'cacheDeviceDetection' => true,
+        'deviceDetectionCacheDuration' => 7200, // 2 hours
+        'redirectCacheDuration' => 86400,  // 24 hours - aggressive caching
+    ],
 ];
