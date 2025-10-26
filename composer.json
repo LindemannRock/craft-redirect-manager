@@ -28,7 +28,7 @@
         "docs": "https://github.com/LindemannRock/craft-redirect-manager/blob/main/README.md"
     },
     "require": {
-       "php": "^8.2",
+        "php": "^8.2",
         "craftcms/cms": "^5.0.0",
         "lindemannrock/craft-logging-library": "^5.0",
         "matomo/device-detector": "^6.4"
