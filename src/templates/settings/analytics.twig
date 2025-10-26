@@ -30,6 +30,7 @@
         {{ actionInput('redirect-manager/settings/save') }}
         {{ csrfInput() }}
         {{ redirectInput('redirect-manager/settings/analytics') }}
+        {{ hiddenInput('section', 'analytics') }}
 
         <h2 style="margin-top: 0px;">{{ "Analytics"|t('redirect-manager') }}</h2>
 

@@ -29,6 +29,7 @@
 		{{ actionInput('redirect-manager/settings/save') }}
 		{{ csrfInput() }}
 		{{ redirectInput('redirect-manager/settings/general') }}
+		{{ hiddenInput('section', 'general') }}
 
 		<h2 style="margin-top: 0px;">{{ "Plugin Settings"|t('redirect-manager') }}</h2>
 

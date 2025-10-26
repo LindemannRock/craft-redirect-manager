@@ -147,7 +147,13 @@ class SettingsController extends Controller
         // Only update fields that were posted and are not overridden by config
         foreach ($settingsData as $key => $value) {
             if (!$settings->isOverriddenByConfig($key) && property_exists($settings, $key)) {
-                $settings->$key = $value;
+                // Check for setter method first (handles array conversions, etc.)
+                $setterMethod = 'set' . ucfirst($key);
+                if (method_exists($settings, $setterMethod)) {
+                    $settings->$setterMethod($value);
+                } else {
+                    $settings->$key = $value;
+                }
             }
         }
 

@@ -28,6 +28,7 @@
 		{{ actionInput('redirect-manager/settings/save') }}
 		{{ csrfInput() }}
 		{{ redirectInput('redirect-manager/settings/advanced') }}
+		{{ hiddenInput('section', 'advanced') }}
 
 		<h2 style="margin-top: 0px;">{{ "API Settings"|t('redirect-manager') }}</h2>
 

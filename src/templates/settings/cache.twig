@@ -28,6 +28,7 @@
 		{{ actionInput('redirect-manager/settings/save') }}
 		{{ csrfInput() }}
 		{{ redirectInput('redirect-manager/settings/cache') }}
+		{{ hiddenInput('section', 'cache') }}
 
 		<h2 style="margin-top: 0px;">{{ "Device Detection Caching"|t('redirect-manager') }}</h2>
 
