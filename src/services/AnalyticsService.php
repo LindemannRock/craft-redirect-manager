@@ -118,6 +118,7 @@ class AnalyticsService extends Component
                     AnalyticsRecord::tableName(),
                     [
                         'count' => new \yii\db\Expression('[[count]] + 1'),
+                        'url' => $url, // Update to latest URL (preserves most recent query string)
                         'handled' => $handled,
                         'sourcePlugin' => $sourcePlugin,
                         'referrer' => $referrer,
@@ -149,7 +150,7 @@ class AnalyticsService extends Component
                 )
                 ->execute();
 
-            $this->logDebug('Updated 404 analytics record', ['url' => $urlParsed, 'count' => $existing['count'] + 1, 'source' => $sourcePlugin]);
+            $this->logDebug('Updated 404 analytics record', ['url' => $url, 'urlParsed' => $urlParsed, 'count' => $existing['count'] + 1, 'source' => $sourcePlugin]);
         } else {
             // Create new record
             $record = new AnalyticsRecord();
@@ -184,7 +185,7 @@ class AnalyticsService extends Component
             $record->lastHit = Db::prepareDateForDb(new \DateTime());
 
             if ($record->save()) {
-                $this->logDebug('Created 404 analytics record', ['url' => $urlParsed, 'source' => $sourcePlugin]);
+                $this->logDebug('Created 404 analytics record', ['url' => $url, 'urlParsed' => $urlParsed, 'source' => $sourcePlugin]);
 
                 // Check if we need to trim analytics
                 if ($settings->autoTrimAnalytics) {

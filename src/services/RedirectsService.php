@@ -94,12 +94,25 @@ class RedirectsService extends Component
         }
 
         $settings = RedirectManager::$plugin->getSettings();
-        $originalPath = $pathOnly;
+
+        // Build full path with query string for analytics
+        // Check if pathOnly already includes query string
+        $queryString = $request->getQueryString();
+        if ($queryString && strpos($pathOnly, '?') === false) {
+            $originalPath = $pathOnly . '?' . $queryString;
+        } else {
+            $originalPath = $pathOnly;
+        }
         $originalFullUrl = $fullUrl;
 
-        // Always strip query string for matching purposes
-        $pathOnlyForMatching = $this->stripQueryString($pathOnly);
-        $fullUrlForMatching = $this->stripQueryString($fullUrl);
+        // Strip query string for matching if configured
+        if ($settings->stripQueryString) {
+            $pathOnlyForMatching = $this->stripQueryString($pathOnly);
+            $fullUrlForMatching = $this->stripQueryString($fullUrl);
+        } else {
+            $pathOnlyForMatching = $pathOnly;
+            $fullUrlForMatching = $fullUrl;
+        }
 
         $this->logDebug('Handling 404', [
             'originalFullUrl' => $fullUrl,

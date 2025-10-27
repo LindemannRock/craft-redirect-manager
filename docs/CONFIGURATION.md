@@ -1,72 +1,59 @@
-# Smart Links Configuration
+# Redirect Manager Configuration
 
 ## Configuration File
 
-You can override plugin settings by creating a `smart-links.php` file in your `config/` directory.
+You can override plugin settings by creating a `redirect-manager.php` file in your `config/` directory.
 
 ### Basic Setup
 
-1. Copy `vendor/lindemannrock/smart-links/src/config.php` to `config/smart-links.php`
+1. Copy `vendor/lindemannrock/craft-redirect-manager/src/config.php` to `config/redirect-manager.php`
 2. Modify the settings as needed
 
 ### Available Settings
 
 ```php
 <?php
+use craft\helpers\App;
+
 return [
-    // Plugin settings
-    'pluginName' => 'Smart Links',
+    // General Settings
+    'pluginName' => 'Redirect Manager',
+    'autoCreateRedirects' => true,
+    'undoWindowMinutes' => 60,
+    'redirectSrcMatch' => 'pathonly',
+    'stripQueryString' => false,
+    'preserveQueryString' => false,
+    'setNoCacheHeaders' => true,
+    'logLevel' => 'error',
 
-    // Logging settings
-    'logLevel' => 'error', // error, warning, info, or debug
-
-    // Analytics configuration
+    // Analytics Settings
     'enableAnalytics' => true,
-    'analyticsRetention' => 90, // days (0 = unlimited, max 3650)
-    'includeDisabledInExport' => false,
-    'includeExpiredInExport' => false,
-
-    // QR Code defaults
-    'defaultQrSize' => 256, // pixels (100-1000)
-    'defaultQrColor' => '#000000',
-    'defaultQrBgColor' => '#FFFFFF',
-    'defaultQrFormat' => 'png', // png or svg
-    'defaultQrErrorCorrection' => 'M', // L, M, Q, H
-    'defaultQrMargin' => 4, // quiet zone (0-10)
-    'qrModuleStyle' => 'square', // square, rounded, dots
-    'qrEyeStyle' => 'square', // square, rounded, leaf
-    'qrEyeColor' => null, // null = same as module color
-    'qrCodeCacheDuration' => 86400, // 24 hours
-
-    // QR Code logo overlay
-    'enableQrLogo' => false,
-    'qrLogoVolumeUid' => null, // Asset volume UID for logos
-    'defaultQrLogoId' => null, // Default logo asset ID
-    'qrLogoSize' => 20, // Logo size percentage (10-30)
-
-    // QR Code downloads
-    'enableQrDownload' => true,
-    'qrDownloadFilename' => '{slug}-qr-{size}', // Filename pattern
-
-    // Image management
-    'imageVolumeUid' => null, // Asset volume UID for smart link images
-
-    // Redirect settings
-    'redirectTemplate' => null, // Custom redirect template path
-    'notFoundRedirectUrl' => '/', // 404 redirect URL
-
-    // Geographic detection
+    'anonymizeIpAddress' => false,
     'enableGeoDetection' => false,
+    'stripQueryStringFromStats' => true,
+    'analyticsLimit' => 1000,
+    'analyticsRetention' => 30,
+    'autoTrimAnalytics' => true,
 
-    // Device detection caching
+    // Interface Settings
+    'refreshIntervalSecs' => 5,
+    'redirectsDisplayLimit' => 100,
+    'analyticsDisplayLimit' => 100,
+    'itemsPerPage' => 100,
+
+    // Cache Settings
+    'enableRedirectCache' => true,
+    'redirectCacheDuration' => 3600,
     'cacheDeviceDetection' => true,
-    'deviceDetectionCacheDuration' => 3600, // 1 hour
+    'deviceDetectionCacheDuration' => 3600,
 
-    // Language detection
-    'languageDetectionMethod' => 'browser', // browser, ip, or both
+    // Advanced Settings
+    'enableApiEndpoint' => false,
+    'excludePatterns' => [],
+    'additionalHeaders' => [],
 
-    // Interface settings
-    'itemsPerPage' => 100, // Items per page in CP (10-500)
+    // IP Privacy Protection (required)
+    'ipHashSalt' => App::env('REDIRECT_MANAGER_IP_SALT'),
 ];
 ```
 
@@ -79,126 +66,224 @@ You can have different settings per environment:
 return [
     // Global settings
     '*' => [
-        'qrCodeSize' => 300,
-        'qrCodeForegroundColor' => '#000000',
+        'pluginName' => 'Redirect Manager',
+        'autoCreateRedirects' => true,
         'logLevel' => 'error',
     ],
 
     // Development environment
     'dev' => [
-        'enableAnalytics' => false,
-        'cacheEnabled' => false,
-        'logLevel' => 'debug', // Detailed logging in dev
+        'logLevel' => 'debug',
+        'analyticsRetention' => 30,
+        'enableRedirectCache' => true,
+        'redirectCacheDuration' => 60,
     ],
 
     // Staging environment
     'staging' => [
-        'enableAnalytics' => true,
-        'analyticsRetentionDays' => 30,
         'logLevel' => 'info',
+        'analyticsRetention' => 90,
+        'redirectCacheDuration' => 3600,
     ],
 
     // Production environment
     'production' => [
-        'enableAnalytics' => true,
-        'analyticsRetentionDays' => 180,
-        'cacheEnabled' => true,
-        'cacheDuration' => 7200,
-        'logLevel' => 'warning', // Only warnings and errors in production
+        'logLevel' => 'error',
+        'analyticsRetention' => 365,
+        'redirectCacheDuration' => 86400,
     ],
-];
-```
-
-### Using Environment Variables
-
-All settings support environment variables:
-
-```php
-return [
-    'enableAnalytics' => getenv('SMART_LINKS_ANALYTICS') === 'true',
-    'analyticsRetentionDays' => (int)getenv('SMART_LINKS_RETENTION') ?: 90,
-    'qrCodeSize' => (int)getenv('QR_CODE_SIZE') ?: 300,
 ];
 ```
 
 ### Setting Descriptions
 
-#### Plugin Settings
+#### General Settings
 
-- **pluginName**: Display name for the plugin in Craft CP navigation
+##### pluginName
+Display name for the plugin in Craft CP navigation.
+- **Type:** `string`
+- **Default:** `'Redirect Manager'`
 
-#### Logging Settings
+##### autoCreateRedirects
+Automatically creates redirects when entry URIs change.
+- **Type:** `bool`
+- **Default:** `true`
 
-- **logLevel**: What types of messages to log ('debug', 'info', 'warning', 'error')
-  - **error**: Critical errors only (default, production recommended)
-  - **warning**: Errors and warnings
-  - **info**: General information and successful operations
-  - **debug**: Detailed debugging information (development only, requires devMode)
+##### undoWindowMinutes
+Time window in minutes for detecting immediate undo (A → B → A). If editor changes slug back within this window, the redirect is cancelled instead of creating a pair.
+- **Type:** `int`
+- **Options:** `30`, `60`, `120`, `240`
+- **Default:** `60`
+
+##### redirectSrcMatch
+Default source match mode for new redirects. Each redirect can override this individually.
+- **Type:** `string`
+- **Options:** `'pathonly'` (match `/page` on any domain), `'fullurl'` (match `https://example.com/page` exactly)
+- **Default:** `'pathonly'`
+
+##### stripQueryString
+Controls whether query strings affect redirect matching.
+- **Type:** `bool`
+- **Default:** `false`
+- **OFF:** `/page?foo=bar` only matches rule `/page?foo=bar` (exact match required)
+- **ON:** `/page?foo=bar` matches rule `/page` (query ignored)
+
+##### preserveQueryString
+Controls whether query strings are passed to the destination URL.
+- **Type:** `bool`
+- **Default:** `false`
+- **OFF:** User visits `/old?ref=email` → redirects to `/new` (query dropped)
+- **ON:** User visits `/old?ref=email` → redirects to `/new?ref=email` (query preserved)
+
+##### setNoCacheHeaders
+Set no-cache headers on redirect responses to prevent browser caching.
+- **Type:** `bool`
+- **Default:** `true`
+
+##### logLevel
+What types of messages to log.
+- **Type:** `string`
+- **Options:** `'debug'`, `'info'`, `'warning'`, `'error'`
+- **Default:** `'error'`
+- **Note:** Debug level requires Craft's `devMode` to be enabled
 
 #### Analytics Settings
 
-- **enableAnalytics**: Enable/disable click tracking and analytics
-- **analyticsRetention**: How many days to keep analytics data (0-3650, 0 = unlimited)
-- **includeDisabledInExport**: Include disabled smart links in CSV exports
-- **includeExpiredInExport**: Include expired smart links in CSV exports
+##### enableAnalytics
+Master switch that controls all analytics tracking including IP tracking, device detection, and geo detection.
+- **Type:** `bool`
+- **Default:** `true`
 
-#### QR Code Settings
+##### anonymizeIpAddress
+Mask IP addresses before hashing (subnet masking for maximum privacy).
+- **Type:** `bool`
+- **Default:** `false`
+- **IPv4:** Masks last octet (192.168.1.123 → 192.168.1.0)
+- **IPv6:** Masks last 80 bits
+- **Trade-off:** Reduces unique visitor accuracy
 
-- **defaultQrSize**: Default size in pixels for generated QR codes (100-1000)
-- **defaultQrColor**: Hex color for QR code foreground
-- **defaultQrBgColor**: Hex color for QR code background
-- **defaultQrFormat**: Output format (png or svg)
-- **defaultQrErrorCorrection**: Error correction level
-  - `L` - ~7% correction
-  - `M` - ~15% correction (default)
-  - `Q` - ~25% correction
-  - `H` - ~30% correction
-- **defaultQrMargin**: White space margin around QR code (0-10)
-- **qrModuleStyle**: QR code module style (square, rounded, dots)
-- **qrEyeStyle**: QR code eye/finder pattern style (square, rounded, leaf)
-- **qrEyeColor**: Custom color for eye patterns (null = same as module color)
-- **qrCodeCacheDuration**: QR code cache duration in seconds
+##### enableGeoDetection
+Detect visitor location (country, city) from IP addresses.
+- **Type:** `bool`
+- **Default:** `false`
+- **Uses:** ip-api.com (free service with 45 requests per minute limit)
 
-#### QR Code Logo Settings
+##### stripQueryStringFromStats
+Controls how analytics groups URLs with different query strings.
+- **Type:** `bool`
+- **Default:** `true`
+- **ON:** `/page?source=email`, `/page?source=facebook` → grouped as one record (shows latest query)
+- **OFF:** Each unique URL+query creates separate record
 
-- **enableQrLogo**: Enable logo overlay on QR codes
-- **qrLogoVolumeUid**: Asset volume UID for logo selection (null = all volumes)
-- **defaultQrLogoId**: Default logo asset ID (required when enableQrLogo is true)
-- **qrLogoSize**: Logo size as percentage of QR code (10-30)
+##### analyticsLimit
+Maximum number of unique 404 records to retain.
+- **Type:** `int`
+- **Default:** `1000`
 
-#### QR Code Download Settings
+##### analyticsRetention
+Number of days to retain analytics (0 = keep forever).
+- **Type:** `int`
+- **Default:** `30`
 
-- **enableQrDownload**: Enable QR code download functionality
-- **qrDownloadFilename**: Filename pattern for downloads (supports {slug} and {size})
-
-#### Asset Management Settings
-
-- **imageVolumeUid**: Asset volume UID for smart link images (null = all volumes)
-
-#### Redirect Settings
-
-- **redirectTemplate**: Path to custom redirect template (null = use default)
-- **notFoundRedirectUrl**: URL to redirect when smart link not found
-
-#### Geographic Settings
-
-- **enableGeoDetection**: Enable geographic detection for analytics
-
-#### Caching Settings
-
-- **cacheDeviceDetection**: Enable/disable caching of device detection results
-- **deviceDetectionCacheDuration**: Device detection cache duration in seconds
-
-#### Language Detection Settings
-
-- **languageDetectionMethod**: Method for detecting user language
-  - `browser` - Use Accept-Language header (default)
-  - `ip` - Use IP-based detection
-  - `both` - Combine browser and IP detection
+##### autoTrimAnalytics
+Whether analytics should be automatically trimmed to respect the limit.
+- **Type:** `bool`
+- **Default:** `true`
 
 #### Interface Settings
 
-- **itemsPerPage**: Number of items per page in CP element index (10-500)
+##### refreshIntervalSecs
+Dashboard auto-refresh interval in seconds. Set to 0 to disable.
+- **Type:** `int`
+- **Options:** `5`, `15`, `30`, `60`
+- **Default:** `5`
+
+##### redirectsDisplayLimit
+How many redirects to display in the CP.
+- **Type:** `int`
+- **Default:** `100`
+
+##### analyticsDisplayLimit
+How many analytics to display in the CP.
+- **Type:** `int`
+- **Default:** `100`
+
+##### itemsPerPage
+Items per page in list views.
+- **Type:** `int`
+- **Range:** `10-500`
+- **Default:** `100`
+
+#### Cache Settings
+
+##### enableRedirectCache
+Enable caching of redirect lookups for improved performance.
+- **Type:** `bool`
+- **Default:** `true`
+
+##### redirectCacheDuration
+How long to cache redirect lookups in seconds.
+- **Type:** `int`
+- **Default:** `3600` (1 hour)
+
+##### cacheDeviceDetection
+Cache device detection results for better performance.
+- **Type:** `bool`
+- **Default:** `true`
+
+##### deviceDetectionCacheDuration
+Device detection cache duration in seconds.
+- **Type:** `int`
+- **Default:** `3600` (1 hour)
+
+#### Advanced Settings
+
+##### enableApiEndpoint
+Whether to enable the GraphQL endpoint.
+- **Type:** `bool`
+- **Default:** `false`
+
+##### excludePatterns
+Regular expressions to exclude URLs from redirect handling.
+- **Type:** `array`
+- **Default:** `[]`
+- **Format:** `[['pattern' => '^/admin'], ['pattern' => '^/cpresources']]`
+- **Note:** Don't exclude static assets - you want to track missing CSS/JS/images to fix them!
+
+##### additionalHeaders
+Additional HTTP headers to add to redirect responses.
+- **Type:** `array`
+- **Default:** `[]`
+- **Format:** `[['name' => 'X-Robots-Tag', 'value' => 'noindex']]`
+- **Common examples:**
+  - `X-Robots-Tag: noindex, nofollow` - Prevents search engines from indexing old URLs
+  - `X-Redirect-By: Redirect Manager` - Debugging/tracking
+
+##### ipHashSalt
+Secure salt for IP address hashing (required for analytics).
+- **Type:** `string`
+- **Default:** From `.env` file (`REDIRECT_MANAGER_IP_SALT`)
+- **Generate:** `php craft redirect-manager/security/generate-salt`
+
+### Query String Handling Examples
+
+**E-commerce/Marketing Sites:**
+```php
+return [
+    'stripQueryString' => true,          // Match any UTM params
+    'preserveQueryString' => true,       // Keep tracking through redirects
+    'stripQueryStringFromStats' => true, // Consolidate analytics reports
+];
+```
+
+**API/Applications:**
+```php
+return [
+    'stripQueryString' => false,          // Exact URL matching required
+    'preserveQueryString' => false,       // Canonical URLs without params
+    'stripQueryStringFromStats' => false, // Track each unique combination
+];
+```
 
 ### Precedence
 
@@ -211,9 +296,38 @@ Settings are loaded in this order (later overrides earlier):
 
 **Note:** Config file settings always override database settings, making them ideal for production environments where you want to enforce specific values.
 
+### Using Environment Variables
+
+All settings support environment variables:
+
+```php
+use craft\helpers\App;
+
+return [
+    'enableAnalytics' => (bool)App::env('REDIRECT_MANAGER_ANALYTICS') ?: true,
+    'analyticsRetention' => (int)App::env('REDIRECT_MANAGER_RETENTION') ?: 30,
+    'logLevel' => App::env('REDIRECT_MANAGER_LOG_LEVEL') ?: 'error',
+];
+```
+
+### IP Privacy Protection Setup
+
+Analytics requires a secure salt for IP hashing:
+
+1. Generate salt: `php craft redirect-manager/security/generate-salt`
+2. Command automatically adds `REDIRECT_MANAGER_IP_SALT` to your `.env` file
+3. **Manually copy** the salt value to staging/production `.env` files
+4. **Never regenerate** the salt in production
+
+**Security Notes:**
+- Never commit the salt to version control
+- Store salt securely (password manager recommended)
+- Use the SAME salt across all environments
+- Changing the salt will break unique visitor tracking history
+
 ## Read-Only Mode & Production Environments
 
-Smart Links fully supports Craft's `allowAdminChanges` setting for production deployments.
+Redirect Manager fully supports Craft's `allowAdminChanges` setting for production deployments.
 
 ### Enabling Read-Only Mode
 
@@ -229,9 +343,8 @@ When `allowAdminChanges` is disabled:
 
 1. **Settings Pages** - Display with a read-only notice banner
 2. **Form Fields** - All inputs are disabled (can view but not edit)
-3. **Field Layout Designer** - Completely disabled, no drag-and-drop
-4. **Save Actions** - Return 403 Forbidden HTTP errors
-5. **Config Overrides** - Config file settings remain the source of truth
+3. **Save Actions** - Return 403 Forbidden HTTP errors
+4. **Config Overrides** - Config file settings remain the source of truth
 
 ### Best Practices
 
@@ -249,34 +362,28 @@ Configure settings through the Control Panel, which saves to the database.
 CRAFT_ALLOW_ADMIN_CHANGES=false
 ```
 
-Use `config/smart-links.php` to manage settings:
+Use `config/redirect-manager.php` to manage settings:
 
 ```php
 <?php
 return [
     'production' => [
+        'autoCreateRedirects' => true,
         'enableAnalytics' => true,
-        'analyticsRetention' => 90,
-        'defaultQrSize' => 256,
-        'slugPrefix' => 'go',
-        // ... other production settings
+        'analyticsRetention' => 365,
+        'enableRedirectCache' => true,
+        'redirectCacheDuration' => 86400,
+        'logLevel' => 'error',
+        'excludePatterns' => [
+            ['pattern' => '^/admin'],
+            ['pattern' => '^/cpresources'],
+        ],
+        'additionalHeaders' => [
+            ['name' => 'X-Robots-Tag', 'value' => 'noindex, nofollow'],
+        ],
     ],
 ];
 ```
-
-### Field Layout Management
-
-Field layouts are stored in project config and sync across environments:
-
-- **Location:** `config/project/smart-links/fieldLayouts/{uid}.yaml`
-- **Syncing:** Automatically applied when project config is synced
-- **Read-Only:** Cannot be modified in CP when `allowAdminChanges=false`
-
-To modify field layouts in production:
-1. Make changes in development environment
-2. Commit the updated YAML files in `config/project/`
-3. Deploy to production
-4. Run `php craft project-config/apply` if needed
 
 ### Performance Recommendations
 
@@ -284,18 +391,28 @@ For production environments:
 
 ```php
 'production' => [
-    'enableAnalytics' => true,
-    'analyticsRetentionDays' => 90, // Balance data vs storage
-    'cacheEnabled' => true,
-    'cacheDuration' => 7200, // 2 hours
-    'trackBotClicks' => false, // Reduce noise in analytics
+    'enableRedirectCache' => true,
+    'redirectCacheDuration' => 86400,        // 24 hours - aggressive caching
+    'cacheDeviceDetection' => true,
+    'deviceDetectionCacheDuration' => 7200,  // 2 hours
+    'analyticsRetention' => 365,             // Balance data vs storage
+    'logLevel' => 'error',                   // Only log errors
 ],
 ```
 
 ### Security Recommendations
 
 ```php
-// Restrict QR code generation
-'qrCodeSize' => min((int)getenv('QR_CODE_SIZE') ?: 300, 1000), // Max 1000px
-'qrCodeFormat' => 'png', // PNG is safer than SVG for user input
+// Exclude sensitive URLs from redirect handling
+'excludePatterns' => [
+    ['pattern' => '^/admin'],           // Admin panel
+    ['pattern' => '^/cpresources'],     // Admin resources
+    ['pattern' => '^/actions'],         // Controller actions
+    ['pattern' => '^/\\.well-known'],   // Security files
+],
+
+// Prevent search engines from indexing old URLs
+'additionalHeaders' => [
+    ['name' => 'X-Robots-Tag', 'value' => 'noindex, nofollow'],
+],
 ```

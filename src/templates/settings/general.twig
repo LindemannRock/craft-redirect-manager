@@ -47,8 +47,6 @@
 
 		<hr>
 
-		<h2>{{ "Redirect Settings"|t('redirect-manager') }}</h2>
-
 		{{ forms.lightswitchField({
             label: 'Auto Create Redirects'|t('redirect-manager'),
             instructions: 'Automatically create redirects when entry URIs change'|t('redirect-manager'),
@@ -107,6 +105,14 @@
                 "This is being overridden by the <code>stripQueryString</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
 
+		<div class="field">
+			<p class="light">
+				<strong>How this affects redirect matching:</strong><br>
+				• <strong>ON:</strong> <code>/old-page?foo=bar</code> matches redirect rule <code>/old-page</code><br>
+				• <strong>OFF:</strong> <code>/old-page?foo=bar</code> only matches rule <code>/old-page?foo=bar</code> (exact match required)
+			</p>
+		</div>
+
 		{{ forms.lightswitchField({
             label: 'Preserve Query String'|t('redirect-manager'),
             instructions: 'Preserve and pass query string to destination URL'|t('redirect-manager'),
@@ -117,6 +123,23 @@
             warning: settings.isOverriddenByConfig('preserveQueryString') ?
                 "This is being overridden by the <code>preserveQueryString</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
+
+		<div class="field">
+			<p class="light">
+				<strong>How this affects the destination URL:</strong><br>
+				• <strong>ON:</strong> User visits <code>/old?ref=email</code> → redirects to <code>/new?ref=email</code><br>
+				• <strong>OFF:</strong> User visits <code>/old?ref=email</code> → redirects to <code>/new</code> (query dropped)
+			</p>
+		</div>
+
+		<div class="field">
+			<p class="light">
+				<strong>Common Configurations:</strong><br>
+				• <strong>E-commerce/Marketing:</strong> Strip ON, Preserve ON (match any UTM params, keep tracking)<br>
+				• <strong>API/Exact URLs:</strong> Strip OFF, Preserve OFF (exact matching, canonical URLs)<br>
+				• <strong>Flexible with tracking:</strong> Strip ON, Preserve OFF (ignore params in matching and destination)
+			</p>
+		</div>
 
 		<hr>
 

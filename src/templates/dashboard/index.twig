@@ -407,7 +407,7 @@ e.preventDefault();
 const row = this.closest('tr');
 const id = row.dataset.id;
 
-if (!confirm('Delete this analytics record?')) 
+if (!confirm('Delete this analytics record?'))
 return;
 
 
@@ -423,5 +423,43 @@ Craft.cp.displayNotice('Analytics record deleted');
 });
 });
 });
+
+// Auto-refresh dashboard
+{% if settings.refreshIntervalSecs > 0 %}
+const refreshInterval = {{ settings.refreshIntervalSecs }} * 1000; // Convert to milliseconds
+let refreshTimer;
+
+function startAutoRefresh() {
+refreshTimer = setInterval(function() {
+// Preserve current URL parameters (search, handled, sort, dir, page)
+window.location.reload();
+}, refreshInterval);
+}
+
+function stopAutoRefresh() {
+if (refreshTimer) {
+clearInterval(refreshTimer);
+refreshTimer = null;
+}
+}
+
+// Start auto-refresh on page load
+startAutoRefresh();
+
+// Pause auto-refresh when user interacts with the page
+let pauseTimeout;
+function resetAutoRefreshPause() {
+stopAutoRefresh();
+clearTimeout(pauseTimeout);
+pauseTimeout = setTimeout(function() {
+startAutoRefresh();
+}, 5000); // Resume after 5 seconds of inactivity
+}
+
+// Pause on user interaction
+document.addEventListener('click', resetAutoRefreshPause);
+document.addEventListener('keydown', resetAutoRefreshPause);
+document.addEventListener('scroll', resetAutoRefreshPause);
+{% endif %}
 			</script>
 		{% endblock %}

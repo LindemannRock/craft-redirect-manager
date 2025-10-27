@@ -1,6 +1,6 @@
-# Smart Links Logging
+# Redirect Manager Logging
 
-Smart Links uses the [LindemannRock Logging Library](https://github.com/LindemannRock/craft-logging-library) for centralized, structured logging across all LindemannRock plugins.
+Redirect Manager uses the [LindemannRock Logging Library](https://github.com/LindemannRock/craft-logging-library) for centralized, structured logging across all LindemannRock plugins.
 
 ## Log Levels
 
@@ -13,7 +13,7 @@ Smart Links uses the [LindemannRock Logging Library](https://github.com/Lindeman
 
 ### Control Panel
 
-1. Navigate to **Settings → Smart Links → General**
+1. Navigate to **Settings → Redirect Manager → General**
 2. Scroll to **Logging Settings**
 3. Select desired log level from dropdown
 4. Click **Save**
@@ -21,92 +21,217 @@ Smart Links uses the [LindemannRock Logging Library](https://github.com/Lindeman
 ### Config File
 
 ```php
-// config/smart-links.php
+// config/redirect-manager.php
 return [
-    'pluginName' => 'Links',     // Optional: Customize plugin name shown in logs interface
-    'logLevel' => 'error',       // error, warning, info, or debug
+    'pluginName' => 'Redirects',  // Optional: Customize plugin name shown in logs interface
+    'logLevel' => 'error',         // error, warning, info, or debug
 ];
 ```
 
 **Notes:**
-- The `pluginName` setting customizes how the plugin name appears in the log viewer interface (page title, breadcrumbs, etc.). If not set, it defaults to "Smart Links".
+- The `pluginName` setting customizes how the plugin name appears in the log viewer interface (page title, breadcrumbs, etc.). If not set, it defaults to "Redirect Manager".
 - Debug level requires Craft's `devMode` to be enabled. If set to debug with devMode disabled, it automatically falls back to info level.
 
 ## Log Files
 
-- **Location**: `storage/logs/smart-links-YYYY-MM-DD.log`
+- **Location**: `storage/logs/redirect-manager-YYYY-MM-DD.log`
 - **Retention**: 30 days (automatic cleanup via Logging Library)
 - **Format**: Structured JSON logs with context data
-- **Web Interface**: View and filter logs in CP at Smart Links → Logs
+- **Web Interface**: View and filter logs in CP at Redirect Manager → Logs
 
 ## What's Logged
 
 The plugin logs meaningful events using context arrays for structured data. All logs include user context when available.
 
-### Analytics Operations (AnalyticsController)
+### Redirects Service (RedirectsService)
 
-- **[INFO]** `Analytics getData called` - Analytics data retrieval
-  - Context: `type`, `dateRange`, `smartLinkId`
-- **[ERROR]** `Analytics getData error` - Analytics query failure
-  - Context: `error` (exception message), `trace` (stack trace)
-- **[ERROR]** `Failed to get analytics data` - Analytics fetch error
+#### 404 Handling
+- **[DEBUG]** `Handling 404` - 404 error handling initiated
+  - Context: `originalFullUrl`, `pathForMatching`, `userAgent`
+- **[DEBUG]** `URL excluded from redirect handling` - URL matches exclusion pattern
+  - Context: `url`
+- **[DEBUG]** `Handling external 404` - External 404 handling for element
+  - Context: `element` (element type), `url`
+- **[INFO]** `External 404 matched redirect` - External 404 matched existing redirect
+  - Context: `matchedUrl`, `redirectUrl`
+- **[ERROR]** `Error getting URL from request` - Failed to parse request URL
   - Context: `error` (exception message)
 
-### Smart Link Operations (SmartLinksController)
+#### Redirect Execution
+- **[DEBUG]** `Executing redirect` - Redirect about to be executed
+  - Context: `sourceUrl`, `destinationUrl`, `statusCode`, `redirect` (redirect details)
 
-- **[ERROR]** `Smart link save failed` - Smart link validation errors
+#### URI Change Tracking
+- **[INFO]** `Stashed element URI from database` - Element URI stored for tracking
+  - Context: `elementId`, `siteId`, `uri`
+- **[DEBUG]** `No stashed URI found for element` - No previous URI stored
+  - Context: `elementId`, `siteId`
+- **[INFO]** `Checking URI change` - Checking if element URI changed
+  - Context: `elementId`, `elementType`, `oldUri`, `newUri`, `siteId`
+- **[DEBUG]** `Looking for recent redirect` - Searching for recent auto-created redirect
+  - Context: `sourceUrl`, `timeWindow`
+- **[DEBUG]** `Immediate undo check` - Checking for immediate URI change reversal
+  - Context: `oldUri`, `newUri`, `recentRedirectId`, `recentSource`, `recentDestination`
+- **[INFO]** `Immediate undo detected - cancelled redirect` - URI change reversed, redirect cancelled
+  - Context: `cancelledRedirectId`, `oldUri`, `newUri`
+- **[INFO]** `Deleted old auto-redirect for element` - Removed previous auto-redirect
+  - Context: `deletedRedirectId`, `sourceUrl`, `oldDestinationUrl`
+- **[ERROR]** `Cannot create redirect: would create circular loop` - Prevented circular redirect
+  - Context: `from`, `to`, `reason`
+- **[INFO]** `Auto-created redirect for entry URI change` - Auto-redirect created
+  - Context: `id`, `sourceUrl`, `destinationUrl`, `elementId`, `siteId`
+- **[DEBUG]** `URI did not change, skipping redirect creation` - No URI change detected
+  - Context: `elementId`, `uri`, `siteId`
+
+#### Redirect CRUD Operations
+- **[WARNING]** `Redirect already exists` - Duplicate redirect detected
+  - Context: `sourceUrl`
+- **[ERROR]** `Failed to save redirect` - Redirect save validation failure
   - Context: `errors` (validation errors array)
-- **[ERROR]** `Smart link save error` - Smart link save exception
-  - Context: `error` (exception message), `trace` (stack trace)
+- **[INFO]** `Redirect created` - New redirect created successfully
+  - Context: `id`, `sourceUrl`
+- **[ERROR]** `Redirect not found` - Redirect ID not found for update/delete
+  - Context: `id`
+- **[ERROR]** `Cannot update redirect: would create circular loop` - Update would create loop
+  - Context: `from`, `to`, `reason`
+- **[ERROR]** `Failed to update redirect` - Redirect update validation failure
+  - Context: `id`, `errors` (validation errors array)
+- **[INFO]** `Redirect updated` - Redirect updated successfully
+  - Context: `id`
+- **[ERROR]** `Failed to delete redirect` - Redirect deletion failed
+  - Context: `id`
+- **[INFO]** `Redirect deleted` - Redirect deleted successfully
+  - Context: `id`
 
-### QR Code Operations (QrCodeController)
-
-#### Display Operations
-- **[INFO]** `SmartLink redirect URL (display)` - Redirect URL for QR display
+#### Redirect Caching
+- **[DEBUG]** `Redirect cache hit` - Redirect found in cache
   - Context: `url`
-- **[INFO]** `Full URL for QR` - Full URL including domain
-  - Context: `fullUrl`
-- **[ERROR]** `Failed to generate QR code` - QR code generation failure (display)
-  - Context: `error` (exception message)
+- **[DEBUG]** `Redirect cached` - Redirect stored in cache
+  - Context: `url`, `duration`
+- **[DEBUG]** `Redirect caches invalidated` - Cache cleared
+  - Context: `count` (number of caches cleared)
 
-#### Generation Operations
-- **[INFO]** `SmartLink redirect URL (generate)` - Redirect URL for QR generation
-  - Context: `url`
-- **[INFO]** `Full URL for QR` - Full URL for QR code
-  - Context: `fullUrl`
-- **[ERROR]** `Failed to generate QR code` - QR code generation failure (generate)
-  - Context: `error` (exception message)
-
-### QR Code Service (QrCodeService)
-
-- **[ERROR]** `Failed to add logo to QR code` - Logo overlay failure
+#### Pattern Matching & Validation
+- **[ERROR]** `Invalid exclude pattern regex` - Exclusion pattern regex invalid
+  - Context: `pattern`
+- **[WARNING]** `Redirect loop detected` - Circular redirect chain detected
+  - Context: `chain` (array of URLs in loop)
+- **[INFO]** `Checking for next redirect in chain` - Resolving redirect chain
+  - Context: `currentUrl`, `depth`
+- **[INFO]** `No more redirects in chain` - End of redirect chain reached
+  - Context: `stoppedAt`
+- **[INFO]** `Found next redirect in chain` - Next redirect in chain found
+  - Context: `from`, `to`, `depth`
+- **[INFO]** `Resolved redirect chain` - Complete redirect chain resolved
+  - Context: `startUrl`, `finalUrl`, `chainLength`, `redirects` (array of redirect IDs)
+- **[WARNING]** `Circular redirect detected` - Circular redirect detected during validation
+  - Context: `sourceUrl`, `destinationUrl`, `chain`
+- **[ERROR]** `Failed to resolve redirect chain` - Error resolving redirect chain
   - Context: `error` (exception message)
 
 ### Analytics Service (AnalyticsService)
 
-#### Date Filtering
-- **[INFO]** `Today filter` - Today's date range filter applied
-  - Context: `start` (start date), `end` (end date)
+#### 404 Analytics
+- **[ERROR]** `Failed to hash IP address` - IP hashing failed
+  - Context: `error` (exception message)
+- **[DEBUG]** `Updated 404 analytics record` - Existing 404 record updated
+  - Context: `url`, `urlParsed`, `count`, `source` (source plugin)
+- **[DEBUG]** `Created 404 analytics record` - New 404 record created
+  - Context: `url`, `urlParsed`, `source` (source plugin)
+- **[ERROR]** `Failed to save 404 analytics record` - Analytics save failed
+  - Context: `errors` (validation errors array)
 
-#### Save Operations
-- **[INFO]** `saveAnalytics called` - Analytics save initiated
-  - Context: `linkId`
-- **[ERROR]** `Failed to save analytics` - Analytics save failure
-  - Context: `error` (exception message), `data` (analytics data), `trace` (stack trace)
+#### Analytics Management
+- **[ERROR]** `Analytics record not found` - Analytics record ID not found
+  - Context: `id`
+- **[INFO]** `Analytics record deleted` - Analytics record deleted
+  - Context: `id`
+- **[INFO]** `Analytics cleared` - Analytics cleared for site
+  - Context: `count`, `siteId`
+- **[INFO]** `Trimmed analytics` - Analytics trimmed to limit
+  - Context: `deleted` (number of records deleted)
+- **[INFO]** `Cleaned up old analytics` - Old analytics cleaned up
+  - Context: `deleted`, `retention` (retention days)
 
 #### Geolocation
 - **[WARNING]** `Failed to get location from IP` - IP geolocation lookup failed
   - Context: `error` (exception message)
+- **[WARNING]** `IP hash salt not configured - IP tracking disabled` - Missing IP salt configuration
+  - Context: `ip` (always 'hidden'), `saltValue` (NULL or unparsed string)
 
-### Smart Links Service (SmartLinksService)
+### Import/Export Controller (ImportExportController)
 
-- **[INFO]** `Smart link not saved due to validation errors` - Validation failure notice
+#### CSV Operations
+- **[ERROR]** `Failed to parse CSV` - CSV parsing error
+  - Context: `error` (exception message)
+- **[ERROR]** `Failed to read CSV for mapping` - CSV read error during mapping
+  - Context: `error` (exception message)
+- **[ERROR]** `Failed to import redirect` - Individual redirect import failure
+  - Context: `row` (row number), `error`, `sourceUrl`, `destinationUrl`
+
+#### Backup Operations
+- **[INFO]** `Backup created` - Backup created before import
+  - Context: `path` (backup file path), `count` (number of redirects)
+- **[ERROR]** `Backup failed` - Backup creation failed
+  - Context: `error` (exception message)
+- **[ERROR]** `Failed to log import history` - Import history logging failed
+  - Context: `error` (exception message)
+- **[INFO]** `Backup restored` - Backup restored successfully
+  - Context: `id`, `count` (number of redirects restored)
+- **[ERROR]** `Restore failed` - Backup restore failed
+  - Context: `error` (exception message)
+- **[INFO]** `Backup deleted` - Backup deleted successfully
+  - Context: `id`
+- **[ERROR]** `Delete backup failed` - Backup deletion failed
+  - Context: `error` (exception message)
+
+### Matching Service (MatchingService)
+
+- **[ERROR]** `Invalid redirect regex` - Regex pattern validation failed
+  - Context: `pattern`, `error` (exception message)
+- **[ERROR]** `Invalid wildcard pattern` - Wildcard pattern validation failed
+  - Context: `pattern`, `error` (exception message)
+
+### Cleanup Analytics Job (CleanupAnalyticsJob)
+
+- **[INFO]** `Analytics cleanup completed` - Scheduled analytics cleanup finished
+  - Context: `deleted` (number of records deleted)
+
+### Settings Model (Settings)
+
+#### Log Level Adjustments
+- **[WARNING]** `Log level "debug" from config file changed to "info" because devMode is disabled` - Debug level auto-corrected from config file
+  - Context: `configFile` (path to config file)
+- **[WARNING]** `Log level automatically changed from "debug" to "info" because devMode is disabled` - Debug level auto-corrected from database setting
+
+#### Loading Operations
+- **[ERROR]** `Failed to load settings from database` - Database query error
+  - Context: `error` (exception message)
+
+#### Save Operations
+- **[ERROR]** `Settings validation failed` - Settings validation errors
+  - Context: `errors` (validation errors array)
+- **[DEBUG]** `Attempting to save settings` - Settings save operation initiated
+  - Context: `attributes` (list of attribute names being saved)
+- **[INFO]** `Settings saved successfully to database` - Settings saved
+- **[ERROR]** `Database update returned false` - Database update operation returned false
+- **[ERROR]** `Failed to save settings` - Settings save exception
+  - Context: `error` (exception message)
+- **[ERROR]** `Column check` - Database column existence check (debug logging)
+  - Context: `columnExists` (boolean)
+
+### Main Plugin (RedirectManager)
+
+- **[INFO]** `Could not load settings from database` - Settings loading error during plugin initialization
+  - Context: `error` (exception message)
+- **[INFO]** `Scheduled initial analytics cleanup job` - Analytics cleanup job scheduled
+  - Context: `interval` (cleanup interval)
 
 ## Log Management
 
 ### Via Control Panel
 
-1. Navigate to **Smart Links → Logs**
+1. Navigate to **Redirect Manager → Logs**
 2. Filter by date, level, or search terms
 3. Download log files for external analysis
 4. View file sizes and entry counts
@@ -117,25 +242,25 @@ The plugin logs meaningful events using context arrays for structured data. All 
 **View today's log**:
 
 ```bash
-tail -f storage/logs/smart-links-$(date +%Y-%m-%d).log
+tail -f storage/logs/redirect-manager-$(date +%Y-%m-%d).log
 ```
 
 **View specific date**:
 
 ```bash
-cat storage/logs/smart-links-2025-01-15.log
+cat storage/logs/redirect-manager-2025-01-15.log
 ```
 
 **Search across all logs**:
 
 ```bash
-grep "QR code" storage/logs/smart-links-*.log
+grep "redirect" storage/logs/redirect-manager-*.log
 ```
 
 **Filter by log level**:
 
 ```bash
-grep "\[ERROR\]" storage/logs/smart-links-*.log
+grep "\[ERROR\]" storage/logs/redirect-manager-*.log
 ```
 
 ## Log Format
@@ -146,20 +271,19 @@ Each log entry follows structured JSON format with context data:
 {
   "timestamp": "2025-01-15 14:30:45",
   "level": "INFO",
-  "message": "Analytics getData called",
+  "message": "Redirect created",
   "context": {
-    "type": "clicks",
-    "dateRange": "7days",
-    "smartLinkId": 123,
+    "id": 123,
+    "sourceUrl": "/old-page",
     "userId": 1
   },
-  "category": "lindemannrock\\smartlinks\\controllers\\AnalyticsController"
+  "category": "lindemannrock\\redirectmanager\\services\\RedirectsService"
 }
 ```
 
 ## Using the Logging Trait
 
-All services and controllers in Smart Links use the `LoggingTrait` from the LindemannRock Logging Library:
+All services and controllers in Redirect Manager use the `LoggingTrait` from the LindemannRock Logging Library:
 
 ```php
 use lindemannrock\logginglibrary\traits\LoggingTrait;
@@ -200,9 +324,9 @@ public function init(): void
 }
 
 // ✅ GOOD - Log actual operations
-public function handleRedirect($slug): void
+public function handleRedirect($sourceUrl): void
 {
-    $this->logInfo('Smart link redirect processed', ['slug' => $slug]);
+    $this->logInfo('Redirect executed', ['sourceUrl' => $sourceUrl]);
     // ... your logic
 }
 ```
@@ -213,12 +337,12 @@ Use the second parameter for variable data, not string concatenation:
 
 ```php
 // ❌ BAD - Concatenating variables into message
-$this->logError('QR generation failed: ' . $e->getMessage());
-$this->logInfo('Processing link: ' . $slug);
+$this->logError('Redirect failed: ' . $e->getMessage());
+$this->logInfo('Processing URL: ' . $url);
 
 // ✅ GOOD - Use context array for variables
-$this->logError('QR generation failed', ['error' => $e->getMessage()]);
-$this->logInfo('Processing link', ['slug' => $slug]);
+$this->logError('Redirect failed', ['error' => $e->getMessage()]);
+$this->logInfo('Processing URL', ['url' => $url]);
 ```
 
 **Why Context Arrays Are Better:**
@@ -239,20 +363,26 @@ $this->logInfo('Processing link', ['slug' => $slug]);
 - Never log passwords or sensitive data
 - Be careful with user input in log messages
 - Never log API keys, tokens, or credentials
+- IP addresses are hashed when IP tracking is enabled
 
 ## Performance Considerations
 
 - **Error/Warning levels**: Minimal performance impact, suitable for production
 - **Info level**: Moderate logging, useful for tracking operations
+  - Logs redirect creation, updates, and deletion
+  - Analytics management operations
+  - Import/export operations
+  - URI change tracking
 - **Debug level**: Extensive logging, use only in development (requires devMode)
-  - Includes performance metrics
-  - Logs detailed analytics data
-  - Tracks redirect operations
-  - Records device detection details
+  - Logs every 404 handling attempt
+  - Redirect cache operations
+  - URI change detection details
+  - Redirect chain resolution steps
+  - Analytics record creation/updates
 
 ## Requirements
 
-Smart Links logging requires:
+Redirect Manager logging requires:
 
 - **lindemannrock/logginglibrary** plugin (installed automatically as dependency)
 - Write permissions on `storage/logs` directory
@@ -266,65 +396,169 @@ If logs aren't appearing:
 2. **Verify library**: Ensure LindemannRock Logging Library is installed and enabled
 3. **Check log level**: Confirm log level allows the messages you're looking for
 4. **devMode for debug**: Debug level requires `devMode` enabled in `config/general.php`
-5. **Check CP interface**: Use Smart Links → Logs to verify log files exist
+5. **Check CP interface**: Use Redirect Manager → Logs to verify log files exist
 
 ## Common Scenarios
 
-### QR Code Generation Issues
+### Redirect Not Working
 
-When QR codes fail to generate, check for:
+When redirects don't work as expected:
 
 ```bash
-grep "Failed to generate QR code" storage/logs/smart-links-*.log
+grep "404\|redirect" storage/logs/redirect-manager-*.log
 ```
 
 Look for:
-- Missing GD or ImageMagick library
-- File permission issues
-- Invalid QR code parameters
-- Logo overlay failures
 
-### Analytics Tracking Problems
+- `Handling 404` - Verify 404 handling is triggered
+- `URL excluded from redirect handling` - Check if URL is excluded by pattern
+- `Executing redirect` - Confirm redirect is being executed
+- `Redirect loop detected` - Check for circular redirects
+- `Failed to resolve redirect chain` - Chain resolution issues
 
-Debug analytics issues:
+Common causes:
+
+- URL matches an exclusion pattern
+- Redirect disabled or expired
+- Circular redirect chain
+- Cache issues (clear redirect caches)
+- Invalid regex patterns
+
+### Circular Redirect Issues
+
+Debug circular redirect problems:
 
 ```bash
-grep "analytics" storage/logs/smart-links-*.log
+grep -i "circular\|loop" storage/logs/redirect-manager-*.log
 ```
+
+Look for:
+
+- `Redirect loop detected` - Shows the chain of URLs creating the loop
+- `Circular redirect detected` - Validation prevented saving
+- `Cannot create redirect: would create circular loop` - Auto-redirect prevention
+
+When you see circular redirects:
+
+- Review the `chain` context to see the URL loop
+- Check if manual redirects conflict with auto-created redirects
+- Verify destination URLs don't redirect back to source
+- Use redirect chain visualization in CP
+
+### Auto-Redirect Not Created
+
+When URI changes don't create redirects:
+
+```bash
+grep "URI change\|Auto-created" storage/logs/redirect-manager-*.log
+```
+
+Look for:
+
+- `Checking URI change` - Verify URI change was detected
+- `URI did not change, skipping redirect creation` - No actual change
+- `Auto-created redirect for entry URI change` - Successful creation
+- `Cannot create redirect: would create circular loop` - Prevented by loop detection
+- `Immediate undo detected - cancelled redirect` - URI change was reversed
+
+If auto-redirects aren't created:
+
+- Enable auto-redirect creation in settings
+- Verify element type is enabled for auto-redirects
+- Check if URI actually changed (not just saved)
+- Look for circular redirect prevention messages
+- Confirm no immediate undo occurred
+
+### Analytics Not Tracking
+
+Debug analytics tracking issues:
+
+```bash
+grep -i "analytics\|404" storage/logs/redirect-manager-*.log
+```
+
+Look for:
+
+- `Created 404 analytics record` - New 404 tracked
+- `Updated 404 analytics record` - Existing 404 incremented
+- `Failed to save 404 analytics record` - Tracking failure
+- `IP hash salt not configured` - IP tracking disabled
+- `Failed to hash IP address` - IP hashing error
 
 Common issues:
-- `Failed to save analytics` - Check database connectivity
-- `Failed to get location from IP` - IP geolocation service issues
-- `Analytics getData error` - Query or date range problems
 
-### Smart Link Save Failures
+- IP hash salt not configured (run console command to generate)
+- Analytics tracking disabled in settings
+- Database write issues
+- IP geolocation failures (expected for local development)
 
-Track smart link save issues:
+### Import/Export Failures
 
-```bash
-grep "Smart link save" storage/logs/smart-links-*.log
-```
-
-Review validation errors in the context to identify:
-- Missing required fields
-- Invalid URLs
-- Slug conflicts
-- Database constraints
-
-### Geolocation Issues
-
-Monitor IP geolocation lookups:
+Track import/export operations:
 
 ```bash
-grep "location from IP" storage/logs/smart-links-*.log
+grep -i "import\|export\|backup\|csv" storage/logs/redirect-manager-*.log
 ```
 
-**Note**: In local development (DDEV, localhost), geolocation will fail because local IPs cannot be resolved. This is expected behavior. Set default location via environment variables:
+Look for:
+
+- `Failed to parse CSV` - CSV format issues
+- `Failed to import redirect` - Individual redirect import errors
+- `Backup created` - Backup before import
+- `Backup failed` - Backup creation error
+- `Backup restored` - Successful restore
+- `Restore failed` - Restore error
+
+If imports fail:
+
+- Check CSV format matches expected structure
+- Review validation errors for specific redirects
+- Verify backup creation succeeded before import
+- Check for duplicate source URLs
+- Ensure proper file encoding (UTF-8)
+
+### Pattern Matching Issues
+
+Debug regex and wildcard pattern problems:
 
 ```bash
-SMART_LINKS_DEFAULT_COUNTRY=AE
-SMART_LINKS_DEFAULT_CITY=Dubai
+grep -i "pattern\|regex\|wildcard" storage/logs/redirect-manager-*.log
 ```
+
+Look for:
+
+- `Invalid redirect regex` - Regex syntax error
+- `Invalid wildcard pattern` - Wildcard pattern error
+- `Invalid exclude pattern regex` - Exclusion pattern error
+
+When patterns fail:
+
+- Test regex syntax in an online regex tester
+- Check for unescaped special characters
+- Verify wildcard syntax (*, ?, etc.)
+- Review pattern documentation in plugin docs
+
+### Settings Save Issues
+
+Monitor settings operations:
+
+```bash
+grep -i "settings" storage/logs/redirect-manager-*.log
+```
+
+Look for:
+
+- `Attempting to save settings` - Save initiated
+- `Settings saved successfully to database` - Successful save
+- `Settings validation failed` - Validation errors
+- `Failed to save settings` - Save exception
+
+If settings fail to save:
+
+- Check validation errors for specific fields
+- Verify database connectivity
+- Ensure database table exists (run migrations)
+- Review config file overrides (may prevent saves)
 
 ## Development Tips
 
@@ -333,7 +567,7 @@ SMART_LINKS_DEFAULT_CITY=Dubai
 For detailed troubleshooting during development:
 
 ```php
-// config/smart-links.php
+// config/redirect-manager.php
 return [
     'dev' => [
         'logLevel' => 'debug',
@@ -342,22 +576,98 @@ return [
 ```
 
 This provides:
-- Detailed redirect URL calculations
-- Full analytics data payloads
-- Device detection details
-- Request headers and parameters
+
+- Every 404 handling attempt with full context
+- Redirect cache hit/miss information
+- URI change detection details
+- Redirect chain resolution steps
+- Analytics record operations
+- Exclusion pattern matching details
 
 ### Monitor Specific Operations
 
 Track specific operations using grep:
 
 ```bash
-# Monitor all QR code operations
-grep "QR" storage/logs/smart-links-*.log
+# Monitor all redirect executions
+grep "Executing redirect" storage/logs/redirect-manager-*.log
 
-# Watch analytics in real-time
-tail -f storage/logs/smart-links-$(date +%Y-%m-%d).log | grep "analytics"
+# Watch logs in real-time
+tail -f storage/logs/redirect-manager-$(date +%Y-%m-%d).log
 
 # Check all errors
-grep "\[ERROR\]" storage/logs/smart-links-*.log
+grep "\[ERROR\]" storage/logs/redirect-manager-*.log
+
+# Monitor 404 handling
+grep "404" storage/logs/redirect-manager-*.log
+
+# Track URI changes
+grep "URI change" storage/logs/redirect-manager-*.log
+
+# Monitor circular redirects
+grep -i "circular\|loop" storage/logs/redirect-manager-*.log
+
+# Watch analytics operations
+grep -i "analytics" storage/logs/redirect-manager-*.log
+
+# Track import operations
+grep -i "import\|backup" storage/logs/redirect-manager-*.log
 ```
+
+### Debug Redirect Chains
+
+When troubleshooting redirect chains:
+
+```bash
+# Find all chain-related logs
+grep -i "chain" storage/logs/redirect-manager-*.log
+
+# Look for loop detection
+grep "loop detected" storage/logs/redirect-manager-*.log
+```
+
+Review the context to see:
+
+- Chain depth and URLs involved
+- Where chains break or loop
+- Final resolved destination
+- Redirect IDs in the chain
+
+### Performance Monitoring
+
+Track redirect performance:
+
+```bash
+# Monitor cache operations
+grep "cache" storage/logs/redirect-manager-*.log
+
+# Check redirect creation frequency
+grep "Redirect created" storage/logs/redirect-manager-*.log
+
+# Track auto-redirect generation
+grep "Auto-created redirect" storage/logs/redirect-manager-*.log
+```
+
+Enable debug mode to see:
+
+- Cache hit rates
+- Redirect lookup performance
+- Chain resolution efficiency
+- Pattern matching performance
+
+### IP Tracking Configuration
+
+Monitor IP tracking setup:
+
+```bash
+grep "IP hash salt" storage/logs/redirect-manager-*.log
+```
+
+If you see `IP hash salt not configured`:
+
+1. Run: `php craft redirect-manager/security/generate-salt`
+2. Salt will be added to `.env` file
+3. IP tracking will be enabled automatically
+4. Check logs again to verify tracking works
+
+**Note**: IP hashing is used for privacy - actual IP addresses are never logged.

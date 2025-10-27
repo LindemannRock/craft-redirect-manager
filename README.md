@@ -22,6 +22,7 @@ Intelligent redirect management and 404 handling for Craft CMS.
 - **Geographic Detection** - Track visitor location (country, city) via ip-api.com
 - **Auto-Redirect Creation** - Automatically creates redirects when entry URIs change
 - **Smart Caching** - Fast redirect lookups and device detection with configurable caching
+- **Auto-Refreshing Dashboard** - Configurable auto-refresh (5-60 seconds) with smart pause on user interaction
 - **CSV Export** - Export comprehensive analytics including device and geo data
 - **Multi-Site Support** - Site-specific or global redirects
 - **Plugin Integration** - Pluggable architecture allowing other plugins to integrate 404 handling
@@ -120,7 +121,13 @@ REDIRECT_MANAGER_DEFAULT_CITY=New York
 
 ### Config File
 
-Copy `src/config.php` to `config/redirect-manager.php` and customize:
+Create a `config/redirect-manager.php` file to override default settings:
+
+```bash
+cp vendor/lindemannrock/craft-redirect-manager/src/config.php config/redirect-manager.php
+```
+
+Example configuration:
 
 ```php
 <?php
@@ -137,19 +144,26 @@ return [
     'analyticsRetention' => 30,
     'analyticsLimit' => 1000,
 
+    // Dashboard
+    'refreshIntervalSecs' => 5,  // Auto-refresh interval (5, 15, 30, or 60 seconds)
+
     // Performance & Caching
     'enableRedirectCache' => true,
     'redirectCacheDuration' => 3600,  // 1 hour
     'cacheDeviceDetection' => true,
     'deviceDetectionCacheDuration' => 3600,  // 1 hour
 
-    // Preserve query strings in redirects
-    'preserveQueryString' => false,
+    // Query String Handling
+    'stripQueryString' => false,           // Strip query string for redirect matching
+    'preserveQueryString' => false,        // Pass query string to destination URL
+    'stripQueryStringFromStats' => true,   // Group analytics by path only
 
     // Log level
     'logLevel' => 'error',
 ];
 ```
+
+See [Configuration Documentation](docs/CONFIGURATION.md) for all available options.
 
 ### Environment-Specific Config
 
@@ -169,44 +183,6 @@ return [
     ],
 ];
 ```
-
-## Logging
-
-Redirect Manager uses the [LindemannRock Logging Library](https://github.com/LindemannRock/craft-logging-library) for centralized, structured logging across all LindemannRock plugins.
-
-### Log Levels
-- **Error**: Critical errors only (default)
-- **Warning**: Errors and warnings
-- **Info**: General information
-- **Debug**: Detailed debugging (includes performance metrics, requires devMode)
-
-### Configuration
-```php
-// config/redirect-manager.php
-return [
-    'logLevel' => 'error', // error, warning, info, or debug
-];
-```
-
-**Note:** Debug level requires Craft's `devMode` to be enabled. If set to debug with devMode disabled, it automatically falls back to info level.
-
-### Log Files
-- **Location**: `storage/logs/redirect-manager-YYYY-MM-DD.log`
-- **Retention**: 30 days (automatic cleanup via Logging Library)
-- **Format**: Structured JSON logs with context data
-- **Web Interface**: View and filter logs in CP at Redirect Manager → Logs
-
-### Log Management
-Access logs through the Control Panel:
-1. Navigate to Redirect Manager → Logs
-2. Filter by date, level, or search terms
-3. Download log files for external analysis
-4. View file sizes and entry counts
-5. Auto-cleanup after 30 days (configurable via Logging Library)
-
-**Requires:** `lindemannrock/craft-logging-library` plugin (installed automatically as dependency)
-
-See [docs/LOGGING.md](docs/LOGGING.md) for detailed logging documentation.
 
 ## Usage
 
@@ -285,6 +261,67 @@ When enabled (default), the plugin automatically creates redirects when:
 
 Disable in settings: **Redirect Manager → Settings → Auto Create Redirects**
 
+## Query String Handling
+
+Redirect Manager provides three settings to control how query strings are handled at different stages:
+
+### 1. Strip Query String (Redirect Matching)
+
+Controls whether query strings affect redirect matching.
+
+**OFF (default):** Exact matching required
+- Redirect rule: `/page`
+- `/page` ✅ matches
+- `/page?foo=bar` ❌ does not match
+
+**ON:** Query strings ignored during matching
+- Redirect rule: `/page`
+- `/page` ✅ matches
+- `/page?foo=bar` ✅ matches
+
+### 2. Preserve Query String (Redirect Destination)
+
+Controls whether query strings are passed to the destination URL.
+
+**OFF (default):** Query strings dropped
+- User visits: `/old?ref=email`
+- Redirects to: `/new`
+
+**ON:** Query strings preserved
+- User visits: `/old?ref=email`
+- Redirects to: `/new?ref=email`
+
+### 3. Strip Query String From Stats (Analytics Grouping)
+
+Controls how analytics groups URLs with different query strings.
+
+**ON (default):** Consolidate by path
+- Dashboard shows: `/page?source=google` (count: 3)
+- Hits: `/page?source=email`, `/page?source=facebook`, `/page?source=google`
+- All grouped into one record, displays latest query string
+
+**OFF:** Separate records per unique URL+query
+- Dashboard shows: 3 separate rows, each with count: 1
+- `/page?source=email`, `/page?source=facebook`, `/page?source=google`
+
+### Common Configurations
+
+**E-commerce/Marketing Sites:**
+```php
+'stripQueryString' => true,          // Match any UTM params
+'preserveQueryString' => true,       // Keep tracking through redirects
+'stripQueryStringFromStats' => true, // Consolidate analytics reports
+```
+
+**API/Applications:**
+```php
+'stripQueryString' => false,          // Exact URL matching required
+'preserveQueryString' => false,       // Canonical URLs without params
+'stripQueryStringFromStats' => false, // Track each unique combination
+```
+
+**Note:** Analytics always store paths (e.g., `/page?foo=bar`), never full URLs with domains.
+
 ## Testing Guide
 
 ### 1. Test Basic Redirect
@@ -354,6 +391,44 @@ php craft console/controller/eval \
 - **View analytics** - Access 404 analytics
 - **View logs** - Access plugin logs
 - **Manage settings** - Change plugin settings
+
+## Logging
+
+Redirect Manager uses the [LindemannRock Logging Library](https://github.com/LindemannRock/craft-logging-library) for centralized logging.
+
+### Log Levels
+- **Error**: Critical errors only (default)
+- **Warning**: Errors and warnings
+- **Info**: General information
+- **Debug**: Detailed debugging (includes performance metrics, requires devMode)
+
+### Configuration
+```php
+// config/redirect-manager.php
+return [
+    'logLevel' => 'error', // error, warning, info, or debug
+];
+```
+
+**Note:** Debug level requires Craft's `devMode` to be enabled. If set to debug with devMode disabled, it automatically falls back to info level.
+
+### Log Files
+- **Location**: `storage/logs/redirect-manager-YYYY-MM-DD.log`
+- **Retention**: 30 days (automatic cleanup via Logging Library)
+- **Format**: Structured JSON logs with context data
+- **Web Interface**: View and filter logs in CP at Redirect Manager → Logs
+
+### Log Management
+Access logs through the Control Panel:
+1. Navigate to Redirect Manager → Logs
+2. Filter by date, level, or search terms
+3. Download log files for external analysis
+4. View file sizes and entry counts
+5. Auto-cleanup after 30 days (configurable via Logging Library)
+
+**Requires:** `lindemannrock/craft-logging-library` plugin (installed automatically as dependency)
+
+See [docs/LOGGING.md](docs/LOGGING.md) for detailed logging documentation.
 
 ## Troubleshooting
 
