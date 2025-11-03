@@ -516,13 +516,19 @@ class ImportExportController extends Controller
         $validRows = $validatedData['validRows'];
         $createBackup = $validatedData['createBackup'];
 
-        // Create backup if requested
+        // Create backup if requested and there are existing redirects to backup
         $backupPath = null;
         if ($createBackup) {
-            $backupPath = $this->createBackup();
-            if (!$backupPath) {
-                Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to create backup'));
-                return $this->redirect('redirect-manager/import-export');
+            $existingCount = (new \craft\db\Query())
+                ->from('{{%redirectmanager_redirects}}')
+                ->count();
+
+            if ($existingCount > 0) {
+                $backupPath = $this->createBackup();
+                if (!$backupPath) {
+                    Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to create backup'));
+                    return $this->redirect('redirect-manager/import-export');
+                }
             }
         }
 
