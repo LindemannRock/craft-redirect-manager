@@ -42,15 +42,27 @@
         </div>
     </div>
 
-    {% if createBackup and existingCount > 0 %}
-        <div style="background: #e8f5e9; padding: 15px; border-radius: 4px; margin-bottom: 25px; border: 1px solid #a5d6a7;">
-            <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink: 0;">
-                    <path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm1 15H9v-2h2v2zm0-4H9V5h2v6z" fill="#28a745"/>
-                </svg>
-                <strong>{{ "Backup will be created with {count} existing redirect(s) before importing to protect your data."|t('redirect-manager', {count: existingCount}) }}</strong>
-            </p>
-        </div>
+    {% if createBackup %}
+        {% if existingCount > 0 %}
+            <div style="background: #e8f5e9; padding: 15px; border-radius: 4px; margin-bottom: 25px; border: 1px solid #a5d6a7;">
+                <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink: 0;">
+                        <path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm1 15H9v-2h2v2zm0-4H9V5h2v6z" fill="#28a745"/>
+                    </svg>
+                    <strong>{{ "Backup will be created with {count} existing redirect(s) before importing to protect your data."|t('redirect-manager', {count: existingCount}) }}</strong>
+                </p>
+            </div>
+        {% else %}
+            <div style="background: #e3f2fd; padding: 15px; border-radius: 4px; margin-bottom: 25px; border: 1px solid #90caf9;">
+                <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink: 0;">
+                        <circle cx="10" cy="10" r="9" fill="#2196f3"/>
+                        <text x="10" y="14" text-anchor="middle" font-size="12" font-weight="bold" fill="white">i</text>
+                    </svg>
+                    <strong>{{ "No existing redirects to backup - backup will be skipped."|t('redirect-manager') }}</strong>
+                </p>
+            </div>
+        {% endif %}
     {% endif %}
 
     {% if validRows|length > 0 %}
