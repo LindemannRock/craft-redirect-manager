@@ -230,12 +230,15 @@
 											{% else %}
 												{{ 'User'|t('redirect-manager') }}
 											{% endif %}
-										{% elseif redirect.sourcePlugin == 'shortlink-manager' %}
-											{{ 'ShortLink Manager'|t('redirect-manager') }}
-										{% elseif redirect.sourcePlugin == 'smart-links' %}
-											{{ 'Smart Links'|t('redirect-manager') }}
 										{% else %}
-											{{ redirect.sourcePlugin|replace({'-': ' '})|title }}
+											{# Get plugin name dynamically from installed plugin #}
+											{% set sourcePluginObj = craft.app.plugins.getPlugin(redirect.sourcePlugin) %}
+											{% if sourcePluginObj %}
+												{% set pluginSettings = sourcePluginObj.getSettings() %}
+												{{ pluginSettings and pluginSettings.pluginName ? pluginSettings.pluginName : sourcePluginObj.name }}
+											{% else %}
+												{{ redirect.sourcePlugin|replace({'-': ' '})|title }}
+											{% endif %}
 										{% endif %}
 									</span>
 								</td>
