@@ -28,6 +28,11 @@
                 </a>
             </li>
             <li>
+                <a href="{{ url('redirect-manager/settings/backup') }}" {% if selectedSettingsItem == 'backup' %}class="sel"{% endif %} data-nav-item="backup">
+                    {{ 'Backup'|t('redirect-manager') }}
+                </a>
+            </li>
+            <li>
                 <a href="{{ url('redirect-manager/settings/advanced') }}" {% if selectedSettingsItem == 'advanced' %}class="sel"{% endif %} data-nav-item="advanced">
                     {{ 'Advanced'|t('redirect-manager') }}
                 </a>

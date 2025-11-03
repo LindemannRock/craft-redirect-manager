@@ -140,74 +140,51 @@
 		<h2>{{ "Backup History"|t('redirect-manager') }}</h2>
 		<p>{{ "Backups are automatically created when you import redirects (if enabled). You can restore or download any backup."|t('redirect-manager') }}</p>
 
-		{% set backupHistory = craft.redirectManager.getBackupHistory() %}
-
-		{% if backupHistory|length > 0 %}
+		{% if backups|length > 0 %}
 			<table class="data fullwidth">
 				<thead>
 					<tr>
 						<th>{{ "Date"|t('redirect-manager') }}</th>
-						<th>{{ "Imported"|t('redirect-manager') }}</th>
-						<th>{{ "Duplicates"|t('redirect-manager') }}</th>
-						<th>{{ "Errors"|t('redirect-manager') }}</th>
-						<th>{{ "Backup File"|t('redirect-manager') }}</th>
-						<th>{{ "Imported By"|t('redirect-manager') }}</th>
+						<th>{{ "Created By"|t('redirect-manager') }}</th>
+						<th>{{ "Redirect Count"|t('redirect-manager') }}</th>
+						<th>{{ "Size"|t('redirect-manager') }}</th>
 						<th class="thin">{{ "Actions"|t('redirect-manager') }}</th>
 					</tr>
 				</thead>
 				<tbody>
-					{% for history in backupHistory %}
+					{% for backup in backups %}
 						<tr>
-							<td>{{ history.dateCreated|datetime('short') }}</td>
+							<td>{{ backup.date|replace('_', ' ') }}</td>
+							<td>{{ backup.user }}</td>
 							<td style="color: #28a745;">
-								<strong>{{ history.importedCount }}</strong>
+								<strong>{{ backup.redirectCount }}</strong>
 							</td>
-							<td style="color: #f59e0b;">{{ history.duplicatesCount }}</td>
-							<td style="color: #dc3545;">{{ history.errorsCount }}</td>
-							<td>
-								{% if history.backupPath %}
-									<code style="font-size: 11px;">{{ history.backupPath|split('/')|last }}</code>
-								{% else %}
-									<span class="light">-</span>
-								{% endif %}
-							</td>
-							<td>
-								{% if history.importedBy %}
-									{% set user = craft.users.id(history.importedBy).one() %}
-									{{ user ? user.fullName : 'User #' ~ history.importedBy }}
-								{% else %}
-									<span class="light">System</span>
-								{% endif %}
-							</td>
+							<td><code style="font-size: 11px;">{{ backup.formattedSize }}</code></td>
 							<td class="thin">
-								{% if history.backupPath %}
-									<button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('redirect-manager') }}"></button>
-									<div class="menu" data-align="right">
-										<ul>
-											<li>
-												<a href="#" class="restore-backup" data-id="{{ history.id }}" data-date="{{ history.dateCreated|datetime('short') }}">
-													<span class="icon" aria-hidden="true">{{ svg('@appicons/share.svg') }}</span>
-													{{ "Restore"|t('redirect-manager') }}
-												</a>
-											</li>
-											<li>
-												<a href="{{ actionUrl('redirect-manager/import-export/download-backup', {id: history.id}) }}">
-													<span class="icon" aria-hidden="true">{{ svg('@appicons/download.svg') }}</span>
-													{{ "Download"|t('redirect-manager') }}
-												</a>
-											</li>
-											<li><hr></li>
-											<li>
-												<a href="#" class="delete-backup error" data-id="{{ history.id }}">
-													<span class="icon" aria-hidden="true">{{ svg('@appicons/trash.svg') }}</span>
-													{{ "Delete"|t('redirect-manager') }}
-												</a>
-											</li>
-										</ul>
-									</div>
-								{% else %}
-									<span class="light">No backup</span>
-								{% endif %}
+								<button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('redirect-manager') }}"></button>
+								<div class="menu" data-align="right">
+									<ul>
+										<li>
+											<a href="#" class="restore-backup" data-dirname="{{ backup.dirname }}" data-date="{{ backup.date }}">
+												<span class="icon" aria-hidden="true">{{ svg('@appicons/share.svg') }}</span>
+												{{ "Restore"|t('redirect-manager') }}
+											</a>
+										</li>
+										<li>
+											<a href="{{ actionUrl('redirect-manager/import-export/download-backup', {dirname: backup.dirname}) }}">
+												<span class="icon" aria-hidden="true">{{ svg('@appicons/download.svg') }}</span>
+												{{ "Download ZIP"|t('redirect-manager') }}
+											</a>
+										</li>
+										<li><hr></li>
+										<li>
+											<a href="#" class="delete-backup error" data-dirname="{{ backup.dirname }}">
+												<span class="icon" aria-hidden="true">{{ svg('@appicons/trash.svg') }}</span>
+												{{ "Delete"|t('redirect-manager') }}
+											</a>
+										</li>
+									</ul>
+								</div>
 							</td>
 						</tr>
 					{% endfor %}
@@ -225,7 +202,7 @@
 				</svg>
 				<span>
 					<strong>{{ "Backup Location:"|t('redirect-manager') }}</strong>
-					<code>{{ craft.app.path.getRuntimePath() }}/redirect-manager/backups</code>
+					<code>{{ craft.redirectManager.plugin.settings.getBackupPath() }}</code>
 				</span>
 			</p>
 		</div>
@@ -236,7 +213,7 @@
 {% endblock %}
 
 {% js %}
-// Initialize menu buttons
+    // Initialize menu buttons
     document.querySelectorAll('.menubtn').forEach(btn => {
         if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
             new Craft.MenuBtn(btn);
@@ -245,12 +222,13 @@
         }
     });
 
-    // Handle restore backup
-    document.querySelectorAll('.restore-backup').forEach(link => {
-        link.addEventListener('click', function(e) {
+    // Handle restore backup using event delegation
+    document.body.addEventListener('click', function(e) {
+        const target = e.target.closest('.restore-backup');
+        if (target) {
             e.preventDefault();
-            const id = this.getAttribute('data-id');
-            const date = this.getAttribute('data-date');
+            const dirname = target.getAttribute('data-dirname');
+            const date = target.getAttribute('data-date');
 
             if (confirm('Restore backup from ' + date + '? This will DELETE all current redirects and restore from the backup.')) {
                 const form = document.createElement('form');
@@ -263,23 +241,24 @@
                 csrfInput.value = '{{ craft.app.request.csrfToken }}';
                 form.appendChild(csrfInput);
 
-                const idInput = document.createElement('input');
-                idInput.type = 'hidden';
-                idInput.name = 'id';
-                idInput.value = id;
-                form.appendChild(idInput);
+                const dirnameInput = document.createElement('input');
+                dirnameInput.type = 'hidden';
+                dirnameInput.name = 'dirname';
+                dirnameInput.value = dirname;
+                form.appendChild(dirnameInput);
 
                 document.body.appendChild(form);
                 form.submit();
             }
-        });
+        }
     });
 
-    // Handle delete backup
-    document.querySelectorAll('.delete-backup').forEach(link => {
-        link.addEventListener('click', function(e) {
+    // Handle delete backup using event delegation
+    document.body.addEventListener('click', function(e) {
+        const target = e.target.closest('.delete-backup');
+        if (target) {
             e.preventDefault();
-            const id = this.getAttribute('data-id');
+            const dirname = target.getAttribute('data-dirname');
 
             if (confirm('Delete this backup? This cannot be undone.')) {
                 const form = document.createElement('form');
@@ -292,15 +271,15 @@
                 csrfInput.value = '{{ craft.app.request.csrfToken }}';
                 form.appendChild(csrfInput);
 
-                const idInput = document.createElement('input');
-                idInput.type = 'hidden';
-                idInput.name = 'id';
-                idInput.value = id;
-                form.appendChild(idInput);
+                const dirnameInput = document.createElement('input');
+                dirnameInput.type = 'hidden';
+                dirnameInput.name = 'dirname';
+                dirnameInput.value = dirname;
+                form.appendChild(dirnameInput);
 
                 document.body.appendChild(form);
                 form.submit();
             }
-        });
+        }
     });
 {% endjs %}

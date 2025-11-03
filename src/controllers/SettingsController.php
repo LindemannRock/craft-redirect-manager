@@ -126,6 +126,22 @@ class SettingsController extends Controller
     }
 
     /**
+     * Backup settings
+     *
+     * @return Response
+     */
+    public function actionBackup(): Response
+    {
+        $this->requirePermission('redirectManager:manageSettings');
+
+        $settings = RedirectManager::$plugin->getSettings();
+
+        return $this->renderTemplate('redirect-manager/settings/backup', [
+            'settings' => $settings,
+        ]);
+    }
+
+    /**
      * Save settings
      *
      * @return Response|null

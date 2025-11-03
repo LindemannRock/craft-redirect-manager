@@ -1,0 +1,109 @@
+{% extends "redirect-manager/_layouts/settings" %}
+{% set title = "Backup"|t('redirect-manager') %}
+{% set fullPageForm = true %}
+{% set selectedSettingsItem = 'backup' %}
+
+{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
+{% set crumbs = [
+    {
+        label: plugin.settings.pluginName|t('redirect-manager'),
+        url: url('redirect-manager'),
+    },
+    {
+        label: 'Settings'|t('redirect-manager'),
+        url: url('redirect-manager/settings'),
+    },
+    {
+        label: 'Backup'|t('redirect-manager'),
+        url: url('redirect-manager/settings/backup'),
+    },
+] %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+    <form method="post" accept-charset="UTF-8">
+        {{ csrfInput() }}
+        {{ actionInput('redirect-manager/settings/save') }}
+        {{ redirectInput('redirect-manager/settings/backup') }}
+        {{ hiddenInput('section', 'backup') }}
+
+        <h2>{{ "Backup Settings"|t('redirect-manager') }}</h2>
+
+        {# Asset volume selection dropdown for backups #}
+        {% set volumeOptions = [{label: 'Use custom path'|t('redirect-manager'), value: ''}] %}
+        {% for volume in craft.app.volumes.getAllVolumes() %}
+            {% set volumeOptions = volumeOptions|merge([{
+                label: volume.name,
+                value: volume.uid
+            }]) %}
+        {% endfor %}
+
+        {{ forms.selectField({
+            label: "Backup Storage Volume"|t('redirect-manager'),
+            instructions: "Which asset volume should be used for storing backups. Backups will be stored in a 'redirect-manager/backups/imports' subdirectory. Note: Cloud storage volumes (Servd, S3, etc.) are not supported for backups and will fall back to local storage."|t('redirect-manager'),
+            id: 'backupVolumeUid',
+            name: 'settings[backupVolumeUid]',
+            options: volumeOptions,
+            value: settings.backupVolumeUid ?? '',
+            disabled: settings.isOverriddenByConfig('backupVolumeUid'),
+            warning: settings.isOverriddenByConfig('backupVolumeUid') ?
+                "This is being overridden by the <code>backupVolumeUid</code> setting in <code>config/redirect-manager.php</code>."|raw : null,
+        }) }}
+
+        <div id="custom-backup-path" class="{{ settings.backupVolumeUid ? 'hidden' }}">
+            {{ forms.autosuggestField({
+                label: "Custom Backup Path"|t('redirect-manager'),
+                instructions: "The custom path where backups should be stored (only used when no volume is selected)"|t('redirect-manager'),
+                id: 'backupPath',
+                name: 'settings[backupPath]',
+                value: settings.backupPath,
+                errors: settings.getErrors('backupPath'),
+                required: not settings.backupVolumeUid,
+                suggestEnvVars: true,
+                disabled: settings.isOverriddenByConfig('backupPath'),
+                warning: settings.isOverriddenByConfig('backupPath') ?
+                    "This is being overridden by the <code>backupPath</code> setting in <code>config/redirect-manager.php</code>."|raw : null,
+            }) }}
+        </div>
+
+        <div class="buttons">
+            <button type="submit" class="btn submit">{{ "Save"|t('redirect-manager') }}</button>
+        </div>
+    </form>
+
+    {% set backupPath = settings.getBackupPath() %}
+    <div style="margin-top: 2rem; padding: 1rem; background: #f3f4f6; border-radius: 4px;">
+        <p class="light" style="margin: 0; display: flex; align-items: flex-start; gap: 8px;">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" style="flex-shrink: 0; margin-top: 2px;">
+                <circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <text x="8" y="12" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor">i</text>
+            </svg>
+            <span><strong>{{ "Backup Location:"|t('redirect-manager') }}</strong> <code>{{ backupPath }}</code></span>
+        </p>
+    </div>
+
+    {% include 'redirect-manager/_components/plugin-credit.twig' %}
+{% endblock %}
+
+{% js %}
+    document.addEventListener('DOMContentLoaded', function() {
+        const volumeSelect = document.getElementById('backupVolumeUid');
+        const customPathDiv = document.getElementById('custom-backup-path');
+        const pathField = document.getElementById('backupPath');
+
+        if (volumeSelect) {
+            volumeSelect.addEventListener('change', function() {
+                if (this.value) {
+                    // Volume is selected, hide custom path
+                    customPathDiv.classList.add('hidden');
+                    pathField.removeAttribute('required');
+                } else {
+                    // No volume selected, show custom path
+                    customPathDiv.classList.remove('hidden');
+                    pathField.setAttribute('required', 'required');
+                }
+            });
+        }
+    });
+{% endjs %}

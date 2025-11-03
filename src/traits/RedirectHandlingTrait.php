@@ -50,9 +50,10 @@ trait RedirectHandlingTrait
      * Use this for auto-creating redirects when shortlinks expire, get deleted, or need permanent redirects
      *
      * @param array $attributes Redirect attributes (sourceUrl, destinationUrl, matchType, etc.)
+     * @param bool $showNotification Whether to show user notification (default: false)
      * @return bool Success
      */
-    protected function createRedirectRule(array $attributes): bool
+    protected function createRedirectRule(array $attributes, bool $showNotification = false): bool
     {
         // Check if Redirect Manager is installed
         if (!class_exists(\lindemannrock\redirectmanager\RedirectManager::class)) {
@@ -61,6 +62,33 @@ trait RedirectHandlingTrait
 
         // Create the redirect
         return \lindemannrock\redirectmanager\RedirectManager::$plugin
-            ->redirects->createRedirect($attributes);
+            ->redirects->createRedirect($attributes, $showNotification);
+    }
+
+    /**
+     * Handle undo redirect - detects and removes flip-flop redirects within undo window
+     *
+     * @param string $oldUrl The previous URL
+     * @param string $newUrl The new URL
+     * @param int $siteId Site ID
+     * @param string $creationType Creation type (e.g., 'shortlink-slug-change')
+     * @param string $sourcePlugin Source plugin (e.g., 'shortlink-manager')
+     * @return bool True if undo was detected and handled, false otherwise
+     */
+    protected function handleUndoRedirect(
+        string $oldUrl,
+        string $newUrl,
+        int $siteId,
+        string $creationType,
+        string $sourcePlugin
+    ): bool {
+        // Check if Redirect Manager is installed
+        if (!class_exists(\lindemannrock\redirectmanager\RedirectManager::class)) {
+            return false;
+        }
+
+        // Call the centralized undo handler
+        return \lindemannrock\redirectmanager\RedirectManager::$plugin
+            ->redirects->handleUndoRedirect($oldUrl, $newUrl, $siteId, $creationType, $sourcePlugin);
     }
 }

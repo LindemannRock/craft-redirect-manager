@@ -10,6 +10,7 @@ namespace lindemannrock\redirectmanager\models;
 
 use Craft;
 use craft\base\Model;
+use craft\behaviors\EnvAttributeParserBehavior;
 use craft\db\Query;
 use craft\helpers\Db;
 use craft\helpers\App;
@@ -163,6 +164,16 @@ class Settings extends Model
     public int $redirectCacheDuration = 3600;
 
     /**
+     * @var string Local filesystem path for storing import backups
+     */
+    public string $backupPath = '@storage/redirect-manager/backups/imports';
+
+    /**
+     * @var string|null Optional asset volume UID for storing backups
+     */
+    public ?string $backupVolumeUid = null;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -174,6 +185,19 @@ class Settings extends Model
         if ($this->ipHashSalt === null) {
             $this->ipHashSalt = App::env('REDIRECT_MANAGER_IP_SALT');
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors(): array
+    {
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => ['backupPath'],
+            ],
+        ];
     }
 
     /**
@@ -227,6 +251,10 @@ class Settings extends Model
             ['enableRedirectCache', 'default', 'value' => true],
             ['redirectCacheDuration', 'integer', 'min' => 0],
             ['redirectCacheDuration', 'default', 'value' => 3600],
+            ['backupPath', 'required'],
+            ['backupPath', 'string'],
+            ['backupPath', 'validateBackupPath'],
+            ['backupVolumeUid', 'string'],
         ];
     }
 
@@ -264,6 +292,92 @@ class Settings extends Model
                 $this->saveToDatabase();
             }
         }
+    }
+
+    /**
+     * Validate backup path - only allow secure aliases
+     */
+    public function validateBackupPath($attribute, $params, $validator)
+    {
+        $path = $this->$attribute;
+
+        // Check for directory traversal attempts
+        if (strpos($path, '..') !== false) {
+            $this->addError($attribute, Craft::t('redirect-manager', 'Backup path cannot contain directory traversal sequences (..)'));
+            return;
+        }
+
+        // If path starts with @, validate against allowed aliases (unresolved)
+        if (str_starts_with($path, '@')) {
+            $allowedAliases = ['@root', '@storage'];
+            $hasValidAlias = false;
+
+            foreach ($allowedAliases as $alias) {
+                if (str_starts_with($path, $alias)) {
+                    $hasValidAlias = true;
+                    break;
+                }
+            }
+
+            if (!$hasValidAlias) {
+                $this->addError(
+                    $attribute,
+                    Craft::t('redirect-manager', 'Backup path must start with @root or @storage (secure locations only, never web-accessible)')
+                );
+                return;
+            }
+        }
+
+        // Resolve the alias to check actual path
+        try {
+            $resolvedPath = Craft::getAlias($path);
+            $webroot = Craft::getAlias('@webroot');
+
+            // Prevent backups in web-accessible directory
+            if (str_starts_with($resolvedPath, $webroot)) {
+                $this->addError(
+                    $attribute,
+                    Craft::t('redirect-manager', 'Backup path cannot be in a web-accessible directory (@webroot)')
+                );
+                return;
+            }
+        } catch (\Exception $e) {
+            $this->addError($attribute, Craft::t('redirect-manager', 'Invalid backup path: {error}', ['error' => $e->getMessage()]));
+        }
+    }
+
+    /**
+     * Get the resolved backup path
+     *
+     * @return string
+     */
+    public function getBackupPath(): string
+    {
+        // If a volume is selected, use its path
+        if ($this->backupVolumeUid) {
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($this->backupVolumeUid);
+            if ($volume) {
+                $fs = $volume->getFs();
+                if ($fs && property_exists($fs, 'path')) {
+                    $path = Craft::parseEnv($fs->path);
+                    return rtrim($path, '/') . '/redirect-manager/backups/imports';
+                }
+                return "Volume: {$volume->name} / redirect-manager/backups/imports";
+            }
+        }
+
+        // Fall back to local storage with safety checks
+        $path = Craft::getAlias($this->backupPath);
+
+        // Additional safety check: prevent exact root directory match
+        $rootPath = Craft::getAlias('@root');
+        if ($path === $rootPath || $path === '/' || $path === '') {
+            // Force a safe default path
+            $path = Craft::getAlias('@storage/redirect-manager/backups/imports');
+            $this->logWarning('Backup path was pointing to root directory. Using safe default');
+        }
+
+        return $path;
     }
 
     /**

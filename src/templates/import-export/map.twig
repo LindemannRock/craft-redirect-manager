@@ -82,6 +82,8 @@
             {value: 'enabled', label: 'Enabled (1/0)'|t('redirect-manager')},
             {value: 'hitCount', label: 'Hit Count'|t('redirect-manager')},
             {value: 'lastHit', label: 'Last Hit (datetime)'|t('redirect-manager')},
+            {value: 'creationType', label: 'Creation Type (manual/auto/import)'|t('redirect-manager')},
+            {value: 'sourcePlugin', label: 'Source Plugin'|t('redirect-manager')},
         ] %}
 
         <div class="field">
@@ -126,6 +128,10 @@
                                                 {% elseif option.value == 'hitCount' and (lowerHeader in ['hitcount', 'hit count', 'hits', 'count', 'redirecthitcount']) %}
                                                     {% set isMatch = true %}
                                                 {% elseif option.value == 'lastHit' and (lowerHeader in ['lasthit', 'last hit', 'last_hit', 'lastaccessed', 'last accessed']) %}
+                                                    {% set isMatch = true %}
+                                                {% elseif option.value == 'creationType' and (lowerHeader in ['creationtype', 'creation type', 'type', 'created by']) %}
+                                                    {% set isMatch = true %}
+                                                {% elseif option.value == 'sourcePlugin' and (lowerHeader in ['sourceplugin', 'source plugin', 'plugin', 'source']) %}
                                                     {% set isMatch = true %}
                                                 {% endif %}
 

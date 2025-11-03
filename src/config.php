@@ -125,6 +125,25 @@ return [
 
 
         // ========================================
+        // BACKUP SETTINGS
+        // ========================================
+        // Import backup storage configuration
+
+        // Backup Path
+        // Local filesystem path for storing import backups
+        // Supports aliases: @storage, @root
+        // Supports environment variables: $BACKUP_PATH
+        // Default: @storage/redirect-manager/backups/imports
+        'backupPath' => '@storage/redirect-manager/backups/imports',
+
+        // Backup Volume UID
+        // Optional: Store backups in an asset volume instead of local filesystem
+        // When set, this takes precedence over backupPath
+        // Example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+        'backupVolumeUid' => null,
+
+
+        // ========================================
         // ADVANCED SETTINGS
         // ========================================
         // API endpoints, exclusion patterns, and custom headers
