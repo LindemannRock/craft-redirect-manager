@@ -100,6 +100,8 @@ class Install extends Migration
                 'logLevel' => $this->string(20)->notNull()->defaultValue('error'),
                 'enableRedirectCache' => $this->boolean()->notNull()->defaultValue(true),
                 'redirectCacheDuration' => $this->integer()->notNull()->defaultValue(3600),
+                'backupPath' => $this->string()->defaultValue('@storage/redirect-manager/backups/imports'),
+                'backupVolumeUid' => $this->string()->null(),
                 'dateCreated' => $this->dateTime()->notNull(),
                 'dateUpdated' => $this->dateTime()->notNull(),
                 'uid' => $this->uid(),
@@ -178,35 +180,6 @@ class Install extends Migration
             );
         }
 
-        // Create import history table
-        if (!$this->db->tableExists('{{%redirectmanager_import_history}}')) {
-            $this->createTable('{{%redirectmanager_import_history}}', [
-                'id' => $this->primaryKey(),
-                'importedCount' => $this->integer()->notNull()->defaultValue(0),
-                'duplicatesCount' => $this->integer()->notNull()->defaultValue(0),
-                'errorsCount' => $this->integer()->notNull()->defaultValue(0),
-                'backupPath' => $this->string(500),
-                'importedBy' => $this->integer(),
-                'uid' => $this->uid(),
-                'dateCreated' => $this->dateTime()->notNull(),
-                'dateUpdated' => $this->dateTime()->notNull(),
-            ]);
-
-            // Add foreign key for importedBy (user)
-            $this->addForeignKey(
-                null,
-                '{{%redirectmanager_import_history}}',
-                ['importedBy'],
-                Table::USERS,
-                ['id'],
-                'SET NULL',
-                'CASCADE'
-            );
-
-            // Add index on dateCreated
-            $this->createIndex(null, '{{%redirectmanager_import_history}}', ['dateCreated'], false);
-        }
-
         return true;
     }
 
@@ -216,7 +189,6 @@ class Install extends Migration
     public function safeDown(): bool
     {
         // Drop tables in reverse order
-        $this->dropTableIfExists('{{%redirectmanager_import_history}}');
         $this->dropTableIfExists('{{%redirectmanager_analytics}}');
         $this->dropTableIfExists('{{%redirectmanager_settings}}');
         $this->dropTableIfExists('{{%redirectmanager_redirects}}');
