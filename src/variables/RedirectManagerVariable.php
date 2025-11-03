@@ -38,17 +38,4 @@ class RedirectManagerVariable
     {
         return RedirectManager::$plugin;
     }
-
-    /**
-     * Get backup history
-     *
-     * @return array
-     */
-    public function getBackupHistory(): array
-    {
-        return (new \craft\db\Query())
-            ->from('{{%redirectmanager_import_history}}')
-            ->orderBy(['dateCreated' => SORT_DESC])
-            ->all();
-    }
 }
