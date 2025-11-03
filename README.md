@@ -38,20 +38,7 @@ Intelligent redirect management and 404 handling for Craft CMS.
 
 ## Installation
 
-### Via Composer (Development)
-
-Until published on Packagist, install directly from the repository:
-
-```bash
-cd /path/to/project
-composer config repositories.craft-redirect-manager vcs https://github.com/LindemannRock/craft-redirect-manager
-composer require lindemannrock/craft-redirect-manager:dev-main
-./craft plugin/install redirect-manager
-```
-
-### Via Composer (Production - Coming Soon)
-
-Once published on Packagist:
+### Via Composer
 
 ```bash
 cd /path/to/project
@@ -59,11 +46,17 @@ composer require lindemannrock/craft-redirect-manager
 ./craft plugin/install redirect-manager
 ```
 
-### Via Plugin Store (Future)
+### Using DDEV
 
-1. Go to the Plugin Store in your Craft control panel
-2. Search for "Redirect Manager"
-3. Click "Install"
+```bash
+cd /path/to/project
+ddev composer require lindemannrock/craft-redirect-manager
+ddev craft plugin/install redirect-manager
+```
+
+### Via Control Panel
+
+In the Control Panel, go to Settings → Plugins and click "Install" for Redirect Manager.
 
 ### Important: IP Privacy Protection
 
