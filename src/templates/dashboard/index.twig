@@ -118,22 +118,22 @@
 								{{ 'URL'|t('redirect-manager') }}
 							</button>
 						</th>
-						<th scope="col">{{ 'Site'|t('redirect-manager') }}</th>
-						<th scope="col">{{ 'Handled'|t('redirect-manager') }}</th>
+						<th scope="col">{{ 'Referrer'|t('redirect-manager') }}</th>
 						<th scope="col" data-attribute="count" class="orderable {{ sort == 'count' ? 'ordered ' ~ dir : '' }}">
 							<button type="button" data-sort="count">
-								{{ 'Count'|t('redirect-manager') }}
+								{{ 'Hits'|t('redirect-manager') }}
 							</button>
 						</th>
-						<th scope="col">{{ 'Device'|t('redirect-manager') }}</th>
-						<th scope="col">{{ 'Browser'|t('redirect-manager') }}</th>
-						<th scope="col" title="Bot traffic">{{ 'Bot'|t('redirect-manager') }}</th>
 						<th scope="col" data-attribute="lastHit" class="orderable {{ sort == 'lastHit' ? 'ordered ' ~ dir : '' }}">
 							<button type="button" data-sort="lastHit">
 								{{ 'Last Hit'|t('redirect-manager') }}
 							</button>
 						</th>
-						<th scope="col">{{ 'Referrer'|t('redirect-manager') }}</th>
+						<th scope="col">{{ 'Site'|t('redirect-manager') }}</th>
+						<th scope="col">{{ 'Handled'|t('redirect-manager') }}</th>
+						<th scope="col">{{ 'Device'|t('redirect-manager') }}</th>
+						<th scope="col">{{ 'Browser'|t('redirect-manager') }}</th>
+						<th scope="col" title="Bot traffic">{{ 'Bot'|t('redirect-manager') }}</th>
 						<th class="thin" style="width: 90px;">{{ 'Actions'|t('redirect-manager') }}</th>
 					</tr>
 				</thead>
@@ -144,13 +144,16 @@
 								<td class="checkbox-cell">
 									<div class="checkbox" title="Select" tabindex="0" aria-checked="false" role="checkbox"></div>
 								</td>
-								<td>
+								<td style="min-width: 200px; max-width: 50%; word-break: break-word;">
 									<a class="label-link" href="{{ stat.url }}" target="_blank" rel="noopener noreferrer" title="{{ 'Visit URL'|t('redirect-manager') }}">
 										<span>
-											<code>{{ stat.url }}</code>
+											<code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">{{ stat.url }}</code>
 										</span>
 									</a>
 								</td>
+								<td style="max-width: 30%; word-break: break-word; overflow-wrap: break-word;">{{ stat.referrer ?: '-' }}</td>
+								<td>{{ stat.count }}</td>
+								<td style="white-space: nowrap;">{{ stat.lastHit|date('Y-m-d H:i:s') }}</td>
 								<td>
 									{% set site = craft.app.sites.getSiteById(stat.siteId) %}
 									<span class="light">{{ site ? site.name : '-' }}</span>
@@ -168,7 +171,6 @@
 										<span class="status red"></span>
 									{% endif %}
 								</td>
-								<td>{{ stat.count }}</td>
 								<td>{{ stat.deviceType ? stat.deviceType|capitalize : '-' }}</td>
 								<td>{{ stat.browser ?: '-' }}</td>
 								<td>
@@ -178,8 +180,6 @@
 										-
 									{% endif %}
 								</td>
-								<td>{{ stat.lastHit|date('Y-m-d H:i:s') }}</td>
-								<td>{{ stat.referrer ?: '-' }}</td>
 								<td class="thin" style="text-align: right; white-space: nowrap;">
 									<div style="display: inline-flex; gap: 8px;">
 										{% if stat.handled and stat.redirectId %}

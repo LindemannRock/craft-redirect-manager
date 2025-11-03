@@ -520,18 +520,35 @@ class AnalyticsService extends Component
             $analytics = $this->getAllAnalytics($siteId);
         }
 
-        $csv = "URL,Handled,Count,Referrer,Remote IP,User Agent,Last Hit,Date Created\n";
+        $csv = "URL,Referrer,Hits,Last Hit,Site,Handled,Device Type,Device Brand,Device Model,Browser,Browser Version,Browser Engine,OS Name,OS Version,Bot,Bot Name,Country,City,IP Hash,User Agent,Date Created\n";
 
         foreach ($analytics as $stat) {
+            // Get site name
+            $site = Craft::$app->sites->getSiteById($stat['siteId']);
+            $siteName = $site ? $site->name : '-';
+
             $csv .= sprintf(
-                '"%s","%s","%s","%s","%s","%s","%s","%s"' . "\n",
+                '"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s"' . "\n",
                 str_replace('"', '""', $stat['url']),
-                $stat['handled'] ? 'Yes' : 'No',
-                $stat['count'],
                 str_replace('"', '""', $stat['referrer'] ?? ''),
+                $stat['count'],
+                $stat['lastHit'],
+                str_replace('"', '""', $siteName),
+                $stat['handled'] ? 'Yes' : 'No',
+                $stat['deviceType'] ?? '',
+                $stat['deviceBrand'] ?? '',
+                $stat['deviceModel'] ?? '',
+                $stat['browser'] ?? '',
+                $stat['browserVersion'] ?? '',
+                $stat['browserEngine'] ?? '',
+                $stat['osName'] ?? '',
+                $stat['osVersion'] ?? '',
+                $stat['isRobot'] ? 'Yes' : 'No',
+                $stat['botName'] ?? '',
+                $stat['country'] ?? '',
+                $stat['city'] ?? '',
                 $stat['ip'] ?? '',
                 str_replace('"', '""', $stat['userAgent'] ?? ''),
-                $stat['lastHit'],
                 $stat['dateCreated']
             );
         }
