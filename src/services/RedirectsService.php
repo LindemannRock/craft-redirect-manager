@@ -391,61 +391,11 @@ class RedirectsService extends Component
                 'dateCreated' => $mostRecentRedirect['dateCreated'] ?? null,
             ]);
 
-            // SCENARIO 1: Detect IMMEDIATE UNDO (flip-flop)
-            // If we just created A→B and now doing B→A, cancel it out
-            if ($mostRecentRedirect) {
-                // Normalize URLs for comparison
-                $lastSource = $this->parseUrl($mostRecentRedirect['sourceUrlParsed']);
-                $lastDest = $this->parseUrl($mostRecentRedirect['destinationUrl']);
-                $currentNew = $this->parseUrl($newUrl);
-                $currentOld = $this->parseUrl($oldUrl);
-
-                $isImmediateUndo = (
-                    $lastSource === $currentNew &&
-                    $lastDest === $currentOld
-                );
-
-                // Check time window (configurable)
-                $settings = RedirectManager::$plugin->getSettings();
-                $undoWindowMinutes = $settings->undoWindowMinutes ?? 60;
-
-                // Convert UTC database time to Craft's timezone
-                $createdTime = new \DateTime($mostRecentRedirect['dateCreated'], new \DateTimeZone('UTC'));
-                $createdTime->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
-
-                $now = new \DateTime('now', new \DateTimeZone(Craft::$app->getTimeZone()));
-                $minutesAgo = ($now->getTimestamp() - $createdTime->getTimestamp()) / 60;
-                $isRecent = $minutesAgo < $undoWindowMinutes;
-
-                // Debug logging
-                $this->logDebug('Immediate undo check (Site ID: ' . $siteId . ')', [
-                    'lastSource' => $lastSource,
-                    'lastDest' => $lastDest,
-                    'currentNew' => $currentNew,
-                    'currentOld' => $currentOld,
-                    'isImmediateUndo' => $isImmediateUndo,
-                    'minutesAgo' => round($minutesAgo, 2),
-                    'undoWindowMinutes' => $undoWindowMinutes,
-                    'isRecent' => $isRecent,
-                    'willTrigger' => $isImmediateUndo && $isRecent,
-                ]);
-
-                if ($isImmediateUndo && $isRecent) {
-                    // Immediate undo detected - just delete the last redirect
-                    $this->deleteRedirect($mostRecentRedirect['id']);
-                    $this->logInfo('Immediate undo detected - cancelled redirect (Site ID: ' . $siteId . ')', [
-                        'elementId' => $element->id,
-                        'deletedRedirect' => $mostRecentRedirect['sourceUrl'] . ' → ' . $mostRecentRedirect['destinationUrl'],
-                    ]);
-
-                    Craft::$app->getSession()->setNotice(
-                        'Slug change undone - previous redirect removed.'
-                    );
-
-                    // Clear stashed URI and exit (don't create new redirect)
-                    unset($this->_stashedUris[$key]);
-                    return;
-                }
+            // SCENARIO 1: Detect IMMEDIATE UNDO (flip-flop) - Use centralized method
+            if ($this->handleUndoRedirect($oldUrl, $newUrl, $siteId, 'entry-change', 'redirect-manager')) {
+                // Undo was handled, clear stashed URI and exit
+                unset($this->_stashedUris[$key]);
+                return;
             }
 
             // SCENARIO 2: Detect GOING BACKWARDS (returning to old URL in chain)
@@ -510,6 +460,7 @@ class RedirectsService extends Component
                 'sourceUrlParsed' => $oldUrl,
                 'destinationUrl' => $newUrl,
                 'matchType' => 'exact',
+                'redirectSrcMatch' => RedirectManager::$plugin->getSettings()->redirectSrcMatch,
                 'statusCode' => 301,
                 'siteId' => $siteId,
                 'enabled' => true,
@@ -517,7 +468,7 @@ class RedirectsService extends Component
                 'creationType' => 'entry-change',
                 'sourcePlugin' => 'redirect-manager',
                 'elementId' => $element->id,
-            ]);
+            ], true); // Show notification
 
             if ($result) {
                 $this->logInfo('Auto-created redirect for entry URI change', [
@@ -539,12 +490,75 @@ class RedirectsService extends Component
     }
 
     /**
+     * Handle undo redirect - detects and removes flip-flop redirects within undo window
+     *
+     * @param string $oldUrl The previous URL
+     * @param string $newUrl The new URL
+     * @param int $siteId Site ID
+     * @param string $creationType Creation type (e.g., 'entry-change', 'shortlink-slug-change')
+     * @param string $sourcePlugin Source plugin (e.g., 'redirect-manager', 'shortlink-manager')
+     * @return bool True if undo was detected and handled, false otherwise
+     */
+    public function handleUndoRedirect(
+        string $oldUrl,
+        string $newUrl,
+        int $siteId,
+        string $creationType,
+        string $sourcePlugin
+    ): bool {
+        // Get most recent reverse redirect (new → old)
+        $mostRecentRedirect = (new Query())
+            ->from(RedirectRecord::tableName())
+            ->where(['sourceUrl' => $newUrl])
+            ->andWhere(['destinationUrl' => $oldUrl])
+            ->andWhere(['siteId' => $siteId])
+            ->andWhere(['creationType' => $creationType])
+            ->andWhere(['sourcePlugin' => $sourcePlugin])
+            ->orderBy(['dateCreated' => SORT_DESC])
+            ->one();
+
+        if ($mostRecentRedirect) {
+            // Get undo window from settings
+            $settings = RedirectManager::$plugin->getSettings();
+            $undoWindowMinutes = $settings->undoWindowMinutes ?? 60;
+
+            // Check if redirect was created within undo window
+            $createdTime = new \DateTime($mostRecentRedirect['dateCreated'], new \DateTimeZone('UTC'));
+            $createdTime->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
+            $now = new \DateTime('now', new \DateTimeZone(Craft::$app->getTimeZone()));
+            $minutesAgo = ($now->getTimestamp() - $createdTime->getTimestamp()) / 60;
+
+            if ($minutesAgo < $undoWindowMinutes) {
+                // Immediate undo detected - delete the reverse redirect
+                $this->deleteRedirect($mostRecentRedirect['id']);
+
+                $this->logInfo('Immediate undo detected - deleted reverse redirect', [
+                    'deletedRedirect' => $newUrl . ' → ' . $oldUrl,
+                    'minutesAgo' => round($minutesAgo, 2),
+                    'siteId' => $siteId,
+                    'creationType' => $creationType,
+                    'sourcePlugin' => $sourcePlugin,
+                ]);
+
+                Craft::$app->getSession()->setNotice(
+                    Craft::t('redirect-manager', 'Slug change undone - previous redirect removed.')
+                );
+
+                return true; // Undo was handled
+            }
+        }
+
+        return false; // No undo detected
+    }
+
+    /**
      * Create a new redirect
      *
      * @param array $attributes
+     * @param bool $showNotification Whether to show user notification
      * @return bool
      */
-    public function createRedirect(array $attributes): bool
+    public function createRedirect(array $attributes, bool $showNotification = false): bool
     {
         // Validate required fields FIRST
         $hasErrors = false;
@@ -624,6 +638,16 @@ class RedirectsService extends Component
         $this->trigger(self::EVENT_AFTER_SAVE_REDIRECT, $event);
 
         $this->logInfo('Redirect created', ['id' => $record->id, 'sourceUrl' => $attributes['sourceUrl']]);
+
+        // Show notification if requested
+        if ($showNotification) {
+            Craft::$app->getSession()->setNotice(
+                Craft::t('redirect-manager', 'Redirect created: {source} → {dest}', [
+                    'source' => $attributes['sourceUrl'],
+                    'dest' => $attributes['destinationUrl'],
+                ])
+            );
+        }
 
         return true;
     }

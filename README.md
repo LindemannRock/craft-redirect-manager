@@ -587,20 +587,77 @@ class MyService extends Component
             'sourceUrlParsed' => '/items/' . $item->slug,
             'destinationUrl' => '/items',
             'matchType' => 'exact',              // exact|regex|wildcard|prefix
+            'redirectSrcMatch' => 'pathonly',    // pathonly|fullurl (REQUIRED)
             'statusCode' => 301,
             'siteId' => $item->siteId,
             'enabled' => true,
             'priority' => 0,
             'creationType' => 'item-deleted',    // What happened (max 50 chars)
             'sourcePlugin' => 'my-plugin',       // Your plugin handle in kebab-case (max 50 chars)
-        ]);
+        ], true); // Show notification to user
     }
 }
 ```
 
+**Slug Change Example with Undo Detection:**
+
+```php
+use lindemannrock\redirectmanager\traits\RedirectHandlingTrait;
+
+class MyService extends Component
+{
+    use RedirectHandlingTrait;
+
+    public function handleSlugChange(string $oldSlug, MyElement $element): void
+    {
+        $oldUrl = '/items/' . $oldSlug;
+        $newUrl = '/items/' . $element->slug;
+
+        // Check for immediate undo (A→B→A within time window)
+        if ($this->handleUndoRedirect($oldUrl, $newUrl, $element->siteId, 'item-slug-change', 'my-plugin')) {
+            return; // Undo was detected and handled
+        }
+
+        // Create redirect with notification
+        $this->createRedirectRule([
+            'sourceUrl' => $oldUrl,
+            'sourceUrlParsed' => $oldUrl,
+            'destinationUrl' => $newUrl,
+            'matchType' => 'exact',
+            'redirectSrcMatch' => 'pathonly',
+            'statusCode' => 301,
+            'siteId' => $element->siteId,
+            'enabled' => true,
+            'priority' => 0,
+            'creationType' => 'item-slug-change',
+            'sourcePlugin' => 'my-plugin',
+        ], true); // Show notification
+    }
+}
+```
+
+**Trait Methods:**
+
+`createRedirectRule(array $attributes, bool $showNotification = false): bool`
+- Creates a redirect in Redirect Manager
+- `$showNotification` - Set to `true` to show "Redirect created: X → Y" notification to user
+- Returns `true` on success, `false` on failure
+
+`handleUndoRedirect(string $oldUrl, string $newUrl, int $siteId, string $creationType, string $sourcePlugin): bool`
+- Detects and handles immediate undo (flip-flop redirects within undo window)
+- Example: Change A→B, then quickly change B→A - deletes the A→B redirect instead of creating B→A
+- Respects Redirect Manager's "Undo Window" setting (30-240 minutes)
+- Shows "Slug change undone - previous redirect removed." notification
+- Returns `true` if undo was handled, `false` otherwise
+
+`handleRedirect404(string $url, string $source, array $context = []): ?array`
+- Checks if Redirect Manager has a redirect for a 404 URL
+- Returns redirect data if found, `null` otherwise
+
 **Important Constraints:**
 - `creationType` - Maximum 50 characters (e.g., `'code-change'`, `'item-deleted'`, `'smart-link-expired'`)
 - `sourcePlugin` - Maximum 50 characters, **always kebab-case** (e.g., `'shortlink-manager'`, `'smart-links'`, `'my-plugin'`)
+- `redirectSrcMatch` - **REQUIRED** - Must be `'pathonly'` or `'fullurl'`
 - `elementId` - (Optional) Element ID if redirect was created by element URI change. Used to track and clean up redirect chains.
 - `sourceUrl` / `sourceUrlParsed` - Maximum 255 characters
 - `destinationUrl` - Maximum 500 characters
@@ -613,10 +670,11 @@ class MyService extends Component
 
 **What happens:**
 1. Your plugin detects an event (deletion, slug change, etc.)
-2. You call `createRedirectRule()` to push a redirect to Redirect Manager
-3. Redirect Manager validates and saves the redirect
-4. Cache is invalidated
-5. Future requests to the old URL will be redirected
+2. You call `handleUndoRedirect()` to check for immediate undo
+3. If no undo, call `createRedirectRule()` to create the redirect
+4. Redirect Manager validates, saves, and shows notification (if enabled)
+5. Cache is invalidated
+6. Future requests to the old URL will be redirected
 
 ### Source Plugin Tracking
 
