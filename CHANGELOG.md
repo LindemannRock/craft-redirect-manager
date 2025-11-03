@@ -1,5 +1,19 @@
 # Changelog
 
+## [5.2.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.1.3...v5.2.0) (2025-11-03)
+
+
+### Features
+
+* add setter method support and enhance config override checks for settings ([f1c6f1c](https://github.com/LindemannRock/craft-redirect-manager/commit/f1c6f1c730eb5b41ca229c4999c591cf49c585b8))
+
+
+### Bug Fixes
+
+* enhance backup creation logic to check for existing redirects and update template conditions ([1c5400f](https://github.com/LindemannRock/craft-redirect-manager/commit/1c5400f58f5c471b1b57f93aa026e1a542100d7a))
+* logging documentation and update analytics handling in Redirect Manager ([f89928e](https://github.com/LindemannRock/craft-redirect-manager/commit/f89928eea793f033c636506f108e1c8d326ed42a))
+* remove unnecessary blank line in import/export template ([485f8d2](https://github.com/LindemannRock/craft-redirect-manager/commit/485f8d21d4887ba488c5c6fee0a9efba46cb1a92))
+
 ## [5.1.3](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.1.2...v5.1.3) (2025-10-26)
 
 
