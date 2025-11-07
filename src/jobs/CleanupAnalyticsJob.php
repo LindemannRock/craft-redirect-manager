@@ -32,12 +32,26 @@ class CleanupAnalyticsJob extends BaseJob
     public bool $reschedule = false;
 
     /**
+     * @var string|null Next run time display string
+     */
+    public ?string $nextRunTime = null;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
     {
         parent::init();
         $this->setLoggingHandle('redirect-manager');
+
+        // Calculate and set next run time if not already set
+        if ($this->reschedule && !$this->nextRunTime) {
+            $delay = $this->calculateNextRunDelay();
+            if ($delay > 0) {
+                // Short format: "Nov 8, 12:00am"
+                $this->nextRunTime = date('M j, g:ia', time() + $delay);
+            }
+        }
     }
 
     /**
@@ -74,9 +88,15 @@ class CleanupAnalyticsJob extends BaseJob
     protected function defaultDescription(): ?string
     {
         $settings = RedirectManager::$plugin->getSettings();
-        return Craft::t('redirect-manager', '{pluginName}: Cleaning up old analytics', [
+        $description = Craft::t('redirect-manager', '{pluginName}: Cleaning up old analytics', [
             'pluginName' => $settings->pluginName,
         ]);
+
+        if ($this->nextRunTime) {
+            $description .= " ({$this->nextRunTime})";
+        }
+
+        return $description;
     }
 
     /**
@@ -91,13 +111,26 @@ class CleanupAnalyticsJob extends BaseJob
             return;
         }
 
-        // Schedule for 24 hours from now
-        $delay = 86400; // 24 hours
+        $delay = $this->calculateNextRunDelay();
 
-        $job = new self([
-            'reschedule' => true,
-        ]);
+        if ($delay > 0) {
+            // Calculate next run time for display
+            $nextRunTime = date('M j, g:ia', time() + $delay);
 
-        Craft::$app->getQueue()->delay($delay)->push($job);
+            $job = new self([
+                'reschedule' => true,
+                'nextRunTime' => $nextRunTime,
+            ]);
+
+            Craft::$app->getQueue()->delay($delay)->push($job);
+        }
+    }
+
+    /**
+     * Calculate the delay in seconds for the next cleanup (24 hours)
+     */
+    private function calculateNextRunDelay(): int
+    {
+        return 86400; // 24 hours
     }
 }
