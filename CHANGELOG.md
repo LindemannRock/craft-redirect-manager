@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.3.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.2.0...v5.3.0) (2025-11-07)
+
+
+### Features
+
+* add backup path and volume UID to settings table; remove import history table ([33eb038](https://github.com/LindemannRock/craft-redirect-manager/commit/33eb038d57d299fd714850a712f1ad0fb29addd1))
+* Centralize redirect integration with undo detection and notifications ([e9b3d95](https://github.com/LindemannRock/craft-redirect-manager/commit/e9b3d95814b8b0be27f333ea50234bbf87249c50))
+
+
+### Bug Fixes
+
+* dynamically retrieve plugin names for better source plugin display ([87b46b3](https://github.com/LindemannRock/craft-redirect-manager/commit/87b46b363db3348802e7550f0bf4ec42ec3f4aea))
+* enhance analytics CSV export with additional fields and improved layout ([9a6982d](https://github.com/LindemannRock/craft-redirect-manager/commit/9a6982d3a448a8e196f5b208ee947ada720da5a7))
+* improve backup notification logic in import preview template ([5908836](https://github.com/LindemannRock/craft-redirect-manager/commit/5908836bc4052d19b8ba30ea76bc12ed50e71f3d))
+* remove unused getBackupHistory method from RedirectManagerVariable ([3abaebc](https://github.com/LindemannRock/craft-redirect-manager/commit/3abaebca36eee520ff700ba08f447d90db0b6be0))
+
 ## [5.2.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.1.3...v5.2.0) (2025-11-03)
 
 
