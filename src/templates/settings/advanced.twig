@@ -126,7 +126,23 @@
 			{{ "Apply Recommended Settings"|t('redirect-manager') }}
 		</button>
 		<p class="light" style="margin-top: 10px;">
-			{{ "This will add recommended exclude patterns (admin/cms URLs, system resources) and SEO headers (X-Robots-Tag: noindex) to your current settings. No duplicates will be added."|t('redirect-manager') }}
+			{{ "This will add recommended exclude patterns (admin/cms URLs, system resources, versioned assets) and SEO headers (X-Robots-Tag: noindex) to your current settings. No duplicates will be added."|t('redirect-manager') }}
+		</p>
+	</form>
+
+	<hr style="margin: 30px 0;">
+
+	<h3>{{ "WordPress Migration"|t('redirect-manager') }}</h3>
+	<p>{{ "Filter out WordPress bot traffic and spam 404s from WP installations."|t('redirect-manager') }}</p>
+
+	<form method="post" accept-charset="UTF-8">
+		{{ actionInput('redirect-manager/settings/apply-wordpress-filters') }}
+		{{ csrfInput() }}
+		<button type="submit" class="btn secondary">
+			{{ "Apply WordPress Migration Filters"|t('redirect-manager') }}
+		</button>
+		<p class="light" style="margin-top: 10px;">
+			{{ "This will add exclude patterns for WordPress bot traffic (wp-includes, wp-json, wp-admin, wp-login, xmlrpc.php, feeds, etc.). <strong>Note:</strong> /wp-content/uploads URLs are NOT excluded as those may be legitimate media files that need redirects."|t('redirect-manager')|raw }}
 		</p>
 	</form>
 

@@ -223,6 +223,7 @@ class SettingsController extends Controller
             ['pattern' => '^/cpresources'],
             ['pattern' => '^/actions'],
             ['pattern' => '^/\\.well-known'],
+            ['pattern' => '^/dist/.*/assets'],  // Versioned build assets (Vite/Webpack)
         ];
 
         // Recommended additional headers
@@ -270,6 +271,66 @@ class SettingsController extends Controller
             }
         } else {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Could not apply recommended settings'));
+        }
+
+        return $this->redirect('redirect-manager/settings/advanced');
+    }
+
+    /**
+     * Apply WordPress migration filters
+     *
+     * @return Response|null
+     */
+    public function actionApplyWordpressFilters(): ?Response
+    {
+        $this->requirePostRequest();
+        $this->requirePermission('redirectManager:manageSettings');
+
+        // Load current settings from database
+        $settings = Settings::loadFromDatabase();
+        if (!$settings) {
+            $settings = new Settings();
+        }
+
+        // WordPress bot/spam patterns to exclude
+        $wordpressExcludePatterns = [
+            ['pattern' => '/wp-includes'],       // WP core files probing
+            ['pattern' => '/wp-content/themes'], // WP theme files
+            ['pattern' => '/wp-content/plugins'], // WP plugin files
+            ['pattern' => '/wp-json'],           // WP REST API
+            ['pattern' => '/feed'],              // RSS feeds
+            ['pattern' => '\\?p=\\d+'],          // WP permalink format (?p=123)
+            ['pattern' => '/xmlrpc\\.php'],      // XML-RPC attacks
+            ['pattern' => '/wp-login\\.php'],    // WP login page
+            ['pattern' => '/wp-admin'],          // WP admin panel
+        ];
+
+        // Add WordPress patterns (avoid duplicates)
+        $addedPatterns = 0;
+        if (!$settings->isOverriddenByConfig('excludePatterns')) {
+            $existingPatterns = array_column($settings->excludePatterns, 'pattern');
+            foreach ($wordpressExcludePatterns as $recommended) {
+                if (!in_array($recommended['pattern'], $existingPatterns)) {
+                    $settings->excludePatterns[] = $recommended;
+                    $addedPatterns++;
+                }
+            }
+        }
+
+        // Save settings
+        if ($settings->saveToDatabase()) {
+            RedirectManager::$plugin->setSettings($settings->getAttributes());
+
+            if ($addedPatterns > 0) {
+                $message = Craft::t('redirect-manager', 'Added {patterns} WordPress exclude pattern(s). Note: /wp-content/uploads patterns are NOT excluded - those may need redirects for migrated media files.', [
+                    'patterns' => $addedPatterns,
+                ]);
+                Craft::$app->getSession()->setNotice($message);
+            } else {
+                Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'All WordPress migration filters are already applied.'));
+            }
+        } else {
+            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Could not apply WordPress filters'));
         }
 
         return $this->redirect('redirect-manager/settings/advanced');
