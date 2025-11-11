@@ -42,7 +42,13 @@ Intelligent redirect management and 404 handling for Craft CMS.
 
 ```bash
 cd /path/to/project
+```
+
+```bash
 composer require lindemannrock/craft-redirect-manager
+```
+
+```bash
 ./craft plugin/install redirect-manager
 ```
 
@@ -50,7 +56,13 @@ composer require lindemannrock/craft-redirect-manager
 
 ```bash
 cd /path/to/project
+```
+
+```bash
 ddev composer require lindemannrock/craft-redirect-manager
+```
+
+```bash
 ddev craft plugin/install redirect-manager
 ```
 
