@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.4.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.3.2...v5.4.0) (2025-11-11)
+
+
+### Features
+
+* **settings:** add WordPress migration filters and update settings description ([ce424e1](https://github.com/LindemannRock/craft-redirect-manager/commit/ce424e193c89e73627feaa287a7dd38416b5a4d4))
+
+
+### Bug Fixes
+
+* **advanced-settings:** improve descriptions for quick setup and WordPress migration filters ([3f002c0](https://github.com/LindemannRock/craft-redirect-manager/commit/3f002c087474d2f5cfe83978dcd6d194a83db501))
+
 ## [5.3.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.3.1...v5.3.2) (2025-11-11)
 
 
