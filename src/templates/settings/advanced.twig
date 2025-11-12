@@ -6,7 +6,7 @@
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
 {% set crumbs = [
     {
-        label: plugin.settings.pluginName|t('redirect-manager'),
+        label: redirectHelper.fullName|t('redirect-manager'),
         url: url('redirect-manager'),
     },
     {
@@ -50,7 +50,7 @@
 
 		{{ forms.editableTableField({
             label: 'Exclude Patterns'|t('redirect-manager'),
-            instructions: '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from Redirect Manager.'|t('redirect-manager'),
+            instructions: '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.'|t('redirect-manager', {pluginName: redirectHelper.fullName}),
             id: 'excludePatterns',
             name: 'settings[excludePatterns]',
             required: false,

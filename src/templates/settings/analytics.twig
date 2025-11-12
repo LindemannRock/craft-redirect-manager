@@ -6,7 +6,7 @@
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
 {% set crumbs = [
     {
-        label: plugin.settings.pluginName|t('redirect-manager'),
+        label: redirectHelper.fullName|t('redirect-manager'),
         url: url('redirect-manager'),
     },
     {
@@ -22,7 +22,7 @@
 {% import "_includes/forms" as forms %}
 
 {% block content %}
-    {% set pluginName = plugin.settings.pluginName %}
+    {% set pluginName = redirectHelper.fullName %}
 
     {% include 'redirect-manager/_components/ip-salt-error' %}
 
@@ -48,7 +48,7 @@
 
         <div id="analytics-settings" class="{{ not (settings.enableAnalytics ?? true) ? 'hidden' }}">
             <div class="field">
-                <p class="light">{{ "When enabled, Redirect Manager will track 404 errors including device types, browsers, geographic data, and bot traffic."|t('redirect-manager') }}</p>
+                <p class="light">{{ "When enabled, {pluginName} will track 404 errors including device types, browsers, geographic data, and bot traffic."|t('redirect-manager', {pluginName: redirectHelper.fullName}) }}</p>
             </div>
 
             <hr>

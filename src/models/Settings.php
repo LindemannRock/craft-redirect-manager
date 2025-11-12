@@ -515,7 +515,7 @@ class Settings extends Model
             $this->logError('Database update returned false');
             return false;
         } catch (\Exception $e) {
-            $this->logError('Failed to save settings', [
+            $this->logError('Failed to save ' . $this->getFullName() . ' settings', [
                 'error' => $e->getMessage(),
                 'code' => $e->getCode(),
                 'trace' => $e->getTraceAsString(),
@@ -579,5 +579,77 @@ class Settings extends Model
         }
 
         return false;
+    }
+
+    /**
+     * Get display name (singular, without "Manager")
+     *
+     * Strips "Manager" and singularizes the plugin name for use in UI labels.
+     * E.g., "Redirect Manager" → "Redirect", "Redirects" → "Redirect"
+     *
+     * @return string
+     */
+    public function getDisplayName(): string
+    {
+        // Strip "Manager" or "manager" from the name
+        $name = str_replace([' Manager', ' manager'], '', $this->pluginName);
+
+        // Singularize by removing trailing 's' if present
+        $singular = preg_replace('/s$/', '', $name) ?: $name;
+
+        return $singular;
+    }
+
+    /**
+     * Get full plugin name (as configured, with "Manager" if present)
+     *
+     * Returns the plugin name exactly as configured in settings.
+     * E.g., "Redirect Manager", "Redirects", etc.
+     *
+     * @return string
+     */
+    public function getFullName(): string
+    {
+        return $this->pluginName;
+    }
+
+    /**
+     * Get plural display name (without "Manager")
+     *
+     * Strips "Manager" from the plugin name but keeps plural form.
+     * E.g., "Redirect Manager" → "Redirects", "Redirects" → "Redirects"
+     *
+     * @return string
+     */
+    public function getPluralDisplayName(): string
+    {
+        // Strip "Manager" or "manager" from the name
+        return str_replace([' Manager', ' manager'], '', $this->pluginName);
+    }
+
+    /**
+     * Get lowercase display name (singular, without "Manager")
+     *
+     * Lowercase version of getDisplayName() for use in messages, handles, etc.
+     * E.g., "Redirect Manager" → "redirect", "Redirects" → "redirect"
+     *
+     * @return string
+     */
+    public function getLowerDisplayName(): string
+    {
+        return strtolower($this->getDisplayName());
+    }
+
+    /**
+     * Get lowercase plural display name (without "Manager")
+     *
+     * Lowercase version of getPluralDisplayName() for use in messages, handles, etc.
+     * E.g., "Redirect Manager" → "redirects", "Redirects" → "redirects"
+     *
+     * @return string
+     */
+    public function getPluralLowerDisplayName(): string
+    {
+        return strtolower($this->getPluralDisplayName());
     }
 }

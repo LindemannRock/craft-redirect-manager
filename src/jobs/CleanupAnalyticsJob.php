@@ -89,7 +89,7 @@ class CleanupAnalyticsJob extends BaseJob
     {
         $settings = RedirectManager::$plugin->getSettings();
         $description = Craft::t('redirect-manager', '{pluginName}: Cleaning up old analytics', [
-            'pluginName' => $settings->pluginName,
+            'pluginName' => $settings->getDisplayName(),
         ]);
 
         if ($this->nextRunTime) {

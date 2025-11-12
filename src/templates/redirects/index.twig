@@ -2,10 +2,8 @@
 {% import "_includes/forms" as forms %}
 
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
-{% set pluginName = plugin.settings.pluginName %}
-{% set singularName = pluginName matches '/s$/' ? pluginName|slice(0, -1) : pluginName %}
 
-{% set title = pluginName|t('redirect-manager') %}
+{% set title = redirectHelper.fullName|t('redirect-manager') %}
 {% set fullPageForm = false %}
 {% set selectedSubnavItem = 'redirects' %}
 
@@ -19,7 +17,7 @@
 {# Page, limit, offset, totalPages come from controller #}
 
 {% set crumbs = [
-    { label: pluginName, url: url('redirect-manager') },
+    { label: redirectHelper.fullName, url: url('redirect-manager') },
     { label: 'Redirects'|t('redirect-manager'), url: url('redirect-manager/redirects') }
 ] %}
 
@@ -101,7 +99,7 @@
 					</div>
 					<div class="search-container texticon flex-grow">
 						<span class="texticon-icon search icon" aria-hidden="true"></span>
-						<input type="text" class="clearable text fullwidth" name="search" value="{{ search }}" placeholder="{{ 'Search {pluginName}...'|t('redirect-manager', {pluginName: pluginName|lower}) }}" autocomplete="off" dir="ltr" aria-label="Search" {% if search %} autofocus {% endif %}>
+						<input type="text" class="clearable text fullwidth" name="search" value="{{ search }}" placeholder="{{ 'Search {pluginName}...'|t('redirect-manager', {pluginName: redirectHelper.pluralLowerDisplayName}) }}" autocomplete="off" dir="ltr" aria-label="Search" {% if search %} autofocus {% endif %}>
 						<button type="button" class="clear-btn {{ search ? '' : 'hidden' }}" title="Clear search" role="button" aria-label="Clear search"></button>
 						<input type="hidden" name="status" value="{{ statusFilter }}">
 						<input type="hidden" name="matchType" value="{{ matchTypeFilter }}">
@@ -113,7 +111,7 @@
 			</form>
 		</div>
 		<a href="{{ url('redirect-manager/redirects/new') }}" class="btn submit add icon" id="new-redirect-btn">
-			<span class="label-full">{{ 'New {singularName}'|t('redirect-manager', {singularName: singularName}) }}</span>
+			<span class="label-full">{{ 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}) }}</span>
 			<span class="label-short" style="display: none;">{{ 'New'|t('redirect-manager') }}</span>
 		</a>
 	</div>
@@ -270,7 +268,7 @@
 					{% else %}
 						<tr>
 							<td colspan="11" style="text-align: center; padding: 2em;">
-								{{ 'No redirects found.'|t('redirect-manager') }}
+								{{ 'No {items} found.'|t('redirect-manager', {items: redirectHelper.pluralLowerDisplayName}) }}
 							</td>
 						</tr>
 					{% endif %}
@@ -289,9 +287,9 @@
 				<div class="page-info">
 					{% set endRange = min(offset + limit, totalCount) %}
 					{% if totalCount == 0 %}
-						no redirects
+						{{ 'no {items}'|t('redirect-manager', {items: redirectHelper.pluralLowerDisplayName}) }}
 					{% else %}
-						{{ offset + 1 }} – {{ endRange }} of {{ totalCount }} {{ totalCount == 1 ? 'redirect' : 'redirects' }}
+						{{ offset + 1 }} – {{ endRange }} of {{ totalCount }} {{ totalCount == 1 ? redirectHelper.lowerDisplayName : redirectHelper.pluralLowerDisplayName }}
 					{% endif %}
 				</div>
 			</div>

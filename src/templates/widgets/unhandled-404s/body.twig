@@ -1,5 +1,5 @@
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
-{% set pluginName = plugin.settings.pluginName %}
+{% set pluginName = redirectHelper.fullName %}
 
 <div class="unhandled-404s-widget">
     {% if stats|length > 0 %}

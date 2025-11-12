@@ -91,7 +91,7 @@ class RedirectManager extends Plugin
         $settings = $this->getSettings();
         LoggingLibrary::configure([
             'pluginHandle' => $this->handle,
-            'pluginName' => $settings->pluginName ?? $this->name,
+            'pluginName' => $settings->getFullName(),
             'logLevel' => $settings->logLevel ?? 'error',
             'itemsPerPage' => $settings->itemsPerPage ?? 50,
             'permissions' => ['redirectManager:viewLogs'],
@@ -125,6 +125,9 @@ class RedirectManager extends Plugin
             'forceTranslation' => true,
             'allowOverrides' => true,
         ];
+
+        // Register Twig extension for plugin name helpers
+        Craft::$app->view->registerTwigExtension(new \lindemannrock\redirectmanager\twigextensions\PluginNameExtension());
 
         // Register variables
         Event::on(
@@ -183,7 +186,7 @@ class RedirectManager extends Plugin
             ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
             function(RegisterCacheOptionsEvent $event) {
                 $settings = $this->getSettings();
-                $pluginName = $settings->pluginName ?? 'Redirect Manager';
+                $pluginName = $settings->getFullName();
 
                 $event->options[] = [
                     'key' => 'redirect-manager-cache',
@@ -207,7 +210,7 @@ class RedirectManager extends Plugin
         $item = parent::getCpNavItem();
 
         if ($item) {
-            $item['label'] = $this->getSettings()->pluginName;
+            $item['label'] = $this->getSettings()->getFullName();
             $item['icon'] = '@appicons/arrows-righ-left.svg';
 
             $item['subnav'] = [

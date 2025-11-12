@@ -128,7 +128,9 @@ class ImportExportController extends Controller
         fclose($output);
 
         // Send as download
-        $filename = 'redirects-' . date('Y-m-d-His') . '.csv';
+        $settings = RedirectManager::$plugin->getSettings();
+        $filenamePart = strtolower(str_replace(' ', '-', $settings->getPluralLowerDisplayName()));
+        $filename = $filenamePart . '-' . date('Y-m-d-His') . '.csv';
 
         return Craft::$app->getResponse()
             ->sendContentAsFile($csvContent, $filename, [

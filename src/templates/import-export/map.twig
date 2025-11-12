@@ -7,7 +7,7 @@
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
 {% set crumbs = [
     {
-        label: plugin.settings.pluginName|t('redirect-manager'),
+        label: redirectHelper.fullName|t('redirect-manager'),
         url: url('redirect-manager'),
     },
     {

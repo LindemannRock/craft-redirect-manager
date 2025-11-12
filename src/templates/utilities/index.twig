@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
-{% set pluginName = plugin.settings.pluginName %}
+{% set pluginName = redirectHelper.fullName %}
 
 <div style="margin-bottom: 32px;">
     <h2>{{ pluginName }} {{ "Overview"|t('redirect-manager') }}</h2>

@@ -48,7 +48,7 @@ class RedirectManagerUtility extends Utility
     public static function contentHtml(): string
     {
         $settings = RedirectManager::$plugin->getSettings();
-        $pluginName = $settings->pluginName ?? 'Redirect Manager';
+        $pluginName = $settings->getFullName();
 
         // Get redirect stats
         $totalRedirects = (new \craft\db\Query())

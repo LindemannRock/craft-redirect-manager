@@ -557,7 +557,11 @@ class RedirectsService extends Component
             $minutesAgo = ($now->getTimestamp() - $createdTime->getTimestamp()) / 60;
 
             // DEBUG
-            \Craft::error('UNDO CHECK: Found reverse redirect created ' . round($minutesAgo, 2) . ' minutes ago. Window: ' . ($undoWindowMinutes === 0 ? 'DISABLED (always allow)' : $undoWindowMinutes . ' minutes'), 'redirect-manager');
+            $this->logDebug('Undo check: Found reverse redirect', [
+                'minutesAgo' => round($minutesAgo, 2),
+                'undoWindow' => $undoWindowMinutes === 0 ? 'disabled' : $undoWindowMinutes,
+                'allowUndo' => true
+            ]);
 
             // If undo window is 0 (disabled), always allow undo regardless of time
             // Otherwise check if within the time window
@@ -649,7 +653,11 @@ class RedirectsService extends Component
             ->andWhere(['siteId' => $attributes['siteId'] ?? null])
             ->one();
 
-        \Craft::error('DUPLICATE CHECK: sourceUrlParsed=' . ($attributes['sourceUrlParsed'] ?? 'N/A') . ', siteId=' . ($attributes['siteId'] ?? 'null') . ', existing=' . ($existing ? 'YES (ID: ' . $existing['id'] . ')' : 'NO'), 'redirect-manager');
+        $this->logDebug('Duplicate check', [
+            'sourceUrlParsed' => $attributes['sourceUrlParsed'] ?? 'N/A',
+            'siteId' => $attributes['siteId'] ?? null,
+            'existing' => $existing ? ['id' => $existing['id']] : false
+        ]);
 
         if ($existing) {
             $this->logWarning('Redirect already exists', ['sourceUrl' => $attributes['sourceUrl']]);

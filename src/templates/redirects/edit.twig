@@ -2,16 +2,14 @@
 {% import "_includes/forms" as forms %}
 
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
-{% set pluginName = plugin.settings.pluginName %}
-{% set singularName = pluginName matches '/s$/' ? pluginName|slice(0, -1) : pluginName %}
 
-{% set title = isNew ? 'New {singularName}'|t('redirect-manager', {singularName: singularName}) : 'Edit {singularName}'|t('redirect-manager', {singularName: singularName}) %}
+{% set title = isNew ? 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}) : 'Edit {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}) %}
 {% set selectedSubnavItem = 'redirects' %}
 
 {% set crumbs = [
-    { label: pluginName, url: url('redirect-manager') },
+    { label: redirectHelper.fullName, url: url('redirect-manager') },
     { label: 'Redirects'|t('redirect-manager'), url: url('redirect-manager/redirects') },
-    { label: isNew ? 'New {singularName}'|t('redirect-manager', {singularName: singularName}) : redirect.sourceUrl }
+    { label: isNew ? 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}) : redirect.sourceUrl }
 ] %}
 
 {% set fullPageForm = true %}

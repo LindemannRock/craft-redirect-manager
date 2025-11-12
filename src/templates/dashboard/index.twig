@@ -61,7 +61,7 @@
 			</form>
 		</div>
 		<a href="{{ url('redirect-manager/redirects/new') }}" class="btn submit add icon" id="new-redirect-btn">
-			<span class="label-full">{{ 'New Redirect'|t('redirect-manager') }}</span>
+			<span class="label-full">{{ 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}) }}</span>
 			<span class="label-short" style="display: none;">{{ 'New'|t('redirect-manager') }}</span>
 		</a>
 	</div>
@@ -183,9 +183,9 @@
 								<td class="thin" style="text-align: right; white-space: nowrap;">
 									<div style="display: inline-flex; gap: 8px;">
 										{% if stat.handled and stat.redirectId %}
-											<a href="{{ url('redirect-manager/redirects/' ~ stat.redirectId) }}" class="btn icon edit" title="{{ 'Edit handling redirect'|t('redirect-manager') }}" aria-label="{{ 'Edit handling redirect'|t('redirect-manager') }}" role="button"></a>
+											<a href="{{ url('redirect-manager/redirects/' ~ stat.redirectId) }}" class="btn icon edit" title="{{ 'Edit handling {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}" aria-label="{{ 'Edit handling {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}" role="button"></a>
 										{% elseif not stat.handled %}
-											<a href="{{ url('redirect-manager/redirects/new', { sourceUrl: stat.url }) }}" class="btn submit icon add" title="{{ 'Create redirect'|t('redirect-manager') }}" aria-label="{{ 'Create redirect'|t('redirect-manager') }}" role="button"></a>
+											<a href="{{ url('redirect-manager/redirects/new', { sourceUrl: stat.url }) }}" class="btn submit icon add" title="{{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}" aria-label="{{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}" role="button"></a>
 										{% endif %}
 										<button type="button" class="btn icon delete" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}"></button>
 									</div>
