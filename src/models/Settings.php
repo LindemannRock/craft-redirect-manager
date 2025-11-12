@@ -239,7 +239,7 @@ class Settings extends Model
             ['itemsPerPage', 'integer', 'min' => 10, 'max' => 500],
             ['itemsPerPage', 'default', 'value' => 100],
             ['undoWindowMinutes', 'integer'],
-            ['undoWindowMinutes', 'in', 'range' => [30, 60, 120, 240]],
+            ['undoWindowMinutes', 'in', 'range' => [0, 30, 60, 120, 240]], // 0 = disabled (no undo detection)
             ['undoWindowMinutes', 'default', 'value' => 60],
             [
                 ['excludePatterns', 'additionalHeaders'],

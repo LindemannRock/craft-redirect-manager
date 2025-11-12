@@ -182,7 +182,7 @@
 						<th scope="col">{{ 'Destination URL'|t('redirect-manager') }}</th>
 						<th scope="col">{{ 'Match'|t('redirect-manager') }}</th>
 						<th scope="col">{{ 'Type'|t('redirect-manager') }}</th>
-						<th scope="col">{{ 'Source'|t('redirect-manager') }}</th>
+						<th scope="col">{{ 'Site'|t('redirect-manager') }}</th>
 						<th scope="col" data-attribute="statusCode" class="orderable {{ sort == 'statusCode' ? 'ordered ' ~ dir : '' }}">
 							<button type="button" data-sort="statusCode">
 								{{ 'Status'|t('redirect-manager') }}
@@ -194,6 +194,7 @@
 							</button>
 						</th>
 						<th scope="col">{{ 'Enabled'|t('redirect-manager') }}</th>
+						<th scope="col">{{ 'Source'|t('redirect-manager') }}</th>
 						<th class="thin" style="width: 60px;">{{ 'Actions'|t('redirect-manager') }}</th>
 					</tr>
 				</thead>
@@ -224,6 +225,25 @@
 								</td>
 								<td>
 									<span class="light">
+										{% if redirect.siteId %}
+											{% set site = craft.app.sites.getSiteById(redirect.siteId) %}
+											{{ site ? site.name : 'Site ' ~ redirect.siteId }}
+										{% else %}
+											{{ 'All Sites'|t('redirect-manager') }}
+										{% endif %}
+									</span>
+								</td>
+								<td>{{ redirect.statusCode }}</td>
+								<td>{{ redirect.hitCount }}</td>
+								<td>
+									{% if redirect.enabled %}
+										<span class="status green"></span>
+									{% else %}
+										<span class="status disabled"></span>
+									{% endif %}
+								</td>
+								<td>
+									<span class="light">
 										{% if redirect.sourcePlugin == 'redirect-manager' %}
 											{% if redirect.creationType == 'entry-change' %}
 												{{ 'Entry Changes'|t('redirect-manager') }}
@@ -242,15 +262,6 @@
 										{% endif %}
 									</span>
 								</td>
-								<td>{{ redirect.statusCode }}</td>
-								<td>{{ redirect.hitCount }}</td>
-								<td>
-									{% if redirect.enabled %}
-										<span class="status green"></span>
-									{% else %}
-										<span class="status disabled"></span>
-									{% endif %}
-								</td>
 								<td class="thin" style="text-align: right;">
 									<button type="button" class="btn icon delete" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}"></button>
 								</td>
@@ -258,7 +269,7 @@
 						{% endfor %}
 					{% else %}
 						<tr>
-							<td colspan="10" style="text-align: center; padding: 2em;">
+							<td colspan="11" style="text-align: center; padding: 2em;">
 								{{ 'No redirects found.'|t('redirect-manager') }}
 							</td>
 						</tr>

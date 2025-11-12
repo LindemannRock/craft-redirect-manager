@@ -31,8 +31,14 @@ trait RedirectHandlingTrait
      */
     protected function handleRedirect404(string $url, string $source, array $context = []): ?array
     {
-        // Check if Redirect Manager is installed
+        // Check if Redirect Manager is installed and enabled
         if (!class_exists(\lindemannrock\redirectmanager\RedirectManager::class)) {
+            return null;
+        }
+
+        // Check if plugin is actually enabled and initialized
+        $plugin = \Craft::$app->plugins->getPlugin('redirect-manager');
+        if (!$plugin || !\Craft::$app->plugins->isPluginEnabled('redirect-manager')) {
             return null;
         }
 
@@ -55,8 +61,14 @@ trait RedirectHandlingTrait
      */
     protected function createRedirectRule(array $attributes, bool $showNotification = false): bool
     {
-        // Check if Redirect Manager is installed
+        // Check if Redirect Manager is installed and enabled
         if (!class_exists(\lindemannrock\redirectmanager\RedirectManager::class)) {
+            return false;
+        }
+
+        // Check if plugin is actually enabled and initialized
+        $plugin = \Craft::$app->plugins->getPlugin('redirect-manager');
+        if (!$plugin || !\Craft::$app->plugins->isPluginEnabled('redirect-manager')) {
             return false;
         }
 
@@ -70,7 +82,7 @@ trait RedirectHandlingTrait
      *
      * @param string $oldUrl The previous URL
      * @param string $newUrl The new URL
-     * @param int $siteId Site ID
+     * @param int|null $siteId Site ID (null = all sites)
      * @param string $creationType Creation type (e.g., 'shortlink-slug-change')
      * @param string $sourcePlugin Source plugin (e.g., 'shortlink-manager')
      * @return bool True if undo was detected and handled, false otherwise
@@ -78,12 +90,18 @@ trait RedirectHandlingTrait
     protected function handleUndoRedirect(
         string $oldUrl,
         string $newUrl,
-        int $siteId,
+        ?int $siteId,
         string $creationType,
         string $sourcePlugin
     ): bool {
-        // Check if Redirect Manager is installed
+        // Check if Redirect Manager is installed and enabled
         if (!class_exists(\lindemannrock\redirectmanager\RedirectManager::class)) {
+            return false;
+        }
+
+        // Check if plugin is actually enabled and initialized
+        $plugin = \Craft::$app->plugins->getPlugin('redirect-manager');
+        if (!$plugin || !\Craft::$app->plugins->isPluginEnabled('redirect-manager')) {
             return false;
         }
 

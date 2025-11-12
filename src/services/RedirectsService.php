@@ -188,20 +188,38 @@ class RedirectsService extends Component
      */
     public function handleExternal404(string $url, array $context = []): ?array
     {
-        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        $currentSite = Craft::$app->getSites()->getCurrentSite();
+        $siteId = $currentSite->id;
 
         // Strip query string for matching
         $fullUrl = $this->stripQueryString($url);
         $pathOnly = parse_url($fullUrl, PHP_URL_PATH) ?: $fullUrl;
 
+        // Strip site base path for matching (e.g., /ar/go/slug -> /go/slug)
+        $siteBaseUrl = $currentSite->getBaseUrl();
+        $siteBasePath = parse_url($siteBaseUrl, PHP_URL_PATH) ?: '';
+        $siteBasePath = '/' . trim($siteBasePath, '/');
+
+        $pathOnlyStripped = $pathOnly;
+        if ($siteBasePath !== '/' && str_starts_with($pathOnly, $siteBasePath . '/')) {
+            $pathOnlyStripped = substr($pathOnly, strlen($siteBasePath));
+        }
+
         $this->logDebug('Handling external 404', [
             'url' => $url,
+            'pathOnly' => $pathOnly,
+            'pathOnlyStripped' => $pathOnlyStripped,
+            'siteBasePath' => $siteBasePath,
             'source' => $context['source'] ?? 'unknown',
             'context' => $context,
         ]);
 
-        // Try to find redirect
-        $redirect = $this->findRedirect($fullUrl, $pathOnly);
+        // Try to find redirect with stripped path first, then fall back to original
+        $redirect = $this->findRedirect($fullUrl, $pathOnlyStripped);
+
+        if (!$redirect && $pathOnlyStripped !== $pathOnly) {
+            $redirect = $this->findRedirect($fullUrl, $pathOnly);
+        }
 
         // Record 404 with source tracking
         RedirectManager::$plugin->analytics->record404(
@@ -211,10 +229,20 @@ class RedirectsService extends Component
         );
 
         if ($redirect) {
+            // If we stripped site base path and destination is a relative path, add it back
+            if ($siteBasePath !== '/' && $pathOnlyStripped !== $pathOnly) {
+                $destUrl = $redirect['destinationUrl'];
+                // Only prepend if destination is a relative path starting with /
+                if ($destUrl && $destUrl[0] === '/' && !str_starts_with($destUrl, $siteBasePath . '/')) {
+                    $redirect['destinationUrl'] = $siteBasePath . $destUrl;
+                }
+            }
+
             $this->logInfo('External 404 matched redirect', [
                 'source' => $context['source'] ?? 'unknown',
                 'url' => $pathOnly,
                 'destination' => $redirect['destinationUrl'],
+                'siteBasePath' => $siteBasePath,
             ]);
         }
 
@@ -502,7 +530,7 @@ class RedirectsService extends Component
     public function handleUndoRedirect(
         string $oldUrl,
         string $newUrl,
-        int $siteId,
+        ?int $siteId,
         string $creationType,
         string $sourcePlugin
     ): bool {
@@ -511,7 +539,7 @@ class RedirectsService extends Component
             ->from(RedirectRecord::tableName())
             ->where(['sourceUrl' => $newUrl])
             ->andWhere(['destinationUrl' => $oldUrl])
-            ->andWhere(['siteId' => $siteId])
+            ->andWhere(['siteId' => $siteId]) // null means all sites
             ->andWhere(['creationType' => $creationType])
             ->andWhere(['sourcePlugin' => $sourcePlugin])
             ->orderBy(['dateCreated' => SORT_DESC])
@@ -528,7 +556,12 @@ class RedirectsService extends Component
             $now = new \DateTime('now', new \DateTimeZone(Craft::$app->getTimeZone()));
             $minutesAgo = ($now->getTimestamp() - $createdTime->getTimestamp()) / 60;
 
-            if ($minutesAgo < $undoWindowMinutes) {
+            // DEBUG
+            \Craft::error('UNDO CHECK: Found reverse redirect created ' . round($minutesAgo, 2) . ' minutes ago. Window: ' . ($undoWindowMinutes === 0 ? 'DISABLED (always allow)' : $undoWindowMinutes . ' minutes'), 'redirect-manager');
+
+            // If undo window is 0 (disabled), always allow undo regardless of time
+            // Otherwise check if within the time window
+            if ($undoWindowMinutes === 0 || $minutesAgo < $undoWindowMinutes) {
                 // Immediate undo detected - delete the reverse redirect
                 $this->deleteRedirect($mostRecentRedirect['id']);
 
@@ -616,8 +649,19 @@ class RedirectsService extends Component
             ->andWhere(['siteId' => $attributes['siteId'] ?? null])
             ->one();
 
+        \Craft::error('DUPLICATE CHECK: sourceUrlParsed=' . ($attributes['sourceUrlParsed'] ?? 'N/A') . ', siteId=' . ($attributes['siteId'] ?? 'null') . ', existing=' . ($existing ? 'YES (ID: ' . $existing['id'] . ')' : 'NO'), 'redirect-manager');
+
         if ($existing) {
             $this->logWarning('Redirect already exists', ['sourceUrl' => $attributes['sourceUrl']]);
+
+            // Show notification to user
+            Craft::$app->getSession()->setNotice(
+                Craft::t('redirect-manager', 'Redirect already exists: {source} → {dest}', [
+                    'source' => $attributes['sourceUrl'],
+                    'dest' => $attributes['destinationUrl'],
+                ])
+            );
+
             return false;
         }
 
