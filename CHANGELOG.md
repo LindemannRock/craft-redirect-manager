@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.6.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.5.0...v5.6.0) (2025-11-15)
+
+
+### Features
+
+* **license:** add MIT License file to the repository ([649ff9e](https://github.com/LindemannRock/craft-redirect-manager/commit/649ff9e28aae8d3310d670653202688c26fc8c8d))
+
+
+### Bug Fixes
+
+* **backup:** adjust margin style for backup settings header ([30c58fa](https://github.com/LindemannRock/craft-redirect-manager/commit/30c58fadbaa15831582593106e716fc88db9db27))
+
 ## [5.5.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.4.0...v5.5.0) (2025-11-14)
 
 
