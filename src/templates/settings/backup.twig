@@ -28,7 +28,7 @@
         {{ redirectInput('redirect-manager/settings/backup') }}
         {{ hiddenInput('section', 'backup') }}
 
-        <h2>{{ "Backup Settings"|t('redirect-manager') }}</h2>
+        <h2 style="margin-top: 0px;">{{ "Backup Settings"|t('redirect-manager') }}</h2>
 
         {# Asset volume selection dropdown for backups #}
         {% set volumeOptions = [{label: 'Use custom path'|t('redirect-manager'), value: ''}] %}
