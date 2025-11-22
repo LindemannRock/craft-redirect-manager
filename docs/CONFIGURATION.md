@@ -30,6 +30,8 @@ return [
     'enableAnalytics' => true,
     'anonymizeIpAddress' => false,
     'enableGeoDetection' => false,
+    // 'defaultCountry' => 'US',  // For local development (only affects private IPs)
+    // 'defaultCity' => 'New York',  // For local development (only affects private IPs)
     'stripQueryStringFromStats' => true,
     'analyticsLimit' => 1000,
     'analyticsRetention' => 30,
@@ -167,6 +169,25 @@ Detect visitor location (country, city) from IP addresses.
 - **Type:** `bool`
 - **Default:** `false`
 - **Uses:** ip-api.com (free service with 45 requests per minute limit)
+
+##### defaultCountry
+Default country code for local/private IP addresses (local development).
+- **Type:** `string|null`
+- **Default:** `null` (falls back to 'AE' - Dubai, UAE)
+- **Format:** 2-letter country code (US, GB, AE, etc.)
+- **Important:** Only affects private/local IPs (127.0.0.1, 192.168.x.x, etc.). Production traffic uses real geolocation.
+- **Safe for all environments:** Can be committed to config file without affecting production analytics.
+- **Fallback priority:** Config file → .env `REDIRECT_MANAGER_DEFAULT_COUNTRY` → 'AE'
+
+##### defaultCity
+Default city name for local/private IP addresses (local development).
+- **Type:** `string|null`
+- **Default:** `null` (falls back to 'Dubai')
+- **Format:** City name matching predefined locations list
+- **Important:** Only affects private/local IPs (127.0.0.1, 192.168.x.x, etc.). Production traffic uses real geolocation.
+- **Safe for all environments:** Can be committed to config file without affecting production analytics.
+- **Fallback priority:** Config file → .env `REDIRECT_MANAGER_DEFAULT_CITY` → 'Dubai'
+- **Supported locations:** US (New York, Los Angeles, Chicago, San Francisco), GB (London, Manchester), AE (Dubai, Abu Dhabi), SA (Riyadh, Jeddah), DE (Berlin, Munich), FR (Paris), CA (Toronto, Vancouver), AU (Sydney, Melbourne), JP (Tokyo), SG (Singapore), IN (Mumbai, Delhi)
 
 ##### stripQueryStringFromStats
 Controls how analytics groups URLs with different query strings.
