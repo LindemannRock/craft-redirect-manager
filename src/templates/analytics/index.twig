@@ -14,6 +14,41 @@
     },
 ] %}
 
+{% block actionButton %}
+	<div id="action-button" class="btngroup">
+		<button type="button" class="btn menubtn" data-icon="download">{{ "Export"|t('redirect-manager') }}</button>
+		<div class="menu" data-align="right">
+			<ul>
+				<li>
+					<a href="#" class="export-link" data-format="csv" data-action="redirect-manager/analytics/export-csv">{{ "Export as CSV"|t('redirect-manager') }}</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+{% endblock %}
+
+{% block toolbar %}
+	<div class="flex">
+		<div>
+			<div class="btngroup">
+				<button type="button" class="btn menubtn">
+					<span id="dateRangeLabel">{{ dateRange == 'today' ? 'Today' : (dateRange == 'yesterday' ? 'Yesterday' : (dateRange == 'last7days' ? 'Last 7 days' : (dateRange == 'last30days' ? 'Last 30 days' : (dateRange == 'last90days' ? 'Last 90 days' : 'All time')))) }}</span>
+				</button>
+				<div class="menu">
+					<ul>
+						<li><a href="#" data-range="today" class="main-date-range-option {{ dateRange == 'today' ? 'sel' : '' }}">{{ "Today"|t('redirect-manager') }}</a></li>
+						<li><a href="#" data-range="yesterday" class="main-date-range-option {{ dateRange == 'yesterday' ? 'sel' : '' }}">{{ "Yesterday"|t('redirect-manager') }}</a></li>
+						<li><a href="#" data-range="last7days" class="main-date-range-option {{ dateRange == 'last7days' ? 'sel' : '' }}">{{ "Last 7 days"|t('redirect-manager') }}</a></li>
+						<li><a href="#" data-range="last30days" class="main-date-range-option {{ dateRange == 'last30days' ? 'sel' : '' }}">{{ "Last 30 days"|t('redirect-manager') }}</a></li>
+						<li><a href="#" data-range="last90days" class="main-date-range-option {{ dateRange == 'last90days' ? 'sel' : '' }}">{{ "Last 90 days"|t('redirect-manager') }}</a></li>
+						<li><a href="#" data-range="all" class="main-date-range-option {{ dateRange == 'all' ? 'sel' : '' }}">{{ "All time"|t('redirect-manager') }}</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
 {% block content %}
     <div id="analytics-dashboard">
         <div class="analytics-stats">
@@ -35,7 +70,7 @@
             </div>
         </div>
 
-        <h2 style="margin: 30px 0 20px;">{{ "404 Trend (Last 30 Days)"|t('redirect-manager') }}</h2>
+        <h2 style="margin: 30px 0 20px;">{{ "404 Trend"|t('redirect-manager') }}</h2>
 
         <div class="analytics-charts">
             <div class="chart-container full-width">
@@ -43,7 +78,7 @@
             </div>
         </div>
 
-        <h2 style="margin: 30px 0 20px;">{{ "Most Common 404s"|t('redirect-manager') }}</h2>
+        <h2 style="margin: 30px 0 20px;">{{ "Most Common 404s (Top 15)"|t('redirect-manager') }}</h2>
 
         <div class="analytics-charts">
             <div class="chart-container full-width">
@@ -288,6 +323,9 @@
 {% endcss %}
 
 {% js %}
+    // Store chart instances globally
+    window.analyticsCharts = window.analyticsCharts || {};
+
     // Load Chart.js if not already loaded
     if (typeof Chart === 'undefined') {
         var script = document.createElement('script');
@@ -298,178 +336,415 @@
         initCharts();
     }
 
+    // Date range change handler
+    $(document).ready(function() {
+        let currentDateRange = '{{ dateRange }}';
+
+        // Handle date range selection via AJAX
+        $(document).on('click', '.main-date-range-option', function(e) {
+            e.preventDefault();
+
+            const $btn = $(this);
+            const range = $btn.data('range');
+
+            // Update the button text
+            const rangeLabels = {
+                'today': '{{ "Today"|t('redirect-manager')|e('js') }}',
+                'yesterday': '{{ "Yesterday"|t('redirect-manager')|e('js') }}',
+                'last7days': '{{ "Last 7 days"|t('redirect-manager')|e('js') }}',
+                'last30days': '{{ "Last 30 days"|t('redirect-manager')|e('js') }}',
+                'last90days': '{{ "Last 90 days"|t('redirect-manager')|e('js') }}',
+                'all': '{{ "All time"|t('redirect-manager')|e('js') }}'
+            };
+
+            // Update button text immediately
+            $('#dateRangeLabel').text(rangeLabels[range] || range);
+
+            // Update selected state
+            $btn.closest('ul').find('.sel').removeClass('sel');
+            $btn.addClass('sel');
+
+            // Close the menu
+            $btn.closest('.menu').removeClass('active');
+            $btn.closest('.btngroup').find('.menubtn').removeClass('active');
+
+            // Update current range
+            currentDateRange = range;
+
+            // Update URL without reload
+            const url = new URL(window.location);
+            url.searchParams.set('dateRange', range);
+            window.history.pushState({}, '', url);
+
+            // Show loading state
+            $('#analytics-dashboard').css('opacity', '0.5');
+
+            // Reload the page data via AJAX
+            loadAnalyticsData(range);
+        });
+
+        // Handle export link clicks
+        $(document).on('click', '.export-link', function(e) {
+            e.preventDefault();
+            const $link = $(this);
+            const action = $link.data('action');
+            const format = $link.data('format') || 'csv';
+
+            // Build URL with current date range
+            const exportUrl = Craft.getActionUrl(action, {
+                dateRange: currentDateRange,
+                format: format
+            });
+
+            // Trigger download
+            window.location.href = exportUrl;
+        });
+
+        // Load analytics data
+        function loadAnalyticsData(dateRange) {
+            // Update summary stats and tables
+            $.ajax({
+                url: '{{ actionUrl('redirect-manager/analytics/get-data')|raw }}',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    dateRange: dateRange,
+                    type: 'summary',
+                    {{ craft.app.config.general.csrfTokenName }}: '{{ craft.app.request.csrfToken }}'
+                },
+                success: function(response) {
+                    if (response.success && response.data) {
+                        // Update stat boxes
+                        $('#total-404s').text(response.data.totalCount || 0);
+                        $('#handled-404s').text(response.data.handledCount || 0);
+                        $('#unhandled-404s').text(response.data.unhandledCount || 0);
+
+                        // Update success rate
+                        const total = response.data.totalCount || 0;
+                        const handled = response.data.handledCount || 0;
+                        const rate = total > 0 ? Math.round((handled / total) * 100) : 0;
+                        $('#success-rate').text(rate + '%');
+
+                        // Update tables
+                        updateMostCommonTable(response.data.mostCommon || []);
+                        updateRecentUnhandledTable(response.data.recentUnhandled || []);
+
+                        // Update top bots table if available
+                        updateTopBotsTable(response.data.topBots || []);
+                    }
+
+                    // Restore opacity
+                    $('#analytics-dashboard').css('opacity', '1');
+
+                    // Re-initialize charts with new data
+                    initCharts();
+                },
+                error: function() {
+                    $('#analytics-dashboard').css('opacity', '1');
+                    Craft.cp.displayError('{{ "Failed to load analytics data"|t('redirect-manager')|e('js') }}');
+                }
+            });
+        }
+
+        // Update most common table
+        function updateMostCommonTable(mostCommon) {
+            let html = '';
+            if (mostCommon.length === 0) {
+                html = '<tr><td colspan="4" class="thin light">{{ "No 404s recorded yet"|t('redirect-manager')|e('js') }}</td></tr>';
+            } else {
+                mostCommon.forEach(function(stat) {
+                    html += '<tr>';
+                    html += '<td><a class="label-link" href="' + Craft.escapeHtml(stat.url) + '" target="_blank"><span><code>' + Craft.escapeHtml(stat.url.substring(0, 80)) + '</code></span></a></td>';
+                    html += '<td><strong>' + stat.count + '</strong></td>';
+                    html += '<td>' + (stat.handled ? '<span class="status green"></span>' : '<span class="status red"></span>') + '</td>';
+                    html += '<td>' + Craft.formatDate(new Date(stat.lastHit.date || stat.lastHit)) + '</td>';
+                    html += '</tr>';
+                });
+            }
+            $('h2:contains("Most Common 404s (Top 15)")').next('.analytics-charts').find('tbody').html(html);
+        }
+
+        // Update recent unhandled table
+        function updateRecentUnhandledTable(recentUnhandled) {
+            let html = '';
+            if (recentUnhandled.length === 0) {
+                html = '<tr><td colspan="5" class="thin light">{{ "No unhandled 404s! Great job!"|t('redirect-manager')|e('js') }}</td></tr>';
+            } else {
+                recentUnhandled.forEach(function(stat) {
+                    html += '<tr>';
+                    html += '<td><a class="label-link" href="' + Craft.escapeHtml(stat.url) + '" target="_blank"><span><code>' + Craft.escapeHtml(stat.url.substring(0, 80)) + '</code></span></a></td>';
+                    html += '<td>' + stat.count + '</td>';
+                    html += '<td>' + (stat.referrer ? Craft.escapeHtml(stat.referrer.substring(0, 40)) : '-') + '</td>';
+                    html += '<td>' + Craft.formatDate(new Date(stat.lastHit.date || stat.lastHit)) + '</td>';
+                    html += '<td><a href="' + Craft.getUrl('redirect-manager/redirects/new', { sourceUrl: stat.url }) + '" class="btn submit icon add" title="{{ "Create redirect"|t('redirect-manager')|e('js') }}"></a></td>';
+                    html += '</tr>';
+                });
+            }
+            $('h2:contains("Recent Unhandled 404s")').next('.analytics-charts').find('tbody').html(html);
+        }
+
+        // Update top bots table
+        function updateTopBotsTable(topBots) {
+            let html = '';
+            if (topBots.length === 0) {
+                html = '<tr><td colspan="2" style="text-align: center; color: #999;">{{ "No bot data available"|t('redirect-manager')|e('js') }}</td></tr>';
+            } else {
+                topBots.forEach(function(bot) {
+                    html += '<tr>';
+                    html += '<td>' + Craft.escapeHtml(bot.botName) + '</td>';
+                    html += '<td>' + bot.count + '</td>';
+                    html += '</tr>';
+                });
+            }
+            $('h3:contains("Top Bots")').next('.table-scroll-container').find('tbody').html(html);
+        }
+    });
+
     function initCharts() {
+        // Destroy existing charts
+        if (window.analyticsCharts) {
+            Object.keys(window.analyticsCharts).forEach(function(key) {
+                if (window.analyticsCharts[key] && typeof window.analyticsCharts[key].destroy === 'function') {
+                    window.analyticsCharts[key].destroy();
+                }
+            });
+            window.analyticsCharts = {};
+        }
+
+        // Get current date range
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentRange = urlParams.get('dateRange') || '{{ dateRange }}';
+
         // Chart colors
         const chartColors = [
             '#0d78f2', '#27ae60', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c',
             '#34495e', '#e67e22', '#3498db', '#2ecc71', '#c0392b', '#f1c40f'
         ];
 
-        // Prepare chart data
-        const chartData = {{ chartData|json_encode|raw }};
-
-        if (chartData && chartData.length > 0) {
-            // 404 Trend Chart
-            new Chart(document.getElementById('404-trend-chart'), {
-                type: 'line',
-                data: {
-                    labels: chartData.map(d => d.date),
-                    datasets: [
-                        {
-                            label: '{{ "Handled"|t('redirect-manager') }}',
-                            data: chartData.map(d => d.handled),
-                            borderColor: '#10B981',
-                            backgroundColor: '#10B981',
-                            tension: 0.1,
-                            fill: false
+        // Load 404 trend chart data via AJAX
+        $.ajax({
+            url: '{{ actionUrl('redirect-manager/analytics/get-data')|raw }}',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                dateRange: currentRange,
+                type: 'chart',
+                {{ craft.app.config.general.csrfTokenName }}: '{{ craft.app.request.csrfToken }}'
+            },
+            success: function(response) {
+                if (response.success && response.data && response.data.length > 0) {
+                    const chartData = response.data;
+                    // 404 Trend Chart
+                    window.analyticsCharts.trendChart = new Chart(document.getElementById('404-trend-chart'), {
+                        type: 'line',
+                        data: {
+                            labels: chartData.map(d => d.date),
+                            datasets: [
+                                {
+                                    label: '{{ "Handled"|t('redirect-manager') }}',
+                                    data: chartData.map(d => d.handled),
+                                    borderColor: '#10B981',
+                                    backgroundColor: '#10B981',
+                                    tension: 0.1,
+                                    fill: false
+                                },
+                                {
+                                    label: '{{ "Unhandled"|t('redirect-manager') }}',
+                                    data: chartData.map(d => d.unhandled),
+                                    borderColor: '#EF4444',
+                                    backgroundColor: '#EF4444',
+                                    tension: 0.1,
+                                    fill: false
+                                }
+                            ]
                         },
-                        {
-                            label: '{{ "Unhandled"|t('redirect-manager') }}',
-                            data: chartData.map(d => d.unhandled),
-                            borderColor: '#EF4444',
-                            backgroundColor: '#EF4444',
-                            tension: 0.1,
-                            fill: false
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1,
-                                precision: 0
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1,
+                                        precision: 0
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    align: 'center',
+                                    labels: {
+                                        usePointStyle: true,
+                                        pointStyle: 'circle',
+                                        padding: 20
+                                    }
+                                }
                             }
                         }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            align: 'center',
-                            labels: {
-                                usePointStyle: true,
-                                pointStyle: 'circle',
-                                padding: 20
-                            }
-                        }
-                    }
+                    });
                 }
-            });
-        }
-
-        // Bot vs Human Traffic Chart
-        const botStats = {{ botStats|json_encode|raw }};
-        if (botStats && botStats.chart) {
-            new Chart(document.getElementById('bot-chart'), {
-                type: 'doughnut',
-                data: {
-                    labels: botStats.chart.labels,
-                    datasets: [{
-                        data: botStats.chart.values,
-                        backgroundColor: [chartColors[1], chartColors[2]]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-        }
-
-        // Device Types Chart
-        const deviceData = {{ deviceBreakdown|json_encode|raw }};
-        if (deviceData && deviceData.labels && deviceData.labels.length > 0) {
-            new Chart(document.getElementById('device-chart'), {
-                type: 'doughnut',
-                data: {
-                    labels: deviceData.labels,
-                    datasets: [{
-                        data: deviceData.values,
-                        backgroundColor: chartColors.slice(0, deviceData.labels.length)
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-        }
-
-        // Browser Usage Chart
-        const browserData = {{ browserBreakdown|json_encode|raw }};
-        if (browserData && browserData.labels && browserData.labels.length > 0) {
-            const browserCtx = document.getElementById('browser-chart');
-            if (browserCtx) {
-                browserCtx.parentElement.style.minHeight = '300px';
             }
-            new Chart(browserCtx, {
-                type: 'bar',
-                data: {
-                    labels: browserData.labels,
-                    datasets: [{
-                        label: '{{ "404s"|t('redirect-manager') }}',
-                        data: browserData.values,
-                        backgroundColor: chartColors[0],
-                        borderColor: chartColors[0],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1,
-                                precision: 0
+        });
+
+        // Bot vs Human Traffic Chart via AJAX
+        $.ajax({
+            url: '{{ actionUrl('redirect-manager/analytics/get-data')|raw }}',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                dateRange: currentRange,
+                type: 'bots',
+                {{ craft.app.config.general.csrfTokenName }}: '{{ craft.app.request.csrfToken }}'
+            },
+            success: function(response) {
+                if (response.success && response.data && response.data.chart) {
+                    window.analyticsCharts.botChart = new Chart(document.getElementById('bot-chart'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: response.data.chart.labels,
+                            datasets: [{
+                                data: response.data.chart.values,
+                                backgroundColor: [chartColors[1], chartColors[2]]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
                             }
                         }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
+                    });
+                    // Update bot percentage text
+                    $('.analytics-charts.two-columns .chart-container div[style*="text-align"]').html(
+                        '<strong>' + response.data.botPercentage + '%</strong> of traffic is from bots'
+                    );
                 }
-            });
-        }
+            }
+        });
 
-        // Operating Systems Chart
-        const osData = {{ osBreakdown|json_encode|raw }};
-        if (osData && osData.labels && osData.labels.length > 0) {
-            new Chart(document.getElementById('os-chart'), {
-                type: 'doughnut',
-                data: {
-                    labels: osData.labels,
-                    datasets: [{
-                        data: osData.values,
-                        backgroundColor: chartColors
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
+        // Device Types Chart via AJAX
+        $.ajax({
+            url: '{{ actionUrl('redirect-manager/analytics/get-data')|raw }}',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                dateRange: currentRange,
+                type: 'devices',
+                {{ craft.app.config.general.csrfTokenName }}: '{{ craft.app.request.csrfToken }}'
+            },
+            success: function(response) {
+                if (response.success && response.data && response.data.labels && response.data.labels.length > 0) {
+                    window.analyticsCharts.deviceChart = new Chart(document.getElementById('device-chart'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: response.data.labels,
+                            datasets: [{
+                                data: response.data.values,
+                                backgroundColor: chartColors.slice(0, response.data.labels.length)
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
                         }
-                    }
+                    });
                 }
-            });
-        }
+            }
+        });
+
+        // Browser Usage Chart via AJAX
+        $.ajax({
+            url: '{{ actionUrl('redirect-manager/analytics/get-data')|raw }}',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                dateRange: currentRange,
+                type: 'browsers',
+                {{ craft.app.config.general.csrfTokenName }}: '{{ craft.app.request.csrfToken }}'
+            },
+            success: function(response) {
+                if (response.success && response.data && response.data.labels && response.data.labels.length > 0) {
+                    const browserCtx = document.getElementById('browser-chart');
+                    if (browserCtx) {
+                        browserCtx.parentElement.style.minHeight = '300px';
+                    }
+                    window.analyticsCharts.browserChart = new Chart(browserCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: response.data.labels,
+                            datasets: [{
+                                label: '{{ "404s"|t('redirect-manager') }}',
+                                data: response.data.values,
+                                backgroundColor: chartColors[0],
+                                borderColor: chartColors[0],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1,
+                                        precision: 0
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+        // Operating Systems Chart via AJAX
+        $.ajax({
+            url: '{{ actionUrl('redirect-manager/analytics/get-data')|raw }}',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                dateRange: currentRange,
+                type: 'os',
+                {{ craft.app.config.general.csrfTokenName }}: '{{ craft.app.request.csrfToken }}'
+            },
+            success: function(response) {
+                if (response.success && response.data && response.data.labels && response.data.labels.length > 0) {
+                    window.analyticsCharts.osChart = new Chart(document.getElementById('os-chart'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: response.data.labels,
+                            datasets: [{
+                                data: response.data.values,
+                                backgroundColor: chartColors
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
     }
 {% endjs %}

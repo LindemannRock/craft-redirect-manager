@@ -377,7 +377,7 @@ class Settings extends Model
             if ($volume) {
                 $fs = $volume->getFs();
                 if ($fs && property_exists($fs, 'path')) {
-                    $path = Craft::parseEnv($fs->path);
+                    $path = App::env($fs->path);
                     return rtrim($path, '/') . '/redirect-manager/backups/imports';
                 }
                 return "Volume: {$volume->name} / redirect-manager/backups/imports";

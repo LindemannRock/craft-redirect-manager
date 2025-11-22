@@ -128,28 +128,38 @@ class AnalyticsController extends Controller
     {
         $this->requirePermission('redirectManager:viewAnalytics');
 
-        $siteId = Craft::$app->getRequest()->getQueryParam('siteId');
+        $request = Craft::$app->getRequest();
+        $siteId = $request->getQueryParam('siteId');
+        $dateRange = $request->getQueryParam('dateRange', 'last30days');
 
-        // Get chart data (last 30 days)
-        $chartData = RedirectManager::$plugin->analytics->getChartData($siteId, 30);
+        // Convert date range to days
+        $days = $this->_convertDateRangeToDays($dateRange);
+
+        // Get explicit date range filter (for today/yesterday)
+        $dateFilter = $this->_getDateRangeFilter($dateRange);
+        $startDate = $dateFilter['start'] ?? null;
+        $endDate = $dateFilter['end'] ?? null;
+
+        // Get chart data
+        $chartData = RedirectManager::$plugin->analytics->getChartData($siteId, $days);
 
         // Get most common 404s
-        $mostCommon = RedirectManager::$plugin->analytics->getMostCommon404s($siteId, 10);
+        $mostCommon = RedirectManager::$plugin->analytics->getMostCommon404s($siteId, 15, null, $days, $startDate, $endDate);
 
         // Get recent 404s
-        $recentHandled = RedirectManager::$plugin->analytics->getRecent404s($siteId, 5, true);
-        $recentUnhandled = RedirectManager::$plugin->analytics->getRecent404s($siteId, 5, false);
+        $recentHandled = RedirectManager::$plugin->analytics->getRecent404s($siteId, 5, true, $days, $startDate, $endDate);
+        $recentUnhandled = RedirectManager::$plugin->analytics->getRecent404s($siteId, 5, false, $days, $startDate, $endDate);
 
         // Get counts
-        $totalCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId);
-        $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, true);
-        $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, false);
+        $totalCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, null, $days, $startDate, $endDate);
+        $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, true, $days, $startDate, $endDate);
+        $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, false, $days, $startDate, $endDate);
 
         // Get device analytics
-        $deviceBreakdown = RedirectManager::$plugin->analytics->getDeviceBreakdown($siteId, 30);
-        $browserBreakdown = RedirectManager::$plugin->analytics->getBrowserBreakdown($siteId, 30);
-        $osBreakdown = RedirectManager::$plugin->analytics->getOsBreakdown($siteId, 30);
-        $botStats = RedirectManager::$plugin->analytics->getBotStats($siteId, 30);
+        $deviceBreakdown = RedirectManager::$plugin->analytics->getDeviceBreakdown($siteId, $days);
+        $browserBreakdown = RedirectManager::$plugin->analytics->getBrowserBreakdown($siteId, $days);
+        $osBreakdown = RedirectManager::$plugin->analytics->getOsBreakdown($siteId, $days);
+        $botStats = RedirectManager::$plugin->analytics->getBotStats($siteId, $days);
 
         return $this->renderTemplate('redirect-manager/analytics/index', [
             'chartData' => $chartData,
@@ -163,6 +173,7 @@ class AnalyticsController extends Controller
             'browserBreakdown' => $browserBreakdown,
             'osBreakdown' => $osBreakdown,
             'botStats' => $botStats,
+            'dateRange' => $dateRange,
         ]);
     }
 
@@ -236,20 +247,35 @@ class AnalyticsController extends Controller
      */
     public function actionExportCsv(): Response
     {
-        $this->requirePostRequest();
         $this->requirePermission('redirectManager:viewAnalytics');
 
+        $request = Craft::$app->getRequest();
+        $siteId = $request->getQueryParam('siteId');
+
         // Check if specific analytics were selected
-        $analyticsIdsJson = Craft::$app->getRequest()->getBodyParam('analyticsIds');
+        $analyticsIdsJson = $request->getBodyParam('analyticsIds');
         $analyticsIds = $analyticsIdsJson ? json_decode($analyticsIdsJson, true) : null;
 
-        $csv = RedirectManager::$plugin->analytics->exportToCsv(null, $analyticsIds);
+        // Get date range from query params
+        $dateRange = $request->getQueryParam('dateRange', 'all');
+        $format = $request->getQueryParam('format', 'csv');
 
-        $filename = 'redirect-analytics-' . date('Y-m-d-His') . '.csv';
+        // Convert date range to days and get date filter
+        $days = $this->_convertDateRangeToDays($dateRange);
+        $dateFilter = $this->_getDateRangeFilter($dateRange);
+        $startDate = $dateFilter['start'] ?? null;
+        $endDate = $dateFilter['end'] ?? null;
+
+        $csv = RedirectManager::$plugin->analytics->exportToCsv($siteId, $analyticsIds, $days, $startDate, $endDate);
+
+        // Build filename following shortlink pattern
+        $settings = RedirectManager::$plugin->getSettings();
+        $filenamePart = strtolower(str_replace(' ', '-', $settings->getPluralLowerDisplayName()));
+        $filename = $filenamePart . '-analytics-' . $dateRange . '-' . date('Y-m-d') . '.' . $format;
 
         return Craft::$app->getResponse()
             ->sendContentAsFile($csv, $filename, [
-                'mimeType' => 'text/csv',
+                'mimeType' => $format === 'csv' ? 'text/csv' : 'application/json',
             ]);
     }
 
@@ -271,5 +297,136 @@ class AnalyticsController extends Controller
             'success' => true,
             'data' => $chartData,
         ]);
+    }
+
+    /**
+     * Get analytics data via AJAX (for date range filtering)
+     *
+     * @return Response
+     */
+    public function actionGetData(): Response
+    {
+        $this->requirePermission('redirectManager:viewAnalytics');
+
+        $request = Craft::$app->getRequest();
+        $siteId = $request->getBodyParam('siteId');
+        $dateRange = $request->getBodyParam('dateRange', 'last30days');
+        $type = $request->getBodyParam('type', 'summary');
+
+        // Convert date range to days
+        $days = $this->_convertDateRangeToDays($dateRange);
+
+        // Get explicit date range filter (for today/yesterday)
+        $dateFilter = $this->_getDateRangeFilter($dateRange);
+        $startDate = $dateFilter['start'] ?? null;
+        $endDate = $dateFilter['end'] ?? null;
+
+        $data = null;
+
+        switch ($type) {
+            case 'summary':
+                // Get counts
+                $totalCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, null, $days, $startDate, $endDate);
+                $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, true, $days, $startDate, $endDate);
+                $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, false, $days, $startDate, $endDate);
+
+                // Get tables data
+                $mostCommon = RedirectManager::$plugin->analytics->getMostCommon404s($siteId, 15, null, $days, $startDate, $endDate);
+                $recentUnhandled = RedirectManager::$plugin->analytics->getRecent404s($siteId, 5, false, $days, $startDate, $endDate);
+
+                // Get bot stats
+                $botStats = RedirectManager::$plugin->analytics->getBotStats($siteId, $days);
+
+                $data = [
+                    'totalCount' => $totalCount,
+                    'handledCount' => $handledCount,
+                    'unhandledCount' => $unhandledCount,
+                    'mostCommon' => $mostCommon,
+                    'recentUnhandled' => $recentUnhandled,
+                    'topBots' => $botStats['topBots'] ?? [],
+                ];
+                break;
+
+            case 'chart':
+                $data = RedirectManager::$plugin->analytics->getChartData($siteId, $days);
+                break;
+
+            case 'devices':
+                $data = RedirectManager::$plugin->analytics->getDeviceBreakdown($siteId, $days);
+                break;
+
+            case 'browsers':
+                $data = RedirectManager::$plugin->analytics->getBrowserBreakdown($siteId, $days);
+                break;
+
+            case 'os':
+                $data = RedirectManager::$plugin->analytics->getOsBreakdown($siteId, $days);
+                break;
+
+            case 'bots':
+                $data = RedirectManager::$plugin->analytics->getBotStats($siteId, $days);
+                break;
+        }
+
+        return $this->asJson([
+            'success' => true,
+            'data' => $data,
+        ]);
+    }
+
+    /**
+     * Convert date range string to number of days
+     *
+     * @param string $dateRange
+     * @return int
+     */
+    private function _convertDateRangeToDays(string $dateRange): int
+    {
+        return match ($dateRange) {
+            'today' => 1,
+            'yesterday' => 2, // Need 2 days to include yesterday's data
+            'last7days' => 7,
+            'last30days' => 30,
+            'last90days' => 90,
+            'all' => 36500, // ~100 years (effectively all data)
+            default => 30,
+        };
+    }
+
+    /**
+     * Get date range filter for SQL queries
+     *
+     * @param string $dateRange
+     * @return array|null ['start' => DateTime, 'end' => DateTime] or null for no filter
+     */
+    private function _getDateRangeFilter(string $dateRange): ?array
+    {
+        return match ($dateRange) {
+            'today' => [
+                'start' => (new \DateTime())->setTime(0, 0, 0),
+                'end' => null, // up to now
+            ],
+            'yesterday' => [
+                'start' => (new \DateTime())->modify('-1 day')->setTime(0, 0, 0),
+                'end' => (new \DateTime())->setTime(0, 0, 0),
+            ],
+            'last7days' => [
+                'start' => (new \DateTime())->modify('-7 days'),
+                'end' => null,
+            ],
+            'last30days' => [
+                'start' => (new \DateTime())->modify('-30 days'),
+                'end' => null,
+            ],
+            'last90days' => [
+                'start' => (new \DateTime())->modify('-90 days'),
+                'end' => null,
+            ],
+            'all' => null,
+            default => [
+                'start' => (new \DateTime())->modify('-30 days'),
+                'end' => null,
+            ],
+        };
     }
 }
