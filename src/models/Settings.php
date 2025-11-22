@@ -94,9 +94,9 @@ class Settings extends Model
     public bool $cacheDeviceDetection = true;
 
     /**
-     * @var int Device detection cache duration in seconds
+     * @var int Device detection cache duration in seconds (1 hour)
      */
-    public int $deviceDetectionCacheDuration = 3600; // 1 hour
+    public int $deviceDetectionCacheDuration = 3600;
 
     /**
      * @var string|null IP hash salt from .env
