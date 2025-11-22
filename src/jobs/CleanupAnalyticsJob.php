@@ -27,12 +27,12 @@ class CleanupAnalyticsJob extends BaseJob
     use LoggingTrait;
 
     /**
-     * @var bool Whether to reschedule after completion
+     * @var bool Whether to reschedule cleanup after completion
      */
     public bool $reschedule = false;
 
     /**
-     * @var string|null Next run time display string
+     * @var string|null Next run time display string for queued jobs
      */
     public ?string $nextRunTime = null;
 

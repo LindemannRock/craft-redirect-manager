@@ -60,22 +60,22 @@ class RedirectManager extends Plugin
     use LoggingTrait;
 
     /**
-     * @var RedirectManager|null
+     * @var RedirectManager|null Singleton plugin instance
      */
     public static ?RedirectManager $plugin = null;
 
     /**
-     * @var string
+     * @var string Plugin schema version for migrations
      */
     public string $schemaVersion = '1.0.0';
 
     /**
-     * @var bool
+     * @var bool Whether the plugin exposes a control panel settings page
      */
     public bool $hasCpSettings = true;
 
     /**
-     * @var bool
+     * @var bool Whether the plugin registers a control panel section
      */
     public bool $hasCpSection = true;
 
