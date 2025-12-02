@@ -12,9 +12,9 @@ use Craft;
 use craft\base\Component;
 use craft\db\Query;
 use craft\helpers\Db;
+use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\records\AnalyticsRecord;
 use lindemannrock\redirectmanager\RedirectManager;
-use lindemannrock\logginglibrary\traits\LoggingTrait;
 
 /**
  * Analytics Service
@@ -942,7 +942,7 @@ class AnalyticsService extends Component
         if (!$salt || $salt === '$REDIRECT_MANAGER_IP_SALT' || trim($salt) === '') {
             $this->logWarning('IP hash salt not configured - IP tracking disabled', [
                 'ip' => 'hidden',
-                'saltValue' => $salt ?? 'NULL'
+                'saltValue' => $salt ?? 'NULL',
             ]);
             throw new \Exception('IP hash salt not configured. Run: php craft redirect-manager/security/generate-salt');
         }

@@ -12,8 +12,8 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
+use lindemannrock\redirectmanager\RedirectManager;
 use yii\web\Response;
 
 /**
@@ -220,7 +220,6 @@ class ImportExportController extends Controller
 
             // Redirect to column mapping
             return $this->redirect('redirect-manager/import-export/map');
-
         } catch (\Exception $e) {
             $this->logError('Failed to parse CSV', ['error' => $e->getMessage()]);
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to parse CSV: {error}', ['error' => $e->getMessage()]));
@@ -804,7 +803,6 @@ class ImportExportController extends Controller
 
             Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'Successfully restored {count} redirect(s) from backup', ['count' => $restored]));
             return $this->redirect('redirect-manager/redirects');
-
         } catch (\Exception $e) {
             $this->logError('Restore failed', ['error' => $e->getMessage()]);
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to restore backup: {error}', ['error' => $e->getMessage()]));
@@ -839,7 +837,6 @@ class ImportExportController extends Controller
 
             Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'Backup deleted successfully'));
             return $this->redirect('redirect-manager/import-export#history');
-
         } catch (\Exception $e) {
             $this->logError('Delete backup failed', ['error' => $e->getMessage()]);
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to delete backup'));
@@ -847,4 +844,3 @@ class ImportExportController extends Controller
         }
     }
 }
-

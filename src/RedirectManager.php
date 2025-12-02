@@ -11,34 +11,34 @@
 namespace lindemannrock\redirectmanager;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\Model;
-use craft\events\RegisterCacheOptionsEvent;
-use craft\events\RegisterUrlRulesEvent;
-use craft\events\RegisterUserPermissionsEvent;
+use craft\base\Plugin;
 use craft\events\ElementEvent;
 use craft\events\ExceptionEvent;
+use craft\events\RegisterCacheOptionsEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\events\RegisterUrlRulesEvent;
+use craft\events\RegisterUserPermissionsEvent;
 use craft\services\Dashboard;
 use craft\services\Elements;
 use craft\services\UserPermissions;
 use craft\services\Utilities;
 use craft\utilities\ClearCaches;
 use craft\web\ErrorHandler;
-use craft\web\UrlManager;
 use craft\web\twig\variables\CraftVariable;
-use lindemannrock\redirectmanager\models\Settings;
-use lindemannrock\redirectmanager\services\RedirectsService;
-use lindemannrock\redirectmanager\services\AnalyticsService;
-use lindemannrock\redirectmanager\services\MatchingService;
-use lindemannrock\redirectmanager\services\DeviceDetectionService;
+use craft\web\UrlManager;
+use lindemannrock\logginglibrary\LoggingLibrary;
+use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\jobs\CleanupAnalyticsJob;
-use lindemannrock\redirectmanager\variables\RedirectManagerVariable;
+use lindemannrock\redirectmanager\models\Settings;
+use lindemannrock\redirectmanager\services\AnalyticsService;
+use lindemannrock\redirectmanager\services\DeviceDetectionService;
+use lindemannrock\redirectmanager\services\MatchingService;
+use lindemannrock\redirectmanager\services\RedirectsService;
 use lindemannrock\redirectmanager\utilities\RedirectManagerUtility;
+use lindemannrock\redirectmanager\variables\RedirectManagerVariable;
 use lindemannrock\redirectmanager\widgets\AnalyticsSummaryWidget;
 use lindemannrock\redirectmanager\widgets\Unhandled404sWidget;
-use lindemannrock\logginglibrary\traits\LoggingTrait;
-use lindemannrock\logginglibrary\LoggingLibrary;
 use yii\base\Event;
 
 /**
@@ -240,7 +240,7 @@ class RedirectManager extends Plugin
             if (Craft::$app->getPlugins()->isPluginInstalled('logging-library') &&
                 Craft::$app->getPlugins()->isPluginEnabled('logging-library')) {
                 $item = LoggingLibrary::addLogsNav($item, $this->handle, [
-                    'redirectManager:viewLogs'
+                    'redirectManager:viewLogs',
                 ]);
             }
 

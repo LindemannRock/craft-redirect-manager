@@ -11,8 +11,8 @@ namespace lindemannrock\redirectmanager\controllers;
 use Craft;
 use craft\web\Controller;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
-use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\records\RedirectRecord;
+use lindemannrock\redirectmanager\RedirectManager;
 use yii\web\Response;
 
 /**
@@ -89,7 +89,7 @@ class RedirectsController extends Controller
         }
 
         // Apply sorting
-        $orderBy = match($sort) {
+        $orderBy = match ($sort) {
             'sourceUrl' => "sourceUrl $dir",
             'statusCode' => "statusCode $dir",
             'hitCount' => "hitCount $dir",

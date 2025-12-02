@@ -14,10 +14,10 @@ use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
+use lindemannrock\logginglibrary\traits\LoggingTrait;
+use lindemannrock\redirectmanager\events\RedirectEvent;
 use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\RedirectManager;
-use lindemannrock\redirectmanager\events\RedirectEvent;
-use lindemannrock\logginglibrary\traits\LoggingTrait;
 use yii\web\NotFoundHttpException;
 
 /**
@@ -34,32 +34,32 @@ class RedirectsService extends Component
     /**
      * Cache key prefix
      */
-    const CACHE_KEY = 'redirectmanager_redirect_';
+    public const CACHE_KEY = 'redirectmanager_redirect_';
 
     /**
      * Cache tag for all redirects
      */
-    const CACHE_TAG = 'redirectmanager_redirects';
+    public const CACHE_TAG = 'redirectmanager_redirects';
 
     /**
      * Event triggered before a redirect is saved
      */
-    const EVENT_BEFORE_SAVE_REDIRECT = 'beforeSaveRedirect';
+    public const EVENT_BEFORE_SAVE_REDIRECT = 'beforeSaveRedirect';
 
     /**
      * Event triggered after a redirect is saved
      */
-    const EVENT_AFTER_SAVE_REDIRECT = 'afterSaveRedirect';
+    public const EVENT_AFTER_SAVE_REDIRECT = 'afterSaveRedirect';
 
     /**
      * Event triggered before a redirect is deleted
      */
-    const EVENT_BEFORE_DELETE_REDIRECT = 'beforeDeleteRedirect';
+    public const EVENT_BEFORE_DELETE_REDIRECT = 'beforeDeleteRedirect';
 
     /**
      * Event triggered after a redirect is deleted
      */
-    const EVENT_AFTER_DELETE_REDIRECT = 'afterDeleteRedirect';
+    public const EVENT_AFTER_DELETE_REDIRECT = 'afterDeleteRedirect';
 
     /**
      * @var array Stashed element URIs for tracking changes
@@ -532,7 +532,7 @@ class RedirectsService extends Component
         string $newUrl,
         ?int $siteId,
         string $creationType,
-        string $sourcePlugin
+        string $sourcePlugin,
     ): bool {
         // Get most recent reverse redirect (new → old)
         $mostRecentRedirect = (new Query())
@@ -560,7 +560,7 @@ class RedirectsService extends Component
             $this->logDebug('Undo check: Found reverse redirect', [
                 'minutesAgo' => round($minutesAgo, 2),
                 'undoWindow' => $undoWindowMinutes === 0 ? 'disabled' : $undoWindowMinutes,
-                'allowUndo' => true
+                'allowUndo' => true,
             ]);
 
             // If undo window is 0 (disabled), always allow undo regardless of time
@@ -656,7 +656,7 @@ class RedirectsService extends Component
         $this->logDebug('Duplicate check', [
             'sourceUrlParsed' => $attributes['sourceUrlParsed'] ?? 'N/A',
             'siteId' => $attributes['siteId'] ?? null,
-            'existing' => $existing ? ['id' => $existing['id']] : false
+            'existing' => $existing ? ['id' => $existing['id']] : false,
         ]);
 
         if ($existing) {

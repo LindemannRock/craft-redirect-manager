@@ -12,8 +12,8 @@ use Craft;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\db\Query;
-use craft\helpers\Db;
 use craft\helpers\App;
+use craft\helpers\Db;
 use craft\validators\ArrayValidator;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 
@@ -296,13 +296,13 @@ class Settings extends Model
                 if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
                     if (Craft::$app->getSession()->get('rm_debug_config_warning') === null) {
                         $this->logWarning('Log level "debug" from config file changed to "info" because devMode is disabled', [
-                            'configFile' => 'config/redirect-manager.php'
+                            'configFile' => 'config/redirect-manager.php',
                         ]);
                         Craft::$app->getSession()->set('rm_debug_config_warning', true);
                     }
                 } else {
                     $this->logWarning('Log level "debug" from config file changed to "info" because devMode is disabled', [
-                        'configFile' => 'config/redirect-manager.php'
+                        'configFile' => 'config/redirect-manager.php',
                     ]);
                 }
             } else {

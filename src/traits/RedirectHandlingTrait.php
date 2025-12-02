@@ -8,8 +8,6 @@
 
 namespace lindemannrock\redirectmanager\traits;
 
-use Craft;
-
 /**
  * Redirect Handling Trait
  *
@@ -92,7 +90,7 @@ trait RedirectHandlingTrait
         string $newUrl,
         ?int $siteId,
         string $creationType,
-        string $sourcePlugin
+        string $sourcePlugin,
     ): bool {
         // Check if Redirect Manager is installed and enabled
         if (!class_exists(\lindemannrock\redirectmanager\RedirectManager::class)) {

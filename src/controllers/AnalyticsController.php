@@ -72,7 +72,7 @@ class AnalyticsController extends Controller
         }
 
         // Apply sorting
-        $orderBy = match($sort) {
+        $orderBy = match ($sort) {
             'url' => "url $dir",
             'count' => "count $dir",
             'lastHit' => "lastHit $dir",

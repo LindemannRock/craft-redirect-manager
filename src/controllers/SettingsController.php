@@ -10,9 +10,9 @@ namespace lindemannrock\redirectmanager\controllers;
 
 use Craft;
 use craft\web\Controller;
-use lindemannrock\redirectmanager\RedirectManager;
-use lindemannrock\redirectmanager\models\Settings;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
+use lindemannrock\redirectmanager\models\Settings;
+use lindemannrock\redirectmanager\RedirectManager;
 use yii\web\Response;
 
 /**
@@ -418,7 +418,7 @@ class SettingsController extends Controller
 
             return $this->asJson([
                 'success' => true,
-                'message' => Craft::t('redirect-manager', 'Redirect cache cleared.')
+                'message' => Craft::t('redirect-manager', 'Redirect cache cleared.'),
             ]);
         } catch (\Exception $e) {
             return $this->asJson(['success' => false, 'error' => $e->getMessage()]);
@@ -448,7 +448,7 @@ class SettingsController extends Controller
 
             return $this->asJson([
                 'success' => true,
-                'message' => Craft::t('redirect-manager', 'Cleared {count} device caches.', ['count' => $cleared])
+                'message' => Craft::t('redirect-manager', 'Cleared {count} device caches.', ['count' => $cleared]),
             ]);
         } catch (\Exception $e) {
             return $this->asJson(['success' => false, 'error' => $e->getMessage()]);
@@ -482,7 +482,7 @@ class SettingsController extends Controller
 
             return $this->asJson([
                 'success' => true,
-                'message' => Craft::t('redirect-manager', 'Cleared redirect cache and {count} device caches.', ['count' => $cleared])
+                'message' => Craft::t('redirect-manager', 'Cleared redirect cache and {count} device caches.', ['count' => $cleared]),
             ]);
         } catch (\Exception $e) {
             return $this->asJson(['success' => false, 'error' => $e->getMessage()]);
@@ -501,7 +501,7 @@ class SettingsController extends Controller
         if (!Craft::$app->getUser()->getIsAdmin()) {
             return $this->asJson([
                 'success' => false,
-                'error' => Craft::t('redirect-manager', 'Only administrators can clear analytics data.')
+                'error' => Craft::t('redirect-manager', 'Only administrators can clear analytics data.'),
             ]);
         }
 
@@ -518,11 +518,10 @@ class SettingsController extends Controller
 
             return $this->asJson([
                 'success' => true,
-                'message' => Craft::t('redirect-manager', 'Deleted {count} analytics records.', ['count' => $count])
+                'message' => Craft::t('redirect-manager', 'Deleted {count} analytics records.', ['count' => $count]),
             ]);
         } catch (\Exception $e) {
             return $this->asJson(['success' => false, 'error' => $e->getMessage()]);
         }
     }
 }
-
