@@ -24,6 +24,24 @@ use yii\db\ActiveQueryInterface;
  * @property int $count
  * @property string|null $referrer
  * @property string|null $ip
+ * @property string|null $userAgent
+ * @property string|null $deviceType
+ * @property string|null $deviceBrand
+ * @property string|null $deviceModel
+ * @property string|null $browser
+ * @property string|null $browserVersion
+ * @property string|null $browserEngine
+ * @property string|null $osName
+ * @property string|null $osVersion
+ * @property string|null $clientType
+ * @property bool|null $isRobot
+ * @property bool|null $isMobileApp
+ * @property string|null $botName
+ * @property string|null $country
+ * @property string|null $city
+ * @property string|null $region
+ * @property float|null $latitude
+ * @property float|null $longitude
  * @property string $lastHit
  * @property string $uid
  * @property string $dateCreated

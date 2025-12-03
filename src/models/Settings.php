@@ -376,7 +376,7 @@ class Settings extends Model
             $volume = Craft::$app->getVolumes()->getVolumeByUid($this->backupVolumeUid);
             if ($volume) {
                 $fs = $volume->getFs();
-                if ($fs && property_exists($fs, 'path')) {
+                if (property_exists($fs, 'path')) {
                     $path = App::env($fs->path);
                     return rtrim($path, '/') . '/redirect-manager/backups/imports';
                 }
@@ -521,17 +521,12 @@ class Settings extends Model
 
         // Update existing settings (always row id=1)
         try {
-            $result = $db->createCommand()
+            $db->createCommand()
                 ->update('{{%redirectmanager_settings}}', $attributes, ['id' => 1])
                 ->execute();
 
-            if ($result !== false) {
-                $this->logInfo('Settings saved successfully to database');
-                return true;
-            }
-
-            $this->logError('Database update returned false');
-            return false;
+            $this->logInfo('Settings saved successfully to database');
+            return true;
         } catch (\Exception $e) {
             $this->logError('Failed to save ' . $this->getFullName() . ' settings', [
                 'error' => $e->getMessage(),

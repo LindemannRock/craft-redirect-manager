@@ -459,14 +459,15 @@ class AnalyticsService extends Component
      */
     public function clearAnalytics(?int $siteId = null): int
     {
-        $command = Craft::$app->getDb()->createCommand()
-            ->delete(AnalyticsRecord::tableName());
-
         if ($siteId !== null) {
-            $command->where(['siteId' => $siteId]);
+            $count = Craft::$app->getDb()->createCommand()
+                ->delete(AnalyticsRecord::tableName(), ['siteId' => $siteId])
+                ->execute();
+        } else {
+            $count = Craft::$app->getDb()->createCommand()
+                ->delete(AnalyticsRecord::tableName())
+                ->execute();
         }
-
-        $count = $command->execute();
 
         $this->logInfo('Analytics cleared', ['count' => $count, 'siteId' => $siteId]);
 
@@ -557,7 +558,7 @@ class AnalyticsService extends Component
     public function exportToCsv(?int $siteId = null, ?array $analyticsIds = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): string
     {
         // If specific IDs provided, fetch only those
-        if ($analyticsIds && is_array($analyticsIds) && !empty($analyticsIds)) {
+        if (!empty($analyticsIds)) {
             $query = (new \craft\db\Query())
                 ->from(AnalyticsRecord::tableName())
                 ->where(['in', 'id', $analyticsIds])

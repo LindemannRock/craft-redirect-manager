@@ -74,7 +74,7 @@ class ImportExportController extends Controller
             ->orderBy(['priority' => SORT_ASC, 'dateCreated' => SORT_DESC]);
 
         // Filter by selected IDs if provided
-        if ($redirectIds && is_array($redirectIds) && !empty($redirectIds)) {
+        if (!empty($redirectIds)) {
             $query->where(['in', 'id', $redirectIds]);
         }
 

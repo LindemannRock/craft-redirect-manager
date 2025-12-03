@@ -654,7 +654,7 @@ class RedirectsService extends Component
             ->one();
 
         $this->logDebug('Duplicate check', [
-            'sourceUrlParsed' => $attributes['sourceUrlParsed'] ?? 'N/A',
+            'sourceUrlParsed' => $attributes['sourceUrlParsed'],
             'siteId' => $attributes['siteId'] ?? null,
             'existing' => $existing ? ['id' => $existing['id']] : false,
         ]);

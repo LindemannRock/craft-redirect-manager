@@ -153,9 +153,6 @@ class SettingsController extends Controller
 
         // Load current settings from database
         $settings = Settings::loadFromDatabase();
-        if (!$settings) {
-            $settings = new Settings();
-        }
 
         // Get only the posted settings (fields from the current page)
         $settingsData = Craft::$app->getRequest()->getBodyParam('settings', []);
@@ -212,9 +209,6 @@ class SettingsController extends Controller
 
         // Load current settings from database
         $settings = Settings::loadFromDatabase();
-        if (!$settings) {
-            $settings = new Settings();
-        }
 
         // Recommended exclude patterns
         $recommendedExcludePatterns = [
@@ -288,9 +282,6 @@ class SettingsController extends Controller
 
         // Load current settings from database
         $settings = Settings::loadFromDatabase();
-        if (!$settings) {
-            $settings = new Settings();
-        }
 
         // WordPress bot/spam patterns to exclude
         $wordpressExcludePatterns = [
