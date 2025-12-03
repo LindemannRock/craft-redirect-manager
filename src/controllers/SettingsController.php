@@ -20,7 +20,7 @@ use yii\web\Response;
  *
  * @author    LindemannRock
  * @package   RedirectManager
- * @since     1.0.0
+ * @since     5.0.0
  */
 class SettingsController extends Controller
 {

@@ -14,6 +14,8 @@ use lindemannrock\redirectmanager\RedirectManager;
 
 /**
  * Redirect Manager Utility
+ *
+ * @since 5.1.0
  */
 class RedirectManagerUtility extends Utility
 {

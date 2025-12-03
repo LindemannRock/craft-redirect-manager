@@ -14,6 +14,8 @@ use yii\console\ExitCode;
 
 /**
  * Security utilities for Redirect Manager
+ *
+ * @since 5.1.0
  */
 class SecurityController extends Controller
 {

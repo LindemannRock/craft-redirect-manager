@@ -11,6 +11,8 @@
  * Once copied to 'craft/config', this file will be multi-environment aware as
  * well, so you can have different settings groups for each environment, just as
  * you do for 'general.php'
+ *
+ * @since 5.0.0
  */
 
 use craft\helpers\App;

@@ -18,7 +18,7 @@ use craft\helpers\StringHelper;
  *
  * @author    LindemannRock
  * @package   RedirectManager
- * @since     1.0.0
+ * @since     5.0.0
  */
 class Install extends Migration
 {

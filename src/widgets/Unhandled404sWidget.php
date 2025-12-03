@@ -14,6 +14,8 @@ use lindemannrock\redirectmanager\RedirectManager;
 
 /**
  * Redirect Manager Unhandled 404s Widget
+ *
+ * @since 5.1.0
  */
 class Unhandled404sWidget extends Widget
 {

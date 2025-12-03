@@ -15,7 +15,7 @@ use yii\base\Event;
  *
  * @author    LindemannRock
  * @package   RedirectManager
- * @since     1.0.0
+ * @since     5.0.0
  */
 class RedirectEvent extends Event
 {

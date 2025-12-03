@@ -23,6 +23,7 @@ use Twig\Extension\GlobalsInterface;
  * - {{ redirectHelper.fullName }}                // "Redirect Manager" (as configured)
  * - {{ redirectHelper.lowerDisplayName }}        // "redirect" (lowercase singular)
  * - {{ redirectHelper.pluralLowerDisplayName }}  // "redirects" (lowercase plural)
+ * @since 5.0.0
  */
 class PluginNameExtension extends AbstractExtension implements GlobalsInterface
 {

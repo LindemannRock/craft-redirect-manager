@@ -36,7 +36,7 @@ use yii\db\ActiveQueryInterface;
  *
  * @author    LindemannRock
  * @package   RedirectManager
- * @since     1.0.0
+ * @since     5.0.0
  */
 class RedirectRecord extends ActiveRecord
 {

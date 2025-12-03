@@ -4,6 +4,7 @@
  *
  * @link      https://lindemannrock.com
  * @copyright Copyright (c) 2025 LindemannRock
+ * @since     5.0.0
  */
 
 return [
