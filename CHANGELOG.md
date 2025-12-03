@@ -1,5 +1,25 @@
 # Changelog
 
+## [5.7.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.6.0...v5.7.0) (2025-12-03)
+
+
+### Features
+
+* add PHPStan and EasyCodingStandard configurations; enhance code quality checks ([0727817](https://github.com/LindemannRock/craft-redirect-manager/commit/0727817203d8620d0830c4eecf8857584b1868ef))
+* **analytics:** enhance date range filtering and export functionality ([e15086f](https://github.com/LindemannRock/craft-redirect-manager/commit/e15086fa170af759b99dd1b91e1f0691ad19cefd))
+* **info-box:** add new Info Box component for displaying informational notices ([353777e](https://github.com/LindemannRock/craft-redirect-manager/commit/353777e962289b40a090e6d0ec1720e46f99b7ce))
+* **settings:** add default country and city for local development ([ad34d13](https://github.com/LindemannRock/craft-redirect-manager/commit/ad34d1331b29bb8059759c234567a706d4395c55))
+
+
+### Bug Fixes
+
+* **settings:** clarify device detection cache duration comment ([7e9477d](https://github.com/LindemannRock/craft-redirect-manager/commit/7e9477dfd6f43379755afcb7a0cd923e0e13c8c9))
+
+
+### Miscellaneous Chores
+
+* update version annotations to reflect new versioning scheme across multiple files ([891ebe8](https://github.com/LindemannRock/craft-redirect-manager/commit/891ebe84a4deb5c35619532686413fa5edb25b29))
+
 ## [5.6.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.5.0...v5.6.0) (2025-11-15)
 
 
