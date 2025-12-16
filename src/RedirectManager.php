@@ -211,7 +211,7 @@ class RedirectManager extends Plugin
 
         if ($item) {
             $item['label'] = $this->getSettings()->getFullName();
-            $item['icon'] = '@appicons/arrows-righ-left.svg';
+            $item['icon'] = '@appicons/arrows-turn-right.svg';
 
             $item['subnav'] = [
                 'dashboard' => [

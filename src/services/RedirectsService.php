@@ -861,6 +861,19 @@ class RedirectsService extends Component
             return null;
         }
 
+        $cacheKey = 'redirectmanager:redirect:' . md5($url . '_' . $siteId);
+
+        // Use Redis/database cache if configured
+        if ($settings->cacheStorageMethod === 'redis') {
+            $cached = Craft::$app->cache->get($cacheKey);
+            if ($cached !== false) {
+                $this->logDebug('Redirect cache hit (Redis)', ['url' => $url]);
+                return $cached;
+            }
+            return null;
+        }
+
+        // Use file-based cache (default)
         $cachePath = $this->getCachePath();
         $filename = md5($url) . '_' . $siteId . '.cache';
         $filepath = $cachePath . $filename;
@@ -870,7 +883,7 @@ class RedirectsService extends Component
             if ($data) {
                 $cache = @unserialize($data);
                 if ($cache && isset($cache['expires']) && $cache['expires'] > time()) {
-                    $this->logDebug('Redirect cache hit', ['url' => $url]);
+                    $this->logDebug('Redirect cache hit (File)', ['url' => $url]);
                     return $cache['data'];
                 }
                 // Expired - delete file
@@ -899,7 +912,24 @@ class RedirectsService extends Component
         }
 
         $duration = $settings->redirectCacheDuration ?? 3600;
+        $cacheKey = 'redirectmanager:redirect:' . md5($url . '_' . $siteId);
 
+        // Use Redis/database cache if configured
+        if ($settings->cacheStorageMethod === 'redis') {
+            $cache = Craft::$app->cache;
+            $cache->set($cacheKey, $redirect, $duration);
+
+            // Track key in set for selective deletion
+            if ($cache instanceof \yii\redis\Cache) {
+                $redis = $cache->redis;
+                $redis->executeCommand('SADD', ['redirectmanager-redirect-keys', $cacheKey]);
+            }
+
+            $this->logDebug('Redirect cached (Redis)', ['url' => $url, 'duration' => $duration]);
+            return;
+        }
+
+        // Use file-based cache (default)
         $cachePath = $this->getCachePath();
 
         // Create cache directory if it doesn't exist
@@ -917,7 +947,7 @@ class RedirectsService extends Component
 
         @file_put_contents($filepath, serialize($cacheData));
 
-        $this->logDebug('Redirect cached', ['url' => $url, 'duration' => $duration]);
+        $this->logDebug('Redirect cached (File)', ['url' => $url, 'duration' => $duration]);
     }
 
     /**
@@ -927,17 +957,41 @@ class RedirectsService extends Component
      */
     public function invalidateCaches(): void
     {
-        $cachePath = $this->getCachePath();
+        $settings = RedirectManager::$plugin->getSettings();
 
-        if (is_dir($cachePath)) {
-            $files = glob($cachePath . '*.cache');
-            $count = 0;
-            foreach ($files as $file) {
-                if (@unlink($file)) {
-                    $count++;
+        if ($settings->cacheStorageMethod === 'redis') {
+            // Clear Redis cache
+            $cache = Craft::$app->cache;
+            if ($cache instanceof \yii\redis\Cache) {
+                $redis = $cache->redis;
+
+                // Get all redirect cache keys from tracking set
+                $keys = $redis->executeCommand('SMEMBERS', ['redirectmanager-redirect-keys']) ?: [];
+
+                // Delete redirect cache keys using Craft's cache component
+                foreach ($keys as $key) {
+                    $cache->delete($key);
                 }
+
+                // Clear the tracking set
+                $redis->executeCommand('DEL', ['redirectmanager-redirect-keys']);
+
+                $this->logDebug('Redirect caches invalidated (Redis)', ['count' => count($keys)]);
             }
-            $this->logDebug('Redirect caches invalidated', ['count' => $count]);
+        } else {
+            // Clear file cache
+            $cachePath = $this->getCachePath();
+
+            if (is_dir($cachePath)) {
+                $files = glob($cachePath . '*.cache');
+                $count = 0;
+                foreach ($files as $file) {
+                    if (@unlink($file)) {
+                        $count++;
+                    }
+                }
+                $this->logDebug('Redirect caches invalidated (File)', ['count' => $count]);
+            }
         }
     }
 

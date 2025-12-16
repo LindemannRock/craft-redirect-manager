@@ -68,21 +68,24 @@ class RedirectManagerUtility extends Utility
         $handled = array_sum(array_column($chartData, 'handled'));
         $unhandled = array_sum(array_column($chartData, 'unhandled'));
 
-        // Get cache file counts
+        // Get cache counts (only for file storage)
         $deviceCacheFiles = 0;
         $redirectCacheFiles = 0;
 
-        if ($settings->cacheDeviceDetection) {
-            $devicePath = Craft::$app->path->getRuntimePath() . '/redirect-manager/cache/device/';
-            if (is_dir($devicePath)) {
-                $deviceCacheFiles = count(glob($devicePath . '*.cache'));
+        // Only count files when using file storage (Redis counts are not displayed)
+        if ($settings->cacheStorageMethod === 'file') {
+            if ($settings->cacheDeviceDetection) {
+                $devicePath = Craft::$app->path->getRuntimePath() . '/redirect-manager/cache/device/';
+                if (is_dir($devicePath)) {
+                    $deviceCacheFiles = count(glob($devicePath . '*.cache'));
+                }
             }
-        }
 
-        if ($settings->enableRedirectCache) {
-            $redirectPath = Craft::$app->path->getRuntimePath() . '/redirect-manager/cache/redirects/';
-            if (is_dir($redirectPath)) {
-                $redirectCacheFiles = count(glob($redirectPath . '*.cache'));
+            if ($settings->enableRedirectCache) {
+                $redirectPath = Craft::$app->path->getRuntimePath() . '/redirect-manager/cache/redirects/';
+                if (is_dir($redirectPath)) {
+                    $redirectCacheFiles = count(glob($redirectPath . '*.cache'));
+                }
             }
         }
 
@@ -96,6 +99,7 @@ class RedirectManagerUtility extends Utility
             'unhandled' => $unhandled,
             'deviceCacheFiles' => $deviceCacheFiles,
             'redirectCacheFiles' => $redirectCacheFiles,
+            'storageMethod' => $settings->cacheStorageMethod,
         ]);
     }
 }

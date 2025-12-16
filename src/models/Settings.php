@@ -174,6 +174,11 @@ class Settings extends Model
     public int $redirectCacheDuration = 3600;
 
     /**
+     * @var string Cache storage method (file or redis)
+     */
+    public string $cacheStorageMethod = 'file';
+
+    /**
      * @var string Local filesystem path for storing import backups
      */
     public string $backupPath = '@storage/redirect-manager/backups/imports';
@@ -269,6 +274,7 @@ class Settings extends Model
             ['enableRedirectCache', 'default', 'value' => true],
             ['redirectCacheDuration', 'integer', 'min' => 0],
             ['redirectCacheDuration', 'default', 'value' => 3600],
+            [['cacheStorageMethod'], 'in', 'range' => ['file', 'redis']],
             ['backupPath', 'required'],
             ['backupPath', 'string'],
             ['backupPath', 'validateBackupPath'],

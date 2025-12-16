@@ -404,12 +404,36 @@ class SettingsController extends Controller
         $this->requireAcceptsJson();
 
         try {
-            // Clear redirect cache using Craft's cache component
-            Craft::$app->cache->delete('redirect-manager-redirects');
+            $settings = RedirectManager::$plugin->getSettings();
+
+            if ($settings->cacheStorageMethod === 'redis') {
+                $cache = Craft::$app->cache;
+                if ($cache instanceof \yii\redis\Cache) {
+                    $redis = $cache->redis;
+
+                    // Get all redirect cache keys from tracking set
+                    $keys = $redis->executeCommand('SMEMBERS', ['redirectmanager-redirect-keys']) ?: [];
+
+                    // Delete redirect cache keys
+                    foreach ($keys as $key) {
+                        $cache->delete($key);
+                    }
+
+                    // Clear the tracking set
+                    $redis->executeCommand('DEL', ['redirectmanager-redirect-keys']);
+                }
+            } else {
+                // Clear file cache
+                RedirectManager::$plugin->redirects->invalidateCaches();
+            }
+
+            $message = $settings->cacheStorageMethod === 'redis'
+                ? Craft::t('redirect-manager', 'Redirect cache cleared successfully.')
+                : Craft::t('redirect-manager', 'Redirect cache cleared.');
 
             return $this->asJson([
                 'success' => true,
-                'message' => Craft::t('redirect-manager', 'Redirect cache cleared.'),
+                'message' => $message,
             ]);
         } catch (\Exception $e) {
             return $this->asJson(['success' => false, 'error' => $e->getMessage()]);
@@ -425,21 +449,45 @@ class SettingsController extends Controller
         $this->requireAcceptsJson();
 
         try {
-            $cachePath = Craft::$app->path->getRuntimePath() . '/redirect-manager/cache/device/';
+            $settings = RedirectManager::$plugin->getSettings();
             $cleared = 0;
 
-            if (is_dir($cachePath)) {
-                $files = glob($cachePath . '*.cache');
-                foreach ($files as $file) {
-                    if (@unlink($file)) {
-                        $cleared++;
+            if ($settings->cacheStorageMethod === 'redis') {
+                $cache = Craft::$app->cache;
+                if ($cache instanceof \yii\redis\Cache) {
+                    $redis = $cache->redis;
+
+                    // Get all device cache keys from tracking set
+                    $keys = $redis->executeCommand('SMEMBERS', ['redirectmanager-device-keys']) ?: [];
+
+                    // Delete device cache keys
+                    foreach ($keys as $key) {
+                        $cache->delete($key);
+                    }
+
+                    // Clear the tracking set
+                    $redis->executeCommand('DEL', ['redirectmanager-device-keys']);
+                }
+            } else {
+                // Clear file cache
+                $cachePath = Craft::$app->path->getRuntimePath() . '/redirect-manager/cache/device/';
+                if (is_dir($cachePath)) {
+                    $files = glob($cachePath . '*.cache');
+                    foreach ($files as $file) {
+                        if (@unlink($file)) {
+                            $cleared++;
+                        }
                     }
                 }
             }
 
+            $message = $settings->cacheStorageMethod === 'redis'
+                ? Craft::t('redirect-manager', 'Device cache cleared successfully.')
+                : Craft::t('redirect-manager', 'Cleared {count} device caches.', ['count' => $cleared]);
+
             return $this->asJson([
                 'success' => true,
-                'message' => Craft::t('redirect-manager', 'Cleared {count} device caches.', ['count' => $cleared]),
+                'message' => $message,
             ]);
         } catch (\Exception $e) {
             return $this->asJson(['success' => false, 'error' => $e->getMessage()]);
@@ -455,25 +503,55 @@ class SettingsController extends Controller
         $this->requireAcceptsJson();
 
         try {
+            $settings = RedirectManager::$plugin->getSettings();
             $cleared = 0;
 
-            // Clear redirect cache
-            Craft::$app->cache->delete('redirect-manager-redirects');
+            if ($settings->cacheStorageMethod === 'redis') {
+                $cache = Craft::$app->cache;
+                if ($cache instanceof \yii\redis\Cache) {
+                    $redis = $cache->redis;
 
-            // Clear device detection cache
-            $devicePath = Craft::$app->path->getRuntimePath() . '/redirect-manager/cache/device/';
-            if (is_dir($devicePath)) {
-                $files = glob($devicePath . '*.cache');
-                foreach ($files as $file) {
-                    if (@unlink($file)) {
-                        $cleared++;
+                    // Get all cache keys from tracking sets
+                    $redirectKeys = $redis->executeCommand('SMEMBERS', ['redirectmanager-redirect-keys']) ?: [];
+                    $deviceKeys = $redis->executeCommand('SMEMBERS', ['redirectmanager-device-keys']) ?: [];
+
+                    // Delete redirect cache keys
+                    foreach ($redirectKeys as $key) {
+                        $cache->delete($key);
+                    }
+
+                    // Delete device cache keys
+                    foreach ($deviceKeys as $key) {
+                        $cache->delete($key);
+                    }
+
+                    // Clear the tracking sets
+                    $redis->executeCommand('DEL', ['redirectmanager-redirect-keys']);
+                    $redis->executeCommand('DEL', ['redirectmanager-device-keys']);
+                }
+            } else {
+                // Clear redirect cache
+                RedirectManager::$plugin->redirects->invalidateCaches();
+
+                // Clear device detection file cache
+                $devicePath = Craft::$app->path->getRuntimePath() . '/redirect-manager/cache/device/';
+                if (is_dir($devicePath)) {
+                    $files = glob($devicePath . '*.cache');
+                    foreach ($files as $file) {
+                        if (@unlink($file)) {
+                            $cleared++;
+                        }
                     }
                 }
             }
 
+            $message = $settings->cacheStorageMethod === 'redis'
+                ? Craft::t('redirect-manager', 'All caches cleared successfully.')
+                : Craft::t('redirect-manager', 'Cleared redirect cache and {count} device caches.', ['count' => $cleared]);
+
             return $this->asJson([
                 'success' => true,
-                'message' => Craft::t('redirect-manager', 'Cleared redirect cache and {count} device caches.', ['count' => $cleared]),
+                'message' => $message,
             ]);
         } catch (\Exception $e) {
             return $this->asJson(['success' => false, 'error' => $e->getMessage()]);
