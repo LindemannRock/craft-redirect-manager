@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.8.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.8.1...v5.8.2) (2025-12-16)
+
+
+### Bug Fixes
+
+* update icon for Redirect Manager Utility ([ba08098](https://github.com/LindemannRock/craft-redirect-manager/commit/ba08098a203d411f629a103442261976728e3380))
+
 ## [5.8.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.8.0...v5.8.1) (2025-12-16)
 
 
