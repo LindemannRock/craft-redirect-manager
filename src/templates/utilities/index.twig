@@ -79,23 +79,47 @@
 		<div class="pane" style="padding: 24px; margin-block: 0; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); display: flex; flex-direction: column; height: 100%;">
 			<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
 				<div style="width: 12px; height: 12px; border-radius: 50%; background: #22c55e;"></div>
-				<h4 style="margin: 0; color: #374151; font-size: 15px; font-weight: 600;">{{ "Cache Status"|t('redirect-manager') }}</h4>
+				<h4 style="margin: 0; color: #374151; font-size: 15px; font-weight: 600;">
+					{{ "Cache Status"|t('redirect-manager') }} ({{ storageMethod == 'redis' ? 'Redis' : 'File' }})
+				</h4>
 			</div>
 			<div style="flex: 1; display: flex; flex-direction: column;">
-				<div style="font-size: 28px; font-weight: 700; color: #0f172a; line-height: 1; margin-bottom: 12px;">{{ (deviceCacheFiles + redirectCacheFiles)|number_format }}</div>
-				<div style="font-size: 14px; color: #4b5563; margin-bottom: 12px;">{{ "Total cached entries"|t('redirect-manager') }}</div>
-				<div style="margin-top: auto;">
-					<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-						<div style="padding: 12px; background: rgba(255,255,255,0.9); border: 1px solid #e5e7eb; border-radius: 8px; text-align: center;">
-							<div style="font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 4px;">{{ redirectCacheFiles|number_format }}</div>
-							<div style="font-size: 11px; color: #4b5563; text-transform: uppercase;">{{ 'Redirects'|t('redirect-manager') }}</div>
-						</div>
-						<div style="padding: 12px; background: rgba(255,255,255,0.9); border: 1px solid #e5e7eb; border-radius: 8px; text-align: center;">
-							<div style="font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 4px;">{{ deviceCacheFiles|number_format }}</div>
-							<div style="font-size: 11px; color: #4b5563; text-transform: uppercase;">{{ 'Devices'|t('redirect-manager') }}</div>
+				{% if storageMethod == 'redis' %}
+					<div style="font-size: 28px; font-weight: 700; color: #0f172a; line-height: 1;">
+						{{ "Active"|t('redirect-manager') }}
+					</div>
+					<div style="margin-top: auto;">
+						<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+							{% if settings.enableRedirectCache %}
+							<div style="padding: 12px; background: rgba(255,255,255,0.9); border: 1px solid #e5e7eb; border-radius: 8px; text-align: center;">
+								<div style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 4px;">✓</div>
+								<div style="font-size: 11px; color: #4b5563; text-transform: uppercase;">{{ 'Redirects'|t('redirect-manager') }}</div>
+							</div>
+							{% endif %}
+							{% if settings.cacheDeviceDetection %}
+							<div style="padding: 12px; background: rgba(255,255,255,0.9); border: 1px solid #e5e7eb; border-radius: 8px; text-align: center;">
+								<div style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 4px;">✓</div>
+								<div style="font-size: 11px; color: #4b5563; text-transform: uppercase;">{{ 'Devices'|t('redirect-manager') }}</div>
+							</div>
+							{% endif %}
 						</div>
 					</div>
-				</div>
+				{% else %}
+					<div style="font-size: 28px; font-weight: 700; color: #0f172a; line-height: 1; margin-bottom: 12px;">{{ (deviceCacheFiles + redirectCacheFiles)|number_format }}</div>
+					<div style="font-size: 14px; color: #4b5563; margin-bottom: 12px;">{{ "Total cached entries"|t('redirect-manager') }}</div>
+					<div style="margin-top: auto;">
+						<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+							<div style="padding: 12px; background: rgba(255,255,255,0.9); border: 1px solid #e5e7eb; border-radius: 8px; text-align: center;">
+								<div style="font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 4px;">{{ redirectCacheFiles|number_format }}</div>
+								<div style="font-size: 11px; color: #4b5563; text-transform: uppercase;">{{ 'Redirects'|t('redirect-manager') }}</div>
+							</div>
+							<div style="padding: 12px; background: rgba(255,255,255,0.9); border: 1px solid #e5e7eb; border-radius: 8px; text-align: center;">
+								<div style="font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 4px;">{{ deviceCacheFiles|number_format }}</div>
+								<div style="font-size: 11px; color: #4b5563; text-transform: uppercase;">{{ 'Devices'|t('redirect-manager') }}</div>
+							</div>
+						</div>
+					</div>
+				{% endif %}
 			</div>
 		</div>
 	</div>
@@ -130,16 +154,19 @@
 				<p class="light" style="margin-bottom: 16px;">{{ "Clear cached data to force regeneration. Useful when troubleshooting redirect issues."|t('redirect-manager') }}</p>
 				<div style="display: flex; gap: 10px; flex-wrap: wrap;">
 					{% if settings.enableRedirectCache %}
-						<button type="button" class="btn" id="clear-redirect-cache">{{ "Clear Redirect Cache"|t('redirect-manager') }}
-							({{ redirectCacheFiles }})</button>
+						<button type="button" class="btn" id="clear-redirect-cache">
+							{{ "Clear Redirect Cache"|t('redirect-manager') }}{% if storageMethod != 'redis' %} ({{ redirectCacheFiles }}){% endif %}
+						</button>
 					{% endif %}
 					{% if settings.cacheDeviceDetection %}
-						<button type="button" class="btn" id="clear-device-cache">{{ "Clear Device Cache"|t('redirect-manager') }}
-							({{ deviceCacheFiles }})</button>
+						<button type="button" class="btn" id="clear-device-cache">
+							{{ "Clear Device Cache"|t('redirect-manager') }}{% if storageMethod != 'redis' %} ({{ deviceCacheFiles }}){% endif %}
+						</button>
 					{% endif %}
 					{% if settings.enableRedirectCache and settings.cacheDeviceDetection %}
-						<button type="button" class="btn secondary" id="clear-all-caches">{{ "Clear All Caches"|t('redirect-manager') }}
-							({{ (redirectCacheFiles + deviceCacheFiles) }})</button>
+						<button type="button" class="btn secondary" id="clear-all-caches">
+							{{ "Clear All Caches"|t('redirect-manager') }}{% if storageMethod != 'redis' %} ({{ (redirectCacheFiles + deviceCacheFiles) }}){% endif %}
+						</button>
 					{% endif %}
 				</div>
 			</div>
