@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.8.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.7.0...v5.8.0) (2025-12-16)
+
+
+### Features
+
+* add cache storage method configuration for different environments ([287fa40](https://github.com/LindemannRock/craft-redirect-manager/commit/287fa40364851c136068679d313fdefae82ccd92))
+* add cache storage method configuration to settings table ([6b9e424](https://github.com/LindemannRock/craft-redirect-manager/commit/6b9e424c192355548251f65561343e7e9d575d89))
+* add SVG icon for redirect manager ([33af8ee](https://github.com/LindemannRock/craft-redirect-manager/commit/33af8eee101beb1912c1e1b816591d34bb2ecf24))
+* enhance analytics data handling and timezone conversion; improve dashboard pagination links ([8e72a18](https://github.com/LindemannRock/craft-redirect-manager/commit/8e72a189eeb5188a20de6e02b7f1304fb95d659d))
+* enhance cache status display and button functionality based on storage method ([e2ed5dc](https://github.com/LindemannRock/craft-redirect-manager/commit/e2ed5dcec1f96f568ba72168acb43a0df66afef6))
+* implement cache storage method configuration and handling for Redis and file systems ([6b6058d](https://github.com/LindemannRock/craft-redirect-manager/commit/6b6058d5bd0f5f6fd37b978ebf77e8559bcdfd3c))
+* update smart caching description and add cache storage method configuration ([461b806](https://github.com/LindemannRock/craft-redirect-manager/commit/461b806440c26eaa83c6c9932f22785632ed7f0d))
+
 ## [5.7.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.6.0...v5.7.0) (2025-12-03)
 
 
