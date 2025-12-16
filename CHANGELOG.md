@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.8.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.8.0...v5.8.1) (2025-12-16)
+
+
+### Bug Fixes
+
+* update time formatting in analytics dashboard to use locale settings ([3e79ff4](https://github.com/LindemannRock/craft-redirect-manager/commit/3e79ff417e0cf526ca210c246d262c88d0de80a3))
+
 ## [5.8.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.7.0...v5.8.0) (2025-12-16)
 
 
