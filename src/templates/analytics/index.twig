@@ -468,7 +468,7 @@
                     } else {
                         const date = new Date(stat.lastHit.date || stat.lastHit);
                         html += '<td>' + Craft.formatDate(date, 'short') + '</td>';
-                        html += '<td>' + Craft.formatTime(date, 'short') + '</td>';
+                        html += '<td>' + date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) + '</td>';
                     }
                     html += '</tr>';
                 });
@@ -494,7 +494,7 @@
                     } else {
                         const date = new Date(stat.lastHit.date || stat.lastHit);
                         html += '<td>' + Craft.formatDate(date, 'short') + '</td>';
-                        html += '<td>' + Craft.formatTime(date, 'short') + '</td>';
+                        html += '<td>' + date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) + '</td>';
                     }
                     html += '<td><a href="' + Craft.getUrl('redirect-manager/redirects/new', { sourceUrl: stat.url }) + '" class="btn submit icon add" title="{{ "Create redirect"|t('redirect-manager')|e('js') }}"></a></td>';
                     html += '</tr>';
