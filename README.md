@@ -21,7 +21,7 @@ Intelligent redirect management and 404 handling for Craft CMS.
 - **Bot Filtering** - Identify and filter bot traffic (GoogleBot, BingBot, etc.)
 - **Geographic Detection** - Track visitor location (country, city) via ip-api.com
 - **Auto-Redirect Creation** - Automatically creates redirects when entry URIs change
-- **Smart Caching** - Fast redirect lookups and device detection with configurable caching
+- **Smart Caching** - File or Redis caching for fast redirect lookups and device detection
 - **Auto-Refreshing Dashboard** - Configurable auto-refresh (5-60 seconds) with smart pause on user interaction
 - **CSV Export** - Export comprehensive analytics including device and geo data
 - **Multi-Site Support** - Site-specific or global redirects
@@ -168,6 +168,7 @@ return [
     'refreshIntervalSecs' => 5,  // Auto-refresh interval (5, 15, 30, or 60 seconds)
 
     // Performance & Caching
+    'cacheStorageMethod' => 'file',  // 'file' or 'redis'
     'enableRedirectCache' => true,
     'redirectCacheDuration' => 3600,  // 1 hour
     'cacheDeviceDetection' => true,
