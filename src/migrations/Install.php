@@ -99,6 +99,7 @@ class Install extends Migration
                 'logLevel' => $this->string(20)->notNull()->defaultValue('error'),
                 'enableRedirectCache' => $this->boolean()->notNull()->defaultValue(true),
                 'redirectCacheDuration' => $this->integer()->notNull()->defaultValue(3600),
+                'cacheStorageMethod' => $this->string(10)->notNull()->defaultValue('file')->comment('Cache storage method: file or redis'),
                 'backupPath' => $this->string()->defaultValue('@storage/redirect-manager/backups/imports'),
                 'backupVolumeUid' => $this->string()->null(),
                 'dateCreated' => $this->dateTime()->notNull(),
