@@ -53,15 +53,15 @@
     <div id="analytics-dashboard">
         <div class="analytics-stats">
             <div class="stat-box">
-                <div class="stat-value" id="total-404s">{{ totalCount ?? 0 }}</div>
+                <div class="stat-value" id="total-404s">{{ (totalCount ?? 0)|number }}</div>
                 <div class="stat-label">{{ "Total 404s"|t('redirect-manager') }}</div>
             </div>
             <div class="stat-box">
-                <div class="stat-value" id="handled-404s">{{ handledCount ?? 0 }}</div>
+                <div class="stat-value" id="handled-404s">{{ (handledCount ?? 0)|number }}</div>
                 <div class="stat-label">{{ "Handled"|t('redirect-manager') }}</div>
             </div>
             <div class="stat-box">
-                <div class="stat-value" id="unhandled-404s">{{ unhandledCount ?? 0 }}</div>
+                <div class="stat-value" id="unhandled-404s">{{ (unhandledCount ?? 0)|number }}</div>
                 <div class="stat-label">{{ "Unhandled"|t('redirect-manager') }}</div>
             </div>
             <div class="stat-box">
@@ -89,7 +89,8 @@
                                 <th>{{ 'URL'|t('redirect-manager') }}</th>
                                 <th>{{ 'Count'|t('redirect-manager') }}</th>
                                 <th>{{ 'Handled'|t('redirect-manager') }}</th>
-                                <th>{{ 'Last Hit'|t('redirect-manager') }}</th>
+                                <th>{{ 'Date'|t('redirect-manager') }}</th>
+                                <th>{{ 'Time'|t('redirect-manager') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -100,7 +101,7 @@
                                             <span><code>{{ stat.url|slice(0, 80) }}</code></span>
                                         </a>
                                     </td>
-                                    <td><strong>{{ stat.count }}</strong></td>
+                                    <td><strong>{{ stat.count|number }}</strong></td>
                                     <td>
                                         {% if stat.handled %}
                                             <span class="status green"></span>
@@ -108,11 +109,12 @@
                                             <span class="status red"></span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ stat.lastHit|date('Y-m-d H:i:s') }}</td>
+                                    <td>{{ stat.lastHit|date('short') }}</td>
+                                    <td>{{ stat.lastHit|time('short') }}</td>
                                 </tr>
                             {% else %}
                                 <tr>
-                                    <td colspan="4" class="thin light">{{ "No 404s recorded yet"|t('redirect-manager') }}</td>
+                                    <td colspan="5" class="thin light">{{ "No 404s recorded yet"|t('redirect-manager') }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -147,7 +149,7 @@
                                 {% for bot in botStats.topBots %}
                                     <tr>
                                         <td>{{ bot.botName }}</td>
-                                        <td>{{ bot.count }}</td>
+                                        <td>{{ bot.count|number }}</td>
                                     </tr>
                                 {% endfor %}
                             {% else %}
@@ -195,7 +197,8 @@
                                 <th>{{ 'URL'|t('redirect-manager') }}</th>
                                 <th>{{ 'Count'|t('redirect-manager') }}</th>
                                 <th>{{ 'Referrer'|t('redirect-manager') }}</th>
-                                <th>{{ 'Last Hit'|t('redirect-manager') }}</th>
+                                <th>{{ 'Date'|t('redirect-manager') }}</th>
+                                <th>{{ 'Time'|t('redirect-manager') }}</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -207,9 +210,10 @@
                                             <span><code>{{ stat.url|slice(0, 80) }}</code></span>
                                         </a>
                                     </td>
-                                    <td>{{ stat.count }}</td>
+                                    <td>{{ stat.count|number }}</td>
                                     <td>{{ stat.referrer ? stat.referrer|slice(0, 40) : '-' }}</td>
-                                    <td>{{ stat.lastHit|date('Y-m-d H:i:s') }}</td>
+                                    <td>{{ stat.lastHit|date('short') }}</td>
+                                    <td>{{ stat.lastHit|time('short') }}</td>
                                     <td>
                                         <a href="{{ url('redirect-manager/redirects/new', { sourceUrl: stat.url }) }}"
                                            class="btn submit icon add"
@@ -218,7 +222,7 @@
                                 </tr>
                             {% else %}
                                 <tr>
-                                    <td colspan="5" class="thin light">{{ "No unhandled 404s! Great job!"|t('redirect-manager') }}</td>
+                                    <td colspan="6" class="thin light">{{ "No unhandled 404s! Great job!"|t('redirect-manager') }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -414,10 +418,10 @@
                 },
                 success: function(response) {
                     if (response.success && response.data) {
-                        // Update stat boxes
-                        $('#total-404s').text(response.data.totalCount || 0);
-                        $('#handled-404s').text(response.data.handledCount || 0);
-                        $('#unhandled-404s').text(response.data.unhandledCount || 0);
+                        // Update stat boxes with number formatting
+                        $('#total-404s').text((response.data.totalCount || 0).toLocaleString());
+                        $('#handled-404s').text((response.data.handledCount || 0).toLocaleString());
+                        $('#unhandled-404s').text((response.data.unhandledCount || 0).toLocaleString());
 
                         // Update success rate
                         const total = response.data.totalCount || 0;
@@ -450,14 +454,22 @@
         function updateMostCommonTable(mostCommon) {
             let html = '';
             if (mostCommon.length === 0) {
-                html = '<tr><td colspan="4" class="thin light">{{ "No 404s recorded yet"|t('redirect-manager')|e('js') }}</td></tr>';
+                html = '<tr><td colspan="5" class="thin light">{{ "No 404s recorded yet"|t('redirect-manager')|e('js') }}</td></tr>';
             } else {
                 mostCommon.forEach(function(stat) {
                     html += '<tr>';
                     html += '<td><a class="label-link" href="' + Craft.escapeHtml(stat.url) + '" target="_blank"><span><code>' + Craft.escapeHtml(stat.url.substring(0, 80)) + '</code></span></a></td>';
-                    html += '<td><strong>' + stat.count + '</strong></td>';
+                    html += '<td><strong>' + (stat.count || 0).toLocaleString() + '</strong></td>';
                     html += '<td>' + (stat.handled ? '<span class="status green"></span>' : '<span class="status red"></span>') + '</td>';
-                    html += '<td>' + Craft.formatDate(new Date(stat.lastHit.date || stat.lastHit)) + '</td>';
+                    if (stat.lastHitFormatted) {
+                        const parts = stat.lastHitFormatted.split(', ');
+                        html += '<td>' + (parts[0] || '') + '</td>';
+                        html += '<td>' + (parts[1] || '') + '</td>';
+                    } else {
+                        const date = new Date(stat.lastHit.date || stat.lastHit);
+                        html += '<td>' + Craft.formatDate(date, 'short') + '</td>';
+                        html += '<td>' + Craft.formatTime(date, 'short') + '</td>';
+                    }
                     html += '</tr>';
                 });
             }
@@ -468,14 +480,22 @@
         function updateRecentUnhandledTable(recentUnhandled) {
             let html = '';
             if (recentUnhandled.length === 0) {
-                html = '<tr><td colspan="5" class="thin light">{{ "No unhandled 404s! Great job!"|t('redirect-manager')|e('js') }}</td></tr>';
+                html = '<tr><td colspan="6" class="thin light">{{ "No unhandled 404s! Great job!"|t('redirect-manager')|e('js') }}</td></tr>';
             } else {
                 recentUnhandled.forEach(function(stat) {
                     html += '<tr>';
                     html += '<td><a class="label-link" href="' + Craft.escapeHtml(stat.url) + '" target="_blank"><span><code>' + Craft.escapeHtml(stat.url.substring(0, 80)) + '</code></span></a></td>';
-                    html += '<td>' + stat.count + '</td>';
+                    html += '<td>' + (stat.count || 0).toLocaleString() + '</td>';
                     html += '<td>' + (stat.referrer ? Craft.escapeHtml(stat.referrer.substring(0, 40)) : '-') + '</td>';
-                    html += '<td>' + Craft.formatDate(new Date(stat.lastHit.date || stat.lastHit)) + '</td>';
+                    if (stat.lastHitFormatted) {
+                        const parts = stat.lastHitFormatted.split(', ');
+                        html += '<td>' + (parts[0] || '') + '</td>';
+                        html += '<td>' + (parts[1] || '') + '</td>';
+                    } else {
+                        const date = new Date(stat.lastHit.date || stat.lastHit);
+                        html += '<td>' + Craft.formatDate(date, 'short') + '</td>';
+                        html += '<td>' + Craft.formatTime(date, 'short') + '</td>';
+                    }
                     html += '<td><a href="' + Craft.getUrl('redirect-manager/redirects/new', { sourceUrl: stat.url }) + '" class="btn submit icon add" title="{{ "Create redirect"|t('redirect-manager')|e('js') }}"></a></td>';
                     html += '</tr>';
                 });
@@ -492,7 +512,7 @@
                 topBots.forEach(function(bot) {
                     html += '<tr>';
                     html += '<td>' + Craft.escapeHtml(bot.botName) + '</td>';
-                    html += '<td>' + bot.count + '</td>';
+                    html += '<td>' + (bot.count || 0).toLocaleString() + '</td>';
                     html += '</tr>';
                 });
             }

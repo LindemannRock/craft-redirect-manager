@@ -89,8 +89,15 @@ class AnalyticsController extends Controller
         // Get analytics
         $analytics = $query->all();
 
-        // Add redirect ID to each handled analytic
+        // Add redirect ID to each handled analytic and convert timezone
         foreach ($analytics as &$stat) {
+            // Convert lastHit from UTC to user's timezone
+            if (!empty($stat['lastHit'])) {
+                $utcDate = new \DateTime($stat['lastHit'], new \DateTimeZone('UTC'));
+                $utcDate->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
+                $stat['lastHit'] = $utcDate;
+            }
+
             if ($stat['handled']) {
                 $redirectId = (new \craft\db\Query())
                     ->select('id')
@@ -266,17 +273,22 @@ class AnalyticsController extends Controller
         $startDate = $dateFilter['start'] ?? null;
         $endDate = $dateFilter['end'] ?? null;
 
-        $csv = RedirectManager::$plugin->analytics->exportToCsv($siteId, $analyticsIds, $days, $startDate, $endDate);
+        try {
+            $csv = RedirectManager::$plugin->analytics->exportToCsv($siteId, $analyticsIds, $days, $startDate, $endDate);
 
-        // Build filename following shortlink pattern
-        $settings = RedirectManager::$plugin->getSettings();
-        $filenamePart = strtolower(str_replace(' ', '-', $settings->getPluralLowerDisplayName()));
-        $filename = $filenamePart . '-analytics-' . $dateRange . '-' . date('Y-m-d') . '.' . $format;
+            // Build filename following shortlink pattern
+            $settings = RedirectManager::$plugin->getSettings();
+            $filenamePart = strtolower(str_replace(' ', '-', $settings->getPluralLowerDisplayName()));
+            $filename = $filenamePart . '-analytics-' . $dateRange . '-' . date('Y-m-d') . '.' . $format;
 
-        return Craft::$app->getResponse()
-            ->sendContentAsFile($csv, $filename, [
-                'mimeType' => $format === 'csv' ? 'text/csv' : 'application/json',
-            ]);
+            return Craft::$app->getResponse()
+                ->sendContentAsFile($csv, $filename, [
+                    'mimeType' => $format === 'csv' ? 'text/csv' : 'application/json',
+                ]);
+        } catch (\Exception $e) {
+            Craft::$app->getSession()->setError($e->getMessage());
+            return $this->redirect('redirect-manager/analytics?dateRange=' . $dateRange);
+        }
     }
 
     /**

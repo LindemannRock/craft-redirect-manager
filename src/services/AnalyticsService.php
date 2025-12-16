@@ -383,7 +383,19 @@ class AnalyticsService extends Component
             $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)]);
         }
 
-        return $query->all();
+        $results = $query->all();
+
+        // Convert lastHit dates from UTC to user's timezone
+        foreach ($results as &$result) {
+            if (!empty($result['lastHit'])) {
+                $utcDate = new \DateTime($result['lastHit'], new \DateTimeZone('UTC'));
+                $utcDate->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
+                $result['lastHit'] = $utcDate;
+                $result['lastHitFormatted'] = Craft::$app->getFormatter()->asDatetime($utcDate, 'short');
+            }
+        }
+
+        return $results;
     }
 
     /**
@@ -425,7 +437,19 @@ class AnalyticsService extends Component
             $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)]);
         }
 
-        return $query->all();
+        $results = $query->all();
+
+        // Convert lastHit dates from UTC to user's timezone
+        foreach ($results as &$result) {
+            if (!empty($result['lastHit'])) {
+                $utcDate = new \DateTime($result['lastHit'], new \DateTimeZone('UTC'));
+                $utcDate->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
+                $result['lastHit'] = $utcDate;
+                $result['lastHitFormatted'] = Craft::$app->getFormatter()->asDatetime($utcDate, 'short');
+            }
+        }
+
+        return $results;
     }
 
     /**
@@ -593,6 +617,11 @@ class AnalyticsService extends Component
             }
 
             $analytics = $query->all();
+        }
+
+        // Check if there's any data to export
+        if (empty($analytics)) {
+            throw new \Exception('No data to export for the selected period.');
         }
 
         $csv = "URL,Referrer,Hits,Last Hit,Site,Handled,Device Type,Device Brand,Device Model,Browser,Browser Version,Browser Engine,OS Name,OS Version,Bot,Bot Name,Country,City,IP Hash,User Agent,Date Created\n";
