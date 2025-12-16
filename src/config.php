@@ -122,6 +122,11 @@ return [
         // ========================================
         // Performance and caching configuration
 
+        // Cache Storage Method
+        // 'file' = File system (default, single server)
+        // 'redis' = Redis/Database (load-balanced, multi-server, cloud hosting)
+        'cacheStorageMethod' => 'file',
+
         // Redirect Cache
         'enableRedirectCache' => true,     // Enable caching of redirect lookups
         'redirectCacheDuration' => 3600,   // How long to cache redirect lookups (1 hour)
@@ -203,6 +208,7 @@ return [
     'production' => [
         'logLevel' => 'error',             // Only errors in production
         'analyticsRetention' => 365,       // Keep more data in production
+        'cacheStorageMethod' => 'redis',   // Use Redis for production (Servd/AWS/Platform.sh)
         'cacheDeviceDetection' => true,
         'deviceDetectionCacheDuration' => 7200, // 2 hours
         'redirectCacheDuration' => 86400,  // 24 hours - aggressive caching
