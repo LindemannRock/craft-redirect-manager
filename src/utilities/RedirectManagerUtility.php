@@ -41,7 +41,7 @@ class RedirectManagerUtility extends Utility
      */
     public static function icon(): ?string
     {
-        return '@app/icons/tool.svg';
+        return 'arrows-turn-right';
     }
 
     /**
