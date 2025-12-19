@@ -186,11 +186,11 @@ class RedirectManager extends Plugin
             ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
             function(RegisterCacheOptionsEvent $event) {
                 $settings = $this->getSettings();
-                $pluginName = $settings->getFullName();
+                $displayName = $settings->getDisplayName();
 
                 $event->options[] = [
                     'key' => 'redirect-manager-cache',
-                    'label' => Craft::t('redirect-manager', '{pluginName} Cache', ['pluginName' => $pluginName]),
+                    'label' => Craft::t('redirect-manager', '{displayName} caches', ['displayName' => $displayName]),
                     'action' => [$this->redirects, 'invalidateCaches'],
                 ];
             }
