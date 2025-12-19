@@ -1,5 +1,19 @@
 # Changelog
 
+## [5.9.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.8.2...v5.9.0) (2025-12-19)
+
+
+### Features
+
+* Add geographic analytics and traffic analysis tabs with detailed statistics ([1e986e3](https://github.com/LindemannRock/craft-redirect-manager/commit/1e986e33745b18b1fb1fe3575e71cc98f71a548d))
+* add geographic analytics for top countries and cities ([de5b98f](https://github.com/LindemannRock/craft-redirect-manager/commit/de5b98f5c3ef7ef6a93b0c106895ad8e55c1da39))
+
+
+### Bug Fixes
+
+* improve display name handling and trim whitespace in settings ([c6aee51](https://github.com/LindemannRock/craft-redirect-manager/commit/c6aee5148434e819d77f7c7a73f90a54e2ae91d1))
+* update cache duration fields and improve instructions ([25be9a6](https://github.com/LindemannRock/craft-redirect-manager/commit/25be9a6e1b0dec7b9a7b634ed9661dac4d5f138f))
+
 ## [5.8.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.8.1...v5.8.2) (2025-12-16)
 
 
