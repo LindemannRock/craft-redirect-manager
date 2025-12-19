@@ -168,6 +168,10 @@ class AnalyticsController extends Controller
         $osBreakdown = RedirectManager::$plugin->analytics->getOsBreakdown($siteId, $days);
         $botStats = RedirectManager::$plugin->analytics->getBotStats($siteId, $days);
 
+        // Get geographic analytics
+        $topCountries = RedirectManager::$plugin->analytics->getTopCountries($siteId, $days);
+        $topCities = RedirectManager::$plugin->analytics->getTopCities($siteId, $days);
+
         return $this->renderTemplate('redirect-manager/analytics/index', [
             'chartData' => $chartData,
             'mostCommon' => $mostCommon,
@@ -180,6 +184,8 @@ class AnalyticsController extends Controller
             'browserBreakdown' => $browserBreakdown,
             'osBreakdown' => $osBreakdown,
             'botStats' => $botStats,
+            'topCountries' => $topCountries,
+            'topCities' => $topCities,
             'dateRange' => $dateRange,
         ]);
     }
@@ -349,6 +355,10 @@ class AnalyticsController extends Controller
                 // Get bot stats
                 $botStats = RedirectManager::$plugin->analytics->getBotStats($siteId, $days);
 
+                // Get geographic data
+                $topCountries = RedirectManager::$plugin->analytics->getTopCountries($siteId, $days);
+                $topCities = RedirectManager::$plugin->analytics->getTopCities($siteId, $days);
+
                 $data = [
                     'totalCount' => $totalCount,
                     'handledCount' => $handledCount,
@@ -356,6 +366,8 @@ class AnalyticsController extends Controller
                     'mostCommon' => $mostCommon,
                     'recentUnhandled' => $recentUnhandled,
                     'topBots' => $botStats['topBots'] ?? [],
+                    'topCountries' => $topCountries,
+                    'topCities' => $topCities,
                 ];
                 break;
 
@@ -377,6 +389,14 @@ class AnalyticsController extends Controller
 
             case 'bots':
                 $data = RedirectManager::$plugin->analytics->getBotStats($siteId, $days);
+                break;
+
+            case 'countries':
+                $data = RedirectManager::$plugin->analytics->getTopCountries($siteId, $days);
+                break;
+
+            case 'cities':
+                $data = RedirectManager::$plugin->analytics->getTopCities($siteId, $days);
                 break;
         }
 
