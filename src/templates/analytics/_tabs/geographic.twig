@@ -1,0 +1,82 @@
+{# Geographic Tab - Countries and Cities #}
+
+{% set settings = craft.app.plugins.getPlugin('redirect-manager').settings %}
+
+{% if settings.enableGeoDetection %}
+    <h2 style="margin: 0 0 20px;">{{ "Geographic Analytics"|t('redirect-manager') }}</h2>
+
+    <div class="analytics-charts two-columns">
+        <div class="chart-container">
+            <h3>{{ "Top Countries"|t('redirect-manager') }}</h3>
+            <div class="table-scroll-container">
+                <table class="data fullwidth" id="countries-table">
+                    <thead>
+                        <tr>
+                            <th>{{ "Country"|t('redirect-manager') }}</th>
+                            <th>{{ "404s"|t('redirect-manager') }}</th>
+                            <th>{{ "Percentage"|t('redirect-manager') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set topCountries = topCountries ?? [] %}
+                        {% if topCountries|length > 0 %}
+                            {% for country in topCountries %}
+                                <tr>
+                                    <td>{{ country.name }}</td>
+                                    <td>{{ country.count|number }}</td>
+                                    <td>{{ country.percentage }}%</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="3" style="text-align: center; color: #999;">
+                                    {{ "No country data available"|t('redirect-manager') }}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3>{{ "Top Cities"|t('redirect-manager') }}</h3>
+            <div class="table-scroll-container">
+                <table class="data fullwidth" id="cities-table">
+                    <thead>
+                        <tr>
+                            <th>{{ "City"|t('redirect-manager') }}</th>
+                            <th>{{ "Country"|t('redirect-manager') }}</th>
+                            <th>{{ "404s"|t('redirect-manager') }}</th>
+                            <th>{{ "Percentage"|t('redirect-manager') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set topCities = topCities ?? [] %}
+                        {% if topCities|length > 0 %}
+                            {% for city in topCities %}
+                                <tr>
+                                    <td>{{ city.city }}</td>
+                                    <td>{{ city.countryName }}</td>
+                                    <td>{{ city.count|number }}</td>
+                                    <td>{{ city.percentage }}%</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #999;">
+                                    {{ "No city data available"|t('redirect-manager') }}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="pane" style="text-align: center; padding: 60px 20px;">
+        <p class="light">{{ "Geographic detection is disabled."|t('redirect-manager') }}</p>
+        <p><a href="{{ url('redirect-manager/settings/analytics') }}" class="btn">{{ "Enable in Settings"|t('redirect-manager') }}</a></p>
+    </div>
+{% endif %}

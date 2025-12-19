@@ -1,0 +1,136 @@
+{# Overview Tab - Stats, Trend, Most Common, Recent Unhandled #}
+
+<div class="analytics-stats">
+    <div class="stat-box">
+        <div class="stat-value" id="total-404s">{{ (totalCount ?? 0)|number }}</div>
+        <div class="stat-label">{{ "Total 404s"|t('redirect-manager') }}</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value" id="handled-404s">{{ (handledCount ?? 0)|number }}</div>
+        <div class="stat-label">{{ "Handled"|t('redirect-manager') }}</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value" id="unhandled-404s">{{ (unhandledCount ?? 0)|number }}</div>
+        <div class="stat-label">{{ "Unhandled"|t('redirect-manager') }}</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value" id="success-rate">{{ totalCount > 0 ? ((handledCount / totalCount * 100)|round) : 0 }}%</div>
+        <div class="stat-label">{{ "Success Rate"|t('redirect-manager') }}</div>
+    </div>
+</div>
+
+<h2 style="margin: 30px 0 20px;">{{ "404 Trend"|t('redirect-manager') }}</h2>
+
+<div class="analytics-charts">
+    <div class="chart-container full-width">
+        <canvas id="404-trend-chart"></canvas>
+    </div>
+</div>
+
+<h2 style="margin: 30px 0 20px;">{{ "Most Common 404s (Top 15)"|t('redirect-manager') }}</h2>
+
+<div class="analytics-charts">
+    <div class="chart-container full-width">
+        <div class="table-scroll-container">
+            <table class="data fullwidth" id="most-common-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'URL'|t('redirect-manager') }}</th>
+                        <th>{{ 'Site'|t('redirect-manager') }}</th>
+                        <th>{{ 'Count'|t('redirect-manager') }}</th>
+                        <th>{{ 'Handled'|t('redirect-manager') }}</th>
+                        <th>{{ 'Date'|t('redirect-manager') }}</th>
+                        <th>{{ 'Time'|t('redirect-manager') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in mostCommon %}
+                        <tr>
+                            <td>
+                                <a class="label-link" href="{{ stat.url }}" target="_blank">
+                                    <span><code>{{ stat.url|slice(0, 80) }}</code></span>
+                                </a>
+                            </td>
+                            <td>
+                                {% if stat.siteId %}
+                                    {% set site = craft.app.sites.getSiteById(stat.siteId) %}
+                                    {{ site ? site.name : '—' }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td><strong>{{ stat.count|number }}</strong></td>
+                            <td>
+                                {% if stat.handled %}
+                                    <span class="status green"></span>
+                                {% else %}
+                                    <span class="status red"></span>
+                                {% endif %}
+                            </td>
+                            <td>{{ stat.lastHit|date('short') }}</td>
+                            <td>{{ stat.lastHit|time('short') }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="thin light">{{ "No 404s recorded yet"|t('redirect-manager') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<h2 style="margin: 30px 0 20px;">{{ "Recent Unhandled 404s"|t('redirect-manager') }}</h2>
+
+<div class="analytics-charts">
+    <div class="chart-container full-width">
+        <div class="table-scroll-container">
+            <table class="data fullwidth" id="recent-unhandled-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'URL'|t('redirect-manager') }}</th>
+                        <th>{{ 'Site'|t('redirect-manager') }}</th>
+                        <th>{{ 'Count'|t('redirect-manager') }}</th>
+                        <th>{{ 'Referrer'|t('redirect-manager') }}</th>
+                        <th>{{ 'Date'|t('redirect-manager') }}</th>
+                        <th>{{ 'Time'|t('redirect-manager') }}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in recentUnhandled %}
+                        <tr>
+                            <td>
+                                <a class="label-link" href="{{ stat.url }}" target="_blank">
+                                    <span><code>{{ stat.url|slice(0, 80) }}</code></span>
+                                </a>
+                            </td>
+                            <td>
+                                {% if stat.siteId %}
+                                    {% set site = craft.app.sites.getSiteById(stat.siteId) %}
+                                    {{ site ? site.name : '—' }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>{{ stat.count|number }}</td>
+                            <td>{{ stat.referrer ? stat.referrer|slice(0, 40) : '-' }}</td>
+                            <td>{{ stat.lastHit|date('short') }}</td>
+                            <td>{{ stat.lastHit|time('short') }}</td>
+                            <td>
+                                <a href="{{ url('redirect-manager/redirects/new', { sourceUrl: stat.url }) }}"
+                                   class="btn submit icon add"
+                                   title="{{ 'Create redirect'|t('redirect-manager') }}"></a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="thin light">{{ "No unhandled 404s! Great job!"|t('redirect-manager') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -577,9 +577,10 @@ class AnalyticsService extends Component
      * @param int|null $days Number of days to look back
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
-     * @return string CSV content
+     * @param string $format Export format ('csv' or 'json')
+     * @return string CSV or JSON content
      */
-    public function exportToCsv(?int $siteId = null, ?array $analyticsIds = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): string
+    public function exportToCsv(?int $siteId = null, ?array $analyticsIds = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null, string $format = 'csv'): string
     {
         // If specific IDs provided, fetch only those
         if (!empty($analyticsIds)) {
@@ -622,6 +623,11 @@ class AnalyticsService extends Component
         // Check if there's any data to export
         if (empty($analytics)) {
             throw new \Exception('No data to export for the selected period.');
+        }
+
+        // Handle JSON format
+        if ($format === 'json') {
+            return $this->_exportAsJson($analytics);
         }
 
         $csv = "URL,Referrer,Hits,Last Hit,Site,Handled,Device Type,Device Brand,Device Model,Browser,Browser Version,Browser Engine,OS Name,OS Version,Bot,Bot Name,Country,City,IP Hash,User Agent,Date Created\n";
@@ -1128,5 +1134,66 @@ class AnalyticsService extends Component
         }
 
         return hash('sha256', $ip . $salt);
+    }
+
+    /**
+     * Export analytics data as JSON
+     *
+     * @param array $analytics Raw analytics data
+     * @return string JSON string
+     */
+    private function _exportAsJson(array $analytics): string
+    {
+        $data = [];
+
+        foreach ($analytics as $stat) {
+            // Get site name
+            $site = Craft::$app->sites->getSiteById($stat['siteId']);
+            $siteName = $site ? $site->name : null;
+
+            $item = [
+                'url' => $stat['url'],
+                'referrer' => $stat['referrer'] ?? null,
+                'hits' => (int)$stat['count'],
+                'lastHit' => $stat['lastHit'],
+                'siteId' => $stat['siteId'] ? (int)$stat['siteId'] : null,
+                'siteName' => $siteName,
+                'handled' => (bool)$stat['handled'],
+                'device' => [
+                    'type' => $stat['deviceType'] ?? null,
+                    'brand' => $stat['deviceBrand'] ?? null,
+                    'model' => $stat['deviceModel'] ?? null,
+                ],
+                'browser' => [
+                    'name' => $stat['browser'] ?? null,
+                    'version' => $stat['browserVersion'] ?? null,
+                    'engine' => $stat['browserEngine'] ?? null,
+                ],
+                'os' => [
+                    'name' => $stat['osName'] ?? null,
+                    'version' => $stat['osVersion'] ?? null,
+                ],
+                'bot' => [
+                    'isBot' => (bool)$stat['isRobot'],
+                    'name' => $stat['botName'] ?? null,
+                ],
+                'location' => [
+                    'country' => $stat['country'] ?? null,
+                    'countryName' => $this->_getCountryName($stat['country'] ?? ''),
+                    'city' => $stat['city'] ?? null,
+                ],
+                'ipHash' => $stat['ip'] ?? null,
+                'userAgent' => $stat['userAgent'] ?? null,
+                'dateCreated' => $stat['dateCreated'],
+            ];
+
+            $data[] = $item;
+        }
+
+        return json_encode([
+            'exported' => date('c'),
+            'count' => count($data),
+            'data' => $data,
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     }
 }

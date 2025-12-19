@@ -137,6 +137,7 @@ class AnalyticsController extends Controller
 
         $request = Craft::$app->getRequest();
         $siteId = $request->getQueryParam('siteId');
+        $siteId = $siteId ? (int)$siteId : null; // Convert empty string to null
         $dateRange = $request->getQueryParam('dateRange', 'last30days');
 
         // Convert date range to days
@@ -172,6 +173,9 @@ class AnalyticsController extends Controller
         $topCountries = RedirectManager::$plugin->analytics->getTopCountries($siteId, $days);
         $topCities = RedirectManager::$plugin->analytics->getTopCities($siteId, $days);
 
+        // Get all sites for site selector
+        $sites = Craft::$app->getSites()->getAllSites();
+
         return $this->renderTemplate('redirect-manager/analytics/index', [
             'chartData' => $chartData,
             'mostCommon' => $mostCommon,
@@ -187,6 +191,8 @@ class AnalyticsController extends Controller
             'topCountries' => $topCountries,
             'topCities' => $topCities,
             'dateRange' => $dateRange,
+            'siteId' => $siteId,
+            'sites' => $sites,
         ]);
     }
 
@@ -240,6 +246,7 @@ class AnalyticsController extends Controller
         $this->requirePermission('redirectManager:manageSettings');
 
         $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
+        $siteId = $siteId ? (int)$siteId : null;
 
         $deleted = RedirectManager::$plugin->analytics->clearAnalytics($siteId);
 
@@ -264,6 +271,7 @@ class AnalyticsController extends Controller
 
         $request = Craft::$app->getRequest();
         $siteId = $request->getQueryParam('siteId');
+        $siteId = $siteId ? (int)$siteId : null;
 
         // Check if specific analytics were selected
         $analyticsIdsJson = $request->getBodyParam('analyticsIds');
@@ -280,12 +288,22 @@ class AnalyticsController extends Controller
         $endDate = $dateFilter['end'] ?? null;
 
         try {
-            $csv = RedirectManager::$plugin->analytics->exportToCsv($siteId, $analyticsIds, $days, $startDate, $endDate);
+            $csv = RedirectManager::$plugin->analytics->exportToCsv($siteId, $analyticsIds, $days, $startDate, $endDate, $format);
 
-            // Build filename following shortlink pattern
+            // Build filename with site name
             $settings = RedirectManager::$plugin->getSettings();
             $filenamePart = strtolower(str_replace(' ', '-', $settings->getPluralLowerDisplayName()));
-            $filename = $filenamePart . '-analytics-' . $dateRange . '-' . date('Y-m-d') . '.' . $format;
+
+            // Get site name for filename
+            $sitePart = 'all';
+            if ($siteId) {
+                $site = Craft::$app->getSites()->getSiteById((int)$siteId);
+                if ($site) {
+                    $sitePart = strtolower(preg_replace('/[^a-zA-Z0-9-_]/', '', str_replace(' ', '-', $site->name)));
+                }
+            }
+
+            $filename = $filenamePart . '-analytics-' . $sitePart . '-' . $dateRange . '-' . date('Y-m-d') . '.' . $format;
 
             return Craft::$app->getResponse()
                 ->sendContentAsFile($csv, $filename, [
@@ -307,6 +325,7 @@ class AnalyticsController extends Controller
         $this->requirePermission('redirectManager:viewAnalytics');
 
         $siteId = Craft::$app->getRequest()->getQueryParam('siteId');
+        $siteId = $siteId ? (int)$siteId : null;
         $days = (int)Craft::$app->getRequest()->getQueryParam('days', 30);
 
         $chartData = RedirectManager::$plugin->analytics->getChartData($siteId, $days);
@@ -328,6 +347,7 @@ class AnalyticsController extends Controller
 
         $request = Craft::$app->getRequest();
         $siteId = $request->getBodyParam('siteId');
+        $siteId = $siteId ? (int)$siteId : null; // Convert empty string to null
         $dateRange = $request->getBodyParam('dateRange', 'last30days');
         $type = $request->getBodyParam('type', 'summary');
 

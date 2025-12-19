@@ -3,6 +3,7 @@
 {% set selectedSubnavItem = 'analytics' %}
 
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
+{% set settings = plugin.settings %}
 {% set crumbs = [
     {
         label: redirectHelper.fullName|t('redirect-manager'),
@@ -14,303 +15,98 @@
     },
 ] %}
 
+{# Define Tabs #}
+{% set tabs = {
+    overview: { label: "Overview"|t('redirect-manager'), url: '#overview' },
+    'traffic-devices': { label: "Traffic & Devices"|t('redirect-manager'), url: '#traffic-devices' }
+} %}
+
+{# Only add Geographic tab if geo detection is enabled #}
+{% if settings.enableGeoDetection %}
+    {% set tabs = tabs|merge({
+        geographic: { label: "Geographic"|t('redirect-manager'), url: '#geographic' }
+    }) %}
+{% endif %}
+
+{% set selectedTab = 'overview' %}
+
 {% block actionButton %}
-	<div id="action-button" class="btngroup">
-		<button type="button" class="btn menubtn" data-icon="download">{{ "Export"|t('redirect-manager') }}</button>
-		<div class="menu" data-align="right">
-			<ul>
-				<li>
-					<a href="#" class="export-link" data-format="csv" data-action="redirect-manager/analytics/export-csv">{{ "Export as CSV"|t('redirect-manager') }}</a>
-				</li>
-			</ul>
-		</div>
-	</div>
+    <div id="action-button" class="btngroup">
+        <button type="button" class="btn menubtn" data-icon="download">{{ "Export"|t('redirect-manager') }}</button>
+        <div class="menu" data-align="right">
+            <ul>
+                <li>
+                    <a href="#" class="export-link" data-format="csv" data-action="redirect-manager/analytics/export-csv">{{ "Export as CSV"|t('redirect-manager') }}</a>
+                </li>
+                <li>
+                    <a href="#" class="export-link" data-format="json" data-action="redirect-manager/analytics/export-csv">{{ "Export as JSON"|t('redirect-manager') }}</a>
+                </li>
+            </ul>
+        </div>
+    </div>
 {% endblock %}
 
 {% block toolbar %}
-	<div class="flex">
-		<div>
-			<div class="btngroup">
-				<button type="button" class="btn menubtn">
-					<span id="dateRangeLabel">{{ dateRange == 'today' ? 'Today' : (dateRange == 'yesterday' ? 'Yesterday' : (dateRange == 'last7days' ? 'Last 7 days' : (dateRange == 'last30days' ? 'Last 30 days' : (dateRange == 'last90days' ? 'Last 90 days' : 'All time')))) }}</span>
-				</button>
-				<div class="menu">
-					<ul>
-						<li><a href="#" data-range="today" class="main-date-range-option {{ dateRange == 'today' ? 'sel' : '' }}">{{ "Today"|t('redirect-manager') }}</a></li>
-						<li><a href="#" data-range="yesterday" class="main-date-range-option {{ dateRange == 'yesterday' ? 'sel' : '' }}">{{ "Yesterday"|t('redirect-manager') }}</a></li>
-						<li><a href="#" data-range="last7days" class="main-date-range-option {{ dateRange == 'last7days' ? 'sel' : '' }}">{{ "Last 7 days"|t('redirect-manager') }}</a></li>
-						<li><a href="#" data-range="last30days" class="main-date-range-option {{ dateRange == 'last30days' ? 'sel' : '' }}">{{ "Last 30 days"|t('redirect-manager') }}</a></li>
-						<li><a href="#" data-range="last90days" class="main-date-range-option {{ dateRange == 'last90days' ? 'sel' : '' }}">{{ "Last 90 days"|t('redirect-manager') }}</a></li>
-						<li><a href="#" data-range="all" class="main-date-range-option {{ dateRange == 'all' ? 'sel' : '' }}">{{ "All time"|t('redirect-manager') }}</a></li>
-					</ul>
-				</div>
-			</div>
-		</div>
-	</div>
-{% endblock %}
-
-{% block content %}
-    <div id="analytics-dashboard">
-        <div class="analytics-stats">
-            <div class="stat-box">
-                <div class="stat-value" id="total-404s">{{ (totalCount ?? 0)|number }}</div>
-                <div class="stat-label">{{ "Total 404s"|t('redirect-manager') }}</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value" id="handled-404s">{{ (handledCount ?? 0)|number }}</div>
-                <div class="stat-label">{{ "Handled"|t('redirect-manager') }}</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value" id="unhandled-404s">{{ (unhandledCount ?? 0)|number }}</div>
-                <div class="stat-label">{{ "Unhandled"|t('redirect-manager') }}</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value" id="success-rate">{{ totalCount > 0 ? ((handledCount / totalCount * 100)|round) : 0 }}%</div>
-                <div class="stat-label">{{ "Success Rate"|t('redirect-manager') }}</div>
-            </div>
-        </div>
-
-        <h2 style="margin: 30px 0 20px;">{{ "404 Trend"|t('redirect-manager') }}</h2>
-
-        <div class="analytics-charts">
-            <div class="chart-container full-width">
-                <canvas id="404-trend-chart"></canvas>
-            </div>
-        </div>
-
-        <h2 style="margin: 30px 0 20px;">{{ "Most Common 404s (Top 15)"|t('redirect-manager') }}</h2>
-
-        <div class="analytics-charts">
-            <div class="chart-container full-width">
-                <div class="table-scroll-container">
-                    <table class="data fullwidth">
-                        <thead>
-                            <tr>
-                                <th>{{ 'URL'|t('redirect-manager') }}</th>
-                                <th>{{ 'Count'|t('redirect-manager') }}</th>
-                                <th>{{ 'Handled'|t('redirect-manager') }}</th>
-                                <th>{{ 'Date'|t('redirect-manager') }}</th>
-                                <th>{{ 'Time'|t('redirect-manager') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for stat in mostCommon %}
-                                <tr>
-                                    <td>
-                                        <a class="label-link" href="{{ stat.url }}" target="_blank">
-                                            <span><code>{{ stat.url|slice(0, 80) }}</code></span>
-                                        </a>
-                                    </td>
-                                    <td><strong>{{ stat.count|number }}</strong></td>
-                                    <td>
-                                        {% if stat.handled %}
-                                            <span class="status green"></span>
-                                        {% else %}
-                                            <span class="status red"></span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ stat.lastHit|date('short') }}</td>
-                                    <td>{{ stat.lastHit|time('short') }}</td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="5" class="thin light">{{ "No 404s recorded yet"|t('redirect-manager') }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <h2 style="margin: 30px 0 20px;">{{ "Traffic Analysis"|t('redirect-manager') }}</h2>
-
-        <div class="analytics-charts two-columns">
-            <div class="chart-container">
-                <h3>{{ "Bot vs Human Traffic"|t('redirect-manager') }}</h3>
-                <canvas id="bot-chart"></canvas>
-                <div style="text-align: center; margin-top: 10px; color: #666;">
-                    <strong>{{ botStats.botPercentage }}%</strong> of traffic is from bots
-                </div>
-            </div>
-
-            <div class="chart-container">
-                <h3>{{ "Top Bots"|t('redirect-manager') }}</h3>
-                <div class="table-scroll-container">
-                    <table class="data fullwidth">
-                        <thead>
-                            <tr>
-                                <th>{{ "Bot Name"|t('redirect-manager') }}</th>
-                                <th>{{ "404s"|t('redirect-manager') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% if botStats.topBots|length > 0 %}
-                                {% for bot in botStats.topBots %}
-                                    <tr>
-                                        <td>{{ bot.botName }}</td>
-                                        <td>{{ bot.count|number }}</td>
-                                    </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="2" style="text-align: center; color: #999;">
-                                        {{ "No bot data available"|t('redirect-manager') }}
-                                    </td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <h2 style="margin: 30px 0 20px;">{{ "Device Analytics"|t('redirect-manager') }}</h2>
-
-        <div class="analytics-charts two-columns">
-            <div class="chart-container">
-                <h3>{{ "Device Types"|t('redirect-manager') }}</h3>
-                <canvas id="device-chart"></canvas>
-            </div>
-
-            <div class="chart-container">
-                <h3>{{ "Browser Usage"|t('redirect-manager') }}</h3>
-                <canvas id="browser-chart"></canvas>
-            </div>
-        </div>
-
-        <div class="analytics-charts" style="margin-top: 30px;">
-            <div class="chart-container">
-                <h3>{{ "Operating Systems"|t('redirect-manager') }}</h3>
-                <canvas id="os-chart"></canvas>
-            </div>
-        </div>
-
-        {% if craft.app.plugins.getPlugin('redirect-manager').settings.enableGeoDetection %}
-        <h2 style="margin: 30px 0 20px;">{{ "Geographic Analytics"|t('redirect-manager') }}</h2>
-
-        <div class="analytics-charts two-columns">
-            <div class="chart-container">
-                <h3>{{ "Top Countries"|t('redirect-manager') }}</h3>
-                <div class="table-scroll-container">
-                    <table class="data fullwidth" id="countries-table">
-                        <thead>
-                            <tr>
-                                <th>{{ "Country"|t('redirect-manager') }}</th>
-                                <th>{{ "404s"|t('redirect-manager') }}</th>
-                                <th>{{ "Percentage"|t('redirect-manager') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% set topCountries = topCountries ?? [] %}
-                            {% if topCountries|length > 0 %}
-                                {% for country in topCountries %}
-                                    <tr>
-                                        <td>{{ country.name }}</td>
-                                        <td>{{ country.count|number }}</td>
-                                        <td>{{ country.percentage }}%</td>
-                                    </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="3" style="text-align: center; color: #999;">
-                                        {{ "No country data available"|t('redirect-manager') }}
-                                    </td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="chart-container">
-                <h3>{{ "Top Cities"|t('redirect-manager') }}</h3>
-                <div class="table-scroll-container">
-                    <table class="data fullwidth" id="cities-table">
-                        <thead>
-                            <tr>
-                                <th>{{ "City"|t('redirect-manager') }}</th>
-                                <th>{{ "Country"|t('redirect-manager') }}</th>
-                                <th>{{ "404s"|t('redirect-manager') }}</th>
-                                <th>{{ "Percentage"|t('redirect-manager') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% set topCities = topCities ?? [] %}
-                            {% if topCities|length > 0 %}
-                                {% for city in topCities %}
-                                    <tr>
-                                        <td>{{ city.city }}</td>
-                                        <td>{{ city.countryName }}</td>
-                                        <td>{{ city.count|number }}</td>
-                                        <td>{{ city.percentage }}%</td>
-                                    </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="4" style="text-align: center; color: #999;">
-                                        {{ "No city data available"|t('redirect-manager') }}
-                                    </td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
+    <div class="flex">
+        {% if sites|length > 1 %}
+        <div>
+            <div class="btngroup">
+                <button type="button" class="btn menubtn">
+                    <span id="siteLabel">{{ siteId ? sites|filter(s => s.id == siteId)|first.name : 'All Sites'|t('redirect-manager') }}</span>
+                </button>
+                <div class="menu">
+                    <ul>
+                        <li><a href="#" data-site="" class="site-option {{ not siteId ? 'sel' : '' }}">{{ "All Sites"|t('redirect-manager') }}</a></li>
+                        {% for site in sites %}
+                            <li><a href="#" data-site="{{ site.id }}" class="site-option {{ siteId == site.id ? 'sel' : '' }}">{{ site.name }}</a></li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
         </div>
         {% endif %}
-
-        <h2 style="margin: 30px 0 20px;">{{ "Recent Unhandled 404s"|t('redirect-manager') }}</h2>
-
-        <div class="analytics-charts">
-            <div class="chart-container full-width">
-                <div class="table-scroll-container">
-                    <table class="data fullwidth">
-                        <thead>
-                            <tr>
-                                <th>{{ 'URL'|t('redirect-manager') }}</th>
-                                <th>{{ 'Count'|t('redirect-manager') }}</th>
-                                <th>{{ 'Referrer'|t('redirect-manager') }}</th>
-                                <th>{{ 'Date'|t('redirect-manager') }}</th>
-                                <th>{{ 'Time'|t('redirect-manager') }}</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for stat in recentUnhandled %}
-                                <tr>
-                                    <td>
-                                        <a class="label-link" href="{{ stat.url }}" target="_blank">
-                                            <span><code>{{ stat.url|slice(0, 80) }}</code></span>
-                                        </a>
-                                    </td>
-                                    <td>{{ stat.count|number }}</td>
-                                    <td>{{ stat.referrer ? stat.referrer|slice(0, 40) : '-' }}</td>
-                                    <td>{{ stat.lastHit|date('short') }}</td>
-                                    <td>{{ stat.lastHit|time('short') }}</td>
-                                    <td>
-                                        <a href="{{ url('redirect-manager/redirects/new', { sourceUrl: stat.url }) }}"
-                                           class="btn submit icon add"
-                                           title="{{ 'Create redirect'|t('redirect-manager') }}"></a>
-                                    </td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="6" class="thin light">{{ "No unhandled 404s! Great job!"|t('redirect-manager') }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+        <div>
+            <div class="btngroup">
+                <button type="button" class="btn menubtn">
+                    <span id="dateRangeLabel">{{ dateRange == 'today' ? 'Today' : (dateRange == 'yesterday' ? 'Yesterday' : (dateRange == 'last7days' ? 'Last 7 days' : (dateRange == 'last30days' ? 'Last 30 days' : (dateRange == 'last90days' ? 'Last 90 days' : 'All time')))) }}</span>
+                </button>
+                <div class="menu">
+                    <ul>
+                        <li><a href="#" data-range="today" class="main-date-range-option {{ dateRange == 'today' ? 'sel' : '' }}">{{ "Today"|t('redirect-manager') }}</a></li>
+                        <li><a href="#" data-range="yesterday" class="main-date-range-option {{ dateRange == 'yesterday' ? 'sel' : '' }}">{{ "Yesterday"|t('redirect-manager') }}</a></li>
+                        <li><a href="#" data-range="last7days" class="main-date-range-option {{ dateRange == 'last7days' ? 'sel' : '' }}">{{ "Last 7 days"|t('redirect-manager') }}</a></li>
+                        <li><a href="#" data-range="last30days" class="main-date-range-option {{ dateRange == 'last30days' ? 'sel' : '' }}">{{ "Last 30 days"|t('redirect-manager') }}</a></li>
+                        <li><a href="#" data-range="last90days" class="main-date-range-option {{ dateRange == 'last90days' ? 'sel' : '' }}">{{ "Last 90 days"|t('redirect-manager') }}</a></li>
+                        <li><a href="#" data-range="all" class="main-date-range-option {{ dateRange == 'all' ? 'sel' : '' }}">{{ "All time"|t('redirect-manager') }}</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block content %}
+    {# Tab Content - IDs must match tab URLs #}
+    <div id="overview">
+        {% include 'redirect-manager/analytics/_tabs/overview' %}
+    </div>
+
+    <div id="traffic-devices" class="hidden">
+        {% include 'redirect-manager/analytics/_tabs/traffic-devices' %}
+    </div>
+
+    {% if settings.enableGeoDetection %}
+    <div id="geographic" class="hidden">
+        {% include 'redirect-manager/analytics/_tabs/geographic' %}
+    </div>
+    {% endif %}
 
     {% include 'redirect-manager/_components/plugin-credit.twig' %}
 {% endblock %}
 
 {% css %}
-    #analytics-dashboard {
+    /* Tab content padding */
+    #overview, #traffic-devices, #geographic {
         padding: 24px;
     }
 
@@ -372,8 +168,8 @@
         border: 1px solid #e3e5e8;
         border-radius: 4px;
         padding: 24px;
-        min-width: 0; /* Allow flex/grid item to shrink below content size */
-        overflow: hidden; /* Prevent content from pushing out */
+        min-width: 0;
+        overflow: hidden;
     }
 
     .chart-container canvas {
@@ -381,7 +177,6 @@
         max-width: 100%;
     }
 
-    /* Ensure chart wrapper respects container size */
     .chart-container > canvas {
         display: block;
         box-sizing: border-box;
@@ -401,489 +196,282 @@
 {% endcss %}
 
 {% js %}
-    // Store chart instances globally
-    window.analyticsCharts = window.analyticsCharts || {};
+    // Global Chart Instances
+    window.rmCharts = {};
+    window.currentTab = 'overview';
 
-    // Load Chart.js if not already loaded
+    // Load Chart.js
     if (typeof Chart === 'undefined') {
         var script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js';
-        script.onload = initCharts;
+        script.onload = function() { initCharts(); };
         document.head.appendChild(script);
     } else {
         initCharts();
     }
 
-    // Date range change handler
-    $(document).ready(function() {
-        let currentDateRange = '{{ dateRange }}';
+    // Chart colors
+    const chartColors = [
+        '#0d78f2', '#27ae60', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c',
+        '#34495e', '#e67e22', '#3498db', '#2ecc71', '#c0392b', '#f1c40f'
+    ];
 
-        // Handle date range selection via AJAX
-        $(document).on('click', '.main-date-range-option', function(e) {
-            e.preventDefault();
-
-            const $btn = $(this);
-            const range = $btn.data('range');
-
-            // Update the button text
-            const rangeLabels = {
-                'today': '{{ "Today"|t('redirect-manager')|e('js') }}',
-                'yesterday': '{{ "Yesterday"|t('redirect-manager')|e('js') }}',
-                'last7days': '{{ "Last 7 days"|t('redirect-manager')|e('js') }}',
-                'last30days': '{{ "Last 30 days"|t('redirect-manager')|e('js') }}',
-                'last90days': '{{ "Last 90 days"|t('redirect-manager')|e('js') }}',
-                'all': '{{ "All time"|t('redirect-manager')|e('js') }}'
-            };
-
-            // Update button text immediately
-            $('#dateRangeLabel').text(rangeLabels[range] || range);
-
-            // Update selected state
-            $btn.closest('ul').find('.sel').removeClass('sel');
-            $btn.addClass('sel');
-
-            // Close the menu
-            $btn.closest('.menu').removeClass('active');
-            $btn.closest('.btngroup').find('.menubtn').removeClass('active');
-
-            // Update current range
-            currentDateRange = range;
-
-            // Update URL without reload
-            const url = new URL(window.location);
-            url.searchParams.set('dateRange', range);
-            window.history.pushState({}, '', url);
-
-            // Show loading state
-            $('#analytics-dashboard').css('opacity', '0.5');
-
-            // Reload the page data via AJAX
-            loadAnalyticsData(range);
-        });
-
-        // Handle export link clicks
-        $(document).on('click', '.export-link', function(e) {
-            e.preventDefault();
-            const $link = $(this);
-            const action = $link.data('action');
-            const format = $link.data('format') || 'csv';
-
-            // Build URL with current date range
-            const exportUrl = Craft.getActionUrl(action, {
-                dateRange: currentDateRange,
-                format: format
-            });
-
-            // Trigger download
-            window.location.href = exportUrl;
-        });
-
-        // Load analytics data
-        function loadAnalyticsData(dateRange) {
-            // Update summary stats and tables
-            $.ajax({
-                url: '{{ actionUrl('redirect-manager/analytics/get-data')|raw }}',
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    dateRange: dateRange,
-                    type: 'summary',
-                    {{ craft.app.config.general.csrfTokenName }}: '{{ craft.app.request.csrfToken }}'
-                },
-                success: function(response) {
-                    if (response.success && response.data) {
-                        // Update stat boxes with number formatting
-                        $('#total-404s').text((response.data.totalCount || 0).toLocaleString());
-                        $('#handled-404s').text((response.data.handledCount || 0).toLocaleString());
-                        $('#unhandled-404s').text((response.data.unhandledCount || 0).toLocaleString());
-
-                        // Update success rate
-                        const total = response.data.totalCount || 0;
-                        const handled = response.data.handledCount || 0;
-                        const rate = total > 0 ? Math.round((handled / total) * 100) : 0;
-                        $('#success-rate').text(rate + '%');
-
-                        // Update tables
-                        updateMostCommonTable(response.data.mostCommon || []);
-                        updateRecentUnhandledTable(response.data.recentUnhandled || []);
-
-                        // Update top bots table if available
-                        updateTopBotsTable(response.data.topBots || []);
-
-                        // Update geographic tables if available
-                        updateTopCountriesTable(response.data.topCountries || []);
-                        updateTopCitiesTable(response.data.topCities || []);
-                    }
-
-                    // Restore opacity
-                    $('#analytics-dashboard').css('opacity', '1');
-
-                    // Re-initialize charts with new data
-                    initCharts();
-                },
-                error: function() {
-                    $('#analytics-dashboard').css('opacity', '1');
-                    Craft.cp.displayError('{{ "Failed to load analytics data"|t('redirect-manager')|e('js') }}');
-                }
-            });
-        }
-
-        // Update most common table
-        function updateMostCommonTable(mostCommon) {
-            let html = '';
-            if (mostCommon.length === 0) {
-                html = '<tr><td colspan="5" class="thin light">{{ "No 404s recorded yet"|t('redirect-manager')|e('js') }}</td></tr>';
-            } else {
-                mostCommon.forEach(function(stat) {
-                    html += '<tr>';
-                    html += '<td><a class="label-link" href="' + Craft.escapeHtml(stat.url) + '" target="_blank"><span><code>' + Craft.escapeHtml(stat.url.substring(0, 80)) + '</code></span></a></td>';
-                    html += '<td><strong>' + (stat.count || 0).toLocaleString() + '</strong></td>';
-                    html += '<td>' + (stat.handled ? '<span class="status green"></span>' : '<span class="status red"></span>') + '</td>';
-                    if (stat.lastHitFormatted) {
-                        const parts = stat.lastHitFormatted.split(', ');
-                        html += '<td>' + (parts[0] || '') + '</td>';
-                        html += '<td>' + (parts[1] || '') + '</td>';
-                    } else {
-                        const date = new Date(stat.lastHit.date || stat.lastHit);
-                        html += '<td>' + Craft.formatDate(date, 'short') + '</td>';
-                        html += '<td>' + date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) + '</td>';
-                    }
-                    html += '</tr>';
-                });
-            }
-            $('h2:contains("Most Common 404s (Top 15)")').next('.analytics-charts').find('tbody').html(html);
-        }
-
-        // Update recent unhandled table
-        function updateRecentUnhandledTable(recentUnhandled) {
-            let html = '';
-            if (recentUnhandled.length === 0) {
-                html = '<tr><td colspan="6" class="thin light">{{ "No unhandled 404s! Great job!"|t('redirect-manager')|e('js') }}</td></tr>';
-            } else {
-                recentUnhandled.forEach(function(stat) {
-                    html += '<tr>';
-                    html += '<td><a class="label-link" href="' + Craft.escapeHtml(stat.url) + '" target="_blank"><span><code>' + Craft.escapeHtml(stat.url.substring(0, 80)) + '</code></span></a></td>';
-                    html += '<td>' + (stat.count || 0).toLocaleString() + '</td>';
-                    html += '<td>' + (stat.referrer ? Craft.escapeHtml(stat.referrer.substring(0, 40)) : '-') + '</td>';
-                    if (stat.lastHitFormatted) {
-                        const parts = stat.lastHitFormatted.split(', ');
-                        html += '<td>' + (parts[0] || '') + '</td>';
-                        html += '<td>' + (parts[1] || '') + '</td>';
-                    } else {
-                        const date = new Date(stat.lastHit.date || stat.lastHit);
-                        html += '<td>' + Craft.formatDate(date, 'short') + '</td>';
-                        html += '<td>' + date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) + '</td>';
-                    }
-                    html += '<td><a href="' + Craft.getUrl('redirect-manager/redirects/new', { sourceUrl: stat.url }) + '" class="btn submit icon add" title="{{ "Create redirect"|t('redirect-manager')|e('js') }}"></a></td>';
-                    html += '</tr>';
-                });
-            }
-            $('h2:contains("Recent Unhandled 404s")').next('.analytics-charts').find('tbody').html(html);
-        }
-
-        // Update top bots table
-        function updateTopBotsTable(topBots) {
-            let html = '';
-            if (topBots.length === 0) {
-                html = '<tr><td colspan="2" style="text-align: center; color: #999;">{{ "No bot data available"|t('redirect-manager')|e('js') }}</td></tr>';
-            } else {
-                topBots.forEach(function(bot) {
-                    html += '<tr>';
-                    html += '<td>' + Craft.escapeHtml(bot.botName) + '</td>';
-                    html += '<td>' + (bot.count || 0).toLocaleString() + '</td>';
-                    html += '</tr>';
-                });
-            }
-            $('h3:contains("Top Bots")').next('.table-scroll-container').find('tbody').html(html);
-        }
-
-        // Update top countries table
-        function updateTopCountriesTable(countries) {
-            const $table = $('#countries-table');
-            if ($table.length === 0) return; // Table doesn't exist (geo detection disabled)
-
-            let html = '';
-            if (!countries || countries.length === 0) {
-                html = '<tr><td colspan="3" style="text-align: center; color: #999;">{{ "No country data available"|t('redirect-manager')|e('js') }}</td></tr>';
-            } else {
-                countries.forEach(function(country) {
-                    html += '<tr>';
-                    html += '<td>' + Craft.escapeHtml(country.name || '') + '</td>';
-                    html += '<td>' + (country.count || 0).toLocaleString() + '</td>';
-                    html += '<td>' + (country.percentage || 0) + '%</td>';
-                    html += '</tr>';
-                });
-            }
-            $table.find('tbody').html(html);
-        }
-
-        // Update top cities table
-        function updateTopCitiesTable(cities) {
-            const $table = $('#cities-table');
-            if ($table.length === 0) return; // Table doesn't exist (geo detection disabled)
-
-            let html = '';
-            if (!cities || cities.length === 0) {
-                html = '<tr><td colspan="4" style="text-align: center; color: #999;">{{ "No city data available"|t('redirect-manager')|e('js') }}</td></tr>';
-            } else {
-                cities.forEach(function(city) {
-                    html += '<tr>';
-                    html += '<td>' + Craft.escapeHtml(city.city || '') + '</td>';
-                    html += '<td>' + Craft.escapeHtml(city.countryName || '') + '</td>';
-                    html += '<td>' + (city.count || 0).toLocaleString() + '</td>';
-                    html += '<td>' + (city.percentage || 0) + '%</td>';
-                    html += '</tr>';
-                });
-            }
-            $table.find('tbody').html(html);
-        }
-    });
-
+    // Initialize all charts
     function initCharts() {
         // Destroy existing charts
-        if (window.analyticsCharts) {
-            Object.keys(window.analyticsCharts).forEach(function(key) {
-                if (window.analyticsCharts[key] && typeof window.analyticsCharts[key].destroy === 'function') {
-                    window.analyticsCharts[key].destroy();
-                }
-            });
-            window.analyticsCharts = {};
-        }
+        Object.values(window.rmCharts).forEach(c => { if (c && c.destroy) c.destroy(); });
+        window.rmCharts = {};
 
-        // Get current date range
+        // Get current parameters
         const urlParams = new URLSearchParams(window.location.search);
         const currentRange = urlParams.get('dateRange') || '{{ dateRange }}';
+        const currentSite = urlParams.get('siteId') || '';
 
-        // Chart colors
-        const chartColors = [
-            '#0d78f2', '#27ae60', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c',
-            '#34495e', '#e67e22', '#3498db', '#2ecc71', '#c0392b', '#f1c40f'
-        ];
+        // Load all chart data via AJAX
+        loadChartData(currentRange, currentSite);
+    }
 
-        // Load 404 trend chart data via AJAX
+    // Load chart data for all tabs
+    function loadChartData(dateRange, siteId) {
+        const csrfToken = '{{ craft.app.request.csrfToken }}';
+        const csrfName = '{{ craft.app.config.general.csrfTokenName }}';
+
+        // Load trend chart
         $.ajax({
-            url: '{{ actionUrl('redirect-manager/analytics/get-data')|raw }}',
+            url: Craft.getActionUrl('redirect-manager/analytics/get-data'),
             type: 'POST',
             dataType: 'json',
-            data: {
-                dateRange: currentRange,
-                type: 'chart',
-                {{ craft.app.config.general.csrfTokenName }}: '{{ craft.app.request.csrfToken }}'
-            },
+            data: { dateRange: dateRange, siteId: siteId, type: 'chart', [csrfName]: csrfToken },
             success: function(response) {
                 if (response.success && response.data && response.data.length > 0) {
-                    const chartData = response.data;
-                    // 404 Trend Chart
-                    window.analyticsCharts.trendChart = new Chart(document.getElementById('404-trend-chart'), {
-                        type: 'line',
-                        data: {
-                            labels: chartData.map(d => d.date),
-                            datasets: [
-                                {
-                                    label: '{{ "Handled"|t('redirect-manager') }}',
-                                    data: chartData.map(d => d.handled),
-                                    borderColor: '#10B981',
-                                    backgroundColor: '#10B981',
-                                    tension: 0.1,
-                                    fill: false
-                                },
-                                {
-                                    label: '{{ "Unhandled"|t('redirect-manager') }}',
-                                    data: chartData.map(d => d.unhandled),
-                                    borderColor: '#EF4444',
-                                    backgroundColor: '#EF4444',
-                                    tension: 0.1,
-                                    fill: false
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        stepSize: 1,
-                                        precision: 0
-                                    }
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                    align: 'center',
-                                    labels: {
-                                        usePointStyle: true,
-                                        pointStyle: 'circle',
-                                        padding: 20
-                                    }
-                                }
-                            }
-                        }
-                    });
+                    renderTrendChart(response.data);
                 }
             }
         });
 
-        // Bot vs Human Traffic Chart via AJAX
+        // Load bot stats
         $.ajax({
-            url: '{{ actionUrl('redirect-manager/analytics/get-data')|raw }}',
+            url: Craft.getActionUrl('redirect-manager/analytics/get-data'),
             type: 'POST',
             dataType: 'json',
-            data: {
-                dateRange: currentRange,
-                type: 'bots',
-                {{ craft.app.config.general.csrfTokenName }}: '{{ craft.app.request.csrfToken }}'
-            },
+            data: { dateRange: dateRange, siteId: siteId, type: 'bots', [csrfName]: csrfToken },
             success: function(response) {
-                if (response.success && response.data && response.data.chart) {
-                    window.analyticsCharts.botChart = new Chart(document.getElementById('bot-chart'), {
-                        type: 'doughnut',
-                        data: {
-                            labels: response.data.chart.labels,
-                            datasets: [{
-                                data: response.data.chart.values,
-                                backgroundColor: [chartColors[1], chartColors[2]]
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom'
-                                }
-                            }
-                        }
-                    });
-                    // Update bot percentage text
-                    $('.analytics-charts.two-columns .chart-container div[style*="text-align"]').html(
-                        '<strong>' + response.data.botPercentage + '%</strong> of traffic is from bots'
-                    );
+                if (response.success && response.data) {
+                    renderBotChart(response.data);
                 }
             }
         });
 
-        // Device Types Chart via AJAX
+        // Load device breakdown
         $.ajax({
-            url: '{{ actionUrl('redirect-manager/analytics/get-data')|raw }}',
+            url: Craft.getActionUrl('redirect-manager/analytics/get-data'),
             type: 'POST',
             dataType: 'json',
-            data: {
-                dateRange: currentRange,
-                type: 'devices',
-                {{ craft.app.config.general.csrfTokenName }}: '{{ craft.app.request.csrfToken }}'
-            },
+            data: { dateRange: dateRange, siteId: siteId, type: 'devices', [csrfName]: csrfToken },
             success: function(response) {
                 if (response.success && response.data && response.data.labels && response.data.labels.length > 0) {
-                    window.analyticsCharts.deviceChart = new Chart(document.getElementById('device-chart'), {
-                        type: 'doughnut',
-                        data: {
-                            labels: response.data.labels,
-                            datasets: [{
-                                data: response.data.values,
-                                backgroundColor: chartColors.slice(0, response.data.labels.length)
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom'
-                                }
-                            }
-                        }
-                    });
+                    renderDeviceChart(response.data);
                 }
             }
         });
 
-        // Browser Usage Chart via AJAX
+        // Load browser breakdown
         $.ajax({
-            url: '{{ actionUrl('redirect-manager/analytics/get-data')|raw }}',
+            url: Craft.getActionUrl('redirect-manager/analytics/get-data'),
             type: 'POST',
             dataType: 'json',
-            data: {
-                dateRange: currentRange,
-                type: 'browsers',
-                {{ craft.app.config.general.csrfTokenName }}: '{{ craft.app.request.csrfToken }}'
-            },
+            data: { dateRange: dateRange, siteId: siteId, type: 'browsers', [csrfName]: csrfToken },
             success: function(response) {
                 if (response.success && response.data && response.data.labels && response.data.labels.length > 0) {
-                    const browserCtx = document.getElementById('browser-chart');
-                    if (browserCtx) {
-                        browserCtx.parentElement.style.minHeight = '300px';
-                    }
-                    window.analyticsCharts.browserChart = new Chart(browserCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: response.data.labels,
-                            datasets: [{
-                                label: '{{ "404s"|t('redirect-manager') }}',
-                                data: response.data.values,
-                                backgroundColor: chartColors[0],
-                                borderColor: chartColors[0],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        stepSize: 1,
-                                        precision: 0
-                                    }
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    display: false
-                                }
-                            }
-                        }
-                    });
+                    renderBrowserChart(response.data);
                 }
             }
         });
 
-        // Operating Systems Chart via AJAX
+        // Load OS breakdown
         $.ajax({
-            url: '{{ actionUrl('redirect-manager/analytics/get-data')|raw }}',
+            url: Craft.getActionUrl('redirect-manager/analytics/get-data'),
             type: 'POST',
             dataType: 'json',
-            data: {
-                dateRange: currentRange,
-                type: 'os',
-                {{ craft.app.config.general.csrfTokenName }}: '{{ craft.app.request.csrfToken }}'
-            },
+            data: { dateRange: dateRange, siteId: siteId, type: 'os', [csrfName]: csrfToken },
             success: function(response) {
                 if (response.success && response.data && response.data.labels && response.data.labels.length > 0) {
-                    window.analyticsCharts.osChart = new Chart(document.getElementById('os-chart'), {
-                        type: 'doughnut',
-                        data: {
-                            labels: response.data.labels,
-                            datasets: [{
-                                data: response.data.values,
-                                backgroundColor: chartColors
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom'
-                                }
-                            }
-                        }
-                    });
+                    renderOsChart(response.data);
                 }
             }
         });
     }
+
+    // Chart rendering functions
+    function renderTrendChart(data) {
+        const ctx = document.getElementById('404-trend-chart');
+        if (!ctx) return;
+
+        if (window.rmCharts.trend) window.rmCharts.trend.destroy();
+
+        window.rmCharts.trend = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(d => d.date),
+                datasets: [
+                    { label: '{{ "Handled"|t('redirect-manager') }}', data: data.map(d => d.handled), borderColor: '#10B981', backgroundColor: '#10B981', tension: 0.1, fill: false },
+                    { label: '{{ "Unhandled"|t('redirect-manager') }}', data: data.map(d => d.unhandled), borderColor: '#EF4444', backgroundColor: '#EF4444', tension: 0.1, fill: false }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } },
+                plugins: { legend: { position: 'bottom', align: 'center', labels: { usePointStyle: true, pointStyle: 'circle', padding: 20 } } }
+            }
+        });
+    }
+
+    function renderBotChart(data) {
+        const ctx = document.getElementById('bot-chart');
+        if (!ctx || !data.chart) return;
+
+        if (window.rmCharts.bot) window.rmCharts.bot.destroy();
+
+        window.rmCharts.bot = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.chart.labels,
+                datasets: [{ data: data.chart.values, backgroundColor: [chartColors[1], chartColors[2]] }]
+            },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        // Update percentage text
+        $('#bot-percentage-text').html('<strong>' + data.botPercentage + '%</strong> {{ "of traffic is from bots"|t('redirect-manager') }}');
+    }
+
+    function renderDeviceChart(data) {
+        const ctx = document.getElementById('device-chart');
+        if (!ctx) return;
+
+        if (window.rmCharts.device) window.rmCharts.device.destroy();
+
+        window.rmCharts.device = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{ data: data.values, backgroundColor: chartColors.slice(0, data.labels.length) }]
+            },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    function renderBrowserChart(data) {
+        const ctx = document.getElementById('browser-chart');
+        if (!ctx) return;
+
+        if (window.rmCharts.browser) window.rmCharts.browser.destroy();
+        ctx.parentElement.style.minHeight = '300px';
+
+        window.rmCharts.browser = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{ label: '{{ "404s"|t('redirect-manager') }}', data: data.values, backgroundColor: chartColors[0], borderColor: chartColors[0], borderWidth: 1 }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    function renderOsChart(data) {
+        const ctx = document.getElementById('os-chart');
+        if (!ctx) return;
+
+        if (window.rmCharts.os) window.rmCharts.os.destroy();
+
+        window.rmCharts.os = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{ data: data.values, backgroundColor: chartColors }]
+            },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    // Tab Switching
+    function switchTab(tabId) {
+        if (!tabId) tabId = 'overview';
+
+        // Hide all tab content
+        $('#content > div[id]').addClass('hidden');
+        // Show selected tab content
+        $('#' + tabId).removeClass('hidden');
+
+        window.currentTab = tabId;
+    }
+
+    // Handle hash changes (when Craft switches tabs)
+    window.addEventListener('hashchange', function() {
+        var hash = window.location.hash.substring(1);
+        switchTab(hash);
+    });
+
+    // Document ready
+    $(document).ready(function() {
+        // Handle clicks on tab links
+        $(document).on('click', 'a[href^="#"]', function() {
+            var href = $(this).attr('href');
+            if (href && href.startsWith('#')) {
+                setTimeout(function() {
+                    var hash = window.location.hash.substring(1);
+                    switchTab(hash);
+                }, 10);
+            }
+        });
+
+        // Handle initial tab
+        var hash = window.location.hash.substring(1) || 'overview';
+        switchTab(hash);
+
+        // Date Range Handler - reload page
+        $(document).on('click', '.main-date-range-option', function(e) {
+            e.preventDefault();
+            const range = $(this).data('range');
+            const url = new URL(window.location);
+            url.searchParams.set('dateRange', range);
+            window.location = url;
+        });
+
+        // Site Filter Handler - reload page
+        $(document).on('click', '.site-option', function(e) {
+            e.preventDefault();
+            const siteId = $(this).data('site');
+            const url = new URL(window.location);
+            if (siteId) {
+                url.searchParams.set('siteId', siteId);
+            } else {
+                url.searchParams.delete('siteId');
+            }
+            window.location = url;
+        });
+
+        // Export Handler
+        $(document).on('click', '.export-link', function(e) {
+            e.preventDefault();
+            const action = $(this).data('action');
+            const format = $(this).data('format') || 'csv';
+            const dateRange = new URLSearchParams(window.location.search).get('dateRange') || 'last30days';
+            const siteId = new URLSearchParams(window.location.search).get('siteId') || '';
+
+            const exportUrl = Craft.getActionUrl(action, {
+                dateRange: dateRange,
+                siteId: siteId,
+                format: format
+            });
+
+            window.location.href = exportUrl;
+        });
+    });
 {% endjs %}

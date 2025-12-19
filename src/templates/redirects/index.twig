@@ -16,6 +16,20 @@
 {% set dir = craft.app.request.getParam('dir', 'desc') %}
 {# Page, limit, offset, totalPages come from controller #}
 
+{# Match type colors #}
+{% set matchTypeColors = {
+	'exact': '#6366f1',
+	'regex': '#ec4899',
+	'wildcard': '#14b8a6',
+	'prefix': '#f59e0b',
+} %}
+
+{# Creation type colors #}
+{% set creationTypeColors = {
+	'manual': '#f97316',
+	'entry-change': '#3b82f6',
+} %}
+
 {% set crumbs = [
     { label: redirectHelper.fullName, url: url('redirect-manager') },
     { label: 'Redirects'|t('redirect-manager'), url: url('redirect-manager/redirects') }
@@ -53,45 +67,45 @@
 								<li><hr class="padded"></li>
 								<li class="menu-header">Match Type</li>
 								<li>
-									<a class="{{ matchTypeFilter == 'all' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=all&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status {{ matchTypeFilter == 'all' ? 'blue' : 'disabled' }}"></span>All Types
+									<a class="{{ matchTypeFilter == 'all' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=all&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+										<span class="status all"></span>All Types
 									</a>
 								</li>
 								<li>
-									<a class="{{ matchTypeFilter == 'exact' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=exact&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status {{ matchTypeFilter == 'exact' ? 'blue' : 'disabled' }}"></span>Exact Match
+									<a class="{{ matchTypeFilter == 'exact' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=exact&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+										<span class="status" style="background: {{ matchTypeFilter == 'exact' ? matchTypeColors.exact : '#aab6c1' }};"></span>Exact Match
 									</a>
 								</li>
 								<li>
-									<a class="{{ matchTypeFilter == 'regex' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=regex&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status {{ matchTypeFilter == 'regex' ? 'blue' : 'disabled' }}"></span>RegEx Match
+									<a class="{{ matchTypeFilter == 'regex' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=regex&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+										<span class="status" style="background: {{ matchTypeFilter == 'regex' ? matchTypeColors.regex : '#aab6c1' }};"></span>RegEx Match
 									</a>
 								</li>
 								<li>
-									<a class="{{ matchTypeFilter == 'wildcard' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=wildcard&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status {{ matchTypeFilter == 'wildcard' ? 'blue' : 'disabled' }}"></span>Wildcard Match
+									<a class="{{ matchTypeFilter == 'wildcard' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=wildcard&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+										<span class="status" style="background: {{ matchTypeFilter == 'wildcard' ? matchTypeColors.wildcard : '#aab6c1' }};"></span>Wildcard Match
 									</a>
 								</li>
 								<li>
-									<a class="{{ matchTypeFilter == 'prefix' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=prefix&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status {{ matchTypeFilter == 'prefix' ? 'blue' : 'disabled' }}"></span>Prefix Match
+									<a class="{{ matchTypeFilter == 'prefix' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=prefix&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+										<span class="status" style="background: {{ matchTypeFilter == 'prefix' ? matchTypeColors.prefix : '#aab6c1' }};"></span>Prefix Match
 									</a>
 								</li>
 								<li><hr class="padded"></li>
 								<li class="menu-header">Creation Type</li>
 								<li>
 									<a class="{{ creationTypeFilter == 'all' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType=all&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status {{ creationTypeFilter == 'all' ? 'blue' : 'disabled' }}"></span>All
+										<span class="status all"></span>All
 									</a>
 								</li>
 								<li>
 									<a class="{{ creationTypeFilter == 'manual' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType=manual&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status {{ creationTypeFilter == 'manual' ? 'blue' : 'disabled' }}"></span>Manual
+										<span class="status" style="background: {{ creationTypeFilter == 'manual' ? creationTypeColors.manual : '#aab6c1' }};"></span>Manual
 									</a>
 								</li>
 								<li>
 									<a class="{{ creationTypeFilter == 'entry-change' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType=entry-change&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status {{ creationTypeFilter == 'entry-change' ? 'blue' : 'disabled' }}"></span>Auto-created
+										<span class="status" style="background: {{ creationTypeFilter == 'entry-change' ? creationTypeColors['entry-change'] : '#aab6c1' }};"></span>Auto-created
 									</a>
 								</li>
 							</ul>
@@ -209,17 +223,13 @@
 									</a>
 								</td>
 								<td>{{ redirect.destinationUrl }}</td>
-								<td>{{ redirect.matchType|capitalize }}</td>
+								<td><span class="status" style="background: {{ matchTypeColors[redirect.matchType]|default('#aab6c1') }};"></span> {{ redirect.matchType|capitalize }}</td>
 								<td>
-									<div style="display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
-										{% if redirect.creationType == 'manual' %}
-											<span class="status orange" style="margin-inline-end: 0;"></span>
-											<span class="light">{{ 'Manual'|t('redirect-manager') }}</span>
-										{% else %}
-											<span class="status blue" style="margin-inline-end: 0;"></span>
-											<span class="light">{{ 'Auto'|t('redirect-manager') }}</span>
-										{% endif %}
-									</div>
+									{% if redirect.creationType == 'manual' %}
+										<span class="status" style="background: {{ creationTypeColors.manual }};"></span> {{ 'Manual'|t('redirect-manager') }}
+									{% else %}
+										<span class="status" style="background: {{ creationTypeColors['entry-change'] }};"></span> {{ 'Auto'|t('redirect-manager') }}
+									{% endif %}
 								</td>
 								<td>
 									<span class="light">

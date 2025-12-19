@@ -1,0 +1,64 @@
+{# Traffic & Devices Tab - Bot stats, Device Types, Browsers, OS #}
+
+<h2 style="margin: 0 0 20px;">{{ "Traffic Analysis"|t('redirect-manager') }}</h2>
+
+<div class="analytics-charts two-columns">
+    <div class="chart-container">
+        <h3>{{ "Bot vs Human Traffic"|t('redirect-manager') }}</h3>
+        <canvas id="bot-chart"></canvas>
+        <div id="bot-percentage-text" style="text-align: center; margin-top: 10px; color: #666;">
+            <strong>{{ botStats.botPercentage }}%</strong> {{ "of traffic is from bots"|t('redirect-manager') }}
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <h3>{{ "Top Bots"|t('redirect-manager') }}</h3>
+        <div class="table-scroll-container">
+            <table class="data fullwidth" id="top-bots-table">
+                <thead>
+                    <tr>
+                        <th>{{ "Bot Name"|t('redirect-manager') }}</th>
+                        <th>{{ "404s"|t('redirect-manager') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if botStats.topBots|length > 0 %}
+                        {% for bot in botStats.topBots %}
+                            <tr>
+                                <td>{{ bot.botName }}</td>
+                                <td>{{ bot.count|number }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="2" style="text-align: center; color: #999;">
+                                {{ "No bot data available"|t('redirect-manager') }}
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<h2 style="margin: 30px 0 20px;">{{ "Device Analytics"|t('redirect-manager') }}</h2>
+
+<div class="analytics-charts two-columns">
+    <div class="chart-container">
+        <h3>{{ "Device Types"|t('redirect-manager') }}</h3>
+        <canvas id="device-chart"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <h3>{{ "Browser Usage"|t('redirect-manager') }}</h3>
+        <canvas id="browser-chart"></canvas>
+    </div>
+</div>
+
+<div class="analytics-charts" style="margin-top: 30px;">
+    <div class="chart-container">
+        <h3>{{ "Operating Systems"|t('redirect-manager') }}</h3>
+        <canvas id="os-chart"></canvas>
+    </div>
+</div>
