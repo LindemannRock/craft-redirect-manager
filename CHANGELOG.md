@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.10.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.9.0...v5.10.0) (2026-01-04)
+
+
+### Features
+
+* add regex capture group support ($1, $2, etc.) for redirect destinations ([56743b8](https://github.com/LindemannRock/craft-redirect-manager/commit/56743b890bd4608d9e1badf1094719343503197a))
+
 ## [5.9.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.8.2...v5.9.0) (2025-12-19)
 
 
