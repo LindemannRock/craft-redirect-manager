@@ -424,23 +424,191 @@ Craft.cp.displayNotice('Analytics record deleted');
 });
 });
 
-// Auto-refresh dashboard
+// Auto-refresh dashboard via AJAX (no full page reload)
 {% if settings.refreshIntervalSecs > 0 %}
 const refreshInterval = {{ settings.refreshIntervalSecs }} * 1000; // Convert to milliseconds
 let refreshTimer;
+let isRefreshing = false;
+
+// Build current URL params
+function getCurrentParams() {
+    return new URLSearchParams({
+        search: '{{ search|e('js') }}',
+        handled: '{{ handledFilter }}',
+        sort: '{{ sort }}',
+        dir: '{{ dir }}',
+        page: '{{ page }}'
+    });
+}
+
+// Render a table row from analytics data
+function renderRow(stat) {
+    const handled = stat.handled == 1 || stat.handled === true;
+    const isRobot = stat.isRobot == 1 || stat.isRobot === true;
+
+    let handledCell = '';
+    if (handled) {
+        if (stat.redirectId) {
+            handledCell = `<a href="{{ url('redirect-manager/redirects') }}/${stat.redirectId}" title="{{ 'Edit handling redirect'|t('redirect-manager')|e('js') }}"><span class="status green"></span></a>`;
+        } else {
+            handledCell = '<span class="status green"></span>';
+        }
+    } else {
+        handledCell = '<span class="status red"></span>';
+    }
+
+    let actionsCell = '';
+    if (handled && stat.redirectId) {
+        actionsCell = `<a href="{{ url('redirect-manager/redirects') }}/${stat.redirectId}" class="btn icon edit" title="{{ 'Edit handling {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|e('js') }}" role="button"></a>`;
+    } else if (!handled) {
+        actionsCell = `<a href="{{ url('redirect-manager/redirects/new') }}?sourceUrl=${encodeURIComponent(stat.url)}" class="btn submit icon add" title="{{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|e('js') }}" role="button"></a>`;
+    }
+
+    return `
+        <tr data-id="${stat.id}">
+            <td class="checkbox-cell">
+                <div class="checkbox" title="Select" tabindex="0" aria-checked="false" role="checkbox"></div>
+            </td>
+            <td style="min-width: 200px; max-width: 50%; word-break: break-word;">
+                <a class="label-link" href="${stat.url}" target="_blank" rel="noopener noreferrer" title="{{ 'Visit URL'|t('redirect-manager')|e('js') }}">
+                    <span><code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">${Craft.escapeHtml(stat.url)}</code></span>
+                </a>
+            </td>
+            <td style="max-width: 30%; word-break: break-word; overflow-wrap: break-word;">${stat.referrer ? Craft.escapeHtml(stat.referrer) : '-'}</td>
+            <td>${stat.count}</td>
+            <td style="white-space: nowrap;">${stat.lastHit}</td>
+            <td><span class="light">${Craft.escapeHtml(stat.siteName)}</span></td>
+            <td>${handledCell}</td>
+            <td>${stat.deviceType ? stat.deviceType.charAt(0).toUpperCase() + stat.deviceType.slice(1) : '-'}</td>
+            <td>${stat.browser ? Craft.escapeHtml(stat.browser) : '-'}</td>
+            <td>${isRobot ? `<span class="status orange" title="${stat.botName || 'Bot'}"></span>` : '-'}</td>
+            <td class="thin" style="text-align: right; white-space: nowrap;">
+                <div style="display: inline-flex; gap: 8px;">
+                    ${actionsCell}
+                    <button type="button" class="btn icon delete" title="{{ 'Delete'|t('app')|e('js') }}" aria-label="{{ 'Delete'|t('app')|e('js') }}"></button>
+                </div>
+            </td>
+        </tr>
+    `;
+}
+
+// Refresh dashboard content via AJAX
+async function refreshDashboard() {
+    if (isRefreshing) return;
+    isRefreshing = true;
+
+    try {
+        const params = getCurrentParams();
+        const response = await fetch(`{{ actionUrl('redirect-manager/analytics/get-dashboard-data') }}?${params.toString()}`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        const data = await response.json();
+        if (!data.success) throw new Error('API returned error');
+
+        // Update table body
+        const tbody = document.querySelector('.tableview tbody');
+        if (tbody && data.analytics) {
+            if (data.analytics.length > 0) {
+                tbody.innerHTML = data.analytics.map(stat => renderRow(stat)).join('');
+                // Re-attach event listeners
+                attachRowEventListeners();
+            } else {
+                tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 2em;">{{ 'No analytics found.'|t('redirect-manager')|e('js') }}</td></tr>`;
+            }
+        }
+
+        // Update counts in filter menu
+        const allCountEl = document.querySelector('.menu a[href*="handled=all"]');
+        const handledCountEl = document.querySelector('.menu a[href*="handled=handled"]');
+        const unhandledCountEl = document.querySelector('.menu a[href*="handled=unhandled"]');
+
+        if (allCountEl) allCountEl.innerHTML = `<span class="status all"></span>All (${data.allCount})`;
+        if (handledCountEl) handledCountEl.innerHTML = `<span class="status green"></span>Handled (${data.handledCount})`;
+        if (unhandledCountEl) unhandledCountEl.innerHTML = `<span class="status red"></span>Unhandled (${data.unhandledCount})`;
+
+        // Update pagination info
+        const pageInfo = document.querySelector('.page-info');
+        if (pageInfo && data.totalCount !== undefined) {
+            const endRange = Math.min(data.offset + data.limit, data.totalCount);
+            if (data.totalCount === 0) {
+                pageInfo.textContent = 'no 404s';
+            } else {
+                pageInfo.textContent = `${data.offset + 1} – ${endRange} of ${data.totalCount} ${data.totalCount === 1 ? '404' : '404s'}`;
+            }
+        }
+
+        // Update pagination buttons
+        const prevBtn = document.querySelector('.prev-page');
+        const nextBtn = document.querySelector('.next-page');
+        if (prevBtn) {
+            prevBtn.disabled = data.page <= 1;
+            prevBtn.classList.toggle('disabled', data.page <= 1);
+        }
+        if (nextBtn) {
+            nextBtn.disabled = data.page >= data.totalPages;
+            nextBtn.classList.toggle('disabled', data.page >= data.totalPages);
+        }
+
+    } catch (error) {
+        console.error('Dashboard refresh failed:', error);
+    } finally {
+        isRefreshing = false;
+    }
+}
+
+// Attach event listeners to table rows (called after AJAX update)
+function attachRowEventListeners() {
+    // Re-attach checkbox listeners
+    document.querySelectorAll('tbody .checkbox').forEach(checkbox => {
+        checkbox.addEventListener('click', function() {
+            const isChecked = !this.classList.contains('checked');
+            toggleCheckbox(this, isChecked);
+            const id = this.closest('tr').dataset.id;
+            if (isChecked) {
+                selectedIds.add(id);
+            } else {
+                selectedIds.delete(id);
+            }
+            updateBulkButtons();
+        });
+    });
+
+    // Re-attach delete listeners
+    document.querySelectorAll('tbody .btn.delete').forEach(deleteBtn => {
+        deleteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const row = this.closest('tr');
+            const id = row.dataset.id;
+
+            if (!confirm('Delete this analytics record?')) return;
+
+            Craft.sendActionRequest('POST', 'redirect-manager/analytics/delete', {
+                data: { analyticId: id }
+            }).then(function(response) {
+                if (response.data.success) {
+                    row.remove();
+                    Craft.cp.displayNotice('Analytics record deleted');
+                }
+            });
+        });
+    });
+}
 
 function startAutoRefresh() {
-refreshTimer = setInterval(function() {
-// Preserve current URL parameters (search, handled, sort, dir, page)
-window.location.reload();
-}, refreshInterval);
+    refreshTimer = setInterval(refreshDashboard, refreshInterval);
 }
 
 function stopAutoRefresh() {
-if (refreshTimer) {
-clearInterval(refreshTimer);
-refreshTimer = null;
-}
+    if (refreshTimer) {
+        clearInterval(refreshTimer);
+        refreshTimer = null;
+    }
 }
 
 // Start auto-refresh on page load
@@ -449,11 +617,11 @@ startAutoRefresh();
 // Pause auto-refresh when user interacts with the page
 let pauseTimeout;
 function resetAutoRefreshPause() {
-stopAutoRefresh();
-clearTimeout(pauseTimeout);
-pauseTimeout = setTimeout(function() {
-startAutoRefresh();
-}, 5000); // Resume after 5 seconds of inactivity
+    stopAutoRefresh();
+    clearTimeout(pauseTimeout);
+    pauseTimeout = setTimeout(function() {
+        startAutoRefresh();
+    }, 5000); // Resume after 5 seconds of inactivity
 }
 
 // Pause on user interaction

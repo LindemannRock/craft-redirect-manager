@@ -197,6 +197,106 @@ class AnalyticsController extends Controller
     }
 
     /**
+     * Get dashboard data via AJAX (for auto-refresh without full page reload)
+     *
+     * @return Response
+     */
+    public function actionGetDashboardData(): Response
+    {
+        $this->requirePermission('redirectManager:viewAnalytics');
+
+        $request = Craft::$app->getRequest();
+        $settings = RedirectManager::$plugin->getSettings();
+
+        // Get filter parameters
+        $search = $request->getQueryParam('search', '');
+        $handledFilter = $request->getQueryParam('handled', 'all');
+        $sort = $request->getQueryParam('sort', 'lastHit');
+        $dir = $request->getQueryParam('dir', 'desc');
+        $page = max(1, (int)$request->getQueryParam('page', 1));
+        $limit = $settings->itemsPerPage ?? 100;
+        $offset = ($page - 1) * $limit;
+
+        // Build query
+        $query = (new \craft\db\Query())
+            ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName());
+
+        // Apply handled filter
+        if ($handledFilter === 'handled') {
+            $query->andWhere(['handled' => true]);
+        } elseif ($handledFilter === 'unhandled') {
+            $query->andWhere(['handled' => false]);
+        }
+
+        // Apply search
+        if (!empty($search)) {
+            $query->andWhere(['like', 'url', $search]);
+        }
+
+        // Apply sorting
+        $orderBy = match ($sort) {
+            'url' => "url $dir",
+            'count' => "count $dir",
+            'lastHit' => "lastHit $dir",
+            default => "lastHit $dir",
+        };
+        $query->orderBy($orderBy);
+
+        // Get total count for pagination
+        $totalCount = $query->count();
+
+        // Apply pagination
+        $query->limit($limit)->offset($offset);
+
+        // Get analytics
+        $analytics = $query->all();
+
+        // Process analytics data
+        foreach ($analytics as &$stat) {
+            // Convert lastHit from UTC to user's timezone
+            if (!empty($stat['lastHit'])) {
+                $utcDate = new \DateTime($stat['lastHit'], new \DateTimeZone('UTC'));
+                $utcDate->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
+                $stat['lastHit'] = $utcDate->format('Y-m-d H:i:s');
+            }
+
+            // Get site name
+            $site = Craft::$app->getSites()->getSiteById($stat['siteId']);
+            $stat['siteName'] = $site ? $site->name : '-';
+
+            // Get redirect ID for handled analytics
+            if ($stat['handled']) {
+                $redirectId = (new \craft\db\Query())
+                    ->select('id')
+                    ->from(\lindemannrock\redirectmanager\records\RedirectRecord::tableName())
+                    ->where(['sourceUrlParsed' => $stat['urlParsed'], 'enabled' => true])
+                    ->scalar();
+                $stat['redirectId'] = $redirectId ?: null;
+            } else {
+                $stat['redirectId'] = null;
+            }
+        }
+
+        // Get overall counts
+        $allCount = RedirectManager::$plugin->analytics->getAnalyticsCount();
+        $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount(null, true);
+        $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount(null, false);
+
+        return $this->asJson([
+            'success' => true,
+            'analytics' => $analytics,
+            'totalCount' => $totalCount,
+            'allCount' => $allCount,
+            'handledCount' => $handledCount,
+            'unhandledCount' => $unhandledCount,
+            'page' => $page,
+            'limit' => $limit,
+            'offset' => $offset,
+            'totalPages' => (int)ceil($totalCount / $limit),
+        ]);
+    }
+
+    /**
      * Create redirect from 404
      *
      * @return Response
