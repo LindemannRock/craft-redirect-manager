@@ -67,6 +67,11 @@ class RedirectsService extends Component
     private array $_stashedUris = [];
 
     /**
+     * @var array Captured groups from the last successful match
+     */
+    private array $_lastMatchCaptures = [];
+
+    /**
      * Initialize the service
      */
     public function init(): void
@@ -147,13 +152,13 @@ class RedirectsService extends Component
      *
      * @param string $fullUrl
      * @param string $pathOnly
-     * @return array|null
+     * @return array|null Returns redirect array with '_captures' key if match uses capture groups
      */
     public function findRedirect(string $fullUrl, string $pathOnly): ?array
     {
         $siteId = Craft::$app->getSites()->getCurrentSite()->id;
 
-        // Try cache first (exact match only)
+        // Try cache first (exact match only - cached redirects don't need capture recalculation)
         $redirect = $this->getFromCache($pathOnly, $siteId);
         if ($redirect) {
             $this->incrementHitCount($redirect['id']);
@@ -165,7 +170,12 @@ class RedirectsService extends Component
 
         foreach ($redirects as $redirect) {
             if ($this->matchesRedirect($redirect, $fullUrl, $pathOnly)) {
-                // Cache the matched redirect
+                // Add captures to redirect for external use
+                if (!empty($this->_lastMatchCaptures)) {
+                    $redirect['_captures'] = $this->_lastMatchCaptures;
+                }
+
+                // Cache the matched redirect (without captures - they're URL-specific)
                 $this->saveToCache($pathOnly, $redirect, $siteId);
                 $this->incrementHitCount($redirect['id']);
 
@@ -229,6 +239,23 @@ class RedirectsService extends Component
         );
 
         if ($redirect) {
+            // Apply captured groups to destination URL ($1, $2, etc.)
+            if (!empty($redirect['_captures'])) {
+                $originalDestination = $redirect['destinationUrl'];
+                $redirect['destinationUrl'] = RedirectManager::$plugin->matching->applyCaptures(
+                    $redirect['destinationUrl'],
+                    $redirect['_captures']
+                );
+
+                if ($redirect['destinationUrl'] !== $originalDestination) {
+                    $this->logDebug('Applied capture groups to external redirect destination', [
+                        'original' => $originalDestination,
+                        'resolved' => $redirect['destinationUrl'],
+                        'captures' => $redirect['_captures'],
+                    ]);
+                }
+            }
+
             // If we stripped site base path and destination is a relative path, add it back
             if ($siteBasePath !== '/' && $pathOnlyStripped !== $pathOnly) {
                 $destUrl = $redirect['destinationUrl'];
@@ -252,6 +279,8 @@ class RedirectsService extends Component
     /**
      * Check if a redirect matches the given URLs
      *
+     * Also stores captured groups for use in destination URL replacement.
+     *
      * @param array $redirect
      * @param string $fullUrl
      * @param string $pathOnly
@@ -266,7 +295,15 @@ class RedirectsService extends Component
         // Use pathOnly or fullUrl based on per-redirect setting
         $urlToMatch = $redirectSrcMatch === 'fullurl' ? $fullUrl : $pathOnly;
 
-        return RedirectManager::$plugin->matching->matches($matchType, $sourceUrlParsed, $urlToMatch);
+        // Use matchWithCaptures to get both match result and captured groups
+        $result = RedirectManager::$plugin->matching->matchWithCaptures($matchType, $sourceUrlParsed, $urlToMatch);
+
+        if ($result['matched']) {
+            // Store captures for use in executeRedirect
+            $this->_lastMatchCaptures = $result['captures'];
+        }
+
+        return $result['matched'];
     }
 
     /**
@@ -282,6 +319,26 @@ class RedirectsService extends Component
         $destination = $redirect['destinationUrl'];
         $statusCode = $redirect['statusCode'];
         $settings = RedirectManager::$plugin->getSettings();
+
+        // Apply captured groups to destination URL ($1, $2, etc.)
+        // Check both the redirect array (from findRedirect) and the instance variable (from matchesRedirect)
+        $captures = $redirect['_captures'] ?? $this->_lastMatchCaptures;
+
+        if (!empty($captures)) {
+            $originalDestination = $destination;
+            $destination = RedirectManager::$plugin->matching->applyCaptures($destination, $captures);
+
+            if ($destination !== $originalDestination) {
+                $this->logDebug('Applied capture groups to destination', [
+                    'original' => $originalDestination,
+                    'resolved' => $destination,
+                    'captures' => $captures,
+                ]);
+            }
+
+            // Clear captures after use
+            $this->_lastMatchCaptures = [];
+        }
 
         // Resolve redirect chains to get final destination
         try {
