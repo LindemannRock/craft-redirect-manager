@@ -52,8 +52,6 @@
 										<span class="status all"></span>All
 									</a>
 								</li>
-								<li><hr class="padded"></li>
-								<li class="menu-header">Status</li>
 								<li>
 									<a class="{{ statusFilter == 'enabled' ? 'sel' : '' }}" href="?status=enabled&matchType={{ matchTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
 										<span class="status green"></span>Enabled
@@ -192,9 +190,15 @@
 							</button>
 						</th>
 						<th scope="col">{{ 'Destination URL'|t('redirect-manager') }}</th>
-						<th scope="col">{{ 'Match'|t('redirect-manager') }}</th>
-						<th scope="col">{{ 'Type'|t('redirect-manager') }}</th>
-						<th scope="col">{{ 'Site'|t('redirect-manager') }}</th>
+						<th scope="col" data-attribute="matchType" class="orderable {{ sort == 'matchType' ? 'ordered ' ~ dir : '' }}">
+							<button type="button" data-sort="matchType">{{ 'Match'|t('redirect-manager') }}</button>
+						</th>
+						<th scope="col" data-attribute="creationType" class="orderable {{ sort == 'creationType' ? 'ordered ' ~ dir : '' }}">
+							<button type="button" data-sort="creationType">{{ 'Type'|t('redirect-manager') }}</button>
+						</th>
+						<th scope="col" data-attribute="siteId" class="orderable {{ sort == 'siteId' ? 'ordered ' ~ dir : '' }}">
+							<button type="button" data-sort="siteId">{{ 'Site'|t('redirect-manager') }}</button>
+						</th>
 						<th scope="col" data-attribute="statusCode" class="orderable {{ sort == 'statusCode' ? 'ordered ' ~ dir : '' }}">
 							<button type="button" data-sort="statusCode">
 								{{ 'Status'|t('redirect-manager') }}
@@ -205,8 +209,12 @@
 								{{ 'Hits'|t('redirect-manager') }}
 							</button>
 						</th>
-						<th scope="col">{{ 'Enabled'|t('redirect-manager') }}</th>
-						<th scope="col">{{ 'Source'|t('redirect-manager') }}</th>
+						<th scope="col" data-attribute="enabled" class="orderable {{ sort == 'enabled' ? 'ordered ' ~ dir : '' }}">
+							<button type="button" data-sort="enabled">{{ 'Enabled'|t('redirect-manager') }}</button>
+						</th>
+						<th scope="col" data-attribute="sourcePlugin" class="orderable {{ sort == 'sourcePlugin' ? 'ordered ' ~ dir : '' }}">
+							<button type="button" data-sort="sourcePlugin">{{ 'Source'|t('redirect-manager') }}</button>
+						</th>
 						<th class="thin" style="width: 60px;">{{ 'Actions'|t('redirect-manager') }}</th>
 					</tr>
 				</thead>
@@ -245,9 +253,9 @@
 								<td>{{ redirect.hitCount }}</td>
 								<td>
 									{% if redirect.enabled %}
-										<span class="status green"></span>
+										<span class="status-label teal"><span class="status teal"></span><span class="status-label-text">{{ 'Enabled'|t('redirect-manager') }}</span></span>
 									{% else %}
-										<span class="status disabled"></span>
+										<span class="status-label gray"><span class="status disabled"></span><span class="status-label-text">{{ 'Disabled'|t('redirect-manager') }}</span></span>
 									{% endif %}
 								</td>
 								<td>

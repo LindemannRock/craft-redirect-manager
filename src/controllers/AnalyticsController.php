@@ -157,6 +157,11 @@ class AnalyticsController extends Controller
             'url' => "url $dir",
             'count' => "count $dir",
             'lastHit' => "lastHit $dir",
+            'siteId' => "siteId $dir",
+            'handled' => "handled $dir",
+            'deviceType' => "deviceType $dir",
+            'browser' => "browser $dir",
+            'requestType' => "isRobot $dir", // requestType maps to isRobot in DB
             default => "lastHit $dir",
         };
         $query->orderBy($orderBy);
@@ -370,6 +375,11 @@ class AnalyticsController extends Controller
             'url' => "url $dir",
             'count' => "count $dir",
             'lastHit' => "lastHit $dir",
+            'siteId' => "siteId $dir",
+            'handled' => "handled $dir",
+            'deviceType' => "deviceType $dir",
+            'browser' => "browser $dir",
+            'requestType' => "isRobot $dir", // requestType maps to isRobot in DB
             default => "lastHit $dir",
         };
         $query->orderBy($orderBy);

@@ -93,6 +93,11 @@ class RedirectsController extends Controller
             'sourceUrl' => "sourceUrl $dir",
             'statusCode' => "statusCode $dir",
             'hitCount' => "hitCount $dir",
+            'matchType' => "matchType $dir",
+            'creationType' => "creationType $dir",
+            'siteId' => "siteId $dir",
+            'enabled' => "enabled $dir",
+            'sourcePlugin' => "sourcePlugin $dir",
             default => "dateCreated $dir",
         };
         $query->orderBy($orderBy);
