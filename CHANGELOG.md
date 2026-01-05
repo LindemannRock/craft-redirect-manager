@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.13.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.12.0...v5.13.0) (2026-01-05)
+
+
+### Features
+
+* migrate to lindemannrock/craft-plugin-base ([cf63978](https://github.com/LindemannRock/craft-redirect-manager/commit/cf6397815862f5c48746dc6fa6dbfb22ce9d2bbd))
+
 ## [5.12.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.11.0...v5.12.0) (2026-01-05)
 
 
