@@ -24,10 +24,38 @@
 	'prefix': '#f59e0b',
 } %}
 
+{# Match type RGB for backgrounds #}
+{% set matchTypeRgb = {
+	'exact': '99, 102, 241',
+	'regex': '236, 72, 153',
+	'wildcard': '20, 184, 166',
+	'prefix': '245, 158, 11',
+} %}
+
+{# Match type dark colors for text #}
+{% set matchTypeTextColors = {
+	'exact': '#312e81',
+	'regex': '#831843',
+	'wildcard': '#134e4a',
+	'prefix': '#78350f',
+} %}
+
 {# Creation type colors #}
 {% set creationTypeColors = {
 	'manual': '#f97316',
 	'entry-change': '#3b82f6',
+} %}
+
+{# Creation type RGB for backgrounds #}
+{% set creationTypeRgb = {
+	'manual': '249, 115, 22',
+	'entry-change': '59, 130, 246',
+} %}
+
+{# Creation type dark colors for text #}
+{% set creationTypeTextColors = {
+	'manual': '#7c2d12',
+	'entry-change': '#1e3a8a',
 } %}
 
 {% set crumbs = [
@@ -231,12 +259,17 @@
 									</a>
 								</td>
 								<td>{{ redirect.destinationUrl }}</td>
-								<td><span class="status" style="background: {{ matchTypeColors[redirect.matchType]|default('#aab6c1') }};"></span> {{ redirect.matchType|capitalize }}</td>
+								<td>
+									{% set matchColor = matchTypeColors[redirect.matchType]|default('#aab6c1') %}
+									{% set matchRgb = matchTypeRgb[redirect.matchType]|default('170, 182, 193') %}
+									{% set matchTextColor = matchTypeTextColors[redirect.matchType]|default('#64748b') %}
+									<span class="status-label" style="background: rgba({{ matchRgb }}, 0.12);"><span class="status" style="background: {{ matchColor }};"></span><span class="status-label-text" style="color: {{ matchTextColor }};">{{ redirect.matchType|capitalize }}</span></span>
+								</td>
 								<td>
 									{% if redirect.creationType == 'manual' %}
-										<span class="status" style="background: {{ creationTypeColors.manual }};"></span> {{ 'Manual'|t('redirect-manager') }}
+										<span class="status-label" style="background: rgba({{ creationTypeRgb.manual }}, 0.12);"><span class="status" style="background: {{ creationTypeColors.manual }};"></span><span class="status-label-text" style="color: {{ creationTypeTextColors.manual }};">{{ 'Manual'|t('redirect-manager') }}</span></span>
 									{% else %}
-										<span class="status" style="background: {{ creationTypeColors['entry-change'] }};"></span> {{ 'Auto'|t('redirect-manager') }}
+										<span class="status-label" style="background: rgba({{ creationTypeRgb['entry-change'] }}, 0.12);"><span class="status" style="background: {{ creationTypeColors['entry-change'] }};"></span><span class="status-label-text" style="color: {{ creationTypeTextColors['entry-change'] }};">{{ 'Auto'|t('redirect-manager') }}</span></span>
 									{% endif %}
 								</td>
 								<td>

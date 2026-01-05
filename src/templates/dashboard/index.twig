@@ -5,6 +5,45 @@
 {% set fullPageForm = false %}
 {% set selectedSubnavItem = 'dashboard' %}
 
+{# Request type colors #}
+{% set requestTypeColors = {
+	'normal': '#3b82f6',
+	'bot': '#f59e0b',
+	'probe': '#ef4444',
+} %}
+
+{# Request type RGB for backgrounds #}
+{% set requestTypeRgb = {
+	'normal': '59, 130, 246',
+	'bot': '245, 158, 11',
+	'probe': '239, 68, 68',
+} %}
+
+{# Request type dark colors for text #}
+{% set requestTypeTextColors = {
+	'normal': '#1e3a8a',
+	'bot': '#78350f',
+	'probe': '#7f1d1d',
+} %}
+
+{# Handled colors #}
+{% set handledColors = {
+	'yes': '#10b981',
+	'no': '#ef4444',
+} %}
+
+{# Handled RGB for backgrounds #}
+{% set handledRgb = {
+	'yes': '16, 185, 129',
+	'no': '239, 68, 68',
+} %}
+
+{# Handled dark colors for text #}
+{% set handledTextColors = {
+	'yes': '#065f46',
+	'no': '#7f1d1d',
+} %}
+
 {# Get query parameters #}
 {% set search = craft.app.request.getParam('search', '') %}
 {% set handledFilter = craft.app.request.getParam('handled', 'all') %}
@@ -193,25 +232,29 @@
 								<td>
 									{% if stat.handled %}
 										{% if stat.redirectId %}
-											<a href="{{ url('redirect-manager/redirects/' ~ stat.redirectId) }}" title="{{ 'Edit handling redirect'|t('redirect-manager') }}">
-												<span class="status green"></span>
+											<a href="{{ url('redirect-manager/redirects/' ~ stat.redirectId) }}" title="{{ 'Edit handling redirect'|t('redirect-manager') }}" style="text-decoration: none;">
+												<span class="status-label" style="background: rgba({{ handledRgb.yes }}, 0.12);"><span class="status" style="background: {{ handledColors.yes }};"></span><span class="status-label-text" style="color: {{ handledTextColors.yes }};">{{ 'Yes'|t('redirect-manager') }}</span></span>
 											</a>
 										{% else %}
-											<span class="status green"></span>
+											<span class="status-label" style="background: rgba({{ handledRgb.yes }}, 0.12);"><span class="status" style="background: {{ handledColors.yes }};"></span><span class="status-label-text" style="color: {{ handledTextColors.yes }};">{{ 'Yes'|t('redirect-manager') }}</span></span>
 										{% endif %}
 									{% else %}
-										<span class="status red"></span>
+										<span class="status-label" style="background: rgba({{ handledRgb.no }}, 0.12);"><span class="status" style="background: {{ handledColors.no }};"></span><span class="status-label-text" style="color: {{ handledTextColors.no }};">{{ 'No'|t('redirect-manager') }}</span></span>
 									{% endif %}
 								</td>
 								<td>{{ stat.deviceType ? stat.deviceType|capitalize : '-' }}</td>
 								<td>{{ stat.browser ?: '-' }}</td>
 								<td>
+									{% set rType = stat.requestType|default('normal') %}
+									{% set rColor = requestTypeColors[rType]|default(requestTypeColors.normal) %}
+									{% set rRgb = requestTypeRgb[rType]|default(requestTypeRgb.normal) %}
+									{% set rTextColor = requestTypeTextColors[rType]|default(requestTypeTextColors.normal) %}
 									{% if stat.requestType == 'probe' %}
-										<span class="status" style="background: #ef4444;" title="{{ 'Security vulnerability scanning attempt'|t('redirect-manager') }}"></span> {{ 'Probe'|t('redirect-manager') }}
+										<span class="status-label" style="background: rgba({{ rRgb }}, 0.12);" title="{{ 'Security vulnerability scanning attempt'|t('redirect-manager') }}"><span class="status" style="background: {{ rColor }};"></span><span class="status-label-text" style="color: {{ rTextColor }};">{{ 'Probe'|t('redirect-manager') }}</span></span>
 									{% elseif stat.requestType == 'bot' %}
-										<span class="status" style="background: #f59e0b;" title="{{ stat.botName ?: 'Bot' }}"></span> {{ 'Bot'|t('redirect-manager') }}
+										<span class="status-label" style="background: rgba({{ rRgb }}, 0.12);" title="{{ stat.botName ?: 'Bot' }}"><span class="status" style="background: {{ rColor }};"></span><span class="status-label-text" style="color: {{ rTextColor }};">{{ 'Bot'|t('redirect-manager') }}</span></span>
 									{% else %}
-										<span class="status" style="background: #3b82f6;" title="{{ 'Regular browser request'|t('redirect-manager') }}"></span> {{ 'Normal'|t('redirect-manager') }}
+										<span class="status-label" style="background: rgba({{ rRgb }}, 0.12);" title="{{ 'Regular browser request'|t('redirect-manager') }}"><span class="status" style="background: {{ rColor }};"></span><span class="status-label-text" style="color: {{ rTextColor }};">{{ 'Normal'|t('redirect-manager') }}</span></span>
 									{% endif %}
 								</td>
 								<td class="thin" style="text-align: right;">
@@ -500,12 +543,12 @@ function renderRow(stat) {
     let handledCell = '';
     if (handled) {
         if (stat.redirectId) {
-            handledCell = `<a href="{{ url('redirect-manager/redirects') }}/${stat.redirectId}" title="{{ 'Edit handling redirect'|t('redirect-manager')|e('js') }}"><span class="status green"></span></a>`;
+            handledCell = `<a href="{{ url('redirect-manager/redirects') }}/${stat.redirectId}" title="{{ 'Edit handling redirect'|t('redirect-manager')|e('js') }}" style="text-decoration: none;"><span class="status-label" style="background: rgba(16, 185, 129, 0.12);"><span class="status" style="background: #10b981;"></span><span class="status-label-text" style="color: #065f46;">{{ 'Yes'|t('redirect-manager')|e('js') }}</span></span></a>`;
         } else {
-            handledCell = '<span class="status green"></span>';
+            handledCell = `<span class="status-label" style="background: rgba(16, 185, 129, 0.12);"><span class="status" style="background: #10b981;"></span><span class="status-label-text" style="color: #065f46;">{{ 'Yes'|t('redirect-manager')|e('js') }}</span></span>`;
         }
     } else {
-        handledCell = '<span class="status red"></span>';
+        handledCell = `<span class="status-label" style="background: rgba(239, 68, 68, 0.12);"><span class="status" style="background: #ef4444;"></span><span class="status-label-text" style="color: #7f1d1d;">{{ 'No'|t('redirect-manager')|e('js') }}</span></span>`;
     }
 
     // Build action menu item
@@ -517,12 +560,12 @@ function renderRow(stat) {
     }
 
     // Type cell based on requestType
-    let typeCell = `<span class="status" style="background: #3b82f6;" title="{{ 'Regular browser request'|t('redirect-manager')|e('js') }}"></span> {{ 'Normal'|t('redirect-manager')|e('js') }}`;
+    let typeCell = `<span class="status-label" style="background: rgba(59, 130, 246, 0.12);" title="{{ 'Regular browser request'|t('redirect-manager')|e('js') }}"><span class="status" style="background: #3b82f6;"></span><span class="status-label-text" style="color: #1e3a8a;">{{ 'Normal'|t('redirect-manager')|e('js') }}</span></span>`;
     if (requestType === 'probe') {
-        typeCell = `<span class="status" style="background: #ef4444;" title="{{ 'Security vulnerability scanning attempt'|t('redirect-manager')|e('js') }}"></span> {{ 'Probe'|t('redirect-manager')|e('js') }}`;
+        typeCell = `<span class="status-label" style="background: rgba(239, 68, 68, 0.12);" title="{{ 'Security vulnerability scanning attempt'|t('redirect-manager')|e('js') }}"><span class="status" style="background: #ef4444;"></span><span class="status-label-text" style="color: #7f1d1d;">{{ 'Probe'|t('redirect-manager')|e('js') }}</span></span>`;
     } else if (requestType === 'bot') {
         const botName = stat.botName || 'Bot';
-        typeCell = `<span class="status" style="background: #f59e0b;" title="${Craft.escapeHtml(botName)}"></span> {{ 'Bot'|t('redirect-manager')|e('js') }}`;
+        typeCell = `<span class="status-label" style="background: rgba(245, 158, 11, 0.12);" title="${Craft.escapeHtml(botName)}"><span class="status" style="background: #f59e0b;"></span><span class="status-label-text" style="color: #78350f;">{{ 'Bot'|t('redirect-manager')|e('js') }}</span></span>`;
     }
 
     return `
