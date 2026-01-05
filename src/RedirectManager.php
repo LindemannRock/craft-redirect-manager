@@ -27,6 +27,7 @@ use craft\utilities\ClearCaches;
 use craft\web\ErrorHandler;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
+use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\logginglibrary\LoggingLibrary;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\jobs\CleanupAnalyticsJob;
@@ -87,24 +88,9 @@ class RedirectManager extends Plugin
         parent::init();
         self::$plugin = $this;
 
-        // Configure logging
-        $settings = $this->getSettings();
-        LoggingLibrary::configure([
-            'pluginHandle' => $this->handle,
-            'pluginName' => $settings->getFullName(),
-            'logLevel' => $settings->logLevel ?? 'error',
-            'itemsPerPage' => $settings->itemsPerPage ?? 50,
-            'permissions' => ['redirectManager:viewLogs'],
-        ]);
-
-        // Set plugin name from config if available
-        $configPath = Craft::$app->getPath()->getConfigPath() . '/redirect-manager.php';
-        if (file_exists($configPath)) {
-            $rawConfig = require $configPath;
-            if (isset($rawConfig['pluginName'])) {
-                $this->name = $rawConfig['pluginName'];
-            }
-        }
+        // Bootstrap base module (logging + Twig extension)
+        PluginHelper::bootstrap($this, 'redirectHelper', ['redirectManager:viewLogs']);
+        PluginHelper::applyPluginNameFromConfig($this);
 
         // Register services
         $this->setComponents([
@@ -125,9 +111,6 @@ class RedirectManager extends Plugin
             'forceTranslation' => true,
             'allowOverrides' => true,
         ];
-
-        // Register Twig extension for plugin name helpers
-        Craft::$app->view->registerTwigExtension(new \lindemannrock\redirectmanager\twigextensions\PluginNameExtension());
 
         // Register variables
         Event::on(

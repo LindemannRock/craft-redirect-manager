@@ -63,9 +63,8 @@
     { label: 'Redirects'|t('redirect-manager'), url: url('redirect-manager/redirects') }
 ] %}
 
-{% block toolbar %}
-	<div id="toolbar" class="flex" style="align-items: flex-end;">
-		<div class="flex-grow">
+	{% block toolbar %}
+		<div id="toolbar" class="flex" style="align-items: flex-end;"> <div class="grow">
 			<form method="get" action="{{ url('redirect-manager/redirects') }}">
 				<div class="flex">
 					<div class="btngroup">
@@ -137,7 +136,7 @@
 							</ul>
 						</div>
 					</div>
-					<div class="search-container texticon flex-grow">
+					<div class="search-container texticon grow">
 						<span class="texticon-icon search icon" aria-hidden="true"></span>
 						<input type="text" class="clearable text fullwidth" name="search" value="{{ search }}" placeholder="{{ 'Search {pluginName}...'|t('redirect-manager', {pluginName: redirectHelper.pluralLowerDisplayName}) }}" autocomplete="off" dir="ltr" aria-label="Search" {% if search %} autofocus {% endif %}>
 						<button type="button" class="clear-btn {{ search ? '' : 'hidden' }}" title="Clear search" role="button" aria-label="Clear search"></button>
@@ -198,7 +197,7 @@
 			flex-wrap: nowrap;
 			gap: 8px;
 		}
-		#toolbar .flex-grow {
+		#toolbar .grow {
 			min-width: 0;
 			flex-shrink: 1;
 		}
@@ -263,13 +262,22 @@
 									{% set matchColor = matchTypeColors[redirect.matchType]|default('#aab6c1') %}
 									{% set matchRgb = matchTypeRgb[redirect.matchType]|default('170, 182, 193') %}
 									{% set matchTextColor = matchTypeTextColors[redirect.matchType]|default('#64748b') %}
-									<span class="status-label" style="background: rgba({{ matchRgb }}, 0.12);"><span class="status" style="background: {{ matchColor }};"></span><span class="status-label-text" style="color: {{ matchTextColor }};">{{ redirect.matchType|capitalize }}</span></span>
+									<span class="status-label" style="background: rgba({{ matchRgb }}, 0.12);">
+										<span class="status" style="background: {{ matchColor }};"></span>
+										<span class="status-label-text" style="color: {{ matchTextColor }};">{{ redirect.matchType|capitalize }}</span>
+									</span>
 								</td>
 								<td>
 									{% if redirect.creationType == 'manual' %}
-										<span class="status-label" style="background: rgba({{ creationTypeRgb.manual }}, 0.12);"><span class="status" style="background: {{ creationTypeColors.manual }};"></span><span class="status-label-text" style="color: {{ creationTypeTextColors.manual }};">{{ 'Manual'|t('redirect-manager') }}</span></span>
+										<span class="status-label" style="background: rgba({{ creationTypeRgb.manual }}, 0.12);">
+											<span class="status" style="background: {{ creationTypeColors.manual }};"></span>
+											<span class="status-label-text" style="color: {{ creationTypeTextColors.manual }};">{{ 'Manual'|t('redirect-manager') }}</span>
+										</span>
 									{% else %}
-										<span class="status-label" style="background: rgba({{ creationTypeRgb['entry-change'] }}, 0.12);"><span class="status" style="background: {{ creationTypeColors['entry-change'] }};"></span><span class="status-label-text" style="color: {{ creationTypeTextColors['entry-change'] }};">{{ 'Auto'|t('redirect-manager') }}</span></span>
+										<span class="status-label" style="background: rgba({{ creationTypeRgb['entry-change'] }}, 0.12);">
+											<span class="status" style="background: {{ creationTypeColors['entry-change'] }};"></span>
+											<span class="status-label-text" style="color: {{ creationTypeTextColors['entry-change'] }};">{{ 'Auto'|t('redirect-manager') }}</span>
+										</span>
 									{% endif %}
 								</td>
 								<td>
@@ -286,9 +294,15 @@
 								<td>{{ redirect.hitCount }}</td>
 								<td>
 									{% if redirect.enabled %}
-										<span class="status-label teal"><span class="status teal"></span><span class="status-label-text">{{ 'Enabled'|t('redirect-manager') }}</span></span>
+										<span class="status-label teal">
+											<span class="status teal"></span>
+											<span class="status-label-text">{{ 'Enabled'|t('redirect-manager') }}</span>
+										</span>
 									{% else %}
-										<span class="status-label gray"><span class="status disabled"></span><span class="status-label-text">{{ 'Disabled'|t('redirect-manager') }}</span></span>
+										<span class="status-label gray">
+											<span class="status disabled"></span>
+											<span class="status-label-text">{{ 'Disabled'|t('redirect-manager') }}</span>
+										</span>
 									{% endif %}
 								</td>
 								<td>
@@ -332,57 +346,37 @@
 		<div class="light">
 			<div class="flex pagination">
 				<nav class="flex" aria-label="redirect pagination">
-					<button type="button" class="page-link prev-page {{ page <= 1 ? 'disabled' : '' }}" {{ page <= 1 ? 'disabled' : '' }} title="Previous Page"></button>
-					<button type="button" class="page-link next-page {{ page >= totalPages ? 'disabled' : '' }}" {{ page >= totalPages ? 'disabled' : '' }} title="Next Page"></button>
-				</nav>
-				<div class="page-info">
-					{% set endRange = min(offset + limit, totalCount) %}
-					{% if totalCount == 0 %}
-						{{ 'no {items}'|t('redirect-manager', {items: redirectHelper.pluralLowerDisplayName}) }}
-					{% else %}
-						{{ offset + 1 }} – {{ endRange }} of {{ totalCount }} {{ totalCount == 1 ? redirectHelper.lowerDisplayName : redirectHelper.pluralLowerDisplayName }}
-					{% endif %}
-				</div>
+					<button{{'Enable'|t('redirect-manager')}}</a type="button" class="page-link prev-page {{ page <= 1 ? 'disabled' : '' }}" {{ page <= 1 ? 'disabled' : '' }} title="Previous Page"></button> <button type="button" class="page-link next-page {{ page >= totalPages ? 'disabled' : '' }}" {{ page >= totalPages ? 'disabled' : '' }} title="Next Page"></button> </nav> <div class="page-info"> {% set endRange = min(offset + limit, totalCount) %} {% if totalCount == 0 %} {{ 'no {items}'|t('redirect-manager', {items: redirectHelper.pluralLowerDisplayName} ) }} {% else %} {{ offset + 1 }} – {{ endRange }} of {{ totalCount }} {{ totalCount == 1 ? redirectHelper.lowerDisplayName : redirectHelper.pluralLowerDisplayName }} {% endif %} </div> </div> </div> <div id="actions-container" class="flex" style="display: none;"> <div> <button type="button" class="btn menubtn secondary" id="bulk-actions-btn" aria-label="Set status"> {{ 'Set status'|t('app') }} </button> <div class="menu"> <ul> <li> <a id="bulk-enable-action">></li>
+					<li>
+						<a id="bulk-disable-action">{{ 'Disable'|t('redirect-manager') }}</a>
+					</li>
+				</ul>
 			</div>
 		</div>
-		<div id="actions-container" class="flex" style="display: none;">
-			<div>
-				<button type="button" class="btn menubtn secondary" id="bulk-actions-btn" aria-label="Set status">
-					{{ 'Set status'|t('app') }}
-				</button>
-				<div class="menu">
-					<ul>
-						<li>
-							<a id="bulk-enable-action">{{ 'Enable'|t('redirect-manager') }}</a>
-				</li>
-				<li>
-					<a id="bulk-disable-action">{{ 'Disable'|t('redirect-manager') }}</a>
-				</li>
-			</ul>
-		</div>
+		<form>
+			<button type="button" class="btn secondary menubtn" data-icon="settings" title="Actions" id="settings-btn"></button>
+			<div class="menu">
+				<ul>
+					<li><a id="bulk-delete-action" class="error">{{ 'Delete…'|t('app') }}</a></li>
+				</ul>
+			</div>
+		</form>
 	</div>
-	<form>
-		<button type="button" class="btn secondary menubtn" data-icon="settings" title="Actions" id="settings-btn"></button>
-		<div class="menu">
-			<ul>
-				<li><a id="bulk-delete-action" class="error">{{ 'Delete…'|t('app') }}</a></li>
-			</ul>
-		</div>
-	</form>
+	<div class="flex flex-nowrap">
+		<a href="{{ url('redirect-manager/import-export') }}" class="btn">
+			{{ 'Import'|t('redirect-manager') }}
+		</a>
+		<form method="post" action="{{ actionUrl('redirect-manager/import-export/export') }}" style="display: inline;" id="export-form">
+			{{ csrfInput() }}
+			<input type="hidden" name="redirectIds" id="export-redirect-ids" value="">
+			<button type="submit" class="btn" id="export-btn">
+				<span id="export-label">{{ 'Export'|t('redirect-manager') }}</span>
+			</button>
+		</form>
+	</div>
 </div>
-<div class="flex flex-nowrap">
-	<a href="{{ url('redirect-manager/import-export') }}" class="btn">
-		{{ 'Import'|t('redirect-manager') }}
-	</a>
-	<form method="post" action="{{ actionUrl('redirect-manager/import-export/export') }}" style="display: inline;" id="export-form">
-		{{ csrfInput() }}
-		<input type="hidden" name="redirectIds" id="export-redirect-ids" value="">
-		<button type="submit" class="btn" id="export-btn">
-			<span id="export-label">{{ 'Export'|t('redirect-manager') }}</span>
-		</button>
-	</form>
-</div></div><script>
-// Initialize menu buttons
+<script>
+	// Initialize menu buttons
 document.querySelectorAll('.menubtn').forEach(btn => {
 if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
 new Craft.MenuBtn(btn);
@@ -423,17 +417,17 @@ if (sortField === currentSort) {
 newDir = currentDir === 'asc' ? 'desc' : 'asc';
 }
 
-window.location.href = '?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType={{ creationTypeFilter }}&search={{ search }}&sort=' + sortField + '&dir=' + newDir + '&page=1';
+window.location.href = '?status= {{ statusFilter }}&matchType= {{ matchTypeFilter }}&creationType= {{ creationTypeFilter }}&search= {{ search }}&sort=' + sortField + '&dir=' + newDir + '&page=1';
 });
 });
 
 // Pagination
 document.querySelector('.prev-page:not(.disabled)') ?. addEventListener('click', function () {
-window.location.href = '?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}&page={{ page - 1 }}';
+window.location.href = '?status= {{ statusFilter }}&matchType= {{ matchTypeFilter }}&creationType= {{ creationTypeFilter }}&search= {{ search }}&sort= {{ sort }}&dir= {{ dir }}&page= {{ page - 1 }}';
 });
 
 document.querySelector('.next-page:not(.disabled)') ?. addEventListener('click', function () {
-window.location.href = '?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}&page={{ page + 1 }}';
+window.location.href = '?status= {{ statusFilter }}&matchType= {{ matchTypeFilter }}&creationType= {{ creationTypeFilter }}&search= {{ search }}&sort= {{ sort }}&dir= {{ dir }}&page= {{ page + 1 }}';
 });
 
 // Checkbox functionality
@@ -614,4 +608,5 @@ Craft.cp.displayNotice('Redirect deleted');
 }
 });
 });
-});</script>{% endblock %}
+});
+</script>{% endblock %}

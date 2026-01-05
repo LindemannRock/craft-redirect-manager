@@ -20,7 +20,10 @@
 
 {% block content %}
 
-	{% include 'redirect-manager/_components/ip-salt-error' %}
+	{% include 'lindemannrock-base/_components/ip-salt-error' with {
+		pluginHandle: 'redirect-manager',
+		envVarName: 'REDIRECT_MANAGER_IP_SALT'
+	} %}
 
 	<h2 style="margin-top: 0px;">{{ "Test URL Redirects"|t('redirect-manager') }}</h2>
 
@@ -46,7 +49,7 @@
 		<div id="resultsContent"></div>
 	</div>
 
-	{% include 'redirect-manager/_components/plugin-credit.twig' %}
+	{% include 'lindemannrock-base/_components/plugin-credit' %}
 {% endblock %}
 
 {% js %}

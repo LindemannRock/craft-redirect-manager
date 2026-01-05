@@ -22,7 +22,10 @@
 {% import "_includes/forms" as forms %}
 
 {% block content %}
-	{% include 'redirect-manager/_components/ip-salt-error' %}
+	{% include 'lindemannrock-base/_components/ip-salt-error' with {
+		pluginHandle: 'redirect-manager',
+		envVarName: 'REDIRECT_MANAGER_IP_SALT'
+	} %}
 
 	<form method="post" accept-charset="UTF-8">
 		{{ actionInput('redirect-manager/settings/save') }}
@@ -162,5 +165,5 @@
 		</p>
 	</form>
 
-	{% include 'redirect-manager/_components/plugin-credit.twig' %}
+	{% include 'lindemannrock-base/_components/plugin-credit' %}
 {% endblock %}

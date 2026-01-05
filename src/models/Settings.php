@@ -11,10 +11,11 @@ namespace lindemannrock\redirectmanager\models;
 use Craft;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
-use craft\db\Query;
 use craft\helpers\App;
-use craft\helpers\Db;
 use craft\validators\ArrayValidator;
+use lindemannrock\base\traits\SettingsConfigTrait;
+use lindemannrock\base\traits\SettingsDisplayNameTrait;
+use lindemannrock\base\traits\SettingsPersistenceTrait;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 
 /**
@@ -27,6 +28,9 @@ use lindemannrock\logginglibrary\traits\LoggingTrait;
 class Settings extends Model
 {
     use LoggingTrait;
+    use SettingsDisplayNameTrait;
+    use SettingsPersistenceTrait;
+    use SettingsConfigTrait;
 
     /**
      * @var string The public-facing name of the plugin
@@ -209,6 +213,92 @@ class Settings extends Model
             $this->defaultCity = App::env('REDIRECT_MANAGER_DEFAULT_CITY');
         }
     }
+
+    // =========================================================================
+    // TRAIT CONFIGURATION (Required by base traits)
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected static function tableName(): string
+    {
+        return 'redirectmanager_settings';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function pluginHandle(): string
+    {
+        return 'redirect-manager';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function booleanFields(): array
+    {
+        return [
+            'autoCreateRedirects',
+            'stripQueryString',
+            'preserveQueryString',
+            'setNoCacheHeaders',
+            'enableAnalytics',
+            'anonymizeIpAddress',
+            'enableGeoDetection',
+            'stripQueryStringFromStats',
+            'autoTrimAnalytics',
+            'enableApiEndpoint',
+            'enableRedirectCache',
+            'cacheDeviceDetection',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function integerFields(): array
+    {
+        return [
+            'analyticsLimit',
+            'analyticsRetention',
+            'refreshIntervalSecs',
+            'redirectsDisplayLimit',
+            'analyticsDisplayLimit',
+            'itemsPerPage',
+            'redirectCacheDuration',
+            'undoWindowMinutes',
+            'deviceDetectionCacheDuration',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function jsonFields(): array
+    {
+        return [
+            'excludePatterns',
+            'additionalHeaders',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function excludeFromSave(): array
+    {
+        return [
+            'ipHashSalt',
+            'defaultCountry',
+            'defaultCity',
+        ];
+    }
+
+    // =========================================================================
+    // BEHAVIORS & VALIDATION
+    // =========================================================================
 
     /**
      * @inheritdoc
@@ -402,273 +492,5 @@ class Settings extends Model
         }
 
         return $path;
-    }
-
-    /**
-     * Load settings from database
-     *
-     * @param Settings|null $settings Optional existing settings instance
-     * @return self
-     */
-    public static function loadFromDatabase(?Settings $settings = null): self
-    {
-        if ($settings === null) {
-            $settings = new self();
-        }
-
-        // Load from database
-        try {
-            $row = (new Query())
-                ->from('{{%redirectmanager_settings}}')
-                ->where(['id' => 1])
-                ->one();
-        } catch (\Exception $e) {
-            $settings->logError('Failed to load settings from database', ['error' => $e->getMessage()]);
-            return $settings;
-        }
-
-        if ($row) {
-
-            // Remove system fields
-            unset($row['id'], $row['dateCreated'], $row['dateUpdated'], $row['uid']);
-
-            // Convert boolean fields
-            $booleanFields = [
-                'autoCreateRedirects',
-                'stripQueryString',
-                'preserveQueryString',
-                'setNoCacheHeaders',
-                'enableAnalytics',
-                'anonymizeIpAddress',
-                'enableGeoDetection',
-                'stripQueryStringFromStats',
-                'autoTrimAnalytics',
-                'enableApiEndpoint',
-                'enableRedirectCache',
-            ];
-
-            foreach ($booleanFields as $field) {
-                if (isset($row[$field])) {
-                    $row[$field] = (bool) $row[$field];
-                }
-            }
-
-            // Convert integer fields
-            $integerFields = [
-                'analyticsLimit',
-                'analyticsRetention',
-                'refreshIntervalSecs',
-                'redirectsDisplayLimit',
-                'analyticsDisplayLimit',
-                'itemsPerPage',
-                'redirectCacheDuration',
-                'undoWindowMinutes',
-            ];
-
-            foreach ($integerFields as $field) {
-                if (isset($row[$field])) {
-                    $row[$field] = (int) $row[$field];
-                }
-            }
-
-            // Handle JSON array fields
-            if (isset($row['excludePatterns'])) {
-                $row['excludePatterns'] = !empty($row['excludePatterns']) ? json_decode($row['excludePatterns'], true) : [];
-            }
-            if (isset($row['additionalHeaders'])) {
-                $row['additionalHeaders'] = !empty($row['additionalHeaders']) ? json_decode($row['additionalHeaders'], true) : [];
-            }
-
-            // Set attributes from database
-            $settings->setAttributes($row, false);
-        }
-
-        return $settings;
-    }
-
-    /**
-     * Save settings to database
-     *
-     * @return bool
-     */
-    public function saveToDatabase(): bool
-    {
-        if (!$this->validate()) {
-            $this->logError('Settings validation failed', ['errors' => $this->getErrors()]);
-            return false;
-        }
-
-        $db = Craft::$app->getDb();
-        $attributes = $this->getAttributes();
-
-        // Exclude config-only attributes that shouldn't be saved to database
-        unset($attributes['ipHashSalt'], $attributes['defaultCountry'], $attributes['defaultCity']); // These come from .env/config, not database
-
-        // Remove attributes that are overridden by config file
-        foreach (array_keys($attributes) as $attribute) {
-            if ($this->isOverriddenByConfig($attribute)) {
-                unset($attributes[$attribute]);
-            }
-        }
-
-        // Handle JSON array serialization
-        if (isset($attributes['excludePatterns'])) {
-            $attributes['excludePatterns'] = json_encode($attributes['excludePatterns']);
-        }
-        if (isset($attributes['additionalHeaders'])) {
-            $attributes['additionalHeaders'] = json_encode($attributes['additionalHeaders']);
-        }
-
-        // Update timestamp
-        $attributes['dateUpdated'] = Db::prepareDateForDb(new \DateTime());
-
-        // Log what we're trying to save
-        $this->logDebug('Attempting to save settings', ['attributes' => array_keys($attributes)]);
-
-        // Update existing settings (always row id=1)
-        try {
-            $db->createCommand()
-                ->update('{{%redirectmanager_settings}}', $attributes, ['id' => 1])
-                ->execute();
-
-            $this->logInfo('Settings saved successfully to database');
-            return true;
-        } catch (\Exception $e) {
-            $this->logError('Failed to save ' . $this->getFullName() . ' settings', [
-                'error' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            // Also check if column exists
-            $columnsQuery = $db->createCommand("SHOW COLUMNS FROM {{%redirectmanager_settings}} LIKE 'undoWindowMinutes'")->queryAll();
-            $this->logError('Column check', ['columnExists' => !empty($columnsQuery)]);
-
-            return false;
-        }
-    }
-
-    /**
-     * Check if a setting is overridden by config file
-     * Supports dot notation for nested settings like: excludePatterns.0
-     *
-     * @param string $attribute The setting attribute name or dot-notation path
-     * @return bool
-     */
-    public function isOverriddenByConfig(string $attribute): bool
-    {
-        $configPath = Craft::$app->getPath()->getConfigPath() . '/redirect-manager.php';
-
-        if (!file_exists($configPath)) {
-            return false;
-        }
-
-        // Load the raw config file
-        $rawConfig = require $configPath;
-
-        // Handle dot notation for nested config
-        if (str_contains($attribute, '.')) {
-            $parts = explode('.', $attribute);
-            $current = $rawConfig;
-
-            foreach ($parts as $part) {
-                if (!is_array($current) || !array_key_exists($part, $current)) {
-                    return false;
-                }
-                $current = $current[$part];
-            }
-
-            return true;
-        }
-
-        // Check for the attribute in the config
-        if (array_key_exists($attribute, $rawConfig)) {
-            return true;
-        }
-
-        // Check environment-specific configs
-        $env = Craft::$app->getConfig()->env;
-        if ($env && is_array($rawConfig[$env] ?? null) && array_key_exists($attribute, $rawConfig[$env])) {
-            return true;
-        }
-
-        // Check wildcard config
-        if (is_array($rawConfig['*'] ?? null) && array_key_exists($attribute, $rawConfig['*'])) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Get display name (singular, without "Manager")
-     *
-     * Strips "Manager" and singularizes the plugin name for use in UI labels.
-     * E.g., "Redirect Manager" → "Redirect", "Redirects" → "Redirect"
-     *
-     * @return string
-     */
-    public function getDisplayName(): string
-    {
-        // Strip "Manager" or "manager" from the name and trim whitespace
-        $name = trim(str_replace([' Manager', ' manager'], '', $this->pluginName));
-
-        // Singularize by removing trailing 's' if present
-        $singular = preg_replace('/s$/', '', $name) ?: $name;
-
-        return $singular;
-    }
-
-    /**
-     * Get full plugin name (as configured, with "Manager" if present)
-     *
-     * Returns the plugin name exactly as configured in settings.
-     * E.g., "Redirect Manager", "Redirects", etc.
-     *
-     * @return string
-     */
-    public function getFullName(): string
-    {
-        return trim($this->pluginName);
-    }
-
-    /**
-     * Get plural display name (without "Manager")
-     *
-     * Strips "Manager" from the plugin name but keeps plural form.
-     * E.g., "Redirect Manager" → "Redirects", "Redirects" → "Redirects"
-     *
-     * @return string
-     */
-    public function getPluralDisplayName(): string
-    {
-        // Strip "Manager" or "manager" from the name and trim whitespace
-        return trim(str_replace([' Manager', ' manager'], '', $this->pluginName));
-    }
-
-    /**
-     * Get lowercase display name (singular, without "Manager")
-     *
-     * Lowercase version of getDisplayName() for use in messages, handles, etc.
-     * E.g., "Redirect Manager" → "redirect", "Redirects" → "redirect"
-     *
-     * @return string
-     */
-    public function getLowerDisplayName(): string
-    {
-        return strtolower($this->getDisplayName());
-    }
-
-    /**
-     * Get lowercase plural display name (without "Manager")
-     *
-     * Lowercase version of getPluralDisplayName() for use in messages, handles, etc.
-     * E.g., "Redirect Manager" → "redirects", "Redirects" → "redirects"
-     *
-     * @return string
-     */
-    public function getPluralLowerDisplayName(): string
-    {
-        return strtolower($this->getPluralDisplayName());
     }
 }

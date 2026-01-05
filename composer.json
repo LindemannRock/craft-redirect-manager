@@ -31,6 +31,7 @@
     "require": {
         "php": "^8.2",
         "craftcms/cms": "^5.0.0",
+        "lindemannrock/craft-plugin-base": "^5.0",
         "lindemannrock/craft-logging-library": "^5.0",
         "matomo/device-detector": "^6.4"
     },
