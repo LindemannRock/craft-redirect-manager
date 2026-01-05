@@ -294,6 +294,7 @@ class SettingsController extends Controller
             ['pattern' => '/xmlrpc\\.php'],      // XML-RPC attacks
             ['pattern' => '/wp-login\\.php'],    // WP login page
             ['pattern' => '/wp-admin'],          // WP admin panel
+            ['pattern' => '/wp-config\\.php'],   // WP config file (also in security probes)
         ];
 
         // Add WordPress patterns (avoid duplicates)
@@ -322,6 +323,95 @@ class SettingsController extends Controller
             }
         } else {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Could not apply WordPress filters'));
+        }
+
+        return $this->redirect('redirect-manager/settings/advanced');
+    }
+
+    /**
+     * Apply security probe filters (block common vulnerability scanning)
+     *
+     * @return Response|null
+     */
+    public function actionApplySecurityFilters(): ?Response
+    {
+        $this->requirePostRequest();
+        $this->requirePermission('redirectManager:manageSettings');
+
+        // Load current settings from database
+        $settings = Settings::loadFromDatabase();
+
+        // Security probe patterns to exclude (common vulnerability scanning)
+        // Patterns are specific to avoid false positives on legitimate URLs
+        $securityExcludePatterns = [
+            // Database dumps - specific file patterns
+            ['pattern' => '\\.sql($|\\.(gz|zip|tar|rar|7z|bz2))'],  // .sql, .sql.gz, .sql.zip, etc.
+            ['pattern' => '/(dump|backup|database|db)\\.(sql|zip|tar|gz|rar|7z)'],  // dump.sql, backup.zip, etc.
+
+            // Config/sensitive files - must start with dot or be specific files
+            ['pattern' => '/\\.env($|\\.)'],          // .env, .env.local, .env.production
+            ['pattern' => '/\\.git($|/)'],            // .git, .git/config (not .github)
+            ['pattern' => '/\\.htaccess$'],           // .htaccess
+            ['pattern' => '/\\.htpasswd$'],           // .htpasswd
+            ['pattern' => '/\\.aws($|/)'],            // AWS credentials
+            ['pattern' => '/\\.ssh($|/)'],            // SSH keys
+            ['pattern' => '/\\.DS_Store$'],           // macOS files
+            ['pattern' => '^/composer\\.(json|lock)$'], // Root composer files
+            ['pattern' => '^/package(-lock)?\\.json$'], // Root NPM files
+            ['pattern' => '/wp-config\\.php'],        // WordPress config
+
+            // Admin panels / tools - specific paths
+            ['pattern' => '/phpmyadmin'],             // phpMyAdmin (any path containing it)
+            ['pattern' => '/adminer\\.php'],          // Adminer specifically
+            ['pattern' => '^/pma($|/)'],              // /pma or /pma/... only
+            ['pattern' => '^/mysql($|/)'],            // /mysql or /mysql/... only (not /mysql-tips)
+            ['pattern' => '^/myadmin($|/)'],          // /myadmin
+
+            // Shell/exploit attempts - specific file extensions
+            ['pattern' => '/shell\\.php'],            // shell.php specifically
+            ['pattern' => '/cmd\\.php'],              // cmd.php specifically
+            ['pattern' => '/c99\\.php'],              // c99 shell
+            ['pattern' => '/r57\\.php'],              // r57 shell
+            ['pattern' => '/webshell'],               // webshell in path
+            ['pattern' => '/cgi-bin/'],               // CGI directory
+            ['pattern' => '/eval-stdin'],             // PHP eval exploits
+
+            // Common scanner paths - specific
+            ['pattern' => '/sftp(-config)?\\.json'],  // VS Code SFTP config
+            ['pattern' => '^/debug($|/)'],            // /debug only (not /debugging-guide)
+            ['pattern' => '/phpinfo\\.php'],          // phpinfo.php specifically
+            ['pattern' => '^/server-status($|/)'],    // Apache status
+            ['pattern' => '\\.axd$'],                 // .NET handlers (.axd files)
+            ['pattern' => '/web\\.config$'],          // IIS config
+            ['pattern' => '/xmlrpc\\.php'],           // XML-RPC attacks (also in WordPress)
+        ];
+
+        // Add security patterns (avoid duplicates)
+        $addedPatterns = 0;
+        if (!$settings->isOverriddenByConfig('excludePatterns')) {
+            $existingPatterns = array_column($settings->excludePatterns, 'pattern');
+            foreach ($securityExcludePatterns as $recommended) {
+                if (!in_array($recommended['pattern'], $existingPatterns)) {
+                    $settings->excludePatterns[] = $recommended;
+                    $addedPatterns++;
+                }
+            }
+        }
+
+        // Save settings
+        if ($settings->saveToDatabase()) {
+            RedirectManager::$plugin->setSettings($settings->getAttributes());
+
+            if ($addedPatterns > 0) {
+                $message = Craft::t('redirect-manager', 'Added {patterns} security filter pattern(s). Vulnerability scanning requests will now be ignored.', [
+                    'patterns' => $addedPatterns,
+                ]);
+                Craft::$app->getSession()->setNotice($message);
+            } else {
+                Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'All security filters are already applied.'));
+            }
+        } else {
+            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Could not apply security filters'));
         }
 
         return $this->redirect('redirect-manager/settings/advanced');

@@ -382,17 +382,17 @@ if (sortField === currentSort) {
 newDir = currentDir === 'asc' ? 'desc' : 'asc';
 }
 
-window.location.href = '?status=     {{ statusFilter }}&matchType=     {{ matchTypeFilter }}&creationType=     {{ creationTypeFilter }}&search=     {{ search }}&sort=' + sortField + '&dir=' + newDir + '&page=1';
+window.location.href = '?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType={{ creationTypeFilter }}&search={{ search }}&sort=' + sortField + '&dir=' + newDir + '&page=1';
 });
 });
 
 // Pagination
 document.querySelector('.prev-page:not(.disabled)') ?. addEventListener('click', function () {
-window.location.href = '?status=     {{ statusFilter }}&matchType=     {{ matchTypeFilter }}&creationType=     {{ creationTypeFilter }}&search=     {{ search }}&sort=     {{ sort }}&dir=     {{ dir }}&page=     {{ page - 1 }}';
+window.location.href = '?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}&page={{ page - 1 }}';
 });
 
 document.querySelector('.next-page:not(.disabled)') ?. addEventListener('click', function () {
-window.location.href = '?status=     {{ statusFilter }}&matchType=     {{ matchTypeFilter }}&creationType=     {{ creationTypeFilter }}&search=     {{ search }}&sort=     {{ sort }}&dir=     {{ dir }}&page=     {{ page + 1 }}';
+window.location.href = '?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}&page={{ page + 1 }}';
 });
 
 // Checkbox functionality

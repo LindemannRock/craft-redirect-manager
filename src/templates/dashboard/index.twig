@@ -8,6 +8,7 @@
 {# Get query parameters #}
 {% set search = craft.app.request.getParam('search', '') %}
 {% set handledFilter = craft.app.request.getParam('handled', 'all') %}
+{% set typeFilter = typeFilter ?? craft.app.request.getParam('type', 'all') %}
 {% set sort = craft.app.request.getParam('sort', 'lastHit') %}
 {% set dir = craft.app.request.getParam('dir', 'desc') %}
 {% set page = craft.app.request.getParam('page', 1)|number_format(0, '', '') %}
@@ -30,20 +31,42 @@
 						<div class="menu">
 							<ul>
 								<li>
-									<a class="{{ handledFilter == 'all' ? 'sel' : '' }}" href="?handled=all&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+									<a class="{{ handledFilter == 'all' and typeFilter == 'all' ? 'sel' : '' }}" href="?handled=all&type=all&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
 										<span class="status all"></span>All ({{ allCount }})
 									</a>
 								</li>
 								<li><hr class="padded"></li>
-								<li class="menu-header">404 Status</li>
+								<li class="menu-header">{{ '404 Status'|t('redirect-manager') }}</li>
 								<li>
-									<a class="{{ handledFilter == 'handled' ? 'sel' : '' }}" href="?handled=handled&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status green"></span>Handled ({{ handledCount }})
+									<a class="{{ handledFilter == 'handled' ? 'sel' : '' }}" href="?handled=handled&type={{ typeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+										<span class="status green"></span>{{ 'Handled'|t('redirect-manager') }} ({{ handledCount }})
 									</a>
 								</li>
 								<li>
-									<a class="{{ handledFilter == 'unhandled' ? 'sel' : '' }}" href="?handled=unhandled&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status red"></span>Unhandled ({{ unhandledCount }})
+									<a class="{{ handledFilter == 'unhandled' ? 'sel' : '' }}" href="?handled=unhandled&type={{ typeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+										<span class="status red"></span>{{ 'Unhandled'|t('redirect-manager') }} ({{ unhandledCount }})
+									</a>
+								</li>
+								<li><hr class="padded"></li>
+								<li class="menu-header">{{ 'Request Type'|t('redirect-manager') }}</li>
+								<li>
+									<a class="{{ typeFilter == 'all' ? 'sel' : '' }}" href="?handled={{ handledFilter }}&type=all&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+										<span class="status all"></span>{{ 'All Types'|t('redirect-manager') }}
+									</a>
+								</li>
+								<li>
+									<a class="{{ typeFilter == 'normal' ? 'sel' : '' }}" href="?handled={{ handledFilter }}&type=normal&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+										<span class="status" style="background: #3b82f6;"></span>{{ 'Normal'|t('redirect-manager') }} ({{ normalCount }})
+									</a>
+								</li>
+								<li>
+									<a class="{{ typeFilter == 'bot' ? 'sel' : '' }}" href="?handled={{ handledFilter }}&type=bot&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+										<span class="status" style="background: #f59e0b;"></span>{{ 'Bot'|t('redirect-manager') }} ({{ botCount }})
+									</a>
+								</li>
+								<li>
+									<a class="{{ typeFilter == 'probe' ? 'sel' : '' }}" href="?handled={{ handledFilter }}&type=probe&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
+										<span class="status" style="background: #ef4444;"></span>{{ 'Security Probe'|t('redirect-manager') }} ({{ probeCount }})
 									</a>
 								</li>
 							</ul>
@@ -54,6 +77,7 @@
 						<input type="text" class="clearable text fullwidth" name="search" value="{{ search }}" placeholder="{{ 'Search URLs...'|t('redirect-manager') }}" autocomplete="off" dir="ltr" aria-label="Search" {% if search %} autofocus {% endif %}>
 						<button type="button" class="clear-btn {{ search ? '' : 'hidden' }}" title="Clear search" role="button" aria-label="Clear search"></button>
 						<input type="hidden" name="handled" value="{{ handledFilter }}">
+						<input type="hidden" name="type" value="{{ typeFilter }}">
 						<input type="hidden" name="sort" value="{{ sort }}">
 						<input type="hidden" name="dir" value="{{ dir }}">
 					</div>
@@ -118,6 +142,7 @@
 								{{ 'URL'|t('redirect-manager') }}
 							</button>
 						</th>
+						<th scope="col">{{ 'Site'|t('redirect-manager') }}</th>
 						<th scope="col">{{ 'Referrer'|t('redirect-manager') }}</th>
 						<th scope="col" data-attribute="count" class="orderable {{ sort == 'count' ? 'ordered ' ~ dir : '' }}">
 							<button type="button" data-sort="count">
@@ -129,11 +154,10 @@
 								{{ 'Last Hit'|t('redirect-manager') }}
 							</button>
 						</th>
-						<th scope="col">{{ 'Site'|t('redirect-manager') }}</th>
 						<th scope="col">{{ 'Handled'|t('redirect-manager') }}</th>
 						<th scope="col">{{ 'Device'|t('redirect-manager') }}</th>
 						<th scope="col">{{ 'Browser'|t('redirect-manager') }}</th>
-						<th scope="col" title="Bot traffic">{{ 'Bot'|t('redirect-manager') }}</th>
+						<th scope="col" title="{{ 'Request type: Normal, Bot, or Security Probe'|t('redirect-manager') }}">{{ 'Type'|t('redirect-manager') }}</th>
 						<th class="thin" style="width: 90px;">{{ 'Actions'|t('redirect-manager') }}</th>
 					</tr>
 				</thead>
@@ -151,13 +175,13 @@
 										</span>
 									</a>
 								</td>
-								<td style="max-width: 30%; word-break: break-word; overflow-wrap: break-word;">{{ stat.referrer ?: '-' }}</td>
-								<td>{{ stat.count }}</td>
-								<td style="white-space: nowrap;">{{ stat.lastHit|date('Y-m-d H:i:s') }}</td>
 								<td>
 									{% set site = craft.app.sites.getSiteById(stat.siteId) %}
 									<span class="light">{{ site ? site.name : '-' }}</span>
 								</td>
+								<td style="max-width: 30%; word-break: break-word; overflow-wrap: break-word;">{{ stat.referrer ?: '-' }}</td>
+								<td>{{ stat.count }}</td>
+								<td style="white-space: nowrap;">{{ stat.lastHit|date('Y-m-d H:i:s') }}</td>
 								<td>
 									{% if stat.handled %}
 										{% if stat.redirectId %}
@@ -174,20 +198,38 @@
 								<td>{{ stat.deviceType ? stat.deviceType|capitalize : '-' }}</td>
 								<td>{{ stat.browser ?: '-' }}</td>
 								<td>
-									{% if stat.isRobot %}
-										<span class="status orange" title="{{ stat.botName ?: 'Bot' }}"></span>
+									{% if stat.requestType == 'probe' %}
+										<span class="status" style="background: #ef4444;" title="{{ 'Security vulnerability scanning attempt'|t('redirect-manager') }}"></span> {{ 'Probe'|t('redirect-manager') }}
+									{% elseif stat.requestType == 'bot' %}
+										<span class="status" style="background: #f59e0b;" title="{{ stat.botName ?: 'Bot' }}"></span> {{ 'Bot'|t('redirect-manager') }}
 									{% else %}
-										-
+										<span class="status" style="background: #3b82f6;" title="{{ 'Regular browser request'|t('redirect-manager') }}"></span> {{ 'Normal'|t('redirect-manager') }}
 									{% endif %}
 								</td>
-								<td class="thin" style="text-align: right; white-space: nowrap;">
-									<div style="display: inline-flex; gap: 8px;">
-										{% if stat.handled and stat.redirectId %}
-											<a href="{{ url('redirect-manager/redirects/' ~ stat.redirectId) }}" class="btn icon edit" title="{{ 'Edit handling {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}" aria-label="{{ 'Edit handling {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}" role="button"></a>
-										{% elseif not stat.handled %}
-											<a href="{{ url('redirect-manager/redirects/new', { sourceUrl: stat.url }) }}" class="btn submit icon add" title="{{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}" aria-label="{{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}" role="button"></a>
-										{% endif %}
-										<button type="button" class="btn icon delete" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}"></button>
+								<td class="thin" style="text-align: right;">
+									<button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('redirect-manager') }}"></button>
+									<div class="menu">
+										<ul>
+											{% if stat.handled and stat.redirectId %}
+												<li>
+													<a href="{{ url('redirect-manager/redirects/' ~ stat.redirectId) }}">
+														{{ 'Edit {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}
+													</a>
+												</li>
+											{% elseif not stat.handled %}
+												<li>
+													<a href="{{ url('redirect-manager/redirects/new', { sourceUrl: stat.url }) }}">
+														{{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}
+													</a>
+												</li>
+											{% endif %}
+											<li><hr class="padded"></li>
+											<li>
+												<a class="error row-delete-action" data-id="{{ stat.id }}">
+													{{ 'Delete'|t('app') }}
+												</a>
+											</li>
+										</ul>
 									</div>
 								</td>
 							</tr>
@@ -279,17 +321,17 @@ if (sortField === currentSort) {
 newDir = currentDir === 'asc' ? 'desc' : 'asc';
 }
 
-window.location.href = '?handled={{ handledFilter }}&search={{ search }}&sort=' + sortField + '&dir=' + newDir + '&page=1';
+window.location.href = '?handled={{ handledFilter }}&type={{ typeFilter }}&search={{ search }}&sort=' + sortField + '&dir=' + newDir + '&page=1';
 });
 });
 
 // Pagination
 document.querySelector('.prev-page:not(.disabled)') ?. addEventListener('click', function () {
-window.location.href = '?handled={{ handledFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}&page={{ page - 1 }}';
+window.location.href = '?handled={{ handledFilter }}&type={{ typeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}&page={{ page - 1 }}';
 });
 
 document.querySelector('.next-page:not(.disabled)') ?. addEventListener('click', function () {
-window.location.href = '?handled={{ handledFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}&page={{ page + 1 }}';
+window.location.href = '?handled={{ handledFilter }}&type={{ typeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}&page={{ page + 1 }}';
 });
 
 // Checkbox functionality
@@ -400,12 +442,12 @@ setTimeout(() => window.location.reload(), 1000);
 }
 });
 
-// Individual delete
-document.querySelectorAll('.btn.delete').forEach(deleteBtn => {
-deleteBtn.addEventListener('click', function (e) {
+// Individual delete via menu action
+document.querySelectorAll('.row-delete-action').forEach(deleteLink => {
+deleteLink.addEventListener('click', function (e) {
 e.preventDefault();
 const row = this.closest('tr');
-const id = row.dataset.id;
+const id = this.dataset.id;
 
 if (!confirm('Delete this analytics record?'))
 return;
@@ -435,6 +477,7 @@ function getCurrentParams() {
     return new URLSearchParams({
         search: '{{ search|e('js') }}',
         handled: '{{ handledFilter }}',
+        type: '{{ typeFilter }}',
         sort: '{{ sort }}',
         dir: '{{ dir }}',
         page: '{{ page }}'
@@ -444,7 +487,7 @@ function getCurrentParams() {
 // Render a table row from analytics data
 function renderRow(stat) {
     const handled = stat.handled == 1 || stat.handled === true;
-    const isRobot = stat.isRobot == 1 || stat.isRobot === true;
+    const requestType = stat.requestType || 'normal';
 
     let handledCell = '';
     if (handled) {
@@ -457,11 +500,21 @@ function renderRow(stat) {
         handledCell = '<span class="status red"></span>';
     }
 
-    let actionsCell = '';
+    // Build action menu item
+    let actionMenuItem = '';
     if (handled && stat.redirectId) {
-        actionsCell = `<a href="{{ url('redirect-manager/redirects') }}/${stat.redirectId}" class="btn icon edit" title="{{ 'Edit handling {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|e('js') }}" role="button"></a>`;
+        actionMenuItem = `<li><a href="{{ url('redirect-manager/redirects') }}/${stat.redirectId}">{{ 'Edit {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|e('js') }}</a></li>`;
     } else if (!handled) {
-        actionsCell = `<a href="{{ url('redirect-manager/redirects/new') }}?sourceUrl=${encodeURIComponent(stat.url)}" class="btn submit icon add" title="{{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|e('js') }}" role="button"></a>`;
+        actionMenuItem = `<li><a href="{{ url('redirect-manager/redirects/new') }}?sourceUrl=${encodeURIComponent(stat.url)}">{{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|e('js') }}</a></li>`;
+    }
+
+    // Type cell based on requestType
+    let typeCell = `<span class="status" style="background: #3b82f6;" title="{{ 'Regular browser request'|t('redirect-manager')|e('js') }}"></span> {{ 'Normal'|t('redirect-manager')|e('js') }}`;
+    if (requestType === 'probe') {
+        typeCell = `<span class="status" style="background: #ef4444;" title="{{ 'Security vulnerability scanning attempt'|t('redirect-manager')|e('js') }}"></span> {{ 'Probe'|t('redirect-manager')|e('js') }}`;
+    } else if (requestType === 'bot') {
+        const botName = stat.botName || 'Bot';
+        typeCell = `<span class="status" style="background: #f59e0b;" title="${Craft.escapeHtml(botName)}"></span> {{ 'Bot'|t('redirect-manager')|e('js') }}`;
     }
 
     return `
@@ -474,18 +527,22 @@ function renderRow(stat) {
                     <span><code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">${Craft.escapeHtml(stat.url)}</code></span>
                 </a>
             </td>
+            <td><span class="light">${Craft.escapeHtml(stat.siteName)}</span></td>
             <td style="max-width: 30%; word-break: break-word; overflow-wrap: break-word;">${stat.referrer ? Craft.escapeHtml(stat.referrer) : '-'}</td>
             <td>${stat.count}</td>
             <td style="white-space: nowrap;">${stat.lastHit}</td>
-            <td><span class="light">${Craft.escapeHtml(stat.siteName)}</span></td>
             <td>${handledCell}</td>
             <td>${stat.deviceType ? stat.deviceType.charAt(0).toUpperCase() + stat.deviceType.slice(1) : '-'}</td>
             <td>${stat.browser ? Craft.escapeHtml(stat.browser) : '-'}</td>
-            <td>${isRobot ? `<span class="status orange" title="${stat.botName || 'Bot'}"></span>` : '-'}</td>
-            <td class="thin" style="text-align: right; white-space: nowrap;">
-                <div style="display: inline-flex; gap: 8px;">
-                    ${actionsCell}
-                    <button type="button" class="btn icon delete" title="{{ 'Delete'|t('app')|e('js') }}" aria-label="{{ 'Delete'|t('app')|e('js') }}"></button>
+            <td>${typeCell}</td>
+            <td class="thin" style="text-align: right;">
+                <button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('redirect-manager')|e('js') }}"></button>
+                <div class="menu">
+                    <ul>
+                        ${actionMenuItem}
+                        <li><hr class="padded"></li>
+                        <li><a class="error row-delete-action" data-id="${stat.id}">{{ 'Delete'|t('app')|e('js') }}</a></li>
+                    </ul>
                 </div>
             </td>
         </tr>
@@ -524,13 +581,19 @@ async function refreshDashboard() {
         }
 
         // Update counts in filter menu
-        const allCountEl = document.querySelector('.menu a[href*="handled=all"]');
+        const allCountEl = document.querySelector('.menu a[href*="handled=all"][href*="type=all"]');
         const handledCountEl = document.querySelector('.menu a[href*="handled=handled"]');
         const unhandledCountEl = document.querySelector('.menu a[href*="handled=unhandled"]');
+        const normalCountEl = document.querySelector('.menu a[href*="type=normal"]');
+        const botCountEl = document.querySelector('.menu a[href*="type=bot"]');
+        const probeCountEl = document.querySelector('.menu a[href*="type=probe"]');
 
         if (allCountEl) allCountEl.innerHTML = `<span class="status all"></span>All (${data.allCount})`;
-        if (handledCountEl) handledCountEl.innerHTML = `<span class="status green"></span>Handled (${data.handledCount})`;
-        if (unhandledCountEl) unhandledCountEl.innerHTML = `<span class="status red"></span>Unhandled (${data.unhandledCount})`;
+        if (handledCountEl) handledCountEl.innerHTML = `<span class="status green"></span>{{ 'Handled'|t('redirect-manager')|e('js') }} (${data.handledCount})`;
+        if (unhandledCountEl) unhandledCountEl.innerHTML = `<span class="status red"></span>{{ 'Unhandled'|t('redirect-manager')|e('js') }} (${data.unhandledCount})`;
+        if (normalCountEl) normalCountEl.innerHTML = `<span class="status" style="background: #3b82f6;"></span>{{ 'Normal'|t('redirect-manager')|e('js') }} (${data.normalCount})`;
+        if (botCountEl) botCountEl.innerHTML = `<span class="status" style="background: #f59e0b;"></span>{{ 'Bot'|t('redirect-manager')|e('js') }} (${data.botCount})`;
+        if (probeCountEl) probeCountEl.innerHTML = `<span class="status" style="background: #ef4444;"></span>{{ 'Security Probe'|t('redirect-manager')|e('js') }} (${data.probeCount})`;
 
         // Update pagination info
         const pageInfo = document.querySelector('.page-info');
@@ -564,6 +627,17 @@ async function refreshDashboard() {
 
 // Attach event listeners to table rows (called after AJAX update)
 function attachRowEventListeners() {
+    // Initialize menu buttons for dynamically added rows
+    document.querySelectorAll('tbody .menubtn').forEach(btn => {
+        if (!btn._menuBtn) {
+            if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
+                btn._menuBtn = new Craft.MenuBtn(btn);
+            } else if (typeof Garnish !== 'undefined' && Garnish.MenuBtn) {
+                btn._menuBtn = new Garnish.MenuBtn(btn);
+            }
+        }
+    });
+
     // Re-attach checkbox listeners
     document.querySelectorAll('tbody .checkbox').forEach(checkbox => {
         checkbox.addEventListener('click', function() {
@@ -579,12 +653,12 @@ function attachRowEventListeners() {
         });
     });
 
-    // Re-attach delete listeners
-    document.querySelectorAll('tbody .btn.delete').forEach(deleteBtn => {
-        deleteBtn.addEventListener('click', function(e) {
+    // Re-attach delete listeners via menu action
+    document.querySelectorAll('tbody .row-delete-action').forEach(deleteLink => {
+        deleteLink.addEventListener('click', function(e) {
             e.preventDefault();
             const row = this.closest('tr');
-            const id = row.dataset.id;
+            const id = this.dataset.id;
 
             if (!confirm('Delete this analytics record?')) return;
 

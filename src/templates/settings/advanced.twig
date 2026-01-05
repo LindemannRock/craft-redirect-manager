@@ -146,5 +146,21 @@
 		</p>
 	</form>
 
+	<hr style="margin: 30px 0;">
+
+	<h3>{{ "Security Probe Filters"|t('redirect-manager') }}</h3>
+	<p>{{ "Filter out malicious vulnerability scanning attempts."|t('redirect-manager') }}</p>
+
+	<form method="post" accept-charset="UTF-8">
+		{{ actionInput('redirect-manager/settings/apply-security-filters') }}
+		{{ csrfInput() }}
+		<button type="submit" class="btn secondary">
+			{{ "Apply Security Probe Filters"|t('redirect-manager') }}
+		</button>
+		<p class="light" style="margin-top: 10px;">
+			{{ "Adds specific exclude patterns for security probes: database dumps (*.sql, dump.sql.gz), config files (.env, .git/, .htaccess), admin panels (/phpmyadmin, /pma/, adminer.php), and exploit attempts (shell.php, /cgi-bin/). Patterns are precise to avoid blocking legitimate URLs like /mysql-tips or /debugging-guide."|t('redirect-manager') }}
+		</p>
+	</form>
+
 	{% include 'redirect-manager/_components/plugin-credit.twig' %}
 {% endblock %}

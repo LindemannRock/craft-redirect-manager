@@ -26,12 +26,84 @@ class AnalyticsController extends Controller
     use LoggingTrait;
 
     /**
+     * Security probe URL patterns (vulnerability scanning attempts)
+     * These patterns are used for DETECTION in the dashboard, not exclusion.
+     * They can be slightly broader than exclude patterns since they just flag, not hide.
+     */
+    private const SECURITY_PROBE_PATTERNS = [
+        // Database dumps
+        '/\.sql($|\.)/i',
+        '/\/(dump|backup|database|db)\.(sql|zip|tar|gz|rar|7z)/i',
+
+        // Config/sensitive files
+        '/\/\.env($|\.)/i',
+        '/\/\.git($|\/)/i',
+        '/\/\.htaccess$/i',
+        '/\/\.htpasswd$/i',
+        '/\/\.aws($|\/)/i',
+        '/\/\.ssh($|\/)/i',
+        '/\/\.DS_Store$/i',
+        '/^\/composer\.(json|lock)$/i',
+        '/^\/package(-lock)?\.json$/i',
+        '/\/wp-config\.php/i',
+
+        // Admin panels / tools
+        '/\/phpmyadmin/i',
+        '/\/adminer\.php/i',
+        '/^\/pma($|\/)/i',
+        '/^\/mysql($|\/)/i',
+        '/^\/myadmin($|\/)/i',
+
+        // Shell/exploit attempts
+        '/\/shell\.php/i',
+        '/\/cmd\.php/i',
+        '/\/c99\.php/i',
+        '/\/r57\.php/i',
+        '/\/webshell/i',
+        '/\/cgi-bin\//i',
+        '/\/eval-stdin/i',
+
+        // Common scanner paths
+        '/\/sftp(-config)?\.json/i',
+        '/^\/debug($|\/)/i',
+        '/\/phpinfo\.php/i',
+        '/^\/server-status($|\/)/i',
+        '/\.axd$/i',
+        '/\/web\.config$/i',
+        '/\/xmlrpc\.php$/i',
+    ];
+
+    /**
      * @inheritdoc
      */
     public function init(): void
     {
         parent::init();
         $this->setLoggingHandle('redirect-manager');
+    }
+
+    /**
+     * Detect the type of a 404 request
+     *
+     * @param array $stat Analytics record data
+     * @return string 'probe', 'bot', or 'normal'
+     */
+    private function _detectRequestType(array $stat): string
+    {
+        // Check if it's a security probe based on URL patterns
+        $url = $stat['url'] ?? '';
+        foreach (self::SECURITY_PROBE_PATTERNS as $pattern) {
+            if (preg_match($pattern, $url)) {
+                return 'probe';
+            }
+        }
+
+        // Check if it's a bot
+        if (!empty($stat['isRobot'])) {
+            return 'bot';
+        }
+
+        return 'normal';
     }
 
     /**
@@ -49,6 +121,7 @@ class AnalyticsController extends Controller
         // Get filter parameters
         $search = $request->getQueryParam('search', '');
         $handledFilter = $request->getQueryParam('handled', 'all');
+        $typeFilter = $request->getQueryParam('type', 'all');
         $sort = $request->getQueryParam('sort', 'lastHit');
         $dir = $request->getQueryParam('dir', 'desc');
         $page = max(1, (int)$request->getQueryParam('page', 1));
@@ -66,6 +139,14 @@ class AnalyticsController extends Controller
             $query->andWhere(['handled' => false]);
         }
 
+        // Apply type filter (bot only - probes are detected dynamically)
+        if ($typeFilter === 'bot') {
+            $query->andWhere(['isRobot' => true]);
+        } elseif ($typeFilter === 'normal') {
+            $query->andWhere(['or', ['isRobot' => false], ['isRobot' => null]]);
+        }
+        // Note: 'probe' filter is applied post-query since it's pattern-based
+
         // Apply search
         if (!empty($search)) {
             $query->andWhere(['like', 'url', $search]);
@@ -80,23 +161,46 @@ class AnalyticsController extends Controller
         };
         $query->orderBy($orderBy);
 
-        // Get total count for pagination
-        $totalCount = $query->count();
+        // For probe filter, we need to fetch all and filter in PHP
+        // For other filters, use pagination
+        if ($typeFilter === 'probe') {
+            $allAnalytics = $query->all();
 
-        // Apply pagination
-        $query->limit($limit)->offset($offset);
+            // Filter to only probes
+            $probeAnalytics = array_filter($allAnalytics, function($stat) {
+                return $this->_detectRequestType($stat) === 'probe';
+            });
 
-        // Get analytics
-        $analytics = $query->all();
+            $totalCount = count($probeAnalytics);
+            $analytics = array_slice($probeAnalytics, $offset, $limit);
+        } else {
+            // Get total count for pagination
+            $totalCount = $query->count();
 
-        // Add redirect ID to each handled analytic and convert timezone
-        foreach ($analytics as &$stat) {
+            // Apply pagination
+            $query->limit($limit)->offset($offset);
+
+            // Get analytics
+            $analytics = $query->all();
+        }
+
+        // Counters for type filter
+        $botCount = 0;
+        $probeCount = 0;
+        $normalCount = 0;
+
+        // Add redirect ID, detect type, and convert timezone
+        // Use key-based iteration to ensure modifications persist
+        foreach ($analytics as $key => $stat) {
             // Convert lastHit from UTC to user's timezone
             if (!empty($stat['lastHit'])) {
                 $utcDate = new \DateTime($stat['lastHit'], new \DateTimeZone('UTC'));
                 $utcDate->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
-                $stat['lastHit'] = $utcDate;
+                $analytics[$key]['lastHit'] = $utcDate;
             }
+
+            // Detect request type (probe, bot, or normal)
+            $analytics[$key]['requestType'] = $this->_detectRequestType($stat);
 
             if ($stat['handled']) {
                 $redirectId = (new \craft\db\Query())
@@ -104,7 +208,7 @@ class AnalyticsController extends Controller
                     ->from(\lindemannrock\redirectmanager\records\RedirectRecord::tableName())
                     ->where(['sourceUrlParsed' => $stat['urlParsed'], 'enabled' => true])
                     ->scalar();
-                $stat['redirectId'] = $redirectId ?: null;
+                $analytics[$key]['redirectId'] = $redirectId ?: null;
             }
         }
 
@@ -113,6 +217,22 @@ class AnalyticsController extends Controller
         $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount(null, true);
         $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount(null, false);
 
+        // Get type counts (for filter display)
+        $allAnalyticsForCounts = (new \craft\db\Query())
+            ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName())
+            ->all();
+
+        foreach ($allAnalyticsForCounts as $stat) {
+            $type = $this->_detectRequestType($stat);
+            if ($type === 'probe') {
+                $probeCount++;
+            } elseif ($type === 'bot') {
+                $botCount++;
+            } else {
+                $normalCount++;
+            }
+        }
+
         return $this->renderTemplate('redirect-manager/dashboard/index', [
             'analytics' => $analytics,
             'settings' => $settings,
@@ -120,6 +240,10 @@ class AnalyticsController extends Controller
             'allCount' => $allCount,
             'handledCount' => $handledCount,
             'unhandledCount' => $unhandledCount,
+            'typeFilter' => $typeFilter,
+            'botCount' => $botCount,
+            'probeCount' => $probeCount,
+            'normalCount' => $normalCount,
             'page' => $page,
             'limit' => $limit,
             'offset' => $offset,
@@ -211,6 +335,7 @@ class AnalyticsController extends Controller
         // Get filter parameters
         $search = $request->getQueryParam('search', '');
         $handledFilter = $request->getQueryParam('handled', 'all');
+        $typeFilter = $request->getQueryParam('type', 'all');
         $sort = $request->getQueryParam('sort', 'lastHit');
         $dir = $request->getQueryParam('dir', 'desc');
         $page = max(1, (int)$request->getQueryParam('page', 1));
@@ -228,6 +353,13 @@ class AnalyticsController extends Controller
             $query->andWhere(['handled' => false]);
         }
 
+        // Apply type filter (bot only - probes are detected dynamically)
+        if ($typeFilter === 'bot') {
+            $query->andWhere(['isRobot' => true]);
+        } elseif ($typeFilter === 'normal') {
+            $query->andWhere(['or', ['isRobot' => false], ['isRobot' => null]]);
+        }
+
         // Apply search
         if (!empty($search)) {
             $query->andWhere(['like', 'url', $search]);
@@ -242,27 +374,49 @@ class AnalyticsController extends Controller
         };
         $query->orderBy($orderBy);
 
-        // Get total count for pagination
-        $totalCount = $query->count();
+        // For probe filter, we need to fetch all and filter in PHP
+        if ($typeFilter === 'probe') {
+            $allAnalytics = $query->all();
 
-        // Apply pagination
-        $query->limit($limit)->offset($offset);
+            // Filter to only probes
+            $probeAnalytics = array_filter($allAnalytics, function($stat) {
+                return $this->_detectRequestType($stat) === 'probe';
+            });
 
-        // Get analytics
-        $analytics = $query->all();
+            $totalCount = count($probeAnalytics);
+            $analytics = array_slice(array_values($probeAnalytics), $offset, $limit);
+        } else {
+            // Get total count for pagination
+            $totalCount = $query->count();
+
+            // Apply pagination
+            $query->limit($limit)->offset($offset);
+
+            // Get analytics
+            $analytics = $query->all();
+        }
+
+        // Counters for type filter
+        $botCount = 0;
+        $probeCount = 0;
+        $normalCount = 0;
 
         // Process analytics data
-        foreach ($analytics as &$stat) {
+        // Use key-based iteration to ensure modifications persist
+        foreach ($analytics as $key => $stat) {
             // Convert lastHit from UTC to user's timezone
             if (!empty($stat['lastHit'])) {
                 $utcDate = new \DateTime($stat['lastHit'], new \DateTimeZone('UTC'));
                 $utcDate->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
-                $stat['lastHit'] = $utcDate->format('Y-m-d H:i:s');
+                $analytics[$key]['lastHit'] = $utcDate->format('Y-m-d H:i:s');
             }
+
+            // Detect request type
+            $analytics[$key]['requestType'] = $this->_detectRequestType($stat);
 
             // Get site name
             $site = Craft::$app->getSites()->getSiteById($stat['siteId']);
-            $stat['siteName'] = $site ? $site->name : '-';
+            $analytics[$key]['siteName'] = $site ? $site->name : '-';
 
             // Get redirect ID for handled analytics
             if ($stat['handled']) {
@@ -271,9 +425,9 @@ class AnalyticsController extends Controller
                     ->from(\lindemannrock\redirectmanager\records\RedirectRecord::tableName())
                     ->where(['sourceUrlParsed' => $stat['urlParsed'], 'enabled' => true])
                     ->scalar();
-                $stat['redirectId'] = $redirectId ?: null;
+                $analytics[$key]['redirectId'] = $redirectId ?: null;
             } else {
-                $stat['redirectId'] = null;
+                $analytics[$key]['redirectId'] = null;
             }
         }
 
@@ -282,13 +436,32 @@ class AnalyticsController extends Controller
         $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount(null, true);
         $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount(null, false);
 
+        // Get type counts (for filter display)
+        $allAnalyticsForCounts = (new \craft\db\Query())
+            ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName())
+            ->all();
+
+        foreach ($allAnalyticsForCounts as $stat) {
+            $type = $this->_detectRequestType($stat);
+            if ($type === 'probe') {
+                $probeCount++;
+            } elseif ($type === 'bot') {
+                $botCount++;
+            } else {
+                $normalCount++;
+            }
+        }
+
         return $this->asJson([
             'success' => true,
-            'analytics' => $analytics,
+            'analytics' => array_values($analytics),
             'totalCount' => $totalCount,
             'allCount' => $allCount,
             'handledCount' => $handledCount,
             'unhandledCount' => $unhandledCount,
+            'botCount' => $botCount,
+            'probeCount' => $probeCount,
+            'normalCount' => $normalCount,
             'page' => $page,
             'limit' => $limit,
             'offset' => $offset,
