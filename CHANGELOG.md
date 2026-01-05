@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.11.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.10.0...v5.11.0) (2026-01-05)
+
+
+### Features
+
+* implement AJAX-based dashboard data retrieval and auto-refresh functionality ([a64a83f](https://github.com/LindemannRock/craft-redirect-manager/commit/a64a83fae422fb6661aa630910494e6d0e64622a))
+* **redirect-manager:** dashboard UI improvements and bug fixes ([dec1968](https://github.com/LindemannRock/craft-redirect-manager/commit/dec196864b9152c68873030a20f1e6cb9b56d8bc))
+
 ## [5.10.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.9.0...v5.10.0) (2026-01-04)
 
 
