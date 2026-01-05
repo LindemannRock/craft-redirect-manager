@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.12.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.11.0...v5.12.0) (2026-01-05)
+
+
+### Features
+
+* enhance analytics and redirects controllers with additional fields and improve dashboard UI ([90bad19](https://github.com/LindemannRock/craft-redirect-manager/commit/90bad19252f43b83b65a0147a43772a1b573d9ec))
+* enhance dashboard and redirects UI with additional color coding for request and match types ([9c5bf9e](https://github.com/LindemannRock/craft-redirect-manager/commit/9c5bf9e224351eeda533d725811b26359aec05e8))
+
 ## [5.11.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.10.0...v5.11.0) (2026-01-05)
 
 
