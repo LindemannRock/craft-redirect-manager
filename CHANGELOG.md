@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.14.4](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.3...v5.14.4) (2026-01-08)
+
+
+### Bug Fixes
+
+* Update search clear button selector in dashboard and redirects templates ([ce01cf1](https://github.com/LindemannRock/craft-redirect-manager/commit/ce01cf1c9a49561f28bf815489624764a51f2e48))
+
 ## [5.14.3](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.2...v5.14.3) (2026-01-08)
 
 
