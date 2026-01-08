@@ -414,10 +414,10 @@ new Garnish.MenuBtn(btn);
 });
 
 // Clear search
-const clearBtn = document.querySelector('.clear-btn');
-if (clearBtn) {
-clearBtn.addEventListener('click', function () {
-const searchInput = this.previousElementSibling.previousElementSibling;
+const searchClearBtn = document.querySelector('.search-container .clear-btn');
+if (searchClearBtn) {
+searchClearBtn.addEventListener('click', function () {
+const searchInput = this.previousElementSibling;
 searchInput.value = '';
 searchInput.form.submit();
 });
