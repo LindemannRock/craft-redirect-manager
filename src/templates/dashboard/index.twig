@@ -573,10 +573,11 @@ const refreshInterval = {{ settings.refreshIntervalSecs }} * 1000; // Convert to
 let refreshTimer;
 let isRefreshing = false;
 
-// Build current URL params
+// Build current URL params (read from DOM to preserve user changes)
 function getCurrentParams() {
+const searchInput = document.querySelector('input[name="search"]');
 return new URLSearchParams({
-search: '{{ search|e('js') }}',
+search: searchInput ? searchInput.value : '{{ search|e('js') }}',
 handled: '{{ handledFilter }}',
 type: '{{ typeFilter }}',
 sort: '{{ sort }}',
