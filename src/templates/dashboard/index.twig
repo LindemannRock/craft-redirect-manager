@@ -8,6 +8,8 @@
 {# Permission checks #}
 {% set canCreate = currentUser.can('redirectManager:createRedirects') %}
 {% set canEdit = currentUser.can('redirectManager:editRedirects') %}
+{% set canClearAnalytics = currentUser.can('redirectManager:clearAnalytics') %}
+{% set hasAnyActions = canCreate or canEdit or canClearAnalytics %}
 
 {# Request type colors #}
 {% set requestTypeColors = {
@@ -63,7 +65,7 @@
 
 {% block toolbar %}
 	<div id="toolbar" class="flex" style="align-items: flex-end;">
-		<div class="grow">
+		<div class="flex-grow">
 			<form method="get" action="{{ url('redirect-manager/analytics') }}">
 				<div class="flex">
 					<div class="btngroup">
@@ -124,7 +126,7 @@
 							</ul>
 						</div>
 					</div>
-					<div class="search-container texticon grow">
+					<div class="search-container texticon flex-grow">
 						<span class="texticon-icon search icon" aria-hidden="true"></span>
 						<input type="text" class="clearable text fullwidth" name="search" value="{{ search }}" placeholder="{{ 'Search URLs...'|t('redirect-manager') }}" autocomplete="off" dir="ltr" aria-label="Search" {% if search %} autofocus {% endif %}>
 						<button type="button" class="clear-btn {{ search ? '' : 'hidden' }}" title="Clear search" role="button" aria-label="Clear search"></button>
@@ -222,7 +224,9 @@
 						<th scope="col" data-attribute="requestType" class="orderable {{ sort == 'requestType' ? 'ordered ' ~ dir : '' }}" title="{{ 'Request type: Normal, Bot, or Security Probe'|t('redirect-manager') }}">
 							<button type="button" data-sort="requestType">{{ 'Type'|t('redirect-manager') }}</button>
 						</th>
-						<th class="thin" style="width: 90px;">{{ 'Actions'|t('redirect-manager') }}</th>
+						{% if hasAnyActions %}
+							<th class="thin" style="width: 90px;">{{ 'Actions'|t('redirect-manager') }}</th>
+						{% endif %}
 					</tr>
 				</thead>
 				<tbody>
@@ -292,37 +296,49 @@
 										</span>
 									{% endif %}
 								</td>
-								<td class="thin" style="text-align: right;">
-									<button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('redirect-manager') }}"></button>
-									<div class="menu">
-										<ul>
-											{% if stat.handled and stat.redirectId and canEdit %}
-												<li>
-													<a href="{{ url('redirect-manager/redirects/' ~ stat.redirectId) }}">
-														{{ 'Edit {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}
-													</a>
-												</li>
-											{% elseif not stat.handled and canCreate %}
-												<li>
-													<a href="{{ url('redirect-manager/redirects/new', { sourceUrl: stat.url }) }}">
-														{{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}
-													</a>
-												</li>
-											{% endif %}
-											<li><hr class="padded"></li>
-											<li>
-												<a class="error row-delete-action" data-id="{{ stat.id }}">
-													{{ 'Delete'|t('app') }}
-												</a>
-											</li>
-										</ul>
-									</div>
-								</td>
+								{% if hasAnyActions %}
+									{% set hasRedirectAction = (stat.handled and stat.redirectId and canEdit) or (not stat.handled and canCreate) %}
+									{% set hasRowActions = hasRedirectAction or canClearAnalytics %}
+									{% if hasRowActions %}
+										<td class="thin" style="text-align: right;">
+											<button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('redirect-manager') }}"></button>
+											<div class="menu">
+												<ul>
+													{% if stat.handled and stat.redirectId and canEdit %}
+														<li>
+															<a href="{{ url('redirect-manager/redirects/' ~ stat.redirectId) }}">
+																{{ 'Edit {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}
+															</a>
+														</li>
+													{% elseif not stat.handled and canCreate %}
+														<li>
+															<a href="{{ url('redirect-manager/redirects/new', { sourceUrl: stat.url }) }}">
+																{{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}
+															</a>
+														</li>
+													{% endif %}
+													{% if canClearAnalytics %}
+														{% if hasRedirectAction %}
+															<li><hr class="padded"></li>
+														{% endif %}
+														<li>
+															<a class="error row-delete-action" data-id="{{ stat.id }}">
+																{{ 'Delete'|t('app') }}
+															</a>
+														</li>
+													{% endif %}
+												</ul>
+											</div>
+										</td>
+									{% else %}
+										<td class="thin"></td>
+									{% endif %}
+								{% endif %}
 							</tr>
 						{% endfor %}
 					{% else %}
 						<tr>
-							<td colspan="11" style="text-align: center; padding: 2em;">
+							<td colspan="{{ hasAnyActions ? 11 : 10 }}" style="text-align: center; padding: 2em;">
 								{{ 'No analytics found.'|t('redirect-manager') }}
 							</td>
 						</tr>
@@ -338,16 +354,36 @@
 		<div class="light">
 			<div class="flex pagination">
 				<nav class="flex" aria-label="analytics pagination">
-					<button{{'ClearAll'|t('redirect-manager')}}</span type="button" class="page-link prev-page {{ page <= 1 ? 'disabled' : '' }}" {{ page <= 1 ? 'disabled' : '' }} title="Previous Page"></button> <button type="button" class="page-link next-page {{ page >= totalPages ? 'disabled' : '' }}" {{ page >= totalPages ? 'disabled' : '' }} title="Next Page"></button> </nav> <div class="page-info"> {% set endRange = min(offset + limit, totalCount) %} {% if totalCount == 0 %} no 404s {% else %} {{ offset + 1 }} – {{ endRange }} of {{ totalCount }} {{ totalCount == 1 ? '404' : '404s' }} {% endif %} </div> </div> </div> <div class="flex flex-nowrap"> <button type="button" class="btn secondary" id="clear-btn"> <span id="clear-label">></button>
-					<form method="post" action="{{ actionUrl('redirect-manager/analytics/export-csv') }}" style="display: inline;" id="export-form">
-						{{ csrfInput() }}
-						<input type="hidden" name="analyticsIds" id="export-analytics-ids" value="">
-						<button type="submit" class="btn" id="export-btn">
-							<span id="export-label">{{ 'Export'|t('redirect-manager') }}</span>
-						</button>
-					</form>
+					<button type="button" class="page-link prev-page {{ page <= 1 ? 'disabled' : '' }}" {{ page <= 1 ? 'disabled' : '' }} title="Previous Page"></button>
+					<button type="button" class="page-link next-page {{ page >= totalPages ? 'disabled' : '' }}" {{ page >= totalPages ? 'disabled' : '' }} title="Next Page"></button>
+				</nav>
+				<div class="page-info">
+					{% set endRange = min(offset + limit, totalCount) %}
+					{% if totalCount == 0 %}
+						no 404s
+					{% else %}
+						{{ offset + 1 }} – {{ endRange }} of {{ totalCount }} {{ totalCount == 1 ? '404' : '404s' }}
+					{% endif %}
 				</div>
 			</div>
+		</div>
+		<div class="flex flex-nowrap">
+			{% if currentUser.can('redirectManager:clearAnalytics') %}
+				<button type="button" class="btn secondary" id="clear-btn">
+					<span id="clear-label">{{ 'Clear All'|t('redirect-manager') }}</span>
+				</button>
+			{% endif %}
+			{% if currentUser.can('redirectManager:exportAnalytics') %}
+				<form method="post" action="{{ actionUrl('redirect-manager/analytics/export-csv') }}" style="display: inline;" id="export-form">
+					{{ csrfInput() }}
+					<input type="hidden" name="analyticsIds" id="export-analytics-ids" value="">
+					<button type="submit" class="btn" id="export-btn">
+						<span id="export-label">{{ 'Export'|t('redirect-manager') }}</span>
+					</button>
+				</form>
+			{% endif %}
+		</div>
+	</div>
 
 			<script>
 				// Initialize menu buttons
@@ -438,80 +474,72 @@ exportAnalyticsIds.value = '';
 }
 
 // Select all
-selectAllCheckbox.addEventListener('click', function () {
-const isChecked = !this.classList.contains('checked');
-toggleCheckbox(this, isChecked);
+if (selectAllCheckbox) {
+	selectAllCheckbox.addEventListener('click', function () {
+		const isChecked = !this.classList.contains('checked');
+		toggleCheckbox(this, isChecked);
 
-checkboxes.forEach(checkbox => {
-toggleCheckbox(checkbox, isChecked);
-const id = checkbox.closest('tr').dataset.id;
-if (isChecked) {
-selectedIds.add(id);
-} else {
-selectedIds.delete(id);
+		checkboxes.forEach(checkbox => {
+			toggleCheckbox(checkbox, isChecked);
+			const id = checkbox.closest('tr').dataset.id;
+			if (isChecked) {
+				selectedIds.add(id);
+			} else {
+				selectedIds.delete(id);
+			}
+		});
+
+		updateBulkButtons();
+	});
 }
-});
-
-updateBulkButtons();
-});
 
 // Individual checkboxes
 checkboxes.forEach(checkbox => {
-checkbox.addEventListener('click', function () {
-const isChecked = !this.classList.contains('checked');
-toggleCheckbox(this, isChecked);
+	checkbox.addEventListener('click', function () {
+		const isChecked = !this.classList.contains('checked');
+		toggleCheckbox(this, isChecked);
 
-const id = this.closest('tr').dataset.id;
-if (isChecked) {
-selectedIds.add(id);
-} else {
-selectedIds.delete(id);
-} updateBulkButtons();
-});
+		const id = this.closest('tr').dataset.id;
+		if (isChecked) {
+			selectedIds.add(id);
+		} else {
+			selectedIds.delete(id);
+		}
+		updateBulkButtons();
+	});
 });
 
 // Clear button - handles both selected items and clear all
-document.getElementById('clear-btn') ?. addEventListener('click', function () {
-const ids = Array.from(selectedIds);
+document.getElementById('clear-btn')?.addEventListener('click', function() {
+    const ids = Array.from(selectedIds);
 
-if (ids.length > 0) { // Delete selected items
-if (!confirm(`Delete ${
-ids.length
-} analytics record${
-ids.length > 1 ? 's' : ''
-}?`)) 
-return;
+    if (ids.length > 0) {
+        // Delete selected items
+        if (!confirm(`Delete ${ids.length} analytics record${ids.length > 1 ? 's' : ''}?`)) {
+            return;
+        }
 
+        const deletePromises = ids.map(id => Craft.sendActionRequest('POST', 'redirect-manager/analytics/delete', {
+            data: { analyticId: id }
+        }));
 
+        Promise.all(deletePromises).then(() => {
+            Craft.cp.displayNotice(`Deleted ${ids.length} analytics`);
+            setTimeout(() => window.location.reload(), 1000);
+        });
+    } else {
+        // Clear all
+        if (!confirm('Are you sure you want to clear ALL analytics? This cannot be undone.')) {
+            return;
+        }
 
-// Create array of promises for each delete
-const deletePromises = ids.map(id => Craft.sendActionRequest('POST', 'redirect-manager/analytics/delete', {
-data: {
-analyticId: id
-}
-}));
-
-Promise.all(deletePromises).then(() => {
-Craft.cp.displayNotice(`Deleted ${
-ids.length
-} analytics`);
-setTimeout(() => window.location.reload(), 1000);
-});
-} else { // Clear all
-if (!confirm('Are you sure you want to clear ALL analytics? This cannot be undone.')) 
-return;
-
-
-
-Craft.sendActionRequest('POST', 'redirect-manager/analytics/clear-all', {data: {}}).then(function (response) {
-if (response.data.success) {
-Craft.cp.displayNotice(`Cleared ${
-response.data.deleted
-} analytics`);
-setTimeout(() => window.location.reload(), 1000);
-}
-});
-}
+        Craft.sendActionRequest('POST', 'redirect-manager/analytics/clear-all', { data: {} }).then(function(response) {
+            if (response.data.success) {
+                Craft.cp.displayNotice(`Cleared ${response.data.deleted} analytics`);
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        });
+    }
 });
 
 // Individual delete via menu action
@@ -575,17 +603,25 @@ handledCell = `<span class="status-label" style="background: rgba(16, 185, 129, 
 handledCell = `<span class="status-label" style="background: rgba(239, 68, 68, 0.12);"><span class="status" style="background: #ef4444;"></span><span class="status-label-text" style="color: #7f1d1d;">{{ 'No'|t('redirect-manager')|e('js') }}</span></span>`;
 }
 
-// Build action menu item
+// Build action menu item (respecting permissions)
 let actionMenuItem = '';
+{% if canEdit %}
 if (handled && stat.redirectId) {
 actionMenuItem = `<li><a href="{{ url('redirect-manager/redirects') }}/${
 stat.redirectId
 }">{{ 'Edit {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|e('js') }}</a></li>`;
-} else if (! handled) {
+}
+{% endif %}
+{% if canCreate %}
+if (!handled && !actionMenuItem) {
 actionMenuItem = `<li><a href="{{ url('redirect-manager/redirects/new') }}?sourceUrl=${
 encodeURIComponent(stat.url)
 }">{{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|e('js') }}</a></li>`;
 }
+{% endif %}
+
+// Check if this row has any actions
+const hasRowActions = actionMenuItem !== '' || {{ canClearAnalytics ? 'true' : 'false' }};
 
 // Type cell based on requestType
 let typeCell = `<span class="status-label" style="background: rgba(59, 130, 246, 0.12);" title="{{ 'Regular browser request'|t('redirect-manager')|e('js') }}"><span class="status" style="background: #3b82f6;"></span><span class="status-label-text" style="color: #1e3a8a;">{{ 'Normal'|t('redirect-manager')|e('js') }}</span></span>`;
@@ -634,18 +670,24 @@ stat.deviceType ? stat.deviceType.charAt(0).toUpperCase() + stat.deviceType.slic
 stat.browser ? Craft.escapeHtml(stat.browser) : '-'
 }</td>
             <td>${typeCell}</td>
+            {% if hasAnyActions %}
+            ${hasRowActions ? `
             <td class="thin" style="text-align: right;">
                 <button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('redirect-manager')|e('js') }}"></button>
                 <div class="menu">
                     <ul>
                         ${actionMenuItem}
-                        <li><hr class="padded"></li>
+                        {% if canClearAnalytics %}
+                        ${actionMenuItem ? '<li><hr class="padded"></li>' : ''}
                         <li><a class="error row-delete-action" data-id="${
 stat.id
 }">{{ 'Delete'|t('app')|e('js') }}</a></li>
+                        {% endif %}
                     </ul>
                 </div>
             </td>
+            ` : '<td class="thin"></td>'}
+            {% endif %}
         </tr>
     `;
 }
@@ -749,13 +791,12 @@ data.totalCount === 1 ? '404' : '404s'
 const prevBtn = document.querySelector('.prev-page');
 const nextBtn = document.querySelector('.next-page');
 if (prevBtn) {
-prevBtn.disabled = data.page<= 1;
-            prevBtn.classList.toggle('disabled', data.page <= 1);
-        }
-        if (nextBtn) {
-            nextBtn.disabled = data.page >= data.totalPages;
-            nextBtn.classList.toggle('disabled', data.page> = data.totalPages
-);
+    prevBtn.disabled = data.page <= 1;
+    prevBtn.classList.toggle('disabled', data.page <= 1);
+}
+if (nextBtn) {
+    nextBtn.disabled = data.page >= data.totalPages;
+    nextBtn.classList.toggle('disabled', data.page >= data.totalPages);
 }
 
 } catch (error) {

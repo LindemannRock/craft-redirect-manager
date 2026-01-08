@@ -70,7 +70,8 @@
 ] %}
 
 	{% block toolbar %}
-		<div id="toolbar" class="flex" style="align-items: flex-end;"> <div class="grow">
+		<div id="toolbar" class="flex" style="align-items: flex-end;">
+			<div class="flex-grow">
 			<form method="get" action="{{ url('redirect-manager/redirects') }}">
 				<div class="flex">
 					<div class="btngroup">
@@ -142,7 +143,7 @@
 							</ul>
 						</div>
 					</div>
-					<div class="search-container texticon grow">
+					<div class="search-container texticon flex-grow">
 						<span class="texticon-icon search icon" aria-hidden="true"></span>
 						<input type="text" class="clearable text fullwidth" name="search" value="{{ search }}" placeholder="{{ 'Search {pluginName}...'|t('redirect-manager', {pluginName: redirectHelper.pluralLowerDisplayName}) }}" autocomplete="off" dir="ltr" aria-label="Search" {% if search %} autofocus {% endif %}>
 						<button type="button" class="clear-btn {{ search ? '' : 'hidden' }}" title="Clear search" role="button" aria-label="Clear search"></button>
@@ -205,7 +206,7 @@
 			flex-wrap: nowrap;
 			gap: 8px;
 		}
-		#toolbar .grow {
+		#toolbar .flex-grow {
 			min-width: 0;
 			flex-shrink: 1;
 		}
@@ -491,36 +492,39 @@ exportRedirectIds.value = '';
 }
 
 // Select all
-selectAllCheckbox.addEventListener('click', function () {
-const isChecked = !this.classList.contains('checked');
-toggleCheckbox(this, isChecked);
+if (selectAllCheckbox) {
+	selectAllCheckbox.addEventListener('click', function () {
+		const isChecked = !this.classList.contains('checked');
+		toggleCheckbox(this, isChecked);
 
-checkboxes.forEach(checkbox => {
-toggleCheckbox(checkbox, isChecked);
-const id = checkbox.closest('tr').dataset.id;
-if (isChecked) {
-selectedIds.add(id);
-} else {
-selectedIds.delete(id);
+		checkboxes.forEach(checkbox => {
+			toggleCheckbox(checkbox, isChecked);
+			const id = checkbox.closest('tr').dataset.id;
+			if (isChecked) {
+				selectedIds.add(id);
+			} else {
+				selectedIds.delete(id);
+			}
+		});
+
+		updateBulkButtons();
+	});
 }
-});
-
-updateBulkButtons();
-});
 
 // Individual checkboxes
 checkboxes.forEach(checkbox => {
-checkbox.addEventListener('click', function () {
-const isChecked = !this.classList.contains('checked');
-toggleCheckbox(this, isChecked);
+	checkbox.addEventListener('click', function () {
+		const isChecked = !this.classList.contains('checked');
+		toggleCheckbox(this, isChecked);
 
-const id = this.closest('tr').dataset.id;
-if (isChecked) {
-selectedIds.add(id);
-} else {
-selectedIds.delete(id);
-} updateBulkButtons();
-});
+		const id = this.closest('tr').dataset.id;
+		if (isChecked) {
+			selectedIds.add(id);
+		} else {
+			selectedIds.delete(id);
+		}
+		updateBulkButtons();
+	});
 });
 
 // Initialize bulk actions menu button

@@ -31,19 +31,21 @@
 {% set selectedTab = 'overview' %}
 
 {% block actionButton %}
-    <div id="action-button" class="btngroup">
-        <button type="button" class="btn menubtn" data-icon="download">{{ "Export"|t('redirect-manager') }}</button>
-        <div class="menu" data-align="right">
-            <ul>
-                <li>
-                    <a href="#" class="export-link" data-format="csv" data-action="redirect-manager/analytics/export-csv">{{ "Export as CSV"|t('redirect-manager') }}</a>
-                </li>
-                <li>
-                    <a href="#" class="export-link" data-format="json" data-action="redirect-manager/analytics/export-csv">{{ "Export as JSON"|t('redirect-manager') }}</a>
-                </li>
-            </ul>
+    {% if currentUser.can('redirectManager:exportAnalytics') %}
+        <div id="action-button" class="btngroup">
+            <button type="button" class="btn menubtn" data-icon="download">{{ "Export"|t('redirect-manager') }}</button>
+            <div class="menu" data-align="right">
+                <ul>
+                    <li>
+                        <a href="#" class="export-link" data-format="csv" data-action="redirect-manager/analytics/export-csv">{{ "Export as CSV"|t('redirect-manager') }}</a>
+                    </li>
+                    <li>
+                        <a href="#" class="export-link" data-format="json" data-action="redirect-manager/analytics/export-csv">{{ "Export as JSON"|t('redirect-manager') }}</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
+    {% endif %}
 {% endblock %}
 
 {% block toolbar %}

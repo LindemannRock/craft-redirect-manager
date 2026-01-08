@@ -390,6 +390,9 @@ class RedirectManager extends Plugin
             'redirectManager:viewAnalytics' => [
                 'label' => Craft::t('redirect-manager', 'View analytics'),
                 'nested' => [
+                    'redirectManager:exportAnalytics' => [
+                        'label' => Craft::t('redirect-manager', 'Export analytics'),
+                    ],
                     'redirectManager:clearAnalytics' => [
                         'label' => Craft::t('redirect-manager', 'Clear analytics'),
                     ],

@@ -572,7 +572,7 @@ class AnalyticsController extends Controller
      */
     public function actionExportCsv(): Response
     {
-        $this->requirePermission('redirectManager:viewAnalytics');
+        $this->requirePermission('redirectManager:exportAnalytics');
 
         $request = Craft::$app->getRequest();
         $siteId = $request->getQueryParam('siteId');
