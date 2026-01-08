@@ -695,16 +695,16 @@ stat.id
 
 // Refresh dashboard content via AJAX
 async function refreshDashboard() {
-if (isRefreshing) 
+if (isRefreshing)
 return;
 
 isRefreshing = true;
 
 try {
 const params = getCurrentParams();
-const response = await fetch(`{{ actionUrl('redirect-manager/analytics/get-dashboard-data') }}?${
-params.toString()
-}`, {
+const baseUrl = '{{ actionUrl('redirect-manager/analytics/get-dashboard-data') }}';
+const separator = baseUrl.includes('?') ? '&' : '?';
+const response = await fetch(baseUrl + separator + params.toString(), {
 headers: {
 'Accept': 'application/json',
 'X-Requested-With': 'XMLHttpRequest'
@@ -716,7 +716,7 @@ throw new Error('Network response was not ok');
 
 
 const data = await response.json();
-if (! data.success) 
+if (!data.success)
 throw new Error('API returned error');
 
 
