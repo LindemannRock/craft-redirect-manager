@@ -188,7 +188,7 @@ class SettingsController extends Controller
             // Update the plugin's cached settings (CRITICAL - forces Craft to refresh)
             RedirectManager::$plugin->setSettings($settings->getAttributes());
 
-            Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'Settings saved successfully'));
+            Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'Settings saved.'));
         } else {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Could not save settings'));
             return null;
