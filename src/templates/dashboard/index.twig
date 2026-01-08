@@ -5,6 +5,10 @@
 {% set fullPageForm = false %}
 {% set selectedSubnavItem = 'dashboard' %}
 
+{# Permission checks #}
+{% set canCreate = currentUser.can('redirectManager:createRedirects') %}
+{% set canEdit = currentUser.can('redirectManager:editRedirects') %}
+
 {# Request type colors #}
 {% set requestTypeColors = {
 	'normal': '#3b82f6',
@@ -132,10 +136,12 @@
 				</div>
 			</form>
 		</div>
-		<a href="{{ url('redirect-manager/redirects/new') }}" class="btn submit add icon" id="new-redirect-btn">
-			<span class="label-full">{{ 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}) }}</span>
-			<span class="label-short" style="display: none;">{{ 'New'|t('redirect-manager') }}</span>
-		</a>
+		{% if canCreate %}
+			<a href="{{ url('redirect-manager/redirects/new') }}" class="btn submit add icon" id="new-redirect-btn">
+				<span class="label-full">{{ 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}) }}</span>
+				<span class="label-short" style="display: none;">{{ 'New'|t('redirect-manager') }}</span>
+			</a>
+		{% endif %}
 	</div>
 {% endblock %}
 
@@ -290,13 +296,13 @@
 									<button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('redirect-manager') }}"></button>
 									<div class="menu">
 										<ul>
-											{% if stat.handled and stat.redirectId %}
+											{% if stat.handled and stat.redirectId and canEdit %}
 												<li>
 													<a href="{{ url('redirect-manager/redirects/' ~ stat.redirectId) }}">
 														{{ 'Edit {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}
 													</a>
 												</li>
-											{% elseif not stat.handled %}
+											{% elseif not stat.handled and canCreate %}
 												<li>
 													<a href="{{ url('redirect-manager/redirects/new', { sourceUrl: stat.url }) }}">
 														{{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}

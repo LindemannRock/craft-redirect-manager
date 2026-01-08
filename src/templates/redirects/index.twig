@@ -7,6 +7,12 @@
 {% set fullPageForm = false %}
 {% set selectedSubnavItem = 'redirects' %}
 
+{# Permission checks #}
+{% set canCreate = currentUser.can('redirectManager:createRedirects') %}
+{% set canEdit = currentUser.can('redirectManager:editRedirects') %}
+{% set canDelete = currentUser.can('redirectManager:deleteRedirects') %}
+{% set canImportExport = currentUser.can('redirectManager:manageImportExport') %}
+
 {# Get query parameters #}
 {% set search = craft.app.request.getParam('search', '') %}
 {% set statusFilter = craft.app.request.getParam('status', 'all') %}
@@ -149,10 +155,12 @@
 				</div>
 			</form>
 		</div>
-		<a href="{{ url('redirect-manager/redirects/new') }}" class="btn submit add icon" id="new-redirect-btn">
-			<span class="label-full">{{ 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}) }}</span>
-			<span class="label-short" style="display: none;">{{ 'New'|t('redirect-manager') }}</span>
-		</a>
+		{% if canCreate %}
+			<a href="{{ url('redirect-manager/redirects/new') }}" class="btn submit add icon" id="new-redirect-btn">
+				<span class="label-full">{{ 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}) }}</span>
+				<span class="label-short" style="display: none;">{{ 'New'|t('redirect-manager') }}</span>
+			</a>
+		{% endif %}
 	</div>
 {% endblock %}
 
@@ -242,7 +250,9 @@
 						<th scope="col" data-attribute="sourcePlugin" class="orderable {{ sort == 'sourcePlugin' ? 'ordered ' ~ dir : '' }}">
 							<button type="button" data-sort="sourcePlugin">{{ 'Source'|t('redirect-manager') }}</button>
 						</th>
-						<th class="thin" style="width: 60px;">{{ 'Actions'|t('redirect-manager') }}</th>
+						{% if canDelete %}
+							<th class="thin" style="width: 60px;">{{ 'Actions'|t('redirect-manager') }}</th>
+						{% endif %}
 					</tr>
 				</thead>
 				<tbody>
@@ -253,9 +263,13 @@
 									<div class="checkbox" title="Select" tabindex="0" aria-checked="false" role="checkbox"></div>
 								</td>
 								<td>
-									<a class="label-link" href="{{ url('redirect-manager/redirects/' ~ redirect.id) }}">
+									{% if canEdit %}
+										<a class="label-link" href="{{ url('redirect-manager/redirects/' ~ redirect.id) }}">
+											<span>{{ redirect.sourceUrl }}</span>
+										</a>
+									{% else %}
 										<span>{{ redirect.sourceUrl }}</span>
-									</a>
+									{% endif %}
 								</td>
 								<td>{{ redirect.destinationUrl }}</td>
 								<td>
@@ -325,14 +339,16 @@
 										{% endif %}
 									</span>
 								</td>
+								{% if canDelete %}
 								<td class="thin" style="text-align: right;">
 									<button type="button" class="btn icon delete" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}"></button>
 								</td>
+							{% endif %}
 							</tr>
 						{% endfor %}
 					{% else %}
 						<tr>
-							<td colspan="11" style="text-align: center; padding: 2em;">
+							<td colspan="{{ canDelete ? 11 : 10 }}" style="text-align: center; padding: 2em;">
 								{{ 'No {items} found.'|t('redirect-manager', {items: redirectHelper.pluralLowerDisplayName}) }}
 							</td>
 						</tr>
@@ -346,34 +362,45 @@
 		<div class="light">
 			<div class="flex pagination">
 				<nav class="flex" aria-label="redirect pagination">
-					<button{{'Enable'|t('redirect-manager')}}</a type="button" class="page-link prev-page {{ page <= 1 ? 'disabled' : '' }}" {{ page <= 1 ? 'disabled' : '' }} title="Previous Page"></button> <button type="button" class="page-link next-page {{ page >= totalPages ? 'disabled' : '' }}" {{ page >= totalPages ? 'disabled' : '' }} title="Next Page"></button> </nav> <div class="page-info"> {% set endRange = min(offset + limit, totalCount) %} {% if totalCount == 0 %} {{ 'no {items}'|t('redirect-manager', {items: redirectHelper.pluralLowerDisplayName} ) }} {% else %} {{ offset + 1 }} – {{ endRange }} of {{ totalCount }} {{ totalCount == 1 ? redirectHelper.lowerDisplayName : redirectHelper.pluralLowerDisplayName }} {% endif %} </div> </div> </div> <div id="actions-container" class="flex" style="display: none;"> <div> <button type="button" class="btn menubtn secondary" id="bulk-actions-btn" aria-label="Set status"> {{ 'Set status'|t('app') }} </button> <div class="menu"> <ul> <li> <a id="bulk-enable-action">></li>
-					<li>
-						<a id="bulk-disable-action">{{ 'Disable'|t('redirect-manager') }}</a>
-					</li>
-				</ul>
+					<button{{'Enable'|t('redirect-manager')}}</a type="button" class="page-link prev-page {{ page <= 1 ? 'disabled' : '' }}" {{ page <= 1 ? 'disabled' : '' }} title="Previous Page"></button> <button type="button" class="page-link next-page {{ page >= totalPages ? 'disabled' : '' }}" {{ page >= totalPages ? 'disabled' : '' }} title="Next Page"></button> </nav> <div class="page-info"> {% set endRange = min(offset + limit, totalCount) %} {% if totalCount == 0 %} {{ 'no {items}'|t('redirect-manager', {items: redirectHelper.pluralLowerDisplayName} ) }} {% else %} {{ offset + 1 }} – {{ endRange }} of {{ totalCount }} {{ totalCount == 1 ? redirectHelper.lowerDisplayName : redirectHelper.pluralLowerDisplayName }} {% endif %} </div> </div> </div> <div id="actions-container" class="flex" style="display: none;">
+		{% if canEdit %}
+			<div>
+				<button type="button" class="btn menubtn secondary" id="bulk-actions-btn" aria-label="Set status">
+					{{ 'Set status'|t('app') }}
+				</button>
+				<div class="menu">
+					<ul>
+						<li><a id="bulk-enable-action">{{ 'Enable'|t('redirect-manager') }}</a></li>
+						<li><a id="bulk-disable-action">{{ 'Disable'|t('redirect-manager') }}</a></li>
+					</ul>
+				</div>
 			</div>
+		{% endif %}
+		{% if canDelete %}
+			<form>
+				<button type="button" class="btn secondary menubtn" data-icon="settings" title="Actions" id="settings-btn"></button>
+				<div class="menu">
+					<ul>
+						<li><a id="bulk-delete-action" class="error">{{ 'Delete…'|t('app') }}</a></li>
+					</ul>
+				</div>
+			</form>
+		{% endif %}
+	</div>
+	{% if canImportExport %}
+		<div class="flex flex-nowrap">
+			<a href="{{ url('redirect-manager/import-export') }}" class="btn">
+				{{ 'Import'|t('redirect-manager') }}
+			</a>
+			<form method="post" action="{{ actionUrl('redirect-manager/import-export/export') }}" style="display: inline;" id="export-form">
+				{{ csrfInput() }}
+				<input type="hidden" name="redirectIds" id="export-redirect-ids" value="">
+				<button type="submit" class="btn" id="export-btn">
+					<span id="export-label">{{ 'Export'|t('redirect-manager') }}</span>
+				</button>
+			</form>
 		</div>
-		<form>
-			<button type="button" class="btn secondary menubtn" data-icon="settings" title="Actions" id="settings-btn"></button>
-			<div class="menu">
-				<ul>
-					<li><a id="bulk-delete-action" class="error">{{ 'Delete…'|t('app') }}</a></li>
-				</ul>
-			</div>
-		</form>
-	</div>
-	<div class="flex flex-nowrap">
-		<a href="{{ url('redirect-manager/import-export') }}" class="btn">
-			{{ 'Import'|t('redirect-manager') }}
-		</a>
-		<form method="post" action="{{ actionUrl('redirect-manager/import-export/export') }}" style="display: inline;" id="export-form">
-			{{ csrfInput() }}
-			<input type="hidden" name="redirectIds" id="export-redirect-ids" value="">
-			<button type="submit" class="btn" id="export-btn">
-				<span id="export-label">{{ 'Export'|t('redirect-manager') }}</span>
-			</button>
-		</form>
-	</div>
+	{% endif %}
 </div>
 <script>
 	// Initialize menu buttons

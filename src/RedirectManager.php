@@ -92,6 +92,17 @@ class RedirectManager extends Plugin
         PluginHelper::bootstrap($this, 'redirectHelper', ['redirectManager:viewLogs']);
         PluginHelper::applyPluginNameFromConfig($this);
 
+        // Configure logging library with download permissions
+        $settings = $this->getSettings();
+        LoggingLibrary::configure([
+            'pluginHandle' => $this->handle,
+            'pluginName' => $settings->pluginName ?? $this->name,
+            'logLevel' => $settings->logLevel ?? 'error',
+            'itemsPerPage' => $settings->itemsPerPage ?? 50,
+            'viewPermissions' => ['redirectManager:viewLogs'],
+            'downloadPermissions' => ['redirectManager:downloadLogs'],
+        ]);
+
         // Register services
         $this->setComponents([
             'redirects' => RedirectsService::class,
@@ -137,9 +148,10 @@ class RedirectManager extends Plugin
             UserPermissions::class,
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
             function(RegisterUserPermissionsEvent $event) {
+                $settings = $this->getSettings();
                 $event->permissions[] = [
-                    'heading' => Craft::t('redirect-manager', 'Redirect Manager'),
-                    'permissions' => $this->getPluginPermissions(),
+                    'heading' => $settings->getFullName(),
+                    'permissions' => $this->getPluginPermissions($settings),
                 ];
             }
         );
@@ -168,6 +180,11 @@ class RedirectManager extends Plugin
             ClearCaches::class,
             ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
             function(RegisterCacheOptionsEvent $event) {
+                // Only show cache option if user has permission to clear cache
+                if (!Craft::$app->getUser()->checkPermission('redirectManager:clearCache')) {
+                    return;
+                }
+
                 $settings = $this->getSettings();
                 $displayName = $settings->getDisplayName();
 
@@ -191,28 +208,55 @@ class RedirectManager extends Plugin
     public function getCpNavItem(): ?array
     {
         $item = parent::getCpNavItem();
+        $user = Craft::$app->getUser();
+
+        // Check if user has any access to the plugin
+        $hasRedirectsAccess = $user->checkPermission('redirectManager:viewRedirects') ||
+            $user->checkPermission('redirectManager:createRedirects') ||
+            $user->checkPermission('redirectManager:editRedirects') ||
+            $user->checkPermission('redirectManager:deleteRedirects');
+        $hasAnalyticsAccess = $user->checkPermission('redirectManager:viewAnalytics');
+        $hasImportExportAccess = $user->checkPermission('redirectManager:manageImportExport');
+        $hasLogsAccess = $user->checkPermission('redirectManager:viewLogs');
+        $hasSettingsAccess = $user->checkPermission('redirectManager:manageSettings');
+
+        // If no access at all, hide the plugin from nav
+        if (!$hasRedirectsAccess && !$hasAnalyticsAccess && !$hasImportExportAccess && !$hasLogsAccess && !$hasSettingsAccess) {
+            return null;
+        }
 
         if ($item) {
             $item['label'] = $this->getSettings()->getFullName();
             $item['icon'] = '@appicons/arrows-turn-right.svg';
 
-            $item['subnav'] = [
-                'dashboard' => [
+            $item['subnav'] = [];
+
+            // Dashboard - requires analytics access (shows 404 list)
+            if ($hasAnalyticsAccess) {
+                $item['subnav']['dashboard'] = [
                     'label' => Craft::t('redirect-manager', 'Dashboard'),
                     'url' => 'redirect-manager',
-                ],
-                'redirects' => [
+                ];
+            }
+
+            // Redirects - requires any redirect permission
+            if ($hasRedirectsAccess) {
+                $item['subnav']['redirects'] = [
                     'label' => Craft::t('redirect-manager', 'Redirects'),
                     'url' => 'redirect-manager/redirects',
-                ],
-                'import-export' => [
+                ];
+            }
+
+            // Import/Export - requires import/export permission
+            if ($hasImportExportAccess) {
+                $item['subnav']['import-export'] = [
                     'label' => Craft::t('redirect-manager', 'Import/Export'),
                     'url' => 'redirect-manager/import-export',
-                ],
-            ];
+                ];
+            }
 
-            // Add analytics if enabled
-            if ($this->getSettings()->enableAnalytics) {
+            // Add analytics if enabled and user has permission
+            if ($this->getSettings()->enableAnalytics && $hasAnalyticsAccess) {
                 $item['subnav']['analytics'] = [
                     'label' => Craft::t('redirect-manager', 'Analytics'),
                     'url' => 'redirect-manager/analytics',
@@ -227,7 +271,7 @@ class RedirectManager extends Plugin
                 ]);
             }
 
-            if (Craft::$app->getUser()->checkPermission('redirectManager:manageSettings')) {
+            if ($hasSettingsAccess) {
                 $item['subnav']['settings'] = [
                     'label' => Craft::t('redirect-manager', 'Settings'),
                     'url' => 'redirect-manager/settings',
@@ -320,26 +364,44 @@ class RedirectManager extends Plugin
     /**
      * Get plugin permissions
      */
-    private function getPluginPermissions(): array
+    private function getPluginPermissions(Settings $settings): array
     {
+        $plural = $settings->getPluralLowerDisplayName();
+
         return [
             'redirectManager:viewRedirects' => [
-                'label' => Craft::t('redirect-manager', 'View redirects'),
+                'label' => Craft::t('redirect-manager', 'View {plural}', ['plural' => $plural]),
             ],
             'redirectManager:createRedirects' => [
-                'label' => Craft::t('redirect-manager', 'Create redirects'),
+                'label' => Craft::t('redirect-manager', 'Create {plural}', ['plural' => $plural]),
             ],
             'redirectManager:editRedirects' => [
-                'label' => Craft::t('redirect-manager', 'Edit redirects'),
+                'label' => Craft::t('redirect-manager', 'Edit {plural}', ['plural' => $plural]),
             ],
             'redirectManager:deleteRedirects' => [
-                'label' => Craft::t('redirect-manager', 'Delete redirects'),
+                'label' => Craft::t('redirect-manager', 'Delete {plural}', ['plural' => $plural]),
+            ],
+            'redirectManager:manageImportExport' => [
+                'label' => Craft::t('redirect-manager', 'Manage import/export'),
             ],
             'redirectManager:viewAnalytics' => [
                 'label' => Craft::t('redirect-manager', 'View analytics'),
+                'nested' => [
+                    'redirectManager:clearAnalytics' => [
+                        'label' => Craft::t('redirect-manager', 'Clear analytics'),
+                    ],
+                ],
+            ],
+            'redirectManager:clearCache' => [
+                'label' => Craft::t('redirect-manager', 'Clear cache'),
             ],
             'redirectManager:viewLogs' => [
                 'label' => Craft::t('redirect-manager', 'View logs'),
+                'nested' => [
+                    'redirectManager:downloadLogs' => [
+                        'label' => Craft::t('redirect-manager', 'Download logs'),
+                    ],
+                ],
             ],
             'redirectManager:manageSettings' => [
                 'label' => Craft::t('redirect-manager', 'Manage settings'),

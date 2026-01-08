@@ -43,7 +43,7 @@ class ImportExportController extends Controller
      */
     public function actionIndex(): Response
     {
-        $this->requirePermission('redirectManager:manageSettings');
+        $this->requirePermission('redirectManager:manageImportExport');
 
         $settings = RedirectManager::$plugin->getSettings();
         $backups = $this->getBackups();
@@ -62,7 +62,7 @@ class ImportExportController extends Controller
     public function actionExport(): Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:manageSettings');
+        $this->requirePermission('redirectManager:manageImportExport');
 
         // Check if specific redirects were selected
         $redirectIdsJson = Craft::$app->getRequest()->getBodyParam('redirectIds');
@@ -146,7 +146,7 @@ class ImportExportController extends Controller
     public function actionUpload(): Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:manageSettings');
+        $this->requirePermission('redirectManager:manageImportExport');
 
         $file = UploadedFile::getInstanceByName('csvFile');
 
@@ -234,7 +234,7 @@ class ImportExportController extends Controller
      */
     public function actionMap(): Response
     {
-        $this->requirePermission('redirectManager:manageSettings');
+        $this->requirePermission('redirectManager:manageImportExport');
 
         // Get data from session
         $importData = Craft::$app->getSession()->get('redirect-import');
@@ -276,7 +276,7 @@ class ImportExportController extends Controller
      */
     public function actionPreview(): Response
     {
-        $this->requirePermission('redirectManager:manageSettings');
+        $this->requirePermission('redirectManager:manageImportExport');
 
         // If GET request, show preview from session
         if (!Craft::$app->getRequest()->getIsPost()) {
@@ -519,7 +519,7 @@ class ImportExportController extends Controller
     public function actionImport(): ?Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:manageSettings');
+        $this->requirePermission('redirectManager:manageImportExport');
 
         $validatedData = Craft::$app->getSession()->get('redirect-import-validated');
 
@@ -719,7 +719,7 @@ class ImportExportController extends Controller
      */
     public function actionDownloadBackup(): Response
     {
-        $this->requirePermission('redirectManager:manageSettings');
+        $this->requirePermission('redirectManager:manageImportExport');
 
         $settings = RedirectManager::$plugin->getSettings();
         $dirname = Craft::$app->getRequest()->getQueryParam('dirname');
@@ -756,7 +756,7 @@ class ImportExportController extends Controller
     public function actionRestoreBackup(): ?Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:manageSettings');
+        $this->requirePermission('redirectManager:manageImportExport');
 
         $settings = RedirectManager::$plugin->getSettings();
         $dirname = Craft::$app->getRequest()->getBodyParam('dirname');
@@ -818,7 +818,7 @@ class ImportExportController extends Controller
     public function actionDeleteBackup(): ?Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:manageSettings');
+        $this->requirePermission('redirectManager:manageImportExport');
 
         $settings = RedirectManager::$plugin->getSettings();
         $dirname = Craft::$app->getRequest()->getBodyParam('dirname');

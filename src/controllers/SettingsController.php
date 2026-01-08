@@ -492,6 +492,7 @@ class SettingsController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+        $this->requirePermission('redirectManager:clearCache');
 
         try {
             $settings = RedirectManager::$plugin->getSettings();
@@ -537,6 +538,7 @@ class SettingsController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+        $this->requirePermission('redirectManager:clearCache');
 
         try {
             $settings = RedirectManager::$plugin->getSettings();
@@ -591,6 +593,7 @@ class SettingsController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+        $this->requirePermission('redirectManager:clearCache');
 
         try {
             $settings = RedirectManager::$plugin->getSettings();
@@ -655,14 +658,7 @@ class SettingsController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
-
-        // Require admin permission
-        if (!Craft::$app->getUser()->getIsAdmin()) {
-            return $this->asJson([
-                'success' => false,
-                'error' => Craft::t('redirect-manager', 'Only administrators can clear analytics data.'),
-            ]);
-        }
+        $this->requirePermission('redirectManager:clearAnalytics');
 
         try {
             // Get count before deleting

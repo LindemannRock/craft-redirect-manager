@@ -126,28 +126,43 @@
 </div>
 
 <!-- Quick Actions -->
+{% set hasRedirectsAccess = currentUser.can('redirectManager:viewRedirects') or currentUser.can('redirectManager:createRedirects') or currentUser.can('redirectManager:editRedirects') or currentUser.can('redirectManager:deleteRedirects') %}
+{% set hasAnalyticsAccess = currentUser.can('redirectManager:viewAnalytics') and settings.enableAnalytics %}
+{% set hasSettingsAccess = currentUser.can('redirectManager:manageSettings') %}
+{% set canClearCache = currentUser.can('redirectManager:clearCache') and (settings.enableRedirectCache or settings.cacheDeviceDetection) %}
+{% set canClearAnalytics = currentUser.can('redirectManager:clearAnalytics') and settings.enableAnalytics %}
+
+{% set hasNavigation = hasRedirectsAccess or hasAnalyticsAccess or hasSettingsAccess %}
+{% set hasAnyQuickAction = hasNavigation or canClearCache or canClearAnalytics %}
+
+{% if hasAnyQuickAction %}
 <div>
 	<h2>{{ 'Quick Actions'|t('redirect-manager') }}</h2>
 
 	<div class="pane">
-		<div style="margin-bottom: 24px;">
-			<h3>{{ "Navigation"|t('redirect-manager') }}</h3>
-			<p class="light" style="margin-bottom: 16px;">{{ "Access main plugin sections"|t('redirect-manager') }}</p>
+		{% if hasNavigation %}
+			<div style="margin-bottom: 24px;">
+				<h3>{{ "Navigation"|t('redirect-manager') }}</h3>
+				<p class="light" style="margin-bottom: 16px;">{{ "Access main plugin sections"|t('redirect-manager') }}</p>
 
-			<div style="display: flex; gap: 10px; flex-wrap: wrap;">
-				<a href="{{ url('redirect-manager/redirects') }}" class="btn">{{ "Manage Redirects"|t('redirect-manager') }}</a>
-				{% if settings.enableAnalytics %}
-					<a href="{{ url('redirect-manager/analytics') }}" class="btn">{{ "View Analytics"|t('redirect-manager') }}</a>
-				{% endif %}
-				<a href="{{ url('redirect-manager/settings') }}" class="btn">
-					{{ "View Settings"|t('redirect-manager') }}
-				</a>
+				<div style="display: flex; gap: 10px; flex-wrap: wrap;">
+					{% if hasRedirectsAccess %}
+						<a href="{{ url('redirect-manager/redirects') }}" class="btn">{{ "Manage Redirects"|t('redirect-manager') }}</a>
+					{% endif %}
+					{% if hasAnalyticsAccess %}
+						<a href="{{ url('redirect-manager/analytics') }}" class="btn">{{ "View Analytics"|t('redirect-manager') }}</a>
+					{% endif %}
+					{% if hasSettingsAccess %}
+						<a href="{{ url('redirect-manager/settings') }}" class="btn">
+							{{ "View Settings"|t('redirect-manager') }}
+						</a>
+					{% endif %}
+				</div>
 			</div>
-		</div>
+		{% endif %}
 
-
-		{% if settings.enableRedirectCache or settings.cacheDeviceDetection %}
-			<hr style="margin: 24px 0;">
+		{% if canClearCache %}
+			{% if hasNavigation %}<hr style="margin: 24px 0;">{% endif %}
 
 			<div style="margin-bottom: 24px;">
 				<h3>{{ "Cache Management"|t('redirect-manager') }}</h3>
@@ -172,8 +187,8 @@
 			</div>
 		{% endif %}
 
-		{% if settings.enableAnalytics %}
-			<hr style="margin: 24px 0;">
+		{% if canClearAnalytics %}
+			{% if hasNavigation or canClearCache %}<hr style="margin: 24px 0;">{% endif %}
 
 			<div>
 				<h3>{{ "Analytics Data Management"|t('redirect-manager') }}</h3>
@@ -183,6 +198,7 @@
 		{% endif %}
 	</div>
 </div>
+{% endif %}
 
 {% js %}
 {% if settings.enableRedirectCache %}

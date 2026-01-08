@@ -113,7 +113,29 @@ class AnalyticsController extends Controller
      */
     public function actionDashboard(): Response
     {
-        $this->requirePermission('redirectManager:viewAnalytics');
+        $user = Craft::$app->getUser();
+
+        // If user doesn't have viewAnalytics permission, redirect to appropriate section
+        if (!$user->checkPermission('redirectManager:viewAnalytics')) {
+            // Check what they do have access to and redirect there
+            if ($user->checkPermission('redirectManager:viewRedirects') ||
+                $user->checkPermission('redirectManager:createRedirects') ||
+                $user->checkPermission('redirectManager:editRedirects') ||
+                $user->checkPermission('redirectManager:deleteRedirects')) {
+                return $this->redirect('redirect-manager/redirects');
+            }
+            if ($user->checkPermission('redirectManager:manageImportExport')) {
+                return $this->redirect('redirect-manager/import-export');
+            }
+            if ($user->checkPermission('redirectManager:viewLogs')) {
+                return $this->redirect('redirect-manager/logs');
+            }
+            if ($user->checkPermission('redirectManager:manageSettings')) {
+                return $this->redirect('redirect-manager/settings');
+            }
+            // No permissions at all - show forbidden
+            $this->requirePermission('redirectManager:viewAnalytics');
+        }
 
         $request = Craft::$app->getRequest();
         $settings = RedirectManager::$plugin->getSettings();

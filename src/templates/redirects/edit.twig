@@ -203,8 +203,14 @@
 
 	{% if not isNew %}
 		<fieldset>
-			<legend class="h6">{{ 'Analytics'|t('redirect-manager') }}</legend>
-			<dl class="meta read-only">
+				<dl class="meta read-only">
+				<div class="data">
+					<dt class="heading">{{ 'Status'|t('redirect-manager') }}</dt>
+					<dd class="value">
+						<span class="status {{ redirect.enabled ? 'live' : 'disabled' }}"></span>
+						<span>{{ redirect.enabled ? 'Live'|t('redirect-manager') : 'Disabled'|t('redirect-manager') }}</span>
+					</dd>
+				</div>
 				<div class="data">
 					<dt class="heading">{{ 'Hit count'|t('redirect-manager') }}</dt>
 					<dd class="value">{{ redirect.hitCount }}</dd>
