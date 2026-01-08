@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.14.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.0...v5.14.1) (2026-01-08)
+
+
+### Bug Fixes
+
+* Update form action URL in dashboard template ([3c94242](https://github.com/LindemannRock/craft-redirect-manager/commit/3c942428e7583595d6c4b771e31851453dd88602))
+
 ## [5.14.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.13.0...v5.14.0) (2026-01-08)
 
 
