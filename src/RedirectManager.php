@@ -210,11 +210,8 @@ class RedirectManager extends Plugin
         $item = parent::getCpNavItem();
         $user = Craft::$app->getUser();
 
-        // Check if user has any access to the plugin
-        $hasRedirectsAccess = $user->checkPermission('redirectManager:viewRedirects') ||
-            $user->checkPermission('redirectManager:createRedirects') ||
-            $user->checkPermission('redirectManager:editRedirects') ||
-            $user->checkPermission('redirectManager:deleteRedirects');
+        // Check if user has view access to each section
+        $hasRedirectsAccess = $user->checkPermission('redirectManager:viewRedirects');
         $hasAnalyticsAccess = $user->checkPermission('redirectManager:viewAnalytics');
         $hasImportExportAccess = $user->checkPermission('redirectManager:manageImportExport');
         $hasLogsAccess = $user->checkPermission('redirectManager:viewLogs');
@@ -369,17 +366,23 @@ class RedirectManager extends Plugin
         $plural = $settings->getPluralLowerDisplayName();
 
         return [
-            'redirectManager:viewRedirects' => [
-                'label' => Craft::t('redirect-manager', 'View {plural}', ['plural' => $plural]),
-            ],
-            'redirectManager:createRedirects' => [
-                'label' => Craft::t('redirect-manager', 'Create {plural}', ['plural' => $plural]),
-            ],
-            'redirectManager:editRedirects' => [
-                'label' => Craft::t('redirect-manager', 'Edit {plural}', ['plural' => $plural]),
-            ],
-            'redirectManager:deleteRedirects' => [
-                'label' => Craft::t('redirect-manager', 'Delete {plural}', ['plural' => $plural]),
+            // Redirects - grouped
+            'redirectManager:manageRedirects' => [
+                'label' => Craft::t('redirect-manager', 'Manage {plural}', ['plural' => $plural]),
+                'nested' => [
+                    'redirectManager:viewRedirects' => [
+                        'label' => Craft::t('redirect-manager', 'View {plural}', ['plural' => $plural]),
+                    ],
+                    'redirectManager:createRedirects' => [
+                        'label' => Craft::t('redirect-manager', 'Create {plural}', ['plural' => $plural]),
+                    ],
+                    'redirectManager:editRedirects' => [
+                        'label' => Craft::t('redirect-manager', 'Edit {plural}', ['plural' => $plural]),
+                    ],
+                    'redirectManager:deleteRedirects' => [
+                        'label' => Craft::t('redirect-manager', 'Delete {plural}', ['plural' => $plural]),
+                    ],
+                ],
             ],
             'redirectManager:manageImportExport' => [
                 'label' => Craft::t('redirect-manager', 'Manage import/export'),
