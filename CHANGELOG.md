@@ -1,5 +1,19 @@
 # Changelog
 
+## [5.14.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.13.0...v5.14.0) (2026-01-08)
+
+
+### Features
+
+* Add exportAnalytics permission and fix dashboard permissions ([843b4a1](https://github.com/LindemannRock/craft-redirect-manager/commit/843b4a1ad46eb227e08d0549f8574a949c136ed1))
+* Add granular permissions and dynamic naming to redirect-manager ([60303af](https://github.com/LindemannRock/craft-redirect-manager/commit/60303af8c41b038a3922f753aa9f0cc7228b5a22))
+* Simplify user permissions by grouping redirect management actions ([9230f3a](https://github.com/LindemannRock/craft-redirect-manager/commit/9230f3aa89e4023c8b4982e17a1c7625372e80c6))
+
+
+### Bug Fixes
+
+* update success message for settings save action ([7d3dc52](https://github.com/LindemannRock/craft-redirect-manager/commit/7d3dc529531b939d50f27537433f438c7ccd964d))
+
 ## [5.13.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.12.0...v5.13.0) (2026-01-05)
 
 
