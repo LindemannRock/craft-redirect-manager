@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.14.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.1...v5.14.2) (2026-01-08)
+
+
+### Bug Fixes
+
+* Preserve user input in search parameter for URL params ([d61e117](https://github.com/LindemannRock/craft-redirect-manager/commit/d61e1175b17aa94b4a1a61bb94cfeb01301a2162))
+
 ## [5.14.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.0...v5.14.1) (2026-01-08)
 
 
