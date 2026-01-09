@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.15.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.4...v5.15.0) (2026-01-09)
+
+
+### Features
+
+* Enhance redirect matching to return all matches with resolved destinations ([53ca0da](https://github.com/LindemannRock/craft-redirect-manager/commit/53ca0da84cf8571253a43a9d8da8fd973a3ea5c7))
+
+
+### Bug Fixes
+
+* Update filename generation to use 'alltime' instead of 'all' for clarity ([b2aa0ab](https://github.com/LindemannRock/craft-redirect-manager/commit/b2aa0ab93cbb566bf394c9f115acde71e0f0b7d4))
+
 ## [5.14.4](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.3...v5.14.4) (2026-01-08)
 
 
