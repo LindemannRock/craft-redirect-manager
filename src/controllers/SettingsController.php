@@ -458,22 +458,56 @@ class SettingsController extends Controller
         $fullUrl = $testUrl;
         $pathOnly = ($parsedUrl['path'] ?? '/') . (isset($parsedUrl['query']) ? '?' . $parsedUrl['query'] : '');
 
-        // Find matching redirect
-        $redirect = RedirectManager::$plugin->redirects->findRedirect($fullUrl, $pathOnly);
+        // Find ALL matching redirects (not just the first one)
+        $allMatches = [];
+        $redirects = RedirectManager::$plugin->redirects->getEnabledRedirects();
 
-        if ($redirect) {
-            return $this->asJson([
-                'success' => true,
-                'matched' => true,
-                'redirect' => [
+        foreach ($redirects as $redirect) {
+            $matchType = $redirect['matchType'];
+            $sourceUrlParsed = $redirect['sourceUrlParsed'];
+            $redirectSrcMatch = $redirect['redirectSrcMatch'] ?? 'pathonly';
+
+            // Use pathOnly or fullUrl based on per-redirect setting
+            $urlToMatch = $redirectSrcMatch === 'fullurl' ? $fullUrl : $pathOnly;
+
+            // Check if this redirect matches
+            $result = RedirectManager::$plugin->matching->matchWithCaptures($matchType, $sourceUrlParsed, $urlToMatch);
+
+            if ($result['matched']) {
+                // Apply capture groups to get resolved destination
+                $resolvedDestination = $redirect['destinationUrl'];
+                if (!empty($result['captures'])) {
+                    $resolvedDestination = RedirectManager::$plugin->matching->applyCaptures(
+                        $redirect['destinationUrl'],
+                        $result['captures']
+                    );
+                }
+
+                $allMatches[] = [
                     'id' => $redirect['id'],
                     'sourceUrl' => $redirect['sourceUrl'],
                     'destinationUrl' => $redirect['destinationUrl'],
+                    'resolvedDestinationUrl' => $resolvedDestination,
                     'matchType' => $redirect['matchType'],
-                    'redirectSrcMatch' => $redirect['redirectSrcMatch'],
+                    'redirectSrcMatch' => $redirect['redirectSrcMatch'] ?? 'pathonly',
                     'statusCode' => $redirect['statusCode'],
                     'priority' => $redirect['priority'],
-                ],
+                ];
+            }
+        }
+
+        if (!empty($allMatches)) {
+            // Sort by priority (already sorted from getEnabledRedirects, but be explicit)
+            usort($allMatches, fn($a, $b) => $a['priority'] <=> $b['priority'] ?: $a['id'] <=> $b['id']);
+
+            // First match is the winner
+            $winningRedirect = array_shift($allMatches);
+
+            return $this->asJson([
+                'success' => true,
+                'matched' => true,
+                'redirect' => $winningRedirect,
+                'alsoMatches' => $allMatches, // Other matches that were skipped due to priority
                 'message' => 'Match found! This URL would redirect.',
             ]);
         }

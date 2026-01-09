@@ -119,7 +119,7 @@ const testButton = document.getElementById('testButton');
 	<strong>This URL would redirect:</strong><br>
 	<code>${testUrl}</code>
 	→
-	<code>${r.destinationUrl}</code>
+	<code>${r.resolvedDestinationUrl}</code>
 </p>
 <dl style="display: grid; grid-template-columns: 200px 1fr; gap: 10px; margin: 20px 0;">
 	<dt>
@@ -141,6 +141,7 @@ const testButton = document.getElementById('testButton');
 	</dt>
 	<dd>
 		<code>${r.destinationUrl}</code>
+		${r.destinationUrl !== r.resolvedDestinationUrl ? `<br><span style="color: #28a745;">→ Resolves to: <code>${r.resolvedDestinationUrl}</code></span>` : ''}
 	</dd>
 
 	<dt>
@@ -163,6 +164,34 @@ const testButton = document.getElementById('testButton');
 	</dt>
 	<dd>${r.priority}</dd>
 </dl>
+${data.alsoMatches && data.alsoMatches.length > 0 ? `
+<div style="margin-top: 25px;">
+	<p><strong>${data.alsoMatches.length} other redirect${data.alsoMatches.length > 1 ? 's' : ''} also match${data.alsoMatches.length === 1 ? 'es' : ''} this URL</strong></p>
+	<p class="light" style="margin: 0 0 12px 0;">Skipped due to lower priority (higher number = lower priority)</p>
+	<div class="tableview">
+		<table class="data fullwidth">
+			<thead>
+				<tr>
+					<th style="width: 80px;">ID</th>
+					<th>Source</th>
+					<th>Destination</th>
+					<th style="width: 80px;">Priority</th>
+				</tr>
+			</thead>
+			<tbody>
+				${data.alsoMatches.map(m => `
+					<tr>
+						<td><a href="${Craft.getUrl('redirect-manager/redirects/' + m.id)}">#${m.id}</a></td>
+						<td><code>${m.sourceUrl}</code></td>
+						<td><code>${m.resolvedDestinationUrl}</code></td>
+						<td>${m.priority}</td>
+					</tr>
+				`).join('')}
+			</tbody>
+		</table>
+	</div>
+</div>
+` : ''}
 `;
             } else {
                 // No match
