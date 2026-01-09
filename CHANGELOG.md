@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.17.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.16.0...v5.17.0) (2026-01-09)
+
+
+### Features
+
+* Update backup path structure to include 'imports' subdirectory for better organization ([42e7604](https://github.com/LindemannRock/craft-redirect-manager/commit/42e7604cab2f40d6f36ed155a09fb3bbf9cb402f))
+
 ## [5.16.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.15.0...v5.16.0) (2026-01-09)
 
 
