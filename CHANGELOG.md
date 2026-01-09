@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.16.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.15.0...v5.16.0) (2026-01-09)
+
+
+### Features
+
+* Enhance import/export functionality with improved URL parsing and auto-detection of creation type ([c5f8b20](https://github.com/LindemannRock/craft-redirect-manager/commit/c5f8b202ec5928353c04f51c0c5e0767034d326b))
+* Update redirect creation to return new ID on success and enhance edit template with save options ([7c91fe3](https://github.com/LindemannRock/craft-redirect-manager/commit/7c91fe3abff9fb963e70055baa9a52b065cda18e))
+
 ## [5.15.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.4...v5.15.0) (2026-01-09)
 
 
