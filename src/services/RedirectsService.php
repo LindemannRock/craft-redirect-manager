@@ -650,9 +650,9 @@ class RedirectsService extends Component
      *
      * @param array $attributes
      * @param bool $showNotification Whether to show user notification
-     * @return bool
+     * @return int|false The new redirect ID on success, false on failure
      */
-    public function createRedirect(array $attributes, bool $showNotification = false): bool
+    public function createRedirect(array $attributes, bool $showNotification = false): int|false
     {
         // Validate required fields FIRST
         $hasErrors = false;
@@ -758,7 +758,7 @@ class RedirectsService extends Component
             );
         }
 
-        return true;
+        return $record->id;
     }
 
     /**

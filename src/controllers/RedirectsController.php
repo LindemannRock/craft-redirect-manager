@@ -187,18 +187,24 @@ class RedirectsController extends Controller
         ];
 
         $success = false;
+        $newRedirectId = null;
 
         if ($redirectId) {
             // Update existing redirect
             $success = RedirectManager::$plugin->redirects->updateRedirect($redirectId, $attributes);
+            $newRedirectId = $redirectId;
         } else {
-            // Create new redirect
-            $success = RedirectManager::$plugin->redirects->createRedirect($attributes);
+            // Create new redirect - returns ID on success, false on failure
+            $result = RedirectManager::$plugin->redirects->createRedirect($attributes);
+            $success = $result !== false;
+            $newRedirectId = $result ?: null;
         }
 
         if ($success) {
-            Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'Redirect saved successfully'));
-            return $this->redirectToPostedUrl();
+            Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'Redirect saved.'));
+            // Create object for URL token replacement
+            $redirect = RedirectRecord::findOne($newRedirectId);
+            return $this->redirectToPostedUrl($redirect);
         }
 
         // Service should have already set specific error message
