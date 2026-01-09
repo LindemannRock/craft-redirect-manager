@@ -84,6 +84,7 @@
             {value: 'lastHit', label: 'Last Hit (datetime)'|t('redirect-manager')},
             {value: 'creationType', label: 'Creation Type (manual/auto/import)'|t('redirect-manager')},
             {value: 'sourcePlugin', label: 'Source Plugin'|t('redirect-manager')},
+            {value: 'elementId', label: 'Element ID (for auto-detection)'|t('redirect-manager')},
         ] %}
 
         <div class="field">
@@ -132,6 +133,8 @@
                                                 {% elseif option.value == 'creationType' and (lowerHeader in ['creationtype', 'creation type', 'type', 'created by']) %}
                                                     {% set isMatch = true %}
                                                 {% elseif option.value == 'sourcePlugin' and (lowerHeader in ['sourceplugin', 'source plugin', 'plugin', 'source']) %}
+                                                    {% set isMatch = true %}
+                                                {% elseif option.value == 'elementId' and (lowerHeader in ['elementid', 'element id', 'element_id', 'short link element id', 'associatedentityid', 'entryid', 'entry id']) %}
                                                     {% set isMatch = true %}
                                                 {% endif %}
 

@@ -555,10 +555,32 @@ class ImportExportController extends Controller
         foreach ($validRows as $redirectData) {
             try {
                 // Parse source URL to store parsed version
-                $parsedUrl = parse_url($redirectData['sourceUrl']);
-                $sourceUrlParsed = $redirectData['redirectSrcMatch'] === 'pathonly'
-                    ? ($parsedUrl['path'] ?? '/')
-                    : $redirectData['sourceUrl'];
+                // For regex/wildcard patterns, don't use parse_url() as it misinterprets ? and other regex chars
+                if (in_array($redirectData['matchType'], ['regex', 'wildcard'])) {
+                    $sourceUrlParsed = $redirectData['sourceUrl'];
+                } else {
+                    $parsedUrl = parse_url($redirectData['sourceUrl']);
+                    $sourceUrlParsed = $redirectData['redirectSrcMatch'] === 'pathonly'
+                        ? ($parsedUrl['path'] ?? '/')
+                        : $redirectData['sourceUrl'];
+                }
+
+                // Detect creationType if not explicitly set
+                // If creationType is already set and valid, use it; otherwise auto-detect
+                $creationType = $redirectData['creationType'] ?? null;
+                if (empty($creationType) || $creationType === 'import') {
+                    // Auto-detect based on matchType and elementId
+                    if (in_array($redirectData['matchType'], ['regex', 'wildcard'])) {
+                        // Regex/wildcard patterns are always manual
+                        $creationType = 'manual';
+                    } elseif (!empty($redirectData['elementId']) && (int)$redirectData['elementId'] > 0) {
+                        // If associated with an element, it was auto-created from entry changes
+                        $creationType = 'entry-change';
+                    } else {
+                        // Default to manual for exact/prefix matches without element association
+                        $creationType = 'manual';
+                    }
+                }
 
                 $db->createCommand()->insert('{{%redirectmanager_redirects}}', [
                     'siteId' => $redirectData['siteId'],
@@ -570,12 +592,12 @@ class ImportExportController extends Controller
                     'statusCode' => $redirectData['statusCode'],
                     'priority' => $redirectData['priority'],
                     'enabled' => $redirectData['enabled'],
-                    'creationType' => $redirectData['creationType'] ?? 'import',
+                    'creationType' => $creationType,
                     'sourcePlugin' => $redirectData['sourcePlugin'] ?? 'redirect-manager',
                     'hitCount' => $redirectData['hitCount'] ?? 0,
                     'lastHit' => $redirectData['lastHit'],
-                    'dateCreated' => date('Y-m-d H:i:s'),
-                    'dateUpdated' => date('Y-m-d H:i:s'),
+                    'dateCreated' => \craft\helpers\Db::prepareDateForDb(new \DateTime()),
+                    'dateUpdated' => \craft\helpers\Db::prepareDateForDb(new \DateTime()),
                     'uid' => \craft\helpers\StringHelper::UUID(),
                 ])->execute();
 
