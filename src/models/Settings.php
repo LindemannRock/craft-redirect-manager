@@ -461,7 +461,7 @@ class Settings extends Model
     }
 
     /**
-     * Get the resolved backup path
+     * Get the resolved backup path (base path without subdirectories)
      *
      * @return string
      */
@@ -474,9 +474,9 @@ class Settings extends Model
                 $fs = $volume->getFs();
                 if (property_exists($fs, 'path')) {
                     $path = App::env($fs->path);
-                    return rtrim($path, '/') . '/redirect-manager/backups/imports';
+                    return rtrim($path, '/') . '/redirect-manager/backups';
                 }
-                return "Volume: {$volume->name} / redirect-manager/backups/imports";
+                return "Volume: {$volume->name} / redirect-manager/backups";
             }
         }
 
@@ -487,7 +487,7 @@ class Settings extends Model
         $rootPath = Craft::getAlias('@root');
         if ($path === $rootPath || $path === '/' || $path === '') {
             // Force a safe default path
-            $path = Craft::getAlias('@storage/redirect-manager/backups/imports');
+            $path = Craft::getAlias('@storage/redirect-manager/backups');
             $this->logWarning('Backup path was pointing to root directory. Using safe default');
         }
 

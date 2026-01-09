@@ -652,8 +652,8 @@ class ImportExportController extends Controller
             $settings = RedirectManager::$plugin->getSettings();
             $timestamp = date('Y-m-d_H-i-s');
 
-            // Create backup directory using configured path
-            $backupDir = $settings->getBackupPath() . '/' . $timestamp;
+            // Create backup directory using configured path + /imports subdirectory
+            $backupDir = $settings->getBackupPath() . '/imports/' . $timestamp;
             FileHelper::createDirectory($backupDir);
 
             // Create metadata.json
@@ -690,7 +690,7 @@ class ImportExportController extends Controller
     private function getBackups(): array
     {
         $settings = RedirectManager::$plugin->getSettings();
-        $backupDir = $settings->getBackupPath();
+        $backupDir = $settings->getBackupPath() . '/imports';
 
         if (!is_dir($backupDir)) {
             return [];
@@ -745,7 +745,7 @@ class ImportExportController extends Controller
 
         $settings = RedirectManager::$plugin->getSettings();
         $dirname = Craft::$app->getRequest()->getQueryParam('dirname');
-        $backupDir = $settings->getBackupPath() . '/' . $dirname;
+        $backupDir = $settings->getBackupPath() . '/imports/' . $dirname;
 
         if (!is_dir($backupDir) || !file_exists($backupDir . '/metadata.json')) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backup not found'));
@@ -782,7 +782,7 @@ class ImportExportController extends Controller
 
         $settings = RedirectManager::$plugin->getSettings();
         $dirname = Craft::$app->getRequest()->getBodyParam('dirname');
-        $backupDir = $settings->getBackupPath() . '/' . $dirname;
+        $backupDir = $settings->getBackupPath() . '/imports/' . $dirname;
 
         if (!is_dir($backupDir) || !file_exists($backupDir . '/redirects.json')) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backup not found'));
@@ -844,7 +844,7 @@ class ImportExportController extends Controller
 
         $settings = RedirectManager::$plugin->getSettings();
         $dirname = Craft::$app->getRequest()->getBodyParam('dirname');
-        $backupDir = $settings->getBackupPath() . '/' . $dirname;
+        $backupDir = $settings->getBackupPath() . '/imports/' . $dirname;
 
         if (!is_dir($backupDir)) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backup not found'));

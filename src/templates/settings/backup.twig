@@ -41,7 +41,7 @@
 
         {{ forms.selectField({
             label: "Backup Storage Volume"|t('redirect-manager'),
-            instructions: "Which asset volume should be used for storing backups. Backups will be stored in a 'redirect-manager/backups/imports' subdirectory. Note: Cloud storage volumes (Servd, S3, etc.) are not supported for backups and will fall back to local storage."|t('redirect-manager'),
+            instructions: "Select an asset volume or use a custom path for storing backups."|t('redirect-manager'),
             id: 'backupVolumeUid',
             name: 'settings[backupVolumeUid]',
             options: volumeOptions,
@@ -55,6 +55,7 @@
             {{ forms.autosuggestField({
                 label: "Custom Backup Path"|t('redirect-manager'),
                 instructions: "The custom path where backups should be stored (only used when no volume is selected)"|t('redirect-manager'),
+                tip: "Use Craft path aliases: <code>@storage/redirect-manager/backups</code> (recommended) or <code>@root/backups/redirect-manager</code>. Paths must be outside webroot for security. Environment variables like <code>$ENV_VAR</code> are supported."|t('redirect-manager')|raw,
                 id: 'backupPath',
                 name: 'settings[backupPath]',
                 value: settings.backupPath,
