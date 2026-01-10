@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.18.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.17.0...v5.18.0) (2026-01-10)
+
+
+### Features
+
+* Add redirect analytics functionality with new template and service methods ([303faad](https://github.com/LindemannRock/craft-redirect-manager/commit/303faade49718b84d5c2c7221ef6aef527584bac))
+
 ## [5.17.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.16.0...v5.17.0) (2026-01-09)
 
 
