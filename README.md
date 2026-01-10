@@ -221,11 +221,17 @@ return [
 1. Navigate to **Redirect Manager → Redirects**
 2. Click **New redirect**
 3. Fill in:
+   - **Source Match Mode**: Path Only (recommended) or Full URL
+   - **Match Type**: exact, contains, regex, wildcard, or prefix
    - **Source URL**: `/old-page` or `/blog/*` or regex pattern
    - **Destination URL**: `/new-page` or absolute URL
-   - **Match Type**: exact, regex, wildcard, or prefix
-   - **Status Code**: 301 (permanent) or 302 (temporary)
+   - **Priority**: 0-9 (0 = highest priority, 9 = lowest)
+   - **Status Code**: 301, 302, 303, 307, 308, or 410
 4. Save
+
+**Source Match Mode:**
+- **Path Only** (default): Match by path only (e.g., `/old-page`). Works across all domains. Full URLs entered are automatically converted to paths.
+- **Full URL**: Match by complete URL including domain (e.g., `https://example.com/old-page`). Use when you need domain-specific redirects.
 
 **Programmatically:**
 
@@ -249,6 +255,13 @@ RedirectManager::$plugin->redirects->createRedirect([
 ```
 Source: /old-page
 Matches: /old-page (case-insensitive)
+Does NOT match: /old-page/subpage
+```
+
+**Contains Match:**
+```
+Source: old-post
+Matches: /blog/old-post, /archive/old-post/123, /old-post-title
 ```
 
 **Wildcard Match:**
@@ -267,7 +280,33 @@ Matches: /old-page, /old-blog, /old-anything
 ```
 Source: ^/blog/(\d+)/(.*)$
 Destination: /article/$1/$2
+Matches: /blog/123/my-post → /article/123/my-post
 ```
+
+### Priority
+
+Priority controls which redirect matches first when multiple patterns could apply:
+
+| Priority | Description | Use Case |
+|----------|-------------|----------|
+| 0 | Highest priority | Specific patterns (e.g., `/blog/special-post`) |
+| 1-4 | High priority | Important redirects |
+| 5 | Normal | Standard redirects |
+| 6-8 | Low priority | General patterns |
+| 9 | Lowest priority | Catch-all patterns (e.g., `/blog/*`) |
+
+**Example:** Set `/blog/featured-post` to priority 0 and `/blog/*` to priority 9. The specific redirect matches first.
+
+### Status Codes
+
+| Code | Name | Description |
+|------|------|-------------|
+| 301 | Moved Permanently | Content permanently moved. Search engines update their index. **Most common.** |
+| 302 | Found (Temporary) | Temporary redirect. Search engines keep the original URL. |
+| 303 | See Other | Redirect to a different resource, typically after form submission. |
+| 307 | Temporary Redirect | Like 302 but guarantees request method won't change (POST stays POST). |
+| 308 | Permanent Redirect | Like 301 but guarantees request method won't change (POST stays POST). |
+| 410 | Gone | Content permanently deleted. Search engines remove it from index. |
 
 ### Viewing Analytics
 
