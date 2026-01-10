@@ -123,6 +123,7 @@ class Install extends Migration
                 'url' => $this->string(500)->notNull(),
                 'urlParsed' => $this->string(500)->notNull(),
                 'handled' => $this->boolean()->notNull()->defaultValue(false),
+                'redirectId' => $this->integer()->null(),
                 'sourcePlugin' => $this->string(50)->notNull()->defaultValue('redirect-manager'),
                 'count' => $this->integer()->notNull()->defaultValue(1),
                 'referrer' => $this->string(500),
@@ -156,6 +157,7 @@ class Install extends Migration
             // Add indexes for performance
             $this->createIndex(null, '{{%redirectmanager_analytics}}', ['urlParsed'], false);
             $this->createIndex(null, '{{%redirectmanager_analytics}}', ['handled'], false);
+            $this->createIndex(null, '{{%redirectmanager_analytics}}', ['redirectId'], false);
             $this->createIndex(null, '{{%redirectmanager_analytics}}', ['siteId'], false);
             $this->createIndex(null, '{{%redirectmanager_analytics}}', ['lastHit'], false);
             $this->createIndex(null, '{{%redirectmanager_analytics}}', ['count'], false);

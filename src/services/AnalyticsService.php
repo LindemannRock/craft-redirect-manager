@@ -12,6 +12,7 @@ use Craft;
 use craft\base\Component;
 use craft\db\Query;
 use craft\helpers\Db;
+use lindemannrock\base\helpers\GeoHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\records\AnalyticsRecord;
 use lindemannrock\redirectmanager\RedirectManager;
@@ -57,8 +58,9 @@ class AnalyticsService extends Component
 
         $siteId = Craft::$app->getSites()->getCurrentSite()->id;
 
-        // Extract source plugin from context
+        // Extract source plugin and redirectId from context
         $sourcePlugin = $context['source'] ?? 'redirect-manager';
+        $redirectId = $context['redirectId'] ?? null;
 
         // Strip query string from URL if configured
         $urlParsed = $settings->stripQueryStringFromStats
@@ -120,6 +122,7 @@ class AnalyticsService extends Component
                         'count' => new \yii\db\Expression('[[count]] + 1'),
                         'url' => $url, // Update to latest URL (preserves most recent query string)
                         'handled' => $handled,
+                        'redirectId' => $redirectId,
                         'sourcePlugin' => $sourcePlugin,
                         'referrer' => $referrer,
                         'ip' => $ip,
@@ -158,6 +161,7 @@ class AnalyticsService extends Component
             $record->url = $url;
             $record->urlParsed = $urlParsed;
             $record->handled = $handled;
+            $record->redirectId = $redirectId;
             $record->sourcePlugin = $sourcePlugin;
             $record->count = 1;
             $record->referrer = $referrer;
@@ -221,6 +225,82 @@ class AnalyticsService extends Component
         $query->orderBy($orderBy);
 
         return $query->all();
+    }
+
+    /**
+     * Get analytics for a specific redirect
+     *
+     * @param int $redirectId
+     * @param string $dateRange
+     * @return array
+     */
+    public function getRedirectAnalytics(int $redirectId, string $dateRange = 'last30days'): array
+    {
+        $dateCondition = $this->getDateRangeCondition($dateRange);
+
+        // Get total hits
+        $query = (new Query())
+            ->from(AnalyticsRecord::tableName())
+            ->where(['redirectId' => $redirectId]);
+
+        if ($dateCondition) {
+            $query->andWhere($dateCondition);
+        }
+
+        $records = $query->all();
+
+        $totalHits = 0;
+        $deviceBreakdown = [];
+        $browserBreakdown = [];
+        $countryBreakdown = [];
+        $referrerBreakdown = [];
+        $botVsHuman = ['human' => 0, 'bot' => 0];
+
+        foreach ($records as $record) {
+            $totalHits += (int)$record['count'];
+
+            // Device breakdown
+            $device = $record['deviceType'] ?: 'Unknown';
+            $deviceBreakdown[$device] = ($deviceBreakdown[$device] ?? 0) + (int)$record['count'];
+
+            // Browser breakdown
+            $browser = $record['browser'] ?: 'Unknown';
+            $browserBreakdown[$browser] = ($browserBreakdown[$browser] ?? 0) + (int)$record['count'];
+
+            // Country breakdown - convert code to name
+            $countryCode = $record['country'] ?: '';
+            $country = $countryCode ? GeoHelper::getCountryName($countryCode) : 'Unknown';
+            $countryBreakdown[$country] = ($countryBreakdown[$country] ?? 0) + (int)$record['count'];
+
+            // Referrer breakdown
+            if ($record['referrer']) {
+                $referrerHost = parse_url($record['referrer'], PHP_URL_HOST) ?: $record['referrer'];
+                $referrerBreakdown[$referrerHost] = ($referrerBreakdown[$referrerHost] ?? 0) + (int)$record['count'];
+            }
+
+            // Bot vs human
+            if ($record['isRobot']) {
+                $botVsHuman['bot'] += (int)$record['count'];
+            } else {
+                $botVsHuman['human'] += (int)$record['count'];
+            }
+        }
+
+        // Sort breakdowns by count descending
+        arsort($deviceBreakdown);
+        arsort($browserBreakdown);
+        arsort($countryBreakdown);
+        arsort($referrerBreakdown);
+
+        return [
+            'totalHits' => $totalHits,
+            'recordCount' => count($records),
+            'deviceBreakdown' => array_slice($deviceBreakdown, 0, 10, true),
+            'browserBreakdown' => array_slice($browserBreakdown, 0, 10, true),
+            'countryBreakdown' => array_slice($countryBreakdown, 0, 10, true),
+            'referrerBreakdown' => array_slice($referrerBreakdown, 0, 10, true),
+            'botVsHuman' => $botVsHuman,
+        ];
     }
 
     /**
@@ -655,7 +735,7 @@ class AnalyticsService extends Component
                 $stat['osVersion'] ?? '',
                 $stat['isRobot'] ? 'Yes' : 'No',
                 $stat['botName'] ?? '',
-                $this->_getCountryName($stat['country'] ?? ''),
+                GeoHelper::getCountryName($stat['country'] ?? ''),
                 $stat['city'] ?? '',
                 $stat['ip'] ?? '',
                 str_replace('"', '""', $stat['userAgent'] ?? ''),
@@ -949,7 +1029,7 @@ class AnalyticsService extends Component
         foreach ($results as $row) {
             $countries[] = [
                 'country' => $row['country'],
-                'name' => $this->_getCountryName($row['country'] ?? ''),
+                'name' => GeoHelper::getCountryName($row['country'] ?? ''),
                 'count' => (int)$row['count'],
                 'percentage' => $total > 0 ? round(($row['count'] / $total) * 100, 1) : 0,
             ];
@@ -992,78 +1072,13 @@ class AnalyticsService extends Component
             $cities[] = [
                 'city' => $row['city'],
                 'country' => $row['country'],
-                'countryName' => $this->_getCountryName($row['country'] ?? ''),
+                'countryName' => GeoHelper::getCountryName($row['country'] ?? ''),
                 'count' => (int)$row['count'],
                 'percentage' => $total > 0 ? round(($row['count'] / $total) * 100, 1) : 0,
             ];
         }
 
         return $cities;
-    }
-
-    /**
-     * Get country name from country code
-     *
-     * @param string $countryCode
-     * @return string
-     */
-    private function _getCountryName(string $countryCode): string
-    {
-        if (empty($countryCode)) {
-            return '';
-        }
-
-        $countries = [
-            'AF' => 'Afghanistan', 'AL' => 'Albania', 'DZ' => 'Algeria', 'AS' => 'American Samoa',
-            'AD' => 'Andorra', 'AO' => 'Angola', 'AI' => 'Anguilla', 'AQ' => 'Antarctica',
-            'AG' => 'Antigua and Barbuda', 'AR' => 'Argentina', 'AM' => 'Armenia', 'AW' => 'Aruba',
-            'AU' => 'Australia', 'AT' => 'Austria', 'AZ' => 'Azerbaijan', 'BS' => 'Bahamas',
-            'BH' => 'Bahrain', 'BD' => 'Bangladesh', 'BB' => 'Barbados', 'BY' => 'Belarus',
-            'BE' => 'Belgium', 'BZ' => 'Belize', 'BJ' => 'Benin', 'BM' => 'Bermuda',
-            'BT' => 'Bhutan', 'BO' => 'Bolivia', 'BA' => 'Bosnia and Herzegovina', 'BW' => 'Botswana',
-            'BR' => 'Brazil', 'BN' => 'Brunei', 'BG' => 'Bulgaria', 'BF' => 'Burkina Faso',
-            'BI' => 'Burundi', 'KH' => 'Cambodia', 'CM' => 'Cameroon', 'CA' => 'Canada',
-            'CV' => 'Cape Verde', 'KY' => 'Cayman Islands', 'CF' => 'Central African Republic',
-            'TD' => 'Chad', 'CL' => 'Chile', 'CN' => 'China', 'CO' => 'Colombia',
-            'CG' => 'Congo', 'CD' => 'Congo (DRC)', 'CR' => 'Costa Rica', 'HR' => 'Croatia',
-            'CU' => 'Cuba', 'CY' => 'Cyprus', 'CZ' => 'Czech Republic', 'DK' => 'Denmark',
-            'DJ' => 'Djibouti', 'DM' => 'Dominica', 'DO' => 'Dominican Republic', 'EC' => 'Ecuador',
-            'EG' => 'Egypt', 'SV' => 'El Salvador', 'GQ' => 'Equatorial Guinea', 'ER' => 'Eritrea',
-            'EE' => 'Estonia', 'ET' => 'Ethiopia', 'FJ' => 'Fiji', 'FI' => 'Finland',
-            'FR' => 'France', 'GA' => 'Gabon', 'GM' => 'Gambia', 'GE' => 'Georgia',
-            'DE' => 'Germany', 'GH' => 'Ghana', 'GR' => 'Greece', 'GD' => 'Grenada',
-            'GT' => 'Guatemala', 'GN' => 'Guinea', 'GW' => 'Guinea-Bissau', 'GY' => 'Guyana',
-            'HT' => 'Haiti', 'HN' => 'Honduras', 'HK' => 'Hong Kong', 'HU' => 'Hungary',
-            'IS' => 'Iceland', 'IN' => 'India', 'ID' => 'Indonesia', 'IR' => 'Iran',
-            'IQ' => 'Iraq', 'IE' => 'Ireland', 'IL' => 'Israel', 'IT' => 'Italy',
-            'JM' => 'Jamaica', 'JP' => 'Japan', 'JO' => 'Jordan', 'KZ' => 'Kazakhstan',
-            'KE' => 'Kenya', 'KW' => 'Kuwait', 'KG' => 'Kyrgyzstan', 'LA' => 'Laos',
-            'LV' => 'Latvia', 'LB' => 'Lebanon', 'LS' => 'Lesotho', 'LR' => 'Liberia',
-            'LY' => 'Libya', 'LI' => 'Liechtenstein', 'LT' => 'Lithuania', 'LU' => 'Luxembourg',
-            'MK' => 'Macedonia', 'MG' => 'Madagascar', 'MW' => 'Malawi', 'MY' => 'Malaysia',
-            'MV' => 'Maldives', 'ML' => 'Mali', 'MT' => 'Malta', 'MR' => 'Mauritania',
-            'MU' => 'Mauritius', 'MX' => 'Mexico', 'MD' => 'Moldova', 'MC' => 'Monaco',
-            'MN' => 'Mongolia', 'ME' => 'Montenegro', 'MA' => 'Morocco', 'MZ' => 'Mozambique',
-            'MM' => 'Myanmar', 'NA' => 'Namibia', 'NP' => 'Nepal', 'NL' => 'Netherlands',
-            'NZ' => 'New Zealand', 'NI' => 'Nicaragua', 'NE' => 'Niger', 'NG' => 'Nigeria',
-            'NO' => 'Norway', 'OM' => 'Oman', 'PK' => 'Pakistan', 'PA' => 'Panama',
-            'PG' => 'Papua New Guinea', 'PY' => 'Paraguay', 'PE' => 'Peru', 'PH' => 'Philippines',
-            'PL' => 'Poland', 'PT' => 'Portugal', 'PR' => 'Puerto Rico', 'QA' => 'Qatar',
-            'RO' => 'Romania', 'RU' => 'Russia', 'RW' => 'Rwanda', 'SA' => 'Saudi Arabia',
-            'SN' => 'Senegal', 'RS' => 'Serbia', 'SC' => 'Seychelles', 'SL' => 'Sierra Leone',
-            'SG' => 'Singapore', 'SK' => 'Slovakia', 'SI' => 'Slovenia', 'SO' => 'Somalia',
-            'ZA' => 'South Africa', 'KR' => 'South Korea', 'ES' => 'Spain', 'LK' => 'Sri Lanka',
-            'SD' => 'Sudan', 'SR' => 'Suriname', 'SZ' => 'Swaziland', 'SE' => 'Sweden',
-            'CH' => 'Switzerland', 'SY' => 'Syria', 'TW' => 'Taiwan', 'TJ' => 'Tajikistan',
-            'TZ' => 'Tanzania', 'TH' => 'Thailand', 'TG' => 'Togo', 'TO' => 'Tonga',
-            'TT' => 'Trinidad and Tobago', 'TN' => 'Tunisia', 'TR' => 'Turkey', 'TM' => 'Turkmenistan',
-            'UG' => 'Uganda', 'UA' => 'Ukraine', 'AE' => 'United Arab Emirates', 'GB' => 'United Kingdom',
-            'US' => 'United States', 'UY' => 'Uruguay', 'UZ' => 'Uzbekistan', 'VU' => 'Vanuatu',
-            'VE' => 'Venezuela', 'VN' => 'Vietnam', 'YE' => 'Yemen', 'ZM' => 'Zambia',
-            'ZW' => 'Zimbabwe',
-        ];
-
-        return $countries[$countryCode] ?? $countryCode;
     }
 
     /**
@@ -1179,7 +1194,7 @@ class AnalyticsService extends Component
                 ],
                 'location' => [
                     'country' => $stat['country'] ?? null,
-                    'countryName' => $this->_getCountryName($stat['country'] ?? ''),
+                    'countryName' => GeoHelper::getCountryName($stat['country'] ?? ''),
                     'city' => $stat['city'] ?? null,
                 ],
                 'ipHash' => $stat['ip'] ?? null,
@@ -1195,5 +1210,43 @@ class AnalyticsService extends Component
             'count' => count($data),
             'data' => $data,
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * Get date range condition for queries
+     *
+     * @param string $dateRange
+     * @return array|null
+     */
+    private function getDateRangeCondition(string $dateRange): ?array
+    {
+        $now = new \DateTime();
+
+        switch ($dateRange) {
+            case 'today':
+                $start = (clone $now)->setTime(0, 0, 0);
+                return ['>=', 'lastHit', Db::prepareDateForDb($start)];
+
+            case 'yesterday':
+                $start = (clone $now)->modify('-1 day')->setTime(0, 0, 0);
+                $end = (clone $now)->setTime(0, 0, 0);
+                return ['and', ['>=', 'lastHit', Db::prepareDateForDb($start)], ['<', 'lastHit', Db::prepareDateForDb($end)]];
+
+            case 'last7days':
+                $start = (clone $now)->modify('-7 days');
+                return ['>=', 'lastHit', Db::prepareDateForDb($start)];
+
+            case 'last30days':
+                $start = (clone $now)->modify('-30 days');
+                return ['>=', 'lastHit', Db::prepareDateForDb($start)];
+
+            case 'last90days':
+                $start = (clone $now)->modify('-90 days');
+                return ['>=', 'lastHit', Db::prepareDateForDb($start)];
+
+            case 'all':
+            default:
+                return null;
+        }
     }
 }

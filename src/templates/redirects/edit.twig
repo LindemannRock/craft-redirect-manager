@@ -16,6 +16,24 @@
 {% set saveShortcutRedirect = cpUrl('redirect-manager/redirects/{id}') %}
 {% set retainScrollOnSaveShortcut = true %}
 
+{# Set up tabs #}
+{% set tabs = {
+    fields: {
+        label: 'Settings'|t('redirect-manager'),
+        url: '#fields',
+    },
+} %}
+
+{# Add analytics tab if redirect exists and analytics are enabled #}
+{% if not isNew and plugin.settings.enableAnalytics %}
+    {% set tabs = tabs|merge({
+        analytics: {
+            label: 'Analytics'|t('redirect-manager'),
+            url: '#analytics',
+        },
+    }) %}
+{% endif %}
+
 {% block actionButton %}
 	<div class="btngroup submit">
 		<button type="submit" class="btn submit">{{ "Save"|t('app') }}</button>
@@ -54,6 +72,7 @@
 		{{ hiddenInput('redirectId', redirect.id) }}
 	{% endif %}
 
+	<div id="fields">
 	<div class="field" style="margin-top: 0px;">
 		<div class="heading">
 			<label for="redirectSrcMatch">{{ 'Source Match Mode'|t('redirect-manager') }}
@@ -201,6 +220,16 @@
 	</div>
 
 	{% include 'lindemannrock-base/_components/plugin-credit' %}
+	</div>{# /fields #}
+
+	{# Analytics Tab Content - only for existing redirects #}
+	{% if not isNew and plugin.settings.enableAnalytics %}
+		<div id="analytics" class="hidden">
+			{% include "redirect-manager/redirects/_partials/analytics" with {
+				redirect: redirect
+			} %}
+		</div>
+	{% endif %}
 {% endblock %}
 
 {% block details %}

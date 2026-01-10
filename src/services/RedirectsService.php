@@ -135,8 +135,10 @@ class RedirectsService extends Component
         $redirect = $this->findRedirect($fullUrlForMatching, $pathOnlyForMatching);
 
         if ($redirect) {
-            // Record the 404 BEFORE executing redirect (since redirect ends the script)
-            RedirectManager::$plugin->analytics->record404($originalPath, true);
+            // Record the hit BEFORE executing redirect (since redirect ends the script)
+            RedirectManager::$plugin->analytics->record404($originalPath, true, [
+                'redirectId' => $redirect['id'] ?? null,
+            ]);
             // Pass original fullUrl to preserve query string
             $this->executeRedirect($redirect, $originalFullUrl, $pathOnlyForMatching);
         }
@@ -232,10 +234,14 @@ class RedirectsService extends Component
         }
 
         // Record 404 with source tracking
+        $analyticsContext = $context;
+        if ($redirect) {
+            $analyticsContext['redirectId'] = $redirect['id'] ?? null;
+        }
         RedirectManager::$plugin->analytics->record404(
             $pathOnly,
             (bool)$redirect,
-            $context
+            $analyticsContext
         );
 
         if ($redirect) {
@@ -1184,7 +1190,9 @@ class RedirectsService extends Component
             ]);
 
             // Record analytics for this URL in the chain as handled
-            RedirectManager::$plugin->analytics->record404($searchUrl, true);
+            RedirectManager::$plugin->analytics->record404($searchUrl, true, [
+                'redirectId' => $nextRedirect['id'] ?? null,
+            ]);
 
             $currentUrl = $nextRedirect['destinationUrl'];
             $chain[] = $currentUrl;

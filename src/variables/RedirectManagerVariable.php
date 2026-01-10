@@ -38,4 +38,16 @@ class RedirectManagerVariable
     {
         return RedirectManager::$plugin;
     }
+
+    /**
+     * Get analytics data for a specific redirect
+     *
+     * @param int $redirectId
+     * @param string $dateRange
+     * @return array
+     */
+    public function getRedirectAnalytics(int $redirectId, string $dateRange = 'last30days'): array
+    {
+        return RedirectManager::$plugin->analytics->getRedirectAnalytics($redirectId, $dateRange);
+    }
 }

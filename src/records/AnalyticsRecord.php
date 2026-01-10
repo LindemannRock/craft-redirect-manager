@@ -20,6 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $url
  * @property string $urlParsed
  * @property bool $handled
+ * @property int|null $redirectId
  * @property string $sourcePlugin
  * @property int $count
  * @property string|null $referrer
