@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.18.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.18.0...v5.18.1) (2026-01-11)
+
+
+### Bug Fixes
+
+* plugin name retrieval to use getFullName method for consistency ([d410744](https://github.com/LindemannRock/craft-redirect-manager/commit/d41074406dffb930faec9331666c9ba87f2ee8e1))
+
 ## [5.18.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.17.0...v5.18.0) (2026-01-10)
 
 
