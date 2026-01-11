@@ -40,7 +40,7 @@ class Unhandled404sWidget extends Widget
      */
     public static function displayName(): string
     {
-        $pluginName = RedirectManager::$plugin->getSettings()->pluginName ?? 'Redirect Manager';
+        $pluginName = RedirectManager::$plugin->getSettings()->getFullName();
         return Craft::t('redirect-manager', '{pluginName} - Unhandled 404s', ['pluginName' => $pluginName]);
     }
 
@@ -65,7 +65,7 @@ class Unhandled404sWidget extends Widget
      */
     public function getTitle(): ?string
     {
-        $pluginName = RedirectManager::$plugin->getSettings()->pluginName ?? 'Redirect Manager';
+        $pluginName = RedirectManager::$plugin->getSettings()->getFullName();
         return Craft::t('redirect-manager', '{pluginName} - Unhandled 404s', ['pluginName' => $pluginName]);
     }
 

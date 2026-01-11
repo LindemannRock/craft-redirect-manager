@@ -24,8 +24,7 @@ class RedirectManagerUtility extends Utility
      */
     public static function displayName(): string
     {
-        $pluginName = RedirectManager::$plugin->getSettings()->pluginName ?? 'Redirect Manager';
-        return $pluginName;
+        return RedirectManager::$plugin->getSettings()->getFullName();
     }
 
     /**
