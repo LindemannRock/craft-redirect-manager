@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.18.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.18.1...v5.18.2) (2026-01-12)
+
+
+### Bug Fixes
+
+* remove redundant redirects and analytics display limits from settings and config ([48f13d9](https://github.com/LindemannRock/craft-redirect-manager/commit/48f13d9015a53cdc5dc56ae1ff15b948ecaf6c8a))
+
 ## [5.18.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.18.0...v5.18.1) (2026-01-11)
 
 
