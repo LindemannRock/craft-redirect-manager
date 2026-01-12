@@ -112,8 +112,6 @@ return [
         // Control panel display options
 
         'refreshIntervalSecs' => 5,        // Dashboard refresh interval in seconds
-        'redirectsDisplayLimit' => 100,    // How many redirects to display in the CP
-        'analyticsDisplayLimit' => 100,    // How many analytics to display in the CP
         'itemsPerPage' => 100,             // Items per page in list views
 
 

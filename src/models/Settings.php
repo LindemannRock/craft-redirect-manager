@@ -133,16 +133,6 @@ class Settings extends Model
     public int $refreshIntervalSecs = 5;
 
     /**
-     * @var int How many redirects to display in the CP
-     */
-    public int $redirectsDisplayLimit = 100;
-
-    /**
-     * @var int How many analytics to display in the CP
-     */
-    public int $analyticsDisplayLimit = 100;
-
-    /**
      * @var int Items per page in list views
      */
     public int $itemsPerPage = 100;
@@ -264,8 +254,6 @@ class Settings extends Model
             'analyticsLimit',
             'analyticsRetention',
             'refreshIntervalSecs',
-            'redirectsDisplayLimit',
-            'analyticsDisplayLimit',
             'itemsPerPage',
             'redirectCacheDuration',
             'undoWindowMinutes',
@@ -345,10 +333,6 @@ class Settings extends Model
             ['analyticsRetention', 'default', 'value' => 30],
             ['refreshIntervalSecs', 'integer', 'min' => 0],
             ['refreshIntervalSecs', 'default', 'value' => 5],
-            ['redirectsDisplayLimit', 'integer', 'min' => 1],
-            ['redirectsDisplayLimit', 'default', 'value' => 100],
-            ['analyticsDisplayLimit', 'integer', 'min' => 1],
-            ['analyticsDisplayLimit', 'default', 'value' => 100],
             ['itemsPerPage', 'integer', 'min' => 10, 'max' => 500],
             ['itemsPerPage', 'default', 'value' => 100],
             ['undoWindowMinutes', 'integer'],
