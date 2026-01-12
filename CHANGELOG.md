@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.19.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.18.2...v5.19.0) (2026-01-12)
+
+
+### Features
+
+* add analytics count retrieval to RedirectManagerUtility ([c8204ca](https://github.com/LindemannRock/craft-redirect-manager/commit/c8204ca60264a8dcea96cce8a75bd15f734327c3))
+
+
+### Bug Fixes
+
+* format cache file counts and update analytics button style ([4b4fd9b](https://github.com/LindemannRock/craft-redirect-manager/commit/4b4fd9b8edf0c3c1e02cb8b7b1f8be89bbb36301))
+* update icon path for Unhandled404sWidget ([ab06edd](https://github.com/LindemannRock/craft-redirect-manager/commit/ab06edddaa63062addb169ab49b8630475d3378a))
+
 ## [5.18.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.18.1...v5.18.2) (2026-01-12)
 
 
