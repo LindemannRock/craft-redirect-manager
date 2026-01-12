@@ -7,8 +7,7 @@
             <thead>
                 <tr>
                     <th>{{ "URL"|t('redirect-manager') }}</th>
-                    <th>{{ "Count"|t('redirect-manager') }}</th>
-                    <th class="thin"></th>
+                    <th>{{ "Hits"|t('redirect-manager') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -16,9 +15,9 @@
                     <tr>
                         <td>
                             <div class="url-cell">
-                                <code class="url-path" title="{{ stat.url }}">
-                                    {{ stat.url|length > 25 ? stat.url|slice(0, 25) ~ '...' : stat.url }}
-                                </code>
+                                <a href="{{ cpUrl('redirect-manager/analytics') }}#url-{{ stat.url|url_encode }}" class="url-path" title="{{ stat.url }}">
+                                    {{ stat.url }}
+                                </a>
                                 {% if stat.lastHit %}
                                     <div class="last-hit">
                                         {{ "Last seen"|t('redirect-manager') }}: {{ stat.lastHit|datetime('short') }}
@@ -28,13 +27,6 @@
                         </td>
                         <td class="count-cell">
                             <span class="badge">{{ stat.count|number }}</span>
-                        </td>
-                        <td class="thin actions-cell">
-                            <a href="{{ cpUrl('redirect-manager/analytics') }}#url-{{ stat.url|url_encode }}"
-                               class="btn small"
-                               title="{{ 'View details'|t('redirect-manager') }}">
-                                {{ svg('@app/icons/arrow-right.svg') }}
-                            </a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -67,21 +59,19 @@
 
 .url-cell {
     min-width: 0;
-    max-width: 180px;
-    overflow: hidden;
 }
 
 .url-path {
-    background: #fef2f2;
     color: #dc2626;
-    padding: 2px 6px;
-    border-radius: 3px;
     font-size: 11px;
     display: block;
     margin-bottom: 4px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.url-path:hover {
+    text-decoration: underline;
 }
 
 .last-hit {
@@ -103,21 +93,6 @@
     font-weight: 600;
     display: inline-block;
     line-height: 0;
-}
-
-.actions-cell {
-    text-align: right;
-    white-space: nowrap;
-}
-
-.actions-cell .btn {
-    padding: 4px 8px;
-    min-height: auto;
-}
-
-.actions-cell .btn svg {
-    width: 14px;
-    height: 14px;
 }
 
 .widget-footer {

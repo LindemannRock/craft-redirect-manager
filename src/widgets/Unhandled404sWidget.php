@@ -49,7 +49,7 @@ class Unhandled404sWidget extends Widget
      */
     public static function icon(): ?string
     {
-        return '@app/icons/exclamation-triangle.svg';
+        return '@app/icons/solid/triangle-exclamation.svg';
     }
 
     /**
