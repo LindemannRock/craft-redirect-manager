@@ -67,6 +67,11 @@ class RedirectManagerUtility extends Utility
         $handled = array_sum(array_column($chartData, 'handled'));
         $unhandled = array_sum(array_column($chartData, 'unhandled'));
 
+        // Get analytics count
+        $analyticsCount = (new \craft\db\Query())
+            ->from('{{%redirectmanager_analytics}}')
+            ->count();
+
         // Get cache counts (only for file storage)
         $deviceCacheFiles = 0;
         $redirectCacheFiles = 0;
@@ -99,6 +104,7 @@ class RedirectManagerUtility extends Utility
             'deviceCacheFiles' => $deviceCacheFiles,
             'redirectCacheFiles' => $redirectCacheFiles,
             'storageMethod' => $settings->cacheStorageMethod,
+            'analyticsCount' => (int) $analyticsCount,
         ]);
     }
 }
