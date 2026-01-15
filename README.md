@@ -31,7 +31,7 @@ If you are using this plugin, please be aware that future versions may have diff
 - **Auto-Redirect Creation** - Automatically creates redirects when entry URIs change
 - **Smart Caching** - File or Redis caching for fast redirect lookups and device detection
 - **Auto-Refreshing Dashboard** - Configurable auto-refresh (5-60 seconds) with smart pause on user interaction
-- **CSV Export** - Export comprehensive analytics including device and geo data
+- **CSV Import/Export** - Import redirects from CSV (up to 4000 rows) and export comprehensive analytics including device and geo data
 - **Multi-Site Support** - Site-specific or global redirects
 - **Plugin Integration** - Pluggable architecture allowing other plugins to integrate 404 handling
 - **Privacy-First** - IP hashing with salt, optional subnet masking, GDPR-friendly
@@ -320,6 +320,23 @@ Priority controls which redirect matches first when multiple patterns could appl
 ```
 Redirect Manager → Analytics → Export CSV
 ```
+
+### Import/Export
+
+**Import Redirects:**
+1. Navigate to **Redirect Manager → Import/Export**
+2. Upload a CSV file (maximum 4000 rows per import)
+3. Map CSV columns to redirect fields
+4. Preview and confirm import
+
+**Import Limits:**
+- Maximum **4000 rows** per CSV file
+- For larger imports, split your file into multiple batches
+- This limit ensures reliable operation on all hosting environments
+
+**Export Redirects:**
+- Export all redirects as CSV for backup or migration
+- Includes all fields: source URL, destination, match type, status code, hit counts, etc.
 
 ### Automatic Entry Redirects
 
