@@ -153,10 +153,22 @@ class RedirectsController extends Controller
             410 => '410 - Gone',
         ];
 
+        // Get sites for dropdown
+        $siteOptions = [
+            ['label' => Craft::t('redirect-manager', 'All Sites'), 'value' => ''],
+        ];
+        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            $siteOptions[] = [
+                'label' => $site->name,
+                'value' => $site->id,
+            ];
+        }
+
         return $this->renderTemplate('redirect-manager/redirects/edit', [
             'redirect' => $redirect,
             'matchTypes' => $matchTypes,
             'statusCodes' => $statusCodes,
+            'siteOptions' => $siteOptions,
             'isNew' => $redirect === null,
         ]);
     }
@@ -233,6 +245,17 @@ class RedirectsController extends Controller
             410 => '410 - Gone',
         ];
 
+        // Get sites for dropdown
+        $siteOptions = [
+            ['label' => Craft::t('redirect-manager', 'All Sites'), 'value' => ''],
+        ];
+        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            $siteOptions[] = [
+                'label' => $site->name,
+                'value' => $site->id,
+            ];
+        }
+
         // Create RedirectRecord with submitted data (unsaved) for form repopulation
         if ($redirectId) {
             $redirect = RedirectRecord::findOne($redirectId);
@@ -253,6 +276,7 @@ class RedirectsController extends Controller
             'redirect' => $redirect,
             'matchTypes' => $matchTypes,
             'statusCodes' => $statusCodes,
+            'siteOptions' => $siteOptions,
             'isNew' => !$redirectId,
         ]);
     }

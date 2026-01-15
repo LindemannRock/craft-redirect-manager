@@ -233,37 +233,28 @@
 {% endblock %}
 
 {% block details %}
-	<fieldset>
-		<legend class="h6">{{ 'Status'|t('redirect-manager') }}</legend>
-		<div class="meta">
-			{{ forms.lightswitchField({
-                label: 'Enabled'|t('redirect-manager'),
-                id: 'enabled',
-                name: 'enabled',
-                on: redirect ? redirect.enabled : true
-            }) }}
-		</div>
-	</fieldset>
+	<div class="meta">
+		{{ forms.lightswitchField({
+			label: 'Enabled'|t('redirect-manager'),
+			id: 'enabled',
+			name: 'enabled',
+			on: redirect ? redirect.enabled : true
+		}) }}
 
-	{% if craft.app.getIsMultiSite() %}
-		<fieldset>
-			<legend class="h6">{{ 'Site'|t('redirect-manager') }}</legend>
-			<div class="meta">
-				{{ forms.selectField({
-                    label: 'Site'|t('redirect-manager'),
-                    instructions: 'Select which site this redirect applies to'|t('redirect-manager'),
-                    id: 'siteId',
-                    name: 'siteId',
-                    value: redirect ? redirect.siteId : craft.app.request.getParam('siteId'),
-                    options: [{ label: 'All Sites'|t('redirect-manager'), value: '' }]|merge(craft.app.sites.getAllSites()|map(site => { label: site.name, value: site.id }))
-                }) }}
-			</div>
-		</fieldset>
-	{% endif %}
+		{% if craft.app.getIsMultiSite() %}
+			{{ forms.selectField({
+				label: 'Site'|t('redirect-manager'),
+				id: 'siteId',
+				name: 'siteId',
+				options: siteOptions,
+				value: redirect ? redirect.siteId : craft.app.request.getParam('siteId')
+			}) }}
+		{% endif %}
+	</div>
 
 	{% if not isNew %}
 		<fieldset>
-				<dl class="meta read-only">
+			<dl class="meta read-only">
 				<div class="data">
 					<dt class="heading">{{ 'Status'|t('redirect-manager') }}</dt>
 					<dd class="value">
