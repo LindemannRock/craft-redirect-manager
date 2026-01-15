@@ -597,7 +597,7 @@ class AnalyticsController extends Controller
 
             // Build filename with site name
             $settings = RedirectManager::$plugin->getSettings();
-            $filenamePart = strtolower(str_replace(' ', '-', $settings->getPluralLowerDisplayName()));
+            $filenamePart = strtolower(str_replace(' ', '-', $settings->getLowerDisplayName()));
 
             // Get site name for filename
             $sitePart = 'all';

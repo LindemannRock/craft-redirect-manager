@@ -129,7 +129,7 @@ class ImportExportController extends Controller
 
         // Send as download
         $settings = RedirectManager::$plugin->getSettings();
-        $filenamePart = strtolower(str_replace(' ', '-', $settings->getPluralLowerDisplayName()));
+        $filenamePart = strtolower(str_replace(' ', '-', $settings->getLowerDisplayName()));
         $filename = $filenamePart . '-' . date('Y-m-d-His') . '.csv';
 
         return Craft::$app->getResponse()
@@ -170,50 +170,68 @@ class ImportExportController extends Controller
 
         $createBackup = (bool)Craft::$app->getRequest()->getBodyParam('createBackup', true);
 
-        // Save file temporarily
+        // Save file temporarily for parsing
         $tempPath = Craft::$app->getPath()->getTempPath() . '/redirect-import-' . uniqid() . '.csv';
-        $file->saveAs($tempPath);
 
-        // Parse CSV
+        if (!$file->saveAs($tempPath)) {
+            $this->logError('Failed to save uploaded file', ['tempPath' => $tempPath]);
+            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to save uploaded file. Please try again.'));
+            return $this->redirect('redirect-manager/import-export');
+        }
+
+        // Parse CSV and store data in session (not file path - for Servd/load-balanced hosting)
         try {
             $handle = fopen($tempPath, 'r');
+
+            if ($handle === false) {
+                throw new \Exception('Could not open uploaded file for reading.');
+            }
+
             $headers = fgetcsv($handle, 0, $delimiter);
 
             if (!$headers) {
+                fclose($handle);
                 throw new \Exception('Could not read CSV headers');
             }
 
             // Validate delimiter - check if we got only 1 column (likely wrong delimiter)
             if (count($headers) === 1 && strpos($headers[0], ',') !== false) {
+                fclose($handle);
                 throw new \Exception('CSV appears to use comma (,) delimiter but you selected: ' . ($delimiter === "\t" ? 'Tab' : $delimiter) . '. Please select the correct delimiter.');
             } elseif (count($headers) === 1 && strpos($headers[0], ';') !== false) {
+                fclose($handle);
                 throw new \Exception('CSV appears to use semicolon (;) delimiter but you selected: ' . ($delimiter === "\t" ? 'Tab' : $delimiter) . '. Please select the correct delimiter.');
             } elseif (count($headers) === 1 && strpos($headers[0], '|') !== false) {
+                fclose($handle);
                 throw new \Exception('CSV appears to use pipe (|) delimiter but you selected: ' . ($delimiter === "\t" ? 'Tab' : $delimiter) . '. Please select the correct delimiter.');
             } elseif (count($headers) === 1 && strpos($headers[0], "\t") !== false) {
+                fclose($handle);
                 throw new \Exception('CSV appears to use Tab delimiter but you selected: ' . $delimiter . '. Please select the correct delimiter.');
             }
 
-            // Read first few rows for preview
-            $previewRows = [];
-            $rowCount = 0;
-            while (($row = fgetcsv($handle, 0, $delimiter)) !== false && $rowCount < 5) {
-                $previewRows[] = $row;
-                $rowCount++;
-            }
-
-            // Count total rows
-            while (fgetcsv($handle, 0, $delimiter) !== false) {
-                $rowCount++;
+            // Read ALL rows into memory (store in session instead of file path)
+            $allRows = [];
+            while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
+                $allRows[] = $row;
             }
 
             fclose($handle);
 
-            // Store in session for next steps
+            // Delete temp file immediately - we have the data in memory now
+            @unlink($tempPath);
+
+            $rowCount = count($allRows);
+
+            // Check for reasonable size limit (prevent session bloat)
+            // Estimate ~500 bytes per row average, limit to ~2MB of session data
+            if ($rowCount > 4000) {
+                throw new \Exception('CSV file is too large. Maximum 4000 rows allowed for import. Please split your file into smaller batches.');
+            }
+
+            // Store parsed data in session (not file path)
             Craft::$app->getSession()->set('redirect-import', [
-                'filePath' => $tempPath,
-                'delimiter' => $delimiter,
                 'headers' => $headers,
+                'allRows' => $allRows,
                 'rowCount' => $rowCount,
                 'createBackup' => $createBackup,
             ]);
@@ -221,6 +239,8 @@ class ImportExportController extends Controller
             // Redirect to column mapping
             return $this->redirect('redirect-manager/import-export/map');
         } catch (\Exception $e) {
+            // Clean up temp file on error
+            @unlink($tempPath);
             $this->logError('Failed to parse CSV', ['error' => $e->getMessage()]);
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to parse CSV: {error}', ['error' => $e->getMessage()]));
             return $this->redirect('redirect-manager/import-export');
@@ -236,35 +256,21 @@ class ImportExportController extends Controller
     {
         $this->requirePermission('redirectManager:manageImportExport');
 
-        // Get data from session
+        // Get data from session (now contains actual row data, not file path)
         $importData = Craft::$app->getSession()->get('redirect-import');
 
-        if (!$importData) {
+        if (!$importData || !isset($importData['allRows'])) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'No import data found. Please upload a CSV file.'));
             return $this->redirect('redirect-manager/import-export');
         }
 
-        // Parse CSV to get preview rows
-        $previewRows = [];
-        try {
-            $handle = fopen($importData['filePath'], 'r');
-            fgetcsv($handle, 0, $importData['delimiter']); // Skip headers
-
-            $rowCount = 0;
-            while (($row = fgetcsv($handle, 0, $importData['delimiter'])) !== false && $rowCount < 5) {
-                $previewRows[] = $row;
-                $rowCount++;
-            }
-            fclose($handle);
-        } catch (\Exception $e) {
-            $this->logError('Failed to read CSV for mapping', ['error' => $e->getMessage()]);
-        }
+        // Get first 5 rows for preview (data is already in session)
+        $previewRows = array_slice($importData['allRows'], 0, 5);
 
         return $this->renderTemplate('redirect-manager/import-export/map', [
             'headers' => $importData['headers'],
             'previewRows' => $previewRows,
             'rowCount' => $importData['rowCount'],
-            'delimiter' => $importData['delimiter'],
             'createBackup' => $importData['createBackup'],
         ]);
     }
@@ -294,7 +300,7 @@ class ImportExportController extends Controller
 
         $importData = Craft::$app->getSession()->get('redirect-import');
 
-        if (!$importData || !file_exists($importData['filePath'])) {
+        if (!$importData || !isset($importData['allRows'])) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Import session expired. Please upload the file again.'));
             return $this->redirect('redirect-manager/import-export');
         }
@@ -317,10 +323,7 @@ class ImportExportController extends Controller
             return $this->redirect('redirect-manager/import-export');
         }
 
-        // Parse CSV and validate
-        $handle = fopen($importData['filePath'], 'r');
-        $headers = fgetcsv($handle, 0, $importData['delimiter']); // Skip header row
-
+        // Process rows from session (no file access needed)
         $validRows = [];
         $duplicateRows = [];
         $errorRows = [];
@@ -338,7 +341,8 @@ class ImportExportController extends Controller
             $existingKeys[$key] = true;
         }
 
-        while (($row = fgetcsv($handle, 0, $importData['delimiter'])) !== false) {
+        // Iterate over rows stored in session
+        foreach ($importData['allRows'] as $row) {
             $rowNumber++;
 
             // Map CSV row to fields
@@ -466,8 +470,6 @@ class ImportExportController extends Controller
 
             $validRows[] = $redirect;
         }
-
-        fclose($handle);
 
         // Get count of existing redirects for backup info
         $existingCount = (new \craft\db\Query())
@@ -611,13 +613,7 @@ class ImportExportController extends Controller
             }
         }
 
-        // Delete temp file BEFORE cleaning up session
-        $importData = Craft::$app->getSession()->get('redirect-import');
-        if ($importData && file_exists($importData['filePath'])) {
-            @unlink($importData['filePath']);
-        }
-
-        // Clean up session data
+        // Clean up session data (no temp file to delete - data was stored in session)
         Craft::$app->getSession()->remove('redirect-import');
         Craft::$app->getSession()->remove('redirect-import-validated');
         Craft::$app->getSession()->remove('redirect-preview');
