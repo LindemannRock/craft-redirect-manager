@@ -90,16 +90,16 @@
 {% block content %}
     {# Tab Content - IDs must match tab URLs #}
     <div id="overview" class="tab-content">
-        {% include 'redirect-manager/analytics/_tabs/overview' %}
+        {% include 'redirect-manager/analytics/_partials/overview' %}
     </div>
 
     <div id="traffic-devices" class="tab-content hidden">
-        {% include 'redirect-manager/analytics/_tabs/traffic-devices' %}
+        {% include 'redirect-manager/analytics/_partials/traffic-devices' %}
     </div>
 
     {% if settings.enableGeoDetection %}
     <div id="geographic" class="tab-content hidden">
-        {% include 'redirect-manager/analytics/_tabs/geographic' %}
+        {% include 'redirect-manager/analytics/_partials/geographic' %}
     </div>
     {% endif %}
 
