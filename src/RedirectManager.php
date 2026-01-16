@@ -89,19 +89,13 @@ class RedirectManager extends Plugin
         self::$plugin = $this;
 
         // Bootstrap base module (logging + Twig extension)
-        PluginHelper::bootstrap($this, 'redirectHelper', ['redirectManager:viewLogs']);
+        PluginHelper::bootstrap(
+            $this,
+            'redirectHelper',
+            ['redirectManager:viewLogs'],
+            ['redirectManager:downloadLogs']
+        );
         PluginHelper::applyPluginNameFromConfig($this);
-
-        // Configure logging library with download permissions
-        $settings = $this->getSettings();
-        LoggingLibrary::configure([
-            'pluginHandle' => $this->handle,
-            'pluginName' => $settings->getFullName(),
-            'logLevel' => $settings->logLevel ?? 'error',
-            'itemsPerPage' => $settings->itemsPerPage ?? 50,
-            'viewPermissions' => ['redirectManager:viewLogs'],
-            'downloadPermissions' => ['redirectManager:downloadLogs'],
-        ]);
 
         // Register services
         $this->setComponents([
