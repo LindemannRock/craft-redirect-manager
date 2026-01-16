@@ -1,5 +1,22 @@
 # Changelog
 
+## [5.20.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.19.0...v5.20.0) (2026-01-16)
+
+
+### Features
+
+* add site options to redirect edit form and improve template structure ([c1acf3d](https://github.com/LindemannRock/craft-redirect-manager/commit/c1acf3dd56478451a970dde8d7c737f7ec43482c))
+
+
+### Bug Fixes
+
+* reorganize and standardize analytics templates ([b493e43](https://github.com/LindemannRock/craft-redirect-manager/commit/b493e43ce6dcf0187a1df7637fa2a9479771da06))
+* update button label to clarify saving settings ([7f521e0](https://github.com/LindemannRock/craft-redirect-manager/commit/7f521e0b49ea03970cae92aab63f64ff27207194))
+* update cache location message to use redirectHelper for dynamic path ([7e63e0e](https://github.com/LindemannRock/craft-redirect-manager/commit/7e63e0ee4c4f1c70724e898ea87d1935561c96c0))
+* update filename generation and improve CSV import handling ([f619962](https://github.com/LindemannRock/craft-redirect-manager/commit/f6199622f8bec59f0efd2abae497f4b241700ece))
+* update hardcoded cache paths with PluginHelper for consistency ([36cb9e0](https://github.com/LindemannRock/craft-redirect-manager/commit/36cb9e0ba9af30f81b6cbab91174620709af304d))
+* update PluginHelper bootstrap to include download permissions for logging ([e6fa6b0](https://github.com/LindemannRock/craft-redirect-manager/commit/e6fa6b0eef0def38849ab7a11f01d92a5602fdda))
+
 ## [5.19.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.18.2...v5.19.0) (2026-01-12)
 
 
