@@ -14,6 +14,7 @@ use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
+use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\events\RedirectEvent;
 use lindemannrock\redirectmanager\records\RedirectRecord;
@@ -905,7 +906,7 @@ class RedirectsService extends Component
      */
     private function getCachePath(): string
     {
-        return Craft::$app->getPath()->getRuntimePath() . '/redirect-manager/cache/redirects/';
+        return PluginHelper::getCachePath(RedirectManager::$plugin, 'redirects');
     }
 
     /**

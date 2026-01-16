@@ -11,6 +11,7 @@ namespace lindemannrock\redirectmanager\services;
 use Craft;
 use craft\base\Component;
 use DeviceDetector\DeviceDetector;
+use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
 
@@ -181,7 +182,7 @@ class DeviceDetectionService extends Component
         }
 
         // Use file-based cache (default)
-        $cachePath = Craft::$app->path->getRuntimePath() . '/redirect-manager/cache/device/';
+        $cachePath = PluginHelper::getCachePath(RedirectManager::$plugin, 'device');
         $cacheFile = $cachePath . md5($userAgent) . '.cache';
 
         if (!file_exists($cacheFile)) {
@@ -227,7 +228,7 @@ class DeviceDetectionService extends Component
         }
 
         // Use file-based cache (default)
-        $cachePath = Craft::$app->path->getRuntimePath() . '/redirect-manager/cache/device/';
+        $cachePath = PluginHelper::getCachePath(RedirectManager::$plugin, 'device');
 
         // Create directory if it doesn't exist
         if (!is_dir($cachePath)) {

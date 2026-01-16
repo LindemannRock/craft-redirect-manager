@@ -10,6 +10,7 @@ namespace lindemannrock\redirectmanager\controllers;
 
 use Craft;
 use craft\web\Controller;
+use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\models\Settings;
 use lindemannrock\redirectmanager\RedirectManager;
@@ -596,7 +597,7 @@ class SettingsController extends Controller
                 }
             } else {
                 // Clear file cache
-                $cachePath = Craft::$app->path->getRuntimePath() . '/redirect-manager/cache/device/';
+                $cachePath = PluginHelper::getCachePath(RedirectManager::$plugin, 'device');
                 if (is_dir($cachePath)) {
                     $files = glob($cachePath . '*.cache');
                     foreach ($files as $file) {
@@ -661,7 +662,7 @@ class SettingsController extends Controller
                 RedirectManager::$plugin->redirects->invalidateCaches();
 
                 // Clear device detection file cache
-                $devicePath = Craft::$app->path->getRuntimePath() . '/redirect-manager/cache/device/';
+                $devicePath = PluginHelper::getCachePath(RedirectManager::$plugin, 'device');
                 if (is_dir($devicePath)) {
                     $files = glob($devicePath . '*.cache');
                     foreach ($files as $file) {
