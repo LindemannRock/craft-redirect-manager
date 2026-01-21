@@ -197,7 +197,9 @@ class DeviceDetectionService extends Component
         }
 
         $data = file_get_contents($cacheFile);
-        return unserialize($data);
+        // Use JSON instead of unserialize for security (prevents PHP object injection)
+        $decoded = json_decode($data, true);
+        return is_array($decoded) ? $decoded : null;
     }
 
     /**
@@ -236,6 +238,7 @@ class DeviceDetectionService extends Component
         }
 
         $cacheFile = $cachePath . md5($userAgent) . '.cache';
-        file_put_contents($cacheFile, serialize($data));
+        // Use JSON instead of serialize for security
+        file_put_contents($cacheFile, json_encode($data));
     }
 }

@@ -807,6 +807,54 @@ class ImportExportController extends Controller
     }
 
     /**
+     * Validate backup directory name to prevent path traversal attacks
+     *
+     * @param string|null $dirname
+     * @return string|null Validated absolute path or null if invalid
+     */
+    private function validateBackupDirname(?string $dirname): ?string
+    {
+        if ($dirname === null || $dirname === '') {
+            return null;
+        }
+
+        // Must match timestamp format: 2025-01-21_14-30-45
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/', $dirname)) {
+            $this->logWarning('Invalid backup dirname format', ['dirname' => $dirname]);
+            return null;
+        }
+
+        $settings = RedirectManager::$plugin->getSettings();
+        $backupRoot = $settings->getBackupPath() . '/imports';
+
+        // Ensure backup root exists
+        if (!is_dir($backupRoot)) {
+            return null;
+        }
+
+        $realBackupRoot = realpath($backupRoot);
+        if ($realBackupRoot === false) {
+            return null;
+        }
+
+        $backupDir = $realBackupRoot . DIRECTORY_SEPARATOR . $dirname;
+
+        // Verify directory exists
+        if (!is_dir($backupDir)) {
+            return null;
+        }
+
+        // Resolve to real path and verify it's within backup root
+        $realBackupDir = realpath($backupDir);
+        if ($realBackupDir === false || !str_starts_with($realBackupDir, $realBackupRoot)) {
+            $this->logWarning('Path traversal attempt blocked', ['dirname' => $dirname]);
+            return null;
+        }
+
+        return $realBackupDir;
+    }
+
+    /**
      * Download backup as ZIP
      *
      * @return Response
@@ -815,17 +863,17 @@ class ImportExportController extends Controller
     {
         $this->requirePermission('redirectManager:manageImportExport');
 
-        $settings = RedirectManager::$plugin->getSettings();
         $dirname = Craft::$app->getRequest()->getQueryParam('dirname');
-        $backupDir = $settings->getBackupPath() . '/imports/' . $dirname;
+        $backupDir = $this->validateBackupDirname($dirname);
 
-        if (!is_dir($backupDir) || !file_exists($backupDir . '/metadata.json')) {
+        if ($backupDir === null || !file_exists($backupDir . '/metadata.json')) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backup not found'));
             return $this->redirect('redirect-manager/import-export');
         }
 
         // Create temporary ZIP file
-        $zipPath = Craft::$app->getPath()->getTempPath() . '/redirect-backup-' . $dirname . '.zip';
+        $safeDirname = basename($backupDir);
+        $zipPath = Craft::$app->getPath()->getTempPath() . '/redirect-backup-' . $safeDirname . '.zip';
         $zip = new \ZipArchive();
 
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
@@ -833,7 +881,7 @@ class ImportExportController extends Controller
             $zip->addFile($backupDir . '/redirects.json', 'redirects.json');
             $zip->close();
 
-            return Craft::$app->getResponse()->sendFile($zipPath, 'redirect-backup-' . $dirname . '.zip', [
+            return Craft::$app->getResponse()->sendFile($zipPath, 'redirect-backup-' . $safeDirname . '.zip', [
                 'inline' => false,
             ]);
         }
@@ -852,11 +900,10 @@ class ImportExportController extends Controller
         $this->requirePostRequest();
         $this->requirePermission('redirectManager:manageImportExport');
 
-        $settings = RedirectManager::$plugin->getSettings();
         $dirname = Craft::$app->getRequest()->getBodyParam('dirname');
-        $backupDir = $settings->getBackupPath() . '/imports/' . $dirname;
+        $backupDir = $this->validateBackupDirname($dirname);
 
-        if (!is_dir($backupDir) || !file_exists($backupDir . '/redirects.json')) {
+        if ($backupDir === null || !file_exists($backupDir . '/redirects.json')) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backup not found'));
             return $this->redirect('redirect-manager/import-export');
         }
@@ -893,7 +940,7 @@ class ImportExportController extends Controller
             // Clear redirect cache
             RedirectManager::$plugin->redirects->invalidateCaches();
 
-            $this->logInfo('Backup restored', ['dirname' => $dirname, 'count' => $restored]);
+            $this->logInfo('Backup restored', ['dirname' => basename($backupDir), 'count' => $restored]);
 
             Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'Successfully restored {count} redirect(s) from backup', ['count' => $restored]));
             return $this->redirect('redirect-manager/redirects');
@@ -914,11 +961,10 @@ class ImportExportController extends Controller
         $this->requirePostRequest();
         $this->requirePermission('redirectManager:manageImportExport');
 
-        $settings = RedirectManager::$plugin->getSettings();
         $dirname = Craft::$app->getRequest()->getBodyParam('dirname');
-        $backupDir = $settings->getBackupPath() . '/imports/' . $dirname;
+        $backupDir = $this->validateBackupDirname($dirname);
 
-        if (!is_dir($backupDir)) {
+        if ($backupDir === null) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backup not found'));
             return $this->redirect('redirect-manager/import-export');
         }
@@ -927,7 +973,7 @@ class ImportExportController extends Controller
             // Delete entire backup directory
             FileHelper::removeDirectory($backupDir);
 
-            $this->logInfo('Backup deleted', ['dirname' => $dirname]);
+            $this->logInfo('Backup deleted', ['dirname' => basename($backupDir)]);
 
             Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'Backup deleted successfully'));
             return $this->redirect('redirect-manager/import-export#history');

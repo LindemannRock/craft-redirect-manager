@@ -1128,8 +1128,14 @@ class RedirectsService extends Component
         $url = trim($url);
         $url = str_replace(["\r", "\n", "\t"], '', $url);
 
-        // Remove multiple slashes
-        $url = preg_replace('#/+#', '/', $url);
+        // Normalize multiple slashes, but preserve scheme separator (://)
+        if (preg_match('#^(https?://[^/]+)(.*)$#i', $url, $matches)) {
+            // Full URL: normalize only the path portion
+            $url = $matches[1] . preg_replace('#/+#', '/', $matches[2]);
+        } else {
+            // Relative path: normalize all slashes
+            $url = preg_replace('#/+#', '/', $url);
+        }
 
         return $url;
     }

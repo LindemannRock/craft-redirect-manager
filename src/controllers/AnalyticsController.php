@@ -145,7 +145,11 @@ class AnalyticsController extends Controller
         $handledFilter = $request->getQueryParam('handled', 'all');
         $typeFilter = $request->getQueryParam('type', 'all');
         $sort = $request->getQueryParam('sort', 'lastHit');
-        $dir = $request->getQueryParam('dir', 'desc');
+        $dir = strtolower($request->getQueryParam('dir', 'desc'));
+        // Whitelist sort direction to prevent SQL injection
+        if (!in_array($dir, ['asc', 'desc'], true)) {
+            $dir = 'desc';
+        }
         $page = max(1, (int)$request->getQueryParam('page', 1));
         $limit = $settings->itemsPerPage ?? 100;
         $offset = ($page - 1) * $limit;
@@ -174,17 +178,18 @@ class AnalyticsController extends Controller
             $query->andWhere(['like', 'url', $search]);
         }
 
-        // Apply sorting
+        // Apply sorting (array-based to prevent SQL injection)
+        $sortDirection = $dir === 'asc' ? SORT_ASC : SORT_DESC;
         $orderBy = match ($sort) {
-            'url' => "url $dir",
-            'count' => "count $dir",
-            'lastHit' => "lastHit $dir",
-            'siteId' => "siteId $dir",
-            'handled' => "handled $dir",
-            'deviceType' => "deviceType $dir",
-            'browser' => "browser $dir",
-            'requestType' => "isRobot $dir", // requestType maps to isRobot in DB
-            default => "lastHit $dir",
+            'url' => ['url' => $sortDirection],
+            'count' => ['count' => $sortDirection],
+            'lastHit' => ['lastHit' => $sortDirection],
+            'siteId' => ['siteId' => $sortDirection],
+            'handled' => ['handled' => $sortDirection],
+            'deviceType' => ['deviceType' => $sortDirection],
+            'browser' => ['browser' => $sortDirection],
+            'requestType' => ['isRobot' => $sortDirection], // requestType maps to isRobot in DB
+            default => ['lastHit' => $sortDirection],
         };
         $query->orderBy($orderBy);
 
@@ -364,7 +369,11 @@ class AnalyticsController extends Controller
         $handledFilter = $request->getQueryParam('handled', 'all');
         $typeFilter = $request->getQueryParam('type', 'all');
         $sort = $request->getQueryParam('sort', 'lastHit');
-        $dir = $request->getQueryParam('dir', 'desc');
+        $dir = strtolower($request->getQueryParam('dir', 'desc'));
+        // Whitelist sort direction to prevent SQL injection
+        if (!in_array($dir, ['asc', 'desc'], true)) {
+            $dir = 'desc';
+        }
         $page = max(1, (int)$request->getQueryParam('page', 1));
         $limit = $settings->itemsPerPage ?? 100;
         $offset = ($page - 1) * $limit;
@@ -392,17 +401,18 @@ class AnalyticsController extends Controller
             $query->andWhere(['like', 'url', $search]);
         }
 
-        // Apply sorting
+        // Apply sorting (array-based to prevent SQL injection)
+        $sortDirection = $dir === 'asc' ? SORT_ASC : SORT_DESC;
         $orderBy = match ($sort) {
-            'url' => "url $dir",
-            'count' => "count $dir",
-            'lastHit' => "lastHit $dir",
-            'siteId' => "siteId $dir",
-            'handled' => "handled $dir",
-            'deviceType' => "deviceType $dir",
-            'browser' => "browser $dir",
-            'requestType' => "isRobot $dir", // requestType maps to isRobot in DB
-            default => "lastHit $dir",
+            'url' => ['url' => $sortDirection],
+            'count' => ['count' => $sortDirection],
+            'lastHit' => ['lastHit' => $sortDirection],
+            'siteId' => ['siteId' => $sortDirection],
+            'handled' => ['handled' => $sortDirection],
+            'deviceType' => ['deviceType' => $sortDirection],
+            'browser' => ['browser' => $sortDirection],
+            'requestType' => ['isRobot' => $sortDirection], // requestType maps to isRobot in DB
+            default => ['lastHit' => $sortDirection],
         };
         $query->orderBy($orderBy);
 

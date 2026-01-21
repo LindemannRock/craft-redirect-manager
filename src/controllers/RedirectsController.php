@@ -53,7 +53,11 @@ class RedirectsController extends Controller
         $matchTypeFilter = $request->getQueryParam('matchType', 'all');
         $creationTypeFilter = $request->getQueryParam('creationType', 'all');
         $sort = $request->getQueryParam('sort', 'dateCreated');
-        $dir = $request->getQueryParam('dir', 'desc');
+        $dir = strtolower($request->getQueryParam('dir', 'desc'));
+        // Whitelist sort direction to prevent SQL injection
+        if (!in_array($dir, ['asc', 'desc'], true)) {
+            $dir = 'desc';
+        }
         $page = max(1, (int)$request->getQueryParam('page', 1));
         $limit = $settings->itemsPerPage ?? 100;
         $offset = ($page - 1) * $limit;
@@ -88,17 +92,18 @@ class RedirectsController extends Controller
             ]);
         }
 
-        // Apply sorting
+        // Apply sorting (array-based to prevent SQL injection)
+        $sortDirection = $dir === 'asc' ? SORT_ASC : SORT_DESC;
         $orderBy = match ($sort) {
-            'sourceUrl' => "sourceUrl $dir",
-            'statusCode' => "statusCode $dir",
-            'hitCount' => "hitCount $dir",
-            'matchType' => "matchType $dir",
-            'creationType' => "creationType $dir",
-            'siteId' => "siteId $dir",
-            'enabled' => "enabled $dir",
-            'sourcePlugin' => "sourcePlugin $dir",
-            default => "dateCreated $dir",
+            'sourceUrl' => ['sourceUrl' => $sortDirection],
+            'statusCode' => ['statusCode' => $sortDirection],
+            'hitCount' => ['hitCount' => $sortDirection],
+            'matchType' => ['matchType' => $sortDirection],
+            'creationType' => ['creationType' => $sortDirection],
+            'siteId' => ['siteId' => $sortDirection],
+            'enabled' => ['enabled' => $sortDirection],
+            'sourcePlugin' => ['sourcePlugin' => $sortDirection],
+            default => ['dateCreated' => $sortDirection],
         };
         $query->orderBy($orderBy);
 

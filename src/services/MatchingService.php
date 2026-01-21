@@ -128,6 +128,44 @@ class MatchingService extends Component
     }
 
     /**
+     * Validate a regex pattern for safety (ReDoS prevention)
+     *
+     * @param string $pattern
+     * @return bool True if pattern is safe to use
+     */
+    private function validateRegexPattern(string $pattern): bool
+    {
+        // Length limit to prevent overly complex patterns
+        if (strlen($pattern) > 500) {
+            $this->logWarning('Rejected regex pattern: exceeds length limit', ['pattern' => substr($pattern, 0, 100) . '...']);
+            return false;
+        }
+
+        // Detect catastrophic backtracking patterns (nested quantifiers)
+        // Patterns like (a+)+ or (.*)*  can cause exponential time
+        if (preg_match('/(\.\*|\.\+|\[.+\])[*+]\)?[*+]/', $pattern)) {
+            $this->logWarning('Rejected unsafe regex pattern: nested quantifiers detected', ['pattern' => $pattern]);
+            return false;
+        }
+
+        // Detect other dangerous patterns: alternation with overlapping options
+        // Simple check for (.+|.+) or similar patterns
+        if (preg_match('/\([^)]*\|[^)]*\)[*+]/', $pattern)) {
+            $this->logWarning('Rejected unsafe regex pattern: alternation with quantifier', ['pattern' => $pattern]);
+            return false;
+        }
+
+        // Test if pattern compiles without error
+        $regex = '`' . $pattern . '`i';
+        if (@preg_match($regex, '') === false) {
+            $this->logWarning('Rejected invalid regex pattern: compilation failed', ['pattern' => $pattern]);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Regex match - matches URL against a regular expression
      *
      * Captures are available as $0 (full match), $1, $2, etc.
@@ -138,10 +176,21 @@ class MatchingService extends Component
      */
     private function regexMatchWithCaptures(string $pattern, string $url): array
     {
+        // Validate pattern for safety
+        if (!$this->validateRegexPattern($pattern)) {
+            return ['matched' => false, 'captures' => []];
+        }
+
+        // Temporarily lower PCRE limits to prevent runaway matching
+        $oldBacktrack = ini_get('pcre.backtrack_limit');
+        $oldRecursion = ini_get('pcre.recursion_limit');
+        ini_set('pcre.backtrack_limit', '10000');
+        ini_set('pcre.recursion_limit', '1000');
+
         try {
             $regex = '`' . $pattern . '`i';
             $matches = [];
-            $result = preg_match($regex, $url, $matches);
+            $result = @preg_match($regex, $url, $matches);
 
             if ($result === 1) {
                 $this->logDebug('Regex match successful', [
@@ -155,10 +204,22 @@ class MatchingService extends Component
                 ];
             }
 
+            // Check if preg_match failed due to limit exceeded
+            if ($result === false) {
+                $error = preg_last_error();
+                if ($error === PREG_BACKTRACK_LIMIT_ERROR || $error === PREG_RECURSION_LIMIT_ERROR) {
+                    $this->logWarning('Regex matching aborted: resource limit exceeded', ['pattern' => $pattern, 'url' => $url]);
+                }
+            }
+
             return ['matched' => false, 'captures' => []];
         } catch (\Exception $e) {
             $this->logError('Invalid redirect regex', ['pattern' => $pattern, 'error' => $e->getMessage()]);
             return ['matched' => false, 'captures' => []];
+        } finally {
+            // Restore original PCRE limits
+            ini_set('pcre.backtrack_limit', $oldBacktrack);
+            ini_set('pcre.recursion_limit', $oldRecursion);
         }
     }
 
