@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.21.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.20.0...v5.21.0) (2026-01-21)
+
+
+### Features
+
+* Add configurable geo IP provider settings with HTTPS support ([633cc5d](https://github.com/LindemannRock/craft-redirect-manager/commit/633cc5d8b937f798c98bf82f890b63358e5e811a))
+* Enhance URL validation and error reporting in import/export process ([38f879c](https://github.com/LindemannRock/craft-redirect-manager/commit/38f879c424f23b22eafa06badd3bf8fe43d48fd2))
+* Refactor backup and error messaging components in import/export templates ([2a7c903](https://github.com/LindemannRock/craft-redirect-manager/commit/2a7c9038068dcdcb6ff081b145eaee174172285a))
+
+
+### Bug Fixes
+
+* **security:** address multiple security vulnerabilities ([2d97c82](https://github.com/LindemannRock/craft-redirect-manager/commit/2d97c82e41a28f9496d07bb79ee6b97b1a0bf380))
+* swap cache and backup settings links in the sidebar ([bb1b036](https://github.com/LindemannRock/craft-redirect-manager/commit/bb1b0362e40f6c77640a079ff9c4fac1286c79a6))
+
 ## [5.20.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.19.0...v5.20.0) (2026-01-16)
 
 
