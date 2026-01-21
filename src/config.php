@@ -80,9 +80,20 @@ return [
         'anonymizeIpAddress' => false,
 
         // Enable Geographic Detection
-        // Detect visitor location (country, city) from IP addresses using ip-api.com
-        // Free service with 45 requests per minute limit
+        // Detect visitor location (country, city) from IP addresses
         'enableGeoDetection' => false,
+
+        // Geo IP lookup provider
+        // Options: 'ip-api.com', 'ipapi.co', 'ipinfo.io'
+        // - ip-api.com: HTTP free (45/min), HTTPS requires paid key (default, backward compatible)
+        // - ipapi.co: HTTPS, 1,000 requests/day free
+        // - ipinfo.io: HTTPS, 50,000 requests/month free
+        // 'geoProvider' => 'ip-api.com',
+
+        // Geo provider API key
+        // Required for ip-api.com HTTPS (Pro tier)
+        // Optional for ipapi.co and ipinfo.io (increases rate limits)
+        // 'geoApiKey' => App::env('REDIRECT_MANAGER_GEO_API_KEY'),
 
         // Default location for local development
         // Used when IP address is private/local (127.0.0.1, 192.168.x.x, etc.)

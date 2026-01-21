@@ -166,6 +166,8 @@ return [
     // Analytics (master switch - controls device detection, geo, IP tracking)
     'enableAnalytics' => true,
     'enableGeoDetection' => false,  // Track visitor location
+    'geoProvider' => 'ip-api.com',  // Options: 'ip-api.com', 'ipapi.co', 'ipinfo.io'
+    'geoApiKey' => App::env('REDIRECT_MANAGER_GEO_API_KEY'),  // Required for ip-api.com HTTPS
     'anonymizeIpAddress' => false,  // Subnet masking for privacy
 
     // Analytics retention in days (0 = keep forever)

@@ -64,10 +64,18 @@
                 id: 'enableGeoDetection',
                 name: 'settings[enableGeoDetection]',
                 on: settings.enableGeoDetection ?? false,
+                toggle: 'geo-provider-settings',
                 disabled: settings.isOverriddenByConfig('enableGeoDetection'),
                 warning: settings.isOverriddenByConfig('enableGeoDetection') ?
                     "This is being overridden by the <code>enableGeoDetection</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
             }) }}
+
+            <div id="geo-provider-settings" class="{{ not (settings.enableGeoDetection ?? false) ? 'hidden' }}" style="margin-top: 24px;">
+                {% include 'lindemannrock-base/_partials/geo-settings' with {
+                    settings: settings,
+                    pluginHandle: 'redirect-manager'
+                } %}
+            </div>
 
             <hr>
 
