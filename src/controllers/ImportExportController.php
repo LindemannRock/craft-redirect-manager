@@ -421,8 +421,81 @@ class ImportExportController extends Controller
             if (empty($redirect['sourceUrl']) || empty($redirect['destinationUrl'])) {
                 $errorRows[] = [
                     'rowNumber' => $rowNumber,
-                    'data' => implode(',', $row),
+                    'sourceUrl' => $redirect['sourceUrl'] ?? '-',
+                    'destinationUrl' => $redirect['destinationUrl'] ?? '-',
                     'error' => 'Missing required field(s): Source URL or Destination URL',
+                ];
+                continue;
+            }
+
+            // Validate source URL format
+            $sourceUrl = $redirect['sourceUrl'];
+            $isValidSourceUrl = false;
+
+            // For regex/wildcard patterns, be more lenient but still require URL-like structure
+            if (in_array($redirect['matchType'], ['regex', 'wildcard'])) {
+                // Regex/wildcard: must start with / or ^ (regex start anchor) or contain URL-like characters
+                $isValidSourceUrl = preg_match('#^[/^]|^https?://#i', $sourceUrl) === 1;
+            } else {
+                // Exact/prefix: must start with / or be a full URL
+                $isValidSourceUrl = preg_match('#^/|^https?://#i', $sourceUrl) === 1;
+            }
+
+            if (!$isValidSourceUrl) {
+                $errorRows[] = [
+                    'rowNumber' => $rowNumber,
+                    'sourceUrl' => $sourceUrl,
+                    'destinationUrl' => $redirect['destinationUrl'],
+                    'error' => 'Invalid source URL format - must start with / or be a full URL (http/https)',
+                ];
+                continue;
+            }
+
+            // Check for email addresses disguised as URLs (e.g., /john@example.com or john@example.com)
+            // Email pattern: contains @ followed by domain-like string, but not in a query string context
+            if (preg_match('#^/?[^?]*@[a-z0-9.-]+\.[a-z]{2,}$#i', $sourceUrl)) {
+                $errorRows[] = [
+                    'rowNumber' => $rowNumber,
+                    'sourceUrl' => $sourceUrl,
+                    'destinationUrl' => $redirect['destinationUrl'],
+                    'error' => 'Source URL appears to be an email address',
+                ];
+                continue;
+            }
+
+            // Validate destination URL format
+            $destinationUrl = $redirect['destinationUrl'];
+            $isValidDestUrl = false;
+
+            // Destination can be:
+            // - Relative path (/...)
+            // - Full URL (http/https)
+            // - Special protocols: mailto:, tel:, whatsapp:, sms:, fax:, skype:, slack:, teams:
+            // - Regex capture groups ($1, $2, etc.)
+            $validProtocols = '#^/|^https?://|^mailto:|^tel:|^whatsapp:|^sms:|^fax:|^skype:|^slack://|^msteams:|^\$\d#i';
+            if (preg_match($validProtocols, $destinationUrl) === 1) {
+                $isValidDestUrl = true;
+            }
+
+            if (!$isValidDestUrl) {
+                $errorRows[] = [
+                    'rowNumber' => $rowNumber,
+                    'sourceUrl' => $sourceUrl,
+                    'destinationUrl' => $destinationUrl,
+                    'error' => 'Invalid destination URL format - must be a path (/) or valid URL scheme',
+                ];
+                continue;
+            }
+
+            // Check for email addresses in destination (unless using a proper protocol)
+            // Skip this check for URLs with recognized protocols (mailto:, tel:, whatsapp:, etc.)
+            $hasValidProtocol = preg_match('#^(https?|mailto|tel|whatsapp|sms|fax|skype|slack|msteams):#i', $destinationUrl) === 1;
+            if (!$hasValidProtocol && preg_match('#^/?[^?]*@[a-z0-9.-]+\.[a-z]{2,}$#i', $destinationUrl)) {
+                $errorRows[] = [
+                    'rowNumber' => $rowNumber,
+                    'sourceUrl' => $sourceUrl,
+                    'destinationUrl' => $destinationUrl,
+                    'error' => 'Destination appears to be an email - use mailto: prefix',
                 ];
                 continue;
             }
@@ -431,7 +504,8 @@ class ImportExportController extends Controller
             if (!in_array($redirect['matchType'], ['exact', 'regex', 'wildcard', 'prefix'])) {
                 $errorRows[] = [
                     'rowNumber' => $rowNumber,
-                    'data' => implode(',', $row),
+                    'sourceUrl' => $sourceUrl,
+                    'destinationUrl' => $destinationUrl,
                     'error' => 'Invalid match type: ' . $redirect['matchType'],
                 ];
                 continue;
@@ -441,7 +515,8 @@ class ImportExportController extends Controller
             if (!in_array($redirect['statusCode'], [301, 302, 303, 307, 308, 410])) {
                 $errorRows[] = [
                     'rowNumber' => $rowNumber,
-                    'data' => implode(',', $row),
+                    'sourceUrl' => $sourceUrl,
+                    'destinationUrl' => $destinationUrl,
                     'error' => 'Invalid status code: ' . $redirect['statusCode'],
                 ];
                 continue;
@@ -462,7 +537,8 @@ class ImportExportController extends Controller
             if (strtolower($redirect['sourceUrl']) === strtolower($redirect['destinationUrl'])) {
                 $errorRows[] = [
                     'rowNumber' => $rowNumber,
-                    'data' => implode(',', $row),
+                    'sourceUrl' => $sourceUrl,
+                    'destinationUrl' => $destinationUrl,
                     'error' => 'Infinite loop: Source and destination are identical',
                 ];
                 continue;

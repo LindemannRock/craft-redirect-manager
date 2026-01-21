@@ -144,8 +144,9 @@
             <table class="data fullwidth" style="margin: 0;">
                 <thead style="position: sticky; top: 0; background: #fef2f2; z-index: 1;">
                     <tr>
-                        <th style="width: 80px;">{{ "Row #"|t('redirect-manager') }}</th>
-                        <th>{{ "Data"|t('redirect-manager') }}</th>
+                        <th style="width: 60px;">{{ "Row"|t('redirect-manager') }}</th>
+                        <th>{{ "Source URL"|t('redirect-manager') }}</th>
+                        <th>{{ "Destination URL"|t('redirect-manager') }}</th>
                         <th>{{ "Error"|t('redirect-manager') }}</th>
                     </tr>
                 </thead>
@@ -153,7 +154,8 @@
                     {% for row in errorRows %}
                         <tr>
                             <td>{{ row.rowNumber }}</td>
-                            <td><code style="font-size: 11px;">{{ row.data|slice(0, 100) }}</code></td>
+                            <td><code style="font-size: 11px;">{{ row.sourceUrl }}</code></td>
+                            <td><code style="font-size: 11px;">{{ row.destinationUrl }}</code></td>
                             <td style="color: #dc3545;">{{ row.error }}</td>
                         </tr>
                     {% endfor %}
