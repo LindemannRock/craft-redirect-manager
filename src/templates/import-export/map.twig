@@ -27,14 +27,12 @@
     <p>{{ "Your CSV has {count} rows. Map each CSV column to a redirect field."|t('redirect-manager', {count: rowCount}) }}</p>
 
     {% if createBackup %}
-        <div style="background: #e8f5e9; padding: 15px; border-radius: 4px; margin-bottom: 25px; border: 1px solid #a5d6a7;">
-            <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink: 0;">
-                    <path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm1 15H9v-2h2v2zm0-4H9V5h2v6z" fill="#28a745"/>
-                </svg>
-                <strong>{{ "Backup will be created automatically before importing to protect your existing redirects."|t('redirect-manager') }}</strong>
-            </p>
-        </div>
+        {% include 'lindemannrock-base/_components/info-box' with {
+            message: '<strong>' ~ "Backup will be created automatically before importing to protect your existing redirects."|t('redirect-manager') ~ '</strong>',
+            type: 'success',
+            variant: 'colored',
+            margin: 'bottom'
+        } only %}
     {% endif %}
 
     <h3>{{ "Preview of CSV Data"|t('redirect-manager') }}</h3>
@@ -153,15 +151,15 @@
             </div>
         </div>
 
-        <div id="mappingErrors" style="display: none; background: #f8d7da; padding: 15px; border-radius: 4px; margin: 20px 0; border: 1px solid #f5c2c7;">
-            <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink: 0;">
-                    <circle cx="10" cy="10" r="9" fill="#dc3545"/>
-                    <text x="10" y="14" text-anchor="middle" font-size="14" font-weight="bold" fill="white">!</text>
-                </svg>
-                <strong id="mappingErrorText"></strong>
-            </p>
-        </div>
+        {% include 'lindemannrock-base/_components/info-box' with {
+            message: '',
+            type: 'error',
+            variant: 'colored',
+            margin: 'both',
+            boxId: 'mappingErrors',
+            messageId: 'mappingErrorText',
+            hidden: true
+        } only %}
 
         <div class="buttons">
             <a href="{{ url('redirect-manager/import-export') }}" class="btn">{{ "Cancel"|t('redirect-manager') }}</a>
@@ -195,7 +193,7 @@
             if (!hasSourceUrl) errors.push('Source URL');
             if (!hasDestinationUrl) errors.push('Destination URL');
 
-            mappingErrorText.textContent = 'Required fields not mapped: ' + errors.join(', ');
+            mappingErrorText.innerHTML = '<strong>Required fields not mapped: ' + errors.join(', ') + '</strong>';
             mappingErrorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return false;
         }
@@ -207,7 +205,7 @@
         if (nonEmptyMappings.length !== uniqueMappings.size) {
             e.preventDefault();
             mappingErrorDiv.style.display = 'block';
-            mappingErrorText.textContent = 'Error: You cannot map multiple CSV columns to the same field';
+            mappingErrorText.innerHTML = '<strong>Error: You cannot map multiple CSV columns to the same field</strong>';
             mappingErrorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return false;
         }

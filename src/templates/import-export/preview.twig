@@ -25,43 +25,38 @@
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 30px 0;">
         <div style="background: #f7f7f7; padding: 20px; border-radius: 4px; text-align: center; border: 1px solid #e0e0e0;">
-            <div style="font-size: 32px; font-weight: bold; color: #333;">{{ summary.totalRows }}</div>
+            <div style="font-size: 32px; font-weight: bold; color: #333;">{{ summary.totalRows|number }}</div>
             <div style="color: #666; margin-top: 5px;">{{ "Total Rows"|t('redirect-manager') }}</div>
         </div>
         <div style="background: #e8f5e9; padding: 20px; border-radius: 4px; text-align: center; border: 1px solid #a5d6a7;">
-            <div style="font-size: 32px; font-weight: bold; color: #28a745;">{{ summary.validRows }}</div>
+            <div style="font-size: 32px; font-weight: bold; color: #28a745;">{{ summary.validRows|number }}</div>
             <div style="color: #666; margin-top: 5px;">{{ "Valid"|t('redirect-manager') }}</div>
         </div>
         <div style="background: #fff3cd; padding: 20px; border-radius: 4px; text-align: center; border: 1px solid #ffd966;">
-            <div style="font-size: 32px; font-weight: bold; color: #f59e0b;">{{ summary.duplicates }}</div>
+            <div style="font-size: 32px; font-weight: bold; color: #f59e0b;">{{ summary.duplicates|number }}</div>
             <div style="color: #666; margin-top: 5px;">{{ "Duplicates"|t('redirect-manager') }}</div>
         </div>
         <div style="background: #f8d7da; padding: 20px; border-radius: 4px; text-align: center; border: 1px solid #f5c2c7;">
-            <div style="font-size: 32px; font-weight: bold; color: #dc3545;">{{ summary.errors }}</div>
+            <div style="font-size: 32px; font-weight: bold; color: #dc3545;">{{ summary.errors|number }}</div>
             <div style="color: #666; margin-top: 5px;">{{ "Errors"|t('redirect-manager') }}</div>
         </div>
     </div>
 
     {% if createBackup %}
         {% if existingCount > 0 %}
-            <div style="background: #e8f5e9; padding: 15px; border-radius: 4px; margin-bottom: 25px; border: 1px solid #a5d6a7;">
-                <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink: 0;">
-                        <path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm1 15H9v-2h2v2zm0-4H9V5h2v6z" fill="#28a745"/>
-                    </svg>
-                    <strong>{{ "Backup will be created with {count} existing redirect(s) before importing to protect your data."|t('redirect-manager', {count: existingCount}) }}</strong>
-                </p>
-            </div>
+            {% include 'lindemannrock-base/_components/info-box' with {
+                message: '<strong>' ~ "Backup will be created with {count} existing redirect(s) before importing to protect your data."|t('redirect-manager', {count: existingCount}) ~ '</strong>',
+                type: 'success',
+                variant: 'colored',
+                margin: 'bottom'
+            } %}
         {% else %}
-            <div style="background: #e3f2fd; padding: 15px; border-radius: 4px; margin-bottom: 25px; border: 1px solid #90caf9;">
-                <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink: 0;">
-                        <circle cx="10" cy="10" r="9" fill="#2196f3"/>
-                        <text x="10" y="14" text-anchor="middle" font-size="12" font-weight="bold" fill="white">i</text>
-                    </svg>
-                    <strong>{{ "No existing redirects to backup - backup will be skipped."|t('redirect-manager') }}</strong>
-                </p>
-            </div>
+            {% include 'lindemannrock-base/_components/info-box' with {
+                message: '<strong>' ~ "No existing redirects to backup - backup will be skipped."|t('redirect-manager') ~ '</strong>',
+                type: 'info',
+                variant: 'colored',
+                margin: 'bottom'
+            } %}
         {% endif %}
     {% endif %}
 
