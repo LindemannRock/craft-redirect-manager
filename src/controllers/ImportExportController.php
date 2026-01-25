@@ -103,8 +103,8 @@ class ImportExportController extends Controller
 
         foreach ($redirects as $redirect) {
             $csv[] = [
-                $redirect['sourceUrl'],
-                $redirect['destinationUrl'],
+                $this->sanitizeCsvValue($redirect['sourceUrl']),
+                $this->sanitizeCsvValue($redirect['destinationUrl']),
                 $redirect['siteId'] ?? '',
                 $redirect['redirectSrcMatch'],
                 $redirect['matchType'],
@@ -114,7 +114,7 @@ class ImportExportController extends Controller
                 $redirect['hitCount'] ?? 0,
                 $redirect['lastHit'] ?? '',
                 $redirect['creationType'],
-                $redirect['sourcePlugin'] ?? 'redirect-manager',
+                $this->sanitizeCsvValue($redirect['sourcePlugin'] ?? 'redirect-manager'),
             ];
         }
 
@@ -411,6 +411,9 @@ class ImportExportController extends Controller
                         } else {
                             $redirect[$fieldName] = 'pathonly'; // Default
                         }
+                    } elseif ($fieldName === 'sourceUrl' || $fieldName === 'destinationUrl') {
+                        // Strip formula escape prefix for round-trip compatibility
+                        $redirect[$fieldName] = $this->stripFormulaEscapePrefix($value);
                     } else {
                         $redirect[$fieldName] = $value;
                     }
@@ -982,5 +985,47 @@ class ImportExportController extends Controller
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to delete backup'));
             return $this->redirect('redirect-manager/import-export');
         }
+    }
+
+    /**
+     * Sanitize a value for CSV export to prevent formula injection
+     *
+     * Values starting with =, +, -, @, tab, or carriage return can be
+     * interpreted as formulas by spreadsheet applications like Excel.
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    private function sanitizeCsvValue(mixed $value): mixed
+    {
+        if (!is_string($value)) {
+            return $value;
+        }
+
+        // Check for formula injection characters
+        if (preg_match('/^[=+\-@\t\r]/', $value)) {
+            return "'" . $value;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Strip formula escape prefix from imported values
+     *
+     * Reverses the sanitization done during export so that round-trip
+     * export/import preserves the original value.
+     *
+     * @param string $value
+     * @return string
+     */
+    private function stripFormulaEscapePrefix(string $value): string
+    {
+        // If value starts with ' followed by a formula character, strip the '
+        if (preg_match("/^'(\\s*[=+\\-@])/", $value)) {
+            return substr($value, 1);
+        }
+
+        return $value;
     }
 }

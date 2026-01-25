@@ -644,7 +644,7 @@ stat.id
             </td>
             <td style="min-width: 200px; max-width: 50%; word-break: break-word;">
                 <a class="label-link" href="${
-stat.url
+encodeURI(stat.url)
 }" target="_blank" rel="noopener noreferrer" title="{{ 'Visit URL'|t('redirect-manager')|e('js') }}">
                     <span><code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">${
 Craft.escapeHtml(stat.url)

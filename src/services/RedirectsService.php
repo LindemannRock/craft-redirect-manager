@@ -162,7 +162,8 @@ class RedirectsService extends Component
         $siteId = Craft::$app->getSites()->getCurrentSite()->id;
 
         // Try cache first (exact match only - cached redirects don't need capture recalculation)
-        $redirect = $this->getFromCache($pathOnly, $siteId);
+        // Use fullUrl as cache key to properly handle both pathonly and fullurl matching modes
+        $redirect = $this->getFromCache($fullUrl, $siteId);
         if ($redirect) {
             $this->incrementHitCount($redirect['id']);
             return $redirect;
@@ -179,7 +180,8 @@ class RedirectsService extends Component
                 }
 
                 // Cache the matched redirect (without captures - they're URL-specific)
-                $this->saveToCache($pathOnly, $redirect, $siteId);
+                // Use fullUrl as cache key to properly handle both pathonly and fullurl matching modes
+                $this->saveToCache($fullUrl, $redirect, $siteId);
                 $this->incrementHitCount($redirect['id']);
 
                 return $redirect;
@@ -945,12 +947,13 @@ class RedirectsService extends Component
         if (file_exists($filepath)) {
             $data = @file_get_contents($filepath);
             if ($data) {
-                $cache = @unserialize($data);
-                if ($cache && isset($cache['expires']) && $cache['expires'] > time()) {
+                // Use JSON instead of unserialize for security (prevents PHP object injection)
+                $cache = @json_decode($data, true);
+                if (is_array($cache) && isset($cache['expires']) && $cache['expires'] > time()) {
                     $this->logDebug('Redirect cache hit (File)', ['url' => $url]);
                     return $cache['data'];
                 }
-                // Expired - delete file
+                // Expired or invalid - delete file
                 @unlink($filepath);
             }
         }
@@ -1009,7 +1012,8 @@ class RedirectsService extends Component
             'expires' => time() + $duration,
         ];
 
-        @file_put_contents($filepath, serialize($cacheData));
+        // Use JSON instead of serialize for security
+        @file_put_contents($filepath, json_encode($cacheData));
 
         $this->logDebug('Redirect cached (File)', ['url' => $url, 'duration' => $duration]);
     }

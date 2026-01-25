@@ -539,7 +539,7 @@ class AnalyticsController extends Controller
     public function actionDelete(): Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:viewAnalytics');
+        $this->requirePermission('redirectManager:clearAnalytics');
 
         $analyticId = Craft::$app->getRequest()->getRequiredBodyParam('analyticId');
 
