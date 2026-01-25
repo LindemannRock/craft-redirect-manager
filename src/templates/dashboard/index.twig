@@ -237,11 +237,18 @@
 									<div class="checkbox" title="Select" tabindex="0" aria-checked="false" role="checkbox"></div>
 								</td>
 								<td style="min-width: 200px; max-width: 50%; word-break: break-word;">
+								{% set isSafeUrl = stat.url starts with '/' or stat.url starts with 'http://' or stat.url starts with 'https://' %}
+								{% if isSafeUrl %}
 									<a class="label-link" href="{{ stat.url }}" target="_blank" rel="noopener noreferrer" title="{{ 'Visit URL'|t('redirect-manager') }}">
 										<span>
 											<code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">{{ stat.url }}</code>
 										</span>
 									</a>
+								{% else %}
+									<span>
+										<code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">{{ stat.url }}</code>
+									</span>
+								{% endif %}
 								</td>
 								<td>
 									{% set site = craft.app.sites.getSiteById(stat.siteId) %}
@@ -586,6 +593,12 @@ page: '{{ page }}'
 });
 }
 
+// Check if URL has a safe scheme (allowlist: /, http://, https://)
+function isSafeUrl(url) {
+	if (!url || typeof url !== 'string') return false;
+	return url.startsWith('/') || url.startsWith('http://') || url.startsWith('https://');
+}
+
 // Render a table row from analytics data
 function renderRow(stat) {
 const handled = stat.handled == 1 || stat.handled === true;
@@ -643,13 +656,10 @@ stat.id
                 <div class="checkbox" title="Select" tabindex="0" aria-checked="false" role="checkbox"></div>
             </td>
             <td style="min-width: 200px; max-width: 50%; word-break: break-word;">
-                <a class="label-link" href="${
-encodeURI(stat.url)
-}" target="_blank" rel="noopener noreferrer" title="{{ 'Visit URL'|t('redirect-manager')|e('js') }}">
-                    <span><code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">${
-Craft.escapeHtml(stat.url)
-}</code></span>
-                </a>
+                ${isSafeUrl(stat.url)
+                    ? `<a class="label-link" href="${encodeURI(stat.url)}" target="_blank" rel="noopener noreferrer" title="{{ 'Visit URL'|t('redirect-manager')|e('js') }}"><span><code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">${Craft.escapeHtml(stat.url)}</code></span></a>`
+                    : `<span><code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">${Craft.escapeHtml(stat.url)}</code></span>`
+                }
             </td>
             <td><span class="light">${
 Craft.escapeHtml(stat.siteName)
