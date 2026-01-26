@@ -329,14 +329,7 @@
 												{{ 'User'|t('redirect-manager') }}
 											{% endif %}
 										{% else %}
-											{# Get plugin name dynamically from installed plugin #}
-											{% set sourcePluginObj = craft.app.plugins.getPlugin(redirect.sourcePlugin) %}
-											{% if sourcePluginObj %}
-												{% set pluginSettings = sourcePluginObj.getSettings() %}
-												{{ pluginSettings and pluginSettings.pluginName ? pluginSettings.pluginName : sourcePluginObj.name }}
-											{% else %}
-												{{ redirect.sourcePlugin|replace({'-': ' '})|title }}
-											{% endif %}
+											{{ lrPluginName(redirect.sourcePlugin, redirect.sourcePlugin|replace({'-': ' '})|title) }}
 										{% endif %}
 									</span>
 								</td>

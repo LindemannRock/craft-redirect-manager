@@ -8,6 +8,8 @@
 
 namespace lindemannrock\redirectmanager\traits;
 
+use lindemannrock\base\helpers\PluginHelper;
+
 /**
  * Redirect Handling Trait
  *
@@ -35,8 +37,8 @@ trait RedirectHandlingTrait
         }
 
         // Check if plugin is actually enabled and initialized
-        $plugin = \Craft::$app->plugins->getPlugin('redirect-manager');
-        if (!$plugin || !\Craft::$app->plugins->isPluginEnabled('redirect-manager')) {
+        $plugin = PluginHelper::getPlugin('redirect-manager');
+        if (!$plugin || !PluginHelper::isPluginEnabled('redirect-manager')) {
             return null;
         }
 
@@ -65,8 +67,8 @@ trait RedirectHandlingTrait
         }
 
         // Check if plugin is actually enabled and initialized
-        $plugin = \Craft::$app->plugins->getPlugin('redirect-manager');
-        if (!$plugin || !\Craft::$app->plugins->isPluginEnabled('redirect-manager')) {
+        $plugin = PluginHelper::getPlugin('redirect-manager');
+        if (!$plugin || !PluginHelper::isPluginEnabled('redirect-manager')) {
             return false;
         }
 
@@ -98,8 +100,8 @@ trait RedirectHandlingTrait
         }
 
         // Check if plugin is actually enabled and initialized
-        $plugin = \Craft::$app->plugins->getPlugin('redirect-manager');
-        if (!$plugin || !\Craft::$app->plugins->isPluginEnabled('redirect-manager')) {
+        $plugin = PluginHelper::getPlugin('redirect-manager');
+        if (!$plugin || !PluginHelper::isPluginEnabled('redirect-manager')) {
             return false;
         }
 
