@@ -1,5 +1,19 @@
 # Changelog
 
+## [5.22.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.21.0...v5.22.0) (2026-01-26)
+
+
+### Features
+
+* replace direct plugin access with PluginHelper methods ([9ec3fc5](https://github.com/LindemannRock/craft-redirect-manager/commit/9ec3fc543d82711d5447a714951a412aad796c09))
+
+
+### Bug Fixes
+
+* **jobs:** prevent duplicate scheduling of CleanupAnalyticsJob ([c1c3ea5](https://github.com/LindemannRock/craft-redirect-manager/commit/c1c3ea53fffd6ef70d5e0a5ae61241ba68af1962))
+* **security:** address XSS, permissions, cache, and CSV injection vulnerabilities ([1d42686](https://github.com/LindemannRock/craft-redirect-manager/commit/1d426868fb1b34a0173651cbd61b84e2dd7fb40d))
+* **security:** validate URL schemes to prevent unsafe links in dashboard ([25a897f](https://github.com/LindemannRock/craft-redirect-manager/commit/25a897fe7645afd05045cfe67a3b7e8e5be189e6))
+
 ## [5.21.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.20.0...v5.21.0) (2026-01-21)
 
 
