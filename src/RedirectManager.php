@@ -418,12 +418,11 @@ class RedirectManager extends Plugin
 
         // Only schedule cleanup if analytics is enabled and retention is set
         if ($settings->enableAnalytics && $settings->analyticsRetention > 0) {
-            // Check if a cleanup job is already scheduled (within next 24 hours)
+            // Check if a cleanup job is already scheduled
             $existingJob = (new \craft\db\Query())
                 ->from('{{%queue}}')
                 ->where(['like', 'job', 'redirectmanager'])
                 ->andWhere(['like', 'job', 'CleanupAnalyticsJob'])
-                ->andWhere(['<=', 'timePushed', time() + 86400]) // Within next 24 hours
                 ->exists();
 
             if (!$existingJob) {
