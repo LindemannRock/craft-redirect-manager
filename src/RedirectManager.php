@@ -27,6 +27,7 @@ use craft\utilities\ClearCaches;
 use craft\web\ErrorHandler;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
+use lindemannrock\base\helpers\ColorHelper;
 use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\logginglibrary\LoggingLibrary;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
@@ -88,12 +89,31 @@ class RedirectManager extends Plugin
         parent::init();
         self::$plugin = $this;
 
-        // Bootstrap base module (logging + Twig extension)
+        // Bootstrap base module (logging + Twig extension + colors)
         PluginHelper::bootstrap(
             $this,
             'redirectHelper',
             ['redirectManager:viewLogs'],
-            ['redirectManager:downloadLogs']
+            ['redirectManager:downloadLogs'],
+            [
+                'colorSets' => [
+                    'requestType' => [
+                        'normal' => ColorHelper::getPaletteColor('blue'),
+                        'bot' => ColorHelper::getPaletteColor('amber'),
+                        'probe' => ColorHelper::getPaletteColor('red'),
+                    ],
+                    'matchType' => [
+                        'exact' => ColorHelper::getPaletteColor('indigo'),
+                        'regex' => ColorHelper::getPaletteColor('pink'),
+                        'wildcard' => ColorHelper::getPaletteColor('teal'),
+                        'prefix' => ColorHelper::getPaletteColor('amber'),
+                    ],
+                    'creationType' => [
+                        'manual' => ColorHelper::getPaletteColor('orange'),
+                        'entry-change' => ColorHelper::getPaletteColor('blue'),
+                    ],
+                ],
+            ]
         );
         PluginHelper::applyPluginNameFromConfig($this);
 
@@ -336,11 +356,13 @@ class RedirectManager extends Plugin
 
             // Analytics routes (charts/analytics)
             'redirect-manager/analytics' => 'redirect-manager/analytics/index',
+            'redirect-manager/analytics/export' => 'redirect-manager/analytics/export',
 
             // Import/Export routes
             'redirect-manager/import-export' => 'redirect-manager/import-export/index',
             'redirect-manager/import-export/map' => 'redirect-manager/import-export/map',
             'redirect-manager/import-export/preview' => 'redirect-manager/import-export/preview',
+            'redirect-manager/import-export/export' => 'redirect-manager/import-export/export',
 
             // Settings routes
             'redirect-manager/settings' => 'redirect-manager/settings/index',

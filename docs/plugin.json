@@ -1,0 +1,9 @@
+{
+    "name": "Redirect Manager",
+    "handle": "redirect-manager",
+    "description": "Intelligent redirect management and 404 handling for Craft CMS",
+    "version": "5.18.0",
+    "developer": "LindemannRock",
+    "developerUrl": "https://lindemannrock.com",
+    "documentationUrl": "https://github.com/LindemannRock/craft-redirect-manager/blob/main/README.md"
+}

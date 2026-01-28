@@ -10,6 +10,7 @@ namespace lindemannrock\redirectmanager\controllers;
 
 use Craft;
 use craft\web\Controller;
+use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
 use yii\web\Response;
@@ -576,11 +577,11 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Export analytics to CSV
+     * Export analytics
      *
      * @return Response
      */
-    public function actionExportCsv(): Response
+    public function actionExport(): Response
     {
         $this->requirePermission('redirectManager:exportAnalytics');
 
@@ -588,11 +589,11 @@ class AnalyticsController extends Controller
         $siteId = $request->getQueryParam('siteId');
         $siteId = $siteId ? (int)$siteId : null;
 
-        // Check if specific analytics were selected
-        $analyticsIdsJson = $request->getBodyParam('analyticsIds');
-        $analyticsIds = $analyticsIdsJson ? json_decode($analyticsIdsJson, true) : null;
+        // Check if specific analytics were selected (from query param or body param)
+        $analyticIdsJson = $request->getQueryParam('analyticIds') ?? $request->getBodyParam('analyticIds');
+        $analyticIds = $analyticIdsJson ? json_decode($analyticIdsJson, true) : null;
 
-        // Get date range from query params
+        // Get date range and format from query params
         $dateRange = $request->getQueryParam('dateRange', 'all');
         $format = $request->getQueryParam('format', 'csv');
 
@@ -602,34 +603,73 @@ class AnalyticsController extends Controller
         $startDate = $dateFilter['start'] ?? null;
         $endDate = $dateFilter['end'] ?? null;
 
-        try {
-            $csv = RedirectManager::$plugin->analytics->exportToCsv($siteId, $analyticsIds, $days, $startDate, $endDate, $format);
+        // Get analytics data
+        $analyticsData = RedirectManager::$plugin->analytics->getExportData($siteId, $analyticIds, $days, $startDate, $endDate);
 
-            // Build filename with site name
-            $settings = RedirectManager::$plugin->getSettings();
-            $filenamePart = strtolower(str_replace(' ', '-', $settings->getLowerDisplayName()));
-
-            // Get site name for filename
-            $sitePart = 'all';
-            if ($siteId) {
-                $site = Craft::$app->getSites()->getSiteById((int)$siteId);
-                if ($site) {
-                    $sitePart = strtolower(preg_replace('/[^a-zA-Z0-9-_]/', '', str_replace(' ', '-', $site->name)));
-                }
-            }
-
-            // Use "alltime" instead of "all" for clearer filename
-            $dateRangeLabel = $dateRange === 'all' ? 'alltime' : $dateRange;
-            $filename = $filenamePart . '-analytics-' . $sitePart . '-' . $dateRangeLabel . '-' . date('Y-m-d') . '.' . $format;
-
-            return Craft::$app->getResponse()
-                ->sendContentAsFile($csv, $filename, [
-                    'mimeType' => $format === 'csv' ? 'text/csv' : 'application/json',
-                ]);
-        } catch (\Exception $e) {
-            Craft::$app->getSession()->setError($e->getMessage());
-            return $this->redirect('redirect-manager/analytics?dateRange=' . $dateRange);
+        // Check for empty data
+        if (empty($analyticsData)) {
+            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'No analytics data to export.'));
+            return $this->redirect(Craft::$app->getRequest()->getReferrer() ?? 'redirect-manager/analytics');
         }
+
+        $settings = RedirectManager::$plugin->getSettings();
+
+        // Build filename parts
+        $dateRangeLabel = $dateRange === 'all' ? 'alltime' : $dateRange;
+        $filenameParts = ['analytics', $dateRangeLabel];
+
+        // Add site to filename if filtered
+        if ($siteId) {
+            $site = Craft::$app->getSites()->getSiteById($siteId);
+            if ($site) {
+                $filenameParts[] = strtolower(preg_replace('/[^a-zA-Z0-9-_]/', '', str_replace(' ', '-', $site->name)));
+            }
+        }
+
+        // CSV/Excel headers
+        $headers = [
+            'url' => Craft::t('redirect-manager', 'URL'),
+            'siteId' => Craft::t('redirect-manager', 'Site ID'),
+            'siteName' => Craft::t('redirect-manager', 'Site'),
+            'count' => Craft::t('redirect-manager', 'Hits'),
+            'handled' => Craft::t('redirect-manager', 'Handled'),
+            'referrer' => Craft::t('redirect-manager', 'Referrer'),
+            'deviceType' => Craft::t('redirect-manager', 'Device'),
+            'browser' => Craft::t('redirect-manager', 'Browser'),
+            'os' => Craft::t('redirect-manager', 'OS'),
+            'country' => Craft::t('redirect-manager', 'Country'),
+            'city' => Craft::t('redirect-manager', 'City'),
+            'isRobot' => Craft::t('redirect-manager', 'Is Bot'),
+            'botName' => Craft::t('redirect-manager', 'Bot Name'),
+            'lastHit' => Craft::t('redirect-manager', 'Last Hit'),
+        ];
+
+        // Date columns for formatting
+        $dateColumns = ['lastHit'];
+
+        // Export based on format
+        $extension = $format === 'excel' ? 'xlsx' : $format;
+        $filename = ExportHelper::filename($settings, $filenameParts, $extension);
+
+        return match ($format) {
+            'json' => ExportHelper::toJson($analyticsData, $filename, $dateColumns),
+            'excel' => ExportHelper::toExcel($analyticsData, $headers, $filename, $dateColumns, [
+                'sheetTitle' => Craft::t('redirect-manager', 'Analytics'),
+            ]),
+            default => ExportHelper::toCsv($analyticsData, $headers, $filename, $dateColumns),
+        };
+    }
+
+    /**
+     * Export analytics to CSV
+     *
+     * Used by dashboard for bulk export of selected items.
+     *
+     * @return Response
+     */
+    public function actionExportCsv(): Response
+    {
+        return $this->actionExport();
     }
 
     /**

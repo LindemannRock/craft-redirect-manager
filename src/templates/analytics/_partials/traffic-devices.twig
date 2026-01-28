@@ -2,8 +2,8 @@
 
 <h2 style="margin: 0 0 20px;">{{ "Traffic Analysis"|t('redirect-manager') }}</h2>
 
-<div class="analytics-charts two-columns">
-    <div class="chart-container">
+<div class="lr-analytics-charts two-columns">
+    <div class="lr-chart-container">
         <h3>{{ "Bot vs Human Traffic"|t('redirect-manager') }}</h3>
         <canvas id="bot-chart"></canvas>
         <div id="bot-percentage-text" style="text-align: center; margin-top: 10px; color: #666;">
@@ -11,9 +11,9 @@
         </div>
     </div>
 
-    <div class="chart-container">
+    <div class="lr-chart-container">
         <h3>{{ "Top Bots"|t('redirect-manager') }}</h3>
-        <div class="table-scroll-container">
+        <div class="lr-table-scroll">
             <table class="data fullwidth" id="top-bots-table">
                 <thead>
                     <tr>
@@ -44,20 +44,20 @@
 
 <h2 style="margin: 30px 0 20px;">{{ "Device Analytics"|t('redirect-manager') }}</h2>
 
-<div class="analytics-charts two-columns">
-    <div class="chart-container">
+<div class="lr-analytics-charts two-columns">
+    <div class="lr-chart-container">
         <h3>{{ "Device Types"|t('redirect-manager') }}</h3>
         <canvas id="device-chart"></canvas>
     </div>
 
-    <div class="chart-container">
+    <div class="lr-chart-container">
         <h3>{{ "Browser Usage"|t('redirect-manager') }}</h3>
         <canvas id="browser-chart"></canvas>
     </div>
 </div>
 
-<div class="analytics-charts" style="margin-top: 30px;">
-    <div class="chart-container">
+<div class="lr-analytics-charts" style="margin-top: 30px;">
+    <div class="lr-chart-container">
         <h3>{{ "Operating Systems"|t('redirect-manager') }}</h3>
         <canvas id="os-chart"></canvas>
     </div>

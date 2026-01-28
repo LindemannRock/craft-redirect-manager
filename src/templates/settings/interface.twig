@@ -53,16 +53,17 @@
 
 		{{ forms.selectField({
             label: 'Dashboard Refresh Interval'|t('redirect-manager'),
-            instructions: 'How often to refresh dashboard data'|t('redirect-manager'),
+            instructions: 'How often to refresh dashboard data. Set to Off to disable auto-refresh.'|t('redirect-manager'),
             id: 'refreshIntervalSecs',
             name: 'settings[refreshIntervalSecs]',
             value: settings.refreshIntervalSecs,
             required: true,
             options: {
-                5: '5 seconds'|t('redirect-manager'),
+                0: 'Off'|t('redirect-manager'),
                 15: '15 seconds'|t('redirect-manager'),
                 30: '30 seconds'|t('redirect-manager'),
                 60: '60 seconds (1 minute)'|t('redirect-manager'),
+                120: '120 seconds (2 minutes)'|t('redirect-manager'),
             },
             disabled: settings.isOverriddenByConfig('refreshIntervalSecs'),
             warning: settings.isOverriddenByConfig('refreshIntervalSecs') ?

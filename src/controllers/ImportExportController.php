@@ -12,6 +12,7 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
 use yii\web\Response;
@@ -61,11 +62,12 @@ class ImportExportController extends Controller
      */
     public function actionExport(): Response
     {
-        $this->requirePostRequest();
         $this->requirePermission('redirectManager:manageImportExport');
 
-        // Check if specific redirects were selected
-        $redirectIdsJson = Craft::$app->getRequest()->getBodyParam('redirectIds');
+        $request = Craft::$app->getRequest();
+
+        // Check if specific redirects were selected (from query param or body param)
+        $redirectIdsJson = $request->getQueryParam('redirectIds') ?? $request->getBodyParam('redirectIds');
         $redirectIds = $redirectIdsJson ? json_decode($redirectIdsJson, true) : null;
 
         // Build query
@@ -127,10 +129,9 @@ class ImportExportController extends Controller
         $csvContent = stream_get_contents($output);
         fclose($output);
 
-        // Send as download
+        // Send as download using ExportHelper for consistent filename
         $settings = RedirectManager::$plugin->getSettings();
-        $filenamePart = strtolower(str_replace(' ', '-', $settings->getLowerDisplayName()));
-        $filename = $filenamePart . '-' . date('Y-m-d-His') . '.csv';
+        $filename = ExportHelper::filename($settings, ['export'], 'csv');
 
         return Craft::$app->getResponse()
             ->sendContentAsFile($csvContent, $filename, [

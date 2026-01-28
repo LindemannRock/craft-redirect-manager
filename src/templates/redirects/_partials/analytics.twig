@@ -1,237 +1,157 @@
+{#
+ # Per-Redirect Analytics Tab
+ #
+ # Uses the base plugin's analytics-panel partial for consistent styling.
+ #
+ # Variables available:
+ # - redirect: The redirect record
+ #}
+
+{# Get date range from URL #}
 {% set dateRange = craft.app.request.getQueryParam('range') ?? 'last30days' %}
-{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
 
 {# Get analytics data for this redirect #}
 {% set analytics = craft.redirectManager.getRedirectAnalytics(redirect.id, dateRange) %}
 
-<div class="analytics-container">
-    {# Date Range Selector #}
-    <div class="analytics-header">
-        <div class="flex">
-            <div class="btngroup">
-                <button type="button" class="btn menubtn">
-                    <span>{{ dateRange == 'today' ? 'Today' : (dateRange == 'yesterday' ? 'Yesterday' : (dateRange == 'last7days' ? 'Last 7 days' : (dateRange == 'last30days' ? 'Last 30 days' : (dateRange == 'last90days' ? 'Last 90 days' : 'All time')))) }}</span>
-                </button>
-                <div class="menu">
-                    <ul>
-                        <li><a href="#" data-range="today" class="date-range-option {{ dateRange == 'today' ? 'sel' : '' }}">{{ "Today"|t('redirect-manager') }}</a></li>
-                        <li><a href="#" data-range="yesterday" class="date-range-option {{ dateRange == 'yesterday' ? 'sel' : '' }}">{{ "Yesterday"|t('redirect-manager') }}</a></li>
-                        <li><a href="#" data-range="last7days" class="date-range-option {{ dateRange == 'last7days' ? 'sel' : '' }}">{{ "Last 7 days"|t('redirect-manager') }}</a></li>
-                        <li><a href="#" data-range="last30days" class="date-range-option {{ dateRange == 'last30days' ? 'sel' : '' }}">{{ "Last 30 days"|t('redirect-manager') }}</a></li>
-                        <li><a href="#" data-range="last90days" class="date-range-option {{ dateRange == 'last90days' ? 'sel' : '' }}">{{ "Last 90 days"|t('redirect-manager') }}</a></li>
-                        <li><a href="#" data-range="all" class="date-range-option {{ dateRange == 'all' ? 'sel' : '' }}">{{ "All time"|t('redirect-manager') }}</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="redirect-analytics-content" data-redirect-id="{{ redirect.id }}">
+{% embed 'lindemannrock-base/_partials/analytics-panel' with {
+    config: {
+        dateRange: {
+            enabled: true,
+            current: dateRange,
+            param: 'range',
+            hash: 'analytics',
+        },
+    }
+} %}
+    {% block content %}
         {# Stats Overview #}
-        <div class="analytics-stats">
-            <div class="stat-box">
-                <div class="stat-value">{{ analytics.totalHits|number_format }}</div>
-                <div class="stat-label">{{ "Total Hits"|t('redirect-manager') }}</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value">{{ analytics.botVsHuman.human|number_format }}</div>
-                <div class="stat-label">{{ "Human Visits"|t('redirect-manager') }}</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value">{{ analytics.botVsHuman.bot|number_format }}</div>
-                <div class="stat-label">{{ "Bot Visits"|t('redirect-manager') }}</div>
-            </div>
+        <div class="lr-analytics-stats">
+            {% include 'lindemannrock-base/_components/stat-box' with {
+                value: analytics.totalHits,
+                label: 'Total Hits'|t('redirect-manager'),
+            } only %}
+
+            {% include 'lindemannrock-base/_components/stat-box' with {
+                value: analytics.botVsHuman.human,
+                label: 'Human Visits'|t('redirect-manager'),
+            } only %}
+
+            {% include 'lindemannrock-base/_components/stat-box' with {
+                value: analytics.botVsHuman.bot,
+                label: 'Bot Visits'|t('redirect-manager'),
+                color: '#f59e0b',
+            } only %}
         </div>
 
         {% if analytics.totalHits > 0 %}
-            <div class="analytics-grid">
+            <div class="lr-analytics-charts two-columns">
                 {# Top Referrers #}
                 {% if analytics.referrerBreakdown|length > 0 %}
-                <div class="chart-container">
+                <div class="lr-chart-container">
                     <h3>{{ "Top Referrers"|t('redirect-manager') }}</h3>
-                    <table class="data fullwidth">
-                        <thead>
-                            <tr>
-                                <th>{{ "Source"|t('redirect-manager') }}</th>
-                                <th class="thin">{{ "Hits"|t('redirect-manager') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for referrer, count in analytics.referrerBreakdown %}
+                    <div class="lr-table-scroll">
+                        <table class="data fullwidth">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        <code style="font-size: 12px;">{{ referrer }}</code>
-                                    </td>
-                                    <td class="thin">{{ count|number_format }}</td>
+                                    <th>{{ "Source"|t('redirect-manager') }}</th>
+                                    <th class="thin">{{ "Hits"|t('redirect-manager') }}</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {% for referrer, count in analytics.referrerBreakdown %}
+                                    <tr>
+                                        <td>
+                                            <code style="font-size: 12px;">{{ referrer }}</code>
+                                        </td>
+                                        <td class="thin">{{ count|number_format }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 {% endif %}
 
                 {# Device Breakdown #}
                 {% if analytics.deviceBreakdown|length > 0 %}
-                <div class="chart-container">
+                <div class="lr-chart-container">
                     <h3>{{ "Devices"|t('redirect-manager') }}</h3>
-                    <table class="data fullwidth">
-                        <thead>
-                            <tr>
-                                <th>{{ "Device"|t('redirect-manager') }}</th>
-                                <th class="thin">{{ "Hits"|t('redirect-manager') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for device, count in analytics.deviceBreakdown %}
+                    <div class="lr-table-scroll">
+                        <table class="data fullwidth">
+                            <thead>
                                 <tr>
-                                    <td>{{ device|capitalize }}</td>
-                                    <td class="thin">{{ count|number_format }}</td>
+                                    <th>{{ "Device"|t('redirect-manager') }}</th>
+                                    <th class="thin">{{ "Hits"|t('redirect-manager') }}</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {% for device, count in analytics.deviceBreakdown %}
+                                    <tr>
+                                        <td>{{ device|capitalize }}</td>
+                                        <td class="thin">{{ count|number_format }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 {% endif %}
 
                 {# Browser Breakdown #}
                 {% if analytics.browserBreakdown|length > 0 %}
-                <div class="chart-container">
+                <div class="lr-chart-container">
                     <h3>{{ "Browsers"|t('redirect-manager') }}</h3>
-                    <table class="data fullwidth">
-                        <thead>
-                            <tr>
-                                <th>{{ "Browser"|t('redirect-manager') }}</th>
-                                <th class="thin">{{ "Hits"|t('redirect-manager') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for browser, count in analytics.browserBreakdown %}
+                    <div class="lr-table-scroll">
+                        <table class="data fullwidth">
+                            <thead>
                                 <tr>
-                                    <td>{{ browser }}</td>
-                                    <td class="thin">{{ count|number_format }}</td>
+                                    <th>{{ "Browser"|t('redirect-manager') }}</th>
+                                    <th class="thin">{{ "Hits"|t('redirect-manager') }}</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {% for browser, count in analytics.browserBreakdown %}
+                                    <tr>
+                                        <td>{{ browser }}</td>
+                                        <td class="thin">{{ count|number_format }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 {% endif %}
 
                 {# Country Breakdown #}
                 {% if analytics.countryBreakdown|length > 0 %}
-                <div class="chart-container">
+                <div class="lr-chart-container">
                     <h3>{{ "Countries"|t('redirect-manager') }}</h3>
-                    <table class="data fullwidth">
-                        <thead>
-                            <tr>
-                                <th>{{ "Country"|t('redirect-manager') }}</th>
-                                <th class="thin">{{ "Hits"|t('redirect-manager') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for country, count in analytics.countryBreakdown %}
+                    <div class="lr-table-scroll">
+                        <table class="data fullwidth">
+                            <thead>
                                 <tr>
-                                    <td>{{ country == 'Unknown' ? country : country|upper }}</td>
-                                    <td class="thin">{{ count|number_format }}</td>
+                                    <th>{{ "Country"|t('redirect-manager') }}</th>
+                                    <th class="thin">{{ "Hits"|t('redirect-manager') }}</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {% for country, count in analytics.countryBreakdown %}
+                                    <tr>
+                                        <td>{{ country == 'Unknown' ? country : country|upper }}</td>
+                                        <td class="thin">{{ count|number_format }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 {% endif %}
             </div>
         {% else %}
-            <div class="zilch">
+            <div class="lr-analytics-empty">
                 <p>{{ "No analytics data for this redirect yet."|t('redirect-manager') }}</p>
                 <p class="light">{{ "Data will appear here once this redirect handles some requests."|t('redirect-manager') }}</p>
             </div>
         {% endif %}
-    </div>
-</div>
-
-{% js %}
-$(document).ready(function() {
-    // Handle date range selection
-    $(document).on('click', '.date-range-option', function(e) {
-        e.preventDefault();
-
-        const $link = $(this);
-        const range = $link.data('range');
-
-        // Update URL with new range and reload
-        const url = new URL(window.location);
-        url.searchParams.set('range', range);
-        window.location.href = url.toString();
-    });
-});
-{% endjs %}
-
-{% css %}
-.analytics-container {
-    padding: 24px 0;
-}
-
-.analytics-header {
-    margin-bottom: 24px;
-}
-
-.analytics-header .flex {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.analytics-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-    margin-bottom: 30px;
-}
-
-.stat-box {
-    background: #f3f7fc;
-    padding: 20px;
-    border-radius: 4px;
-    text-align: center;
-    border: 1px solid var(--border-hairline);
-}
-
-.stat-value {
-    font-size: 28px;
-    font-weight: 600;
-    color: #0d78f2;
-    margin-bottom: 6px;
-}
-
-.stat-label {
-    font-size: 13px;
-    color: #596673;
-}
-
-.analytics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-.chart-container {
-    background: #fff;
-    border: 1px solid #e3e5e8;
-    border-radius: 4px;
-    padding: 20px;
-}
-
-.chart-container h3 {
-    margin: 0 0 16px;
-    font-size: 15px;
-}
-
-.zilch {
-    text-align: center;
-    padding: 60px 20px;
-    color: #8f98a3;
-}
-
-.zilch p {
-    margin: 0 0 8px;
-}
-{% endcss %}
+    {% endblock %}
+{% endembed %}

@@ -1,11 +1,13 @@
-{% extends "_layouts/cp" %}
-{% import "_includes/forms" as forms %}
+{#
+ # Redirects Listing Page
+ #
+ # Uses the base plugin's cp-table layout for consistent styling.
+ #}
+
+{% extends 'lindemannrock-base/_layouts/cp-table' %}
 
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
-
-{% set title = redirectHelper.fullName|t('redirect-manager') %}
-{% set fullPageForm = false %}
-{% set selectedSubnavItem = 'redirects' %}
+{% set settings = plugin.settings %}
 
 {# Permission checks #}
 {% set canCreate = currentUser.can('redirectManager:createRedirects') %}
@@ -20,630 +22,335 @@
 {% set creationTypeFilter = craft.app.request.getParam('creationType', 'all') %}
 {% set sort = craft.app.request.getParam('sort', 'dateCreated') %}
 {% set dir = craft.app.request.getParam('dir', 'desc') %}
-{# Page, limit, offset, totalPages come from controller #}
 
-{# Match type colors #}
-{% set matchTypeColors = {
-	'exact': '#6366f1',
-	'regex': '#ec4899',
-	'wildcard': '#14b8a6',
-	'prefix': '#f59e0b',
+{% set tableConfig = {
+    plugin: {
+        handle: 'redirect-manager',
+        name: redirectHelper.fullName,
+    },
+    page: {
+        title: redirectHelper.fullName|t('redirect-manager'),
+        subnav: 'redirects',
+        crumbs: [
+            { label: redirectHelper.fullName, url: url('redirect-manager') },
+            { label: 'Redirects'|t('redirect-manager'), url: url('redirect-manager/redirects') },
+        ],
+    },
+    filters: [
+        {
+            type: 'status',
+            param: 'status',
+            current: statusFilter,
+            label: statusFilter == 'all' ? 'All'|t('redirect-manager') : statusFilter|capitalize,
+            groups: [
+                {
+                    param: 'status',
+                    current: statusFilter,
+                    options: [
+                        {value: 'all', label: 'All'|t('redirect-manager'), status: 'all'},
+                        {value: 'enabled', label: 'Enabled'|t('redirect-manager'), status: 'green'},
+                        {value: 'disabled', label: 'Disabled'|t('redirect-manager'), status: 'disabled'},
+                    ],
+                },
+                {
+                    header: 'Match Type'|t('redirect-manager'),
+                    param: 'matchType',
+                    current: matchTypeFilter,
+                    colorSet: 'matchType',
+                    options: [
+                        {value: 'all', label: 'All Types'|t('redirect-manager'), status: 'all'},
+                        {value: 'exact', label: 'Exact Match'|t('redirect-manager'), colorKey: 'exact'},
+                        {value: 'regex', label: 'RegEx Match'|t('redirect-manager'), colorKey: 'regex'},
+                        {value: 'wildcard', label: 'Wildcard Match'|t('redirect-manager'), colorKey: 'wildcard'},
+                        {value: 'prefix', label: 'Prefix Match'|t('redirect-manager'), colorKey: 'prefix'},
+                    ],
+                },
+                {
+                    header: 'Creation Type'|t('redirect-manager'),
+                    param: 'creationType',
+                    current: creationTypeFilter,
+                    colorSet: 'creationType',
+                    options: [
+                        {value: 'all', label: 'All'|t('redirect-manager'), status: 'all'},
+                        {value: 'manual', label: 'Manual'|t('redirect-manager'), colorKey: 'manual'},
+                        {value: 'entry-change', label: 'Auto-created'|t('redirect-manager'), colorKey: 'entry-change'},
+                    ],
+                },
+            ],
+        },
+    ],
+    search: {
+        placeholder: 'Search {pluginName}...'|t('redirect-manager', {pluginName: redirectHelper.pluralLowerDisplayName}),
+        value: search,
+    },
+    sort: {
+        field: sort,
+        direction: dir,
+    },
+    table: {
+        columns: [
+            {key: 'sourceUrl', label: 'Source URL'|t('redirect-manager'), sortable: true},
+            {key: 'destinationUrl', label: 'Destination URL'|t('redirect-manager')},
+            {key: 'matchType', label: 'Match'|t('redirect-manager'), sortable: true, hideable: true},
+            {key: 'creationType', label: 'Type'|t('redirect-manager'), sortable: true, hideable: true},
+            {key: 'siteId', label: 'Site'|t('redirect-manager'), sortable: true, hideable: true},
+            {key: 'statusCode', label: 'Status'|t('redirect-manager'), sortable: true, hideable: true},
+            {key: 'hitCount', label: 'Hits'|t('redirect-manager'), sortable: true, hideable: true},
+            {key: 'enabled', label: 'Enabled'|t('redirect-manager'), sortable: true},
+            {key: 'sourcePlugin', label: 'Source'|t('redirect-manager'), sortable: true, hideable: true},
+        ],
+        items: redirects,
+        emptyMessage: 'No {items} found.'|t('redirect-manager', {items: redirectHelper.pluralLowerDisplayName}),
+    },
+    pagination: {
+        page: page,
+        limit: limit,
+        totalCount: totalCount,
+        itemLabel: {singular: redirectHelper.lowerDisplayName, plural: redirectHelper.pluralLowerDisplayName},
+    },
+    checkboxes: canEdit or canDelete,
+    rowActions: canDelete,
+    newButton: canCreate ? {
+        url: url('redirect-manager/redirects/new'),
+        label: 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}),
+        permission: 'redirectManager:createRedirects',
+    } : null,
 } %}
 
-{# Match type RGB for backgrounds #}
-{% set matchTypeRgb = {
-	'exact': '99, 102, 241',
-	'regex': '236, 72, 153',
-	'wildcard': '20, 184, 166',
-	'prefix': '245, 158, 11',
-} %}
+{% block tableRow %}
+    {# Source URL column #}
+    <td data-column="sourceUrl">
+        {% if canEdit %}
+            <a class="label-link" href="{{ url('redirect-manager/redirects/' ~ item.id) }}">
+                <span>{{ item.sourceUrl }}</span>
+            </a>
+        {% else %}
+            <span>{{ item.sourceUrl }}</span>
+        {% endif %}
+    </td>
 
-{# Match type dark colors for text #}
-{% set matchTypeTextColors = {
-	'exact': '#312e81',
-	'regex': '#831843',
-	'wildcard': '#134e4a',
-	'prefix': '#78350f',
-} %}
+    {# Destination URL column #}
+    <td data-column="destinationUrl">{{ item.destinationUrl }}</td>
 
-{# Creation type colors #}
-{% set creationTypeColors = {
-	'manual': '#f97316',
-	'entry-change': '#3b82f6',
-} %}
+    {# Match Type column #}
+    <td data-column="matchType" class="lr-hideable-column">
+        {% include 'lindemannrock-base/_components/badge' with {
+            label: item.matchType|capitalize,
+            value: item.matchType,
+            colorSet: 'matchType',
+        } only %}
+    </td>
 
-{# Creation type RGB for backgrounds #}
-{% set creationTypeRgb = {
-	'manual': '249, 115, 22',
-	'entry-change': '59, 130, 246',
-} %}
+    {# Creation Type column #}
+    <td data-column="creationType" class="lr-hideable-column">
+        {% set creationLabel = item.creationType == 'manual' ? 'Manual' : 'Auto' %}
+        {% include 'lindemannrock-base/_components/badge' with {
+            label: creationLabel|t('redirect-manager'),
+            value: item.creationType,
+            colorSet: 'creationType',
+        } only %}
+    </td>
 
-{# Creation type dark colors for text #}
-{% set creationTypeTextColors = {
-	'manual': '#7c2d12',
-	'entry-change': '#1e3a8a',
-} %}
+    {# Site column #}
+    <td data-column="siteId" class="lr-hideable-column">
+        <span class="light">
+            {% if item.siteId %}
+                {% set site = craft.app.sites.getSiteById(item.siteId) %}
+                {{ site ? site.name : 'Site ' ~ item.siteId }}
+            {% else %}
+                {{ 'All Sites'|t('redirect-manager') }}
+            {% endif %}
+        </span>
+    </td>
 
-{% set crumbs = [
-    { label: redirectHelper.fullName, url: url('redirect-manager') },
-    { label: 'Redirects'|t('redirect-manager'), url: url('redirect-manager/redirects') }
-] %}
+    {# Status Code column #}
+    <td data-column="statusCode" class="lr-hideable-column">{{ item.statusCode }}</td>
 
-	{% block toolbar %}
-		<div id="toolbar" class="flex" style="align-items: flex-end;">
-			<div class="flex-grow">
-			<form method="get" action="{{ url('redirect-manager/redirects') }}">
-				<div class="flex">
-					<div class="btngroup">
-						<button type="button" class="btn menubtn statusmenubtn">
-							<span class="status {{ statusFilter == 'all' ? 'all' : (statusFilter == 'enabled' ? 'green' : 'disabled') }}"></span>
-							{{ statusFilter == 'all' ? 'All'|t('redirect-manager') : statusFilter|capitalize }}
-						</button>
-						<div class="menu">
-							<ul>
-								<li>
-									<a class="{{ statusFilter == 'all' ? 'sel' : '' }}" href="?status=all&matchType={{ matchTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status all"></span>All
-									</a>
-								</li>
-								<li>
-									<a class="{{ statusFilter == 'enabled' ? 'sel' : '' }}" href="?status=enabled&matchType={{ matchTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status green"></span>Enabled
-									</a>
-								</li>
-								<li>
-									<a class="{{ statusFilter == 'disabled' ? 'sel' : '' }}" href="?status=disabled&matchType={{ matchTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status disabled"></span>Disabled
-									</a>
-								</li>
-								<li><hr class="padded"></li>
-								<li class="menu-header">Match Type</li>
-								<li>
-									<a class="{{ matchTypeFilter == 'all' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=all&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status all"></span>All Types
-									</a>
-								</li>
-								<li>
-									<a class="{{ matchTypeFilter == 'exact' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=exact&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status" style="background: {{ matchTypeFilter == 'exact' ? matchTypeColors.exact : '#aab6c1' }};"></span>Exact Match
-									</a>
-								</li>
-								<li>
-									<a class="{{ matchTypeFilter == 'regex' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=regex&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status" style="background: {{ matchTypeFilter == 'regex' ? matchTypeColors.regex : '#aab6c1' }};"></span>RegEx Match
-									</a>
-								</li>
-								<li>
-									<a class="{{ matchTypeFilter == 'wildcard' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=wildcard&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status" style="background: {{ matchTypeFilter == 'wildcard' ? matchTypeColors.wildcard : '#aab6c1' }};"></span>Wildcard Match
-									</a>
-								</li>
-								<li>
-									<a class="{{ matchTypeFilter == 'prefix' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType=prefix&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status" style="background: {{ matchTypeFilter == 'prefix' ? matchTypeColors.prefix : '#aab6c1' }};"></span>Prefix Match
-									</a>
-								</li>
-								<li><hr class="padded"></li>
-								<li class="menu-header">Creation Type</li>
-								<li>
-									<a class="{{ creationTypeFilter == 'all' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType=all&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status all"></span>All
-									</a>
-								</li>
-								<li>
-									<a class="{{ creationTypeFilter == 'manual' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType=manual&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status" style="background: {{ creationTypeFilter == 'manual' ? creationTypeColors.manual : '#aab6c1' }};"></span>Manual
-									</a>
-								</li>
-								<li>
-									<a class="{{ creationTypeFilter == 'entry-change' ? 'sel' : '' }}" href="?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType=entry-change&search={{ search }}&sort={{ sort }}&dir={{ dir }}">
-										<span class="status" style="background: {{ creationTypeFilter == 'entry-change' ? creationTypeColors['entry-change'] : '#aab6c1' }};"></span>Auto-created
-									</a>
-								</li>
-							</ul>
-						</div>
-					</div>
-					<div class="search-container texticon flex-grow">
-						<span class="texticon-icon search icon" aria-hidden="true"></span>
-						<input type="text" class="clearable text fullwidth" name="search" value="{{ search }}" placeholder="{{ 'Search {pluginName}...'|t('redirect-manager', {pluginName: redirectHelper.pluralLowerDisplayName}) }}" autocomplete="off" dir="ltr" aria-label="Search" {% if search %} autofocus {% endif %}>
-						<button type="button" class="clear-btn {{ search ? '' : 'hidden' }}" title="Clear search" role="button" aria-label="Clear search"></button>
-						<input type="hidden" name="status" value="{{ statusFilter }}">
-						<input type="hidden" name="matchType" value="{{ matchTypeFilter }}">
-						<input type="hidden" name="creationType" value="{{ creationTypeFilter }}">
-						<input type="hidden" name="sort" value="{{ sort }}">
-						<input type="hidden" name="dir" value="{{ dir }}">
-					</div>
-				</div>
-			</form>
-		</div>
-		{% if canCreate %}
-			<a href="{{ url('redirect-manager/redirects/new') }}" class="btn submit add icon" id="new-redirect-btn">
-				<span class="label-full">{{ 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}) }}</span>
-				<span class="label-short" style="display: none;">{{ 'New'|t('redirect-manager') }}</span>
-			</a>
-		{% endif %}
-	</div>
+    {# Hits column #}
+    <td data-column="hitCount" class="lr-hideable-column">{{ item.hitCount }}</td>
+
+    {# Enabled column #}
+    <td data-column="enabled">
+        {% if item.enabled %}
+            {% include 'lindemannrock-base/_components/badge' with {
+                label: 'Enabled'|t('redirect-manager'),
+                value: 'enabled',
+                colorSet: 'status',
+            } only %}
+        {% else %}
+            {% include 'lindemannrock-base/_components/badge' with {
+                label: 'Disabled'|t('redirect-manager'),
+                value: 'disabled',
+                colorSet: 'status',
+            } only %}
+        {% endif %}
+    </td>
+
+    {# Source Plugin column #}
+    <td data-column="sourcePlugin" class="lr-hideable-column">
+        <span class="light">
+            {% if item.sourcePlugin == 'redirect-manager' %}
+                {% if item.creationType == 'entry-change' %}
+                    {{ 'Entry Changes'|t('redirect-manager') }}
+                {% else %}
+                    {{ 'User'|t('redirect-manager') }}
+                {% endif %}
+            {% else %}
+                {{ lrPluginName(item.sourcePlugin, item.sourcePlugin|replace({'-': ' '})|title) }}
+            {% endif %}
+        </span>
+    </td>
 {% endblock %}
 
-{% css %}
-@media (max-width: 768px) {
-        #new-redirect-btn .label-full {
-            display: none;
-        }
-        #new-redirect-btn .label-short {
-            display: inline;
-        }
-        #new-redirect-btn:before {
-            margin-inline-end: 0 !important;
-        }
-    }
-{% endcss %}
+{% block rowActions %}
+    {% if canDelete %}
+        <td class="thin" style="text-align: right;">
+            <button type="button" class="btn icon delete row-delete-btn" data-id="{{ item.id }}" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}"></button>
+        </td>
+    {% endif %}
+{% endblock %}
 
-{% block content %}
-	<style>
-		.page-info {
-			margin: 0 12px;
-			color: #596673;
-		}
-		.checkbox-cell {
-			width: 40px !important;
-			text-align: center;
-		}
-		.pagination {
-			gap: 4px;
-			align-items: center;
-		}
-		.menu-header {
-			font-size: 11px;
-			text-transform: uppercase;
-			color: #7c97b2;
-			padding: 8px 14px 4px;
-			font-weight: 600;
-			letter-spacing: 0.5px;
-		}
-		/* Keep toolbar on one row even on smaller screens */
-		#toolbar.flex {
-			flex-wrap: nowrap;
-			gap: 8px;
-		}
-		#toolbar .flex-grow {
-			min-width: 0;
-			flex-shrink: 1;
-		}
-	</style>
+{% block bulkActions %}
+    {% if canEdit %}
+        <div>
+            <button type="button" class="btn menubtn secondary" id="lr-bulk-status-btn" aria-label="{{ 'Set status'|t('app') }}">
+                {{ 'Set status'|t('app') }}
+            </button>
+            <div class="menu">
+                <ul>
+                    <li><a id="lr-bulk-enable-action">{{ 'Enable'|t('redirect-manager') }}</a></li>
+                    <li><a id="lr-bulk-disable-action">{{ 'Disable'|t('redirect-manager') }}</a></li>
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+    {% if canDelete %}
+        <div>
+            <button type="button" class="btn secondary menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}" id="lr-bulk-actions-btn"></button>
+            <div class="menu">
+                <ul>
+                    <li><a id="lr-bulk-delete-action" class="error">{{ 'Delete…'|t('app') }}</a></li>
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
 
-	<div id="elements" class="elements">
-		<div class="tableview tablepane">
-			<table class="data fullwidth">
-				<thead>
-					<tr>
-						<th class="checkbox-cell selectallcontainer">
-							<div class="checkbox" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select all"></div>
-						</th>
-						<th scope="col" data-attribute="sourceUrl" class="orderable {{ sort == 'sourceUrl' ? 'ordered ' ~ dir : '' }}">
-							<button type="button" data-sort="sourceUrl">
-								{{ 'Source URL'|t('redirect-manager') }}
-							</button>
-						</th>
-						<th scope="col">{{ 'Destination URL'|t('redirect-manager') }}</th>
-						<th scope="col" data-attribute="matchType" class="orderable {{ sort == 'matchType' ? 'ordered ' ~ dir : '' }}">
-							<button type="button" data-sort="matchType">{{ 'Match'|t('redirect-manager') }}</button>
-						</th>
-						<th scope="col" data-attribute="creationType" class="orderable {{ sort == 'creationType' ? 'ordered ' ~ dir : '' }}">
-							<button type="button" data-sort="creationType">{{ 'Type'|t('redirect-manager') }}</button>
-						</th>
-						<th scope="col" data-attribute="siteId" class="orderable {{ sort == 'siteId' ? 'ordered ' ~ dir : '' }}">
-							<button type="button" data-sort="siteId">{{ 'Site'|t('redirect-manager') }}</button>
-						</th>
-						<th scope="col" data-attribute="statusCode" class="orderable {{ sort == 'statusCode' ? 'ordered ' ~ dir : '' }}">
-							<button type="button" data-sort="statusCode">
-								{{ 'Status'|t('redirect-manager') }}
-							</button>
-						</th>
-						<th scope="col" data-attribute="hitCount" class="orderable {{ sort == 'hitCount' ? 'ordered ' ~ dir : '' }}">
-							<button type="button" data-sort="hitCount">
-								{{ 'Hits'|t('redirect-manager') }}
-							</button>
-						</th>
-						<th scope="col" data-attribute="enabled" class="orderable {{ sort == 'enabled' ? 'ordered ' ~ dir : '' }}">
-							<button type="button" data-sort="enabled">{{ 'Enabled'|t('redirect-manager') }}</button>
-						</th>
-						<th scope="col" data-attribute="sourcePlugin" class="orderable {{ sort == 'sourcePlugin' ? 'ordered ' ~ dir : '' }}">
-							<button type="button" data-sort="sourcePlugin">{{ 'Source'|t('redirect-manager') }}</button>
-						</th>
-						{% if canDelete %}
-							<th class="thin" style="width: 60px;">{{ 'Actions'|t('redirect-manager') }}</th>
-						{% endif %}
-					</tr>
-				</thead>
-				<tbody>
-					{% if redirects|length %}
-						{% for redirect in redirects %}
-							<tr data-id="{{ redirect.id }}" data-name="{{ redirect.sourceUrl }}">
-								<td class="checkbox-cell">
-									<div class="checkbox" title="Select" tabindex="0" aria-checked="false" role="checkbox"></div>
-								</td>
-								<td>
-									{% if canEdit %}
-										<a class="label-link" href="{{ url('redirect-manager/redirects/' ~ redirect.id) }}">
-											<span>{{ redirect.sourceUrl }}</span>
-										</a>
-									{% else %}
-										<span>{{ redirect.sourceUrl }}</span>
-									{% endif %}
-								</td>
-								<td>{{ redirect.destinationUrl }}</td>
-								<td>
-									{% set matchColor = matchTypeColors[redirect.matchType]|default('#aab6c1') %}
-									{% set matchRgb = matchTypeRgb[redirect.matchType]|default('170, 182, 193') %}
-									{% set matchTextColor = matchTypeTextColors[redirect.matchType]|default('#64748b') %}
-									<span class="status-label" style="background: rgba({{ matchRgb }}, 0.12);">
-										<span class="status" style="background: {{ matchColor }};"></span>
-										<span class="status-label-text" style="color: {{ matchTextColor }};">{{ redirect.matchType|capitalize }}</span>
-									</span>
-								</td>
-								<td>
-									{% if redirect.creationType == 'manual' %}
-										<span class="status-label" style="background: rgba({{ creationTypeRgb.manual }}, 0.12);">
-											<span class="status" style="background: {{ creationTypeColors.manual }};"></span>
-											<span class="status-label-text" style="color: {{ creationTypeTextColors.manual }};">{{ 'Manual'|t('redirect-manager') }}</span>
-										</span>
-									{% else %}
-										<span class="status-label" style="background: rgba({{ creationTypeRgb['entry-change'] }}, 0.12);">
-											<span class="status" style="background: {{ creationTypeColors['entry-change'] }};"></span>
-											<span class="status-label-text" style="color: {{ creationTypeTextColors['entry-change'] }};">{{ 'Auto'|t('redirect-manager') }}</span>
-										</span>
-									{% endif %}
-								</td>
-								<td>
-									<span class="light">
-										{% if redirect.siteId %}
-											{% set site = craft.app.sites.getSiteById(redirect.siteId) %}
-											{{ site ? site.name : 'Site ' ~ redirect.siteId }}
-										{% else %}
-											{{ 'All Sites'|t('redirect-manager') }}
-										{% endif %}
-									</span>
-								</td>
-								<td>{{ redirect.statusCode }}</td>
-								<td>{{ redirect.hitCount }}</td>
-								<td>
-									{% if redirect.enabled %}
-										<span class="status-label teal">
-											<span class="status teal"></span>
-											<span class="status-label-text">{{ 'Enabled'|t('redirect-manager') }}</span>
-										</span>
-									{% else %}
-										<span class="status-label gray">
-											<span class="status disabled"></span>
-											<span class="status-label-text">{{ 'Disabled'|t('redirect-manager') }}</span>
-										</span>
-									{% endif %}
-								</td>
-								<td>
-									<span class="light">
-										{% if redirect.sourcePlugin == 'redirect-manager' %}
-											{% if redirect.creationType == 'entry-change' %}
-												{{ 'Entry Changes'|t('redirect-manager') }}
-											{% else %}
-												{{ 'User'|t('redirect-manager') }}
-											{% endif %}
-										{% else %}
-											{{ lrPluginName(redirect.sourcePlugin, redirect.sourcePlugin|replace({'-': ' '})|title) }}
-										{% endif %}
-									</span>
-								</td>
-								{% if canDelete %}
-								<td class="thin" style="text-align: right;">
-									<button type="button" class="btn icon delete" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}"></button>
-								</td>
-							{% endif %}
-							</tr>
-						{% endfor %}
-					{% else %}
-						<tr>
-							<td colspan="{{ canDelete ? 11 : 10 }}" style="text-align: center; padding: 2em;">
-								{{ 'No {items} found.'|t('redirect-manager', {items: redirectHelper.pluralLowerDisplayName}) }}
-							</td>
-						</tr>
-					{% endif %}
-				</tbody>
-			</table>
-		</div>
-	</div>
+{% block extraFooter %}
+    {% if canImportExport %}
+        <a href="{{ url('redirect-manager/import-export') }}" class="btn">
+            {{ 'Import'|t('redirect-manager') }}
+        </a>
+        {% include 'lindemannrock-base/_components/export-menu' with {
+            action: 'redirect-manager/import-export/export',
+            permission: 'redirectManager:manageImportExport',
+            selectionAware: true,
+            idsParam: 'redirectIds',
+        } only %}
+    {% endif %}
+{% endblock %}
 
-	<div id="footer" class="flex flex-justify">
-		<div class="light">
-			<div class="flex pagination">
-				<nav class="flex" aria-label="redirect pagination">
-					<button type="button" class="page-link prev-page {{ page <= 1 ? 'disabled' : '' }}" {{ page <= 1 ? 'disabled' : '' }} title="Previous Page"></button>
-					<button type="button" class="page-link next-page {{ page >= totalPages ? 'disabled' : '' }}" {{ page >= totalPages ? 'disabled' : '' }} title="Next Page"></button>
-				</nav>
-				<div class="page-info">
-					{% set endRange = min(offset + limit, totalCount) %}
-					{% if totalCount == 0 %}
-						{{ 'no {items}'|t('redirect-manager', {items: redirectHelper.pluralLowerDisplayName}) }}
-					{% else %}
-						{{ offset + 1 }} – {{ endRange }} of {{ totalCount }} {{ totalCount == 1 ? redirectHelper.lowerDisplayName : redirectHelper.pluralLowerDisplayName }}
-					{% endif %}
-				</div>
-			</div>
-		</div>
-		<div id="actions-container" class="flex" style="display: none;">
-		{% if canEdit %}
-			<div>
-				<button type="button" class="btn menubtn secondary" id="bulk-actions-btn" aria-label="Set status">
-					{{ 'Set status'|t('app') }}
-				</button>
-				<div class="menu">
-					<ul>
-						<li><a id="bulk-enable-action">{{ 'Enable'|t('redirect-manager') }}</a></li>
-						<li><a id="bulk-disable-action">{{ 'Disable'|t('redirect-manager') }}</a></li>
-					</ul>
-				</div>
-			</div>
-		{% endif %}
-		{% if canDelete %}
-			<form>
-				<button type="button" class="btn secondary menubtn" data-icon="settings" title="Actions" id="settings-btn"></button>
-				<div class="menu">
-					<ul>
-						<li><a id="bulk-delete-action" class="error">{{ 'Delete…'|t('app') }}</a></li>
-					</ul>
-				</div>
-			</form>
-		{% endif %}
-	</div>
-	{% if canImportExport %}
-		<div class="flex flex-nowrap">
-			<a href="{{ url('redirect-manager/import-export') }}" class="btn">
-				{{ 'Import'|t('redirect-manager') }}
-			</a>
-			<form method="post" action="{{ actionUrl('redirect-manager/import-export/export') }}" style="display: inline;" id="export-form">
-				{{ csrfInput() }}
-				<input type="hidden" name="redirectIds" id="export-redirect-ids" value="">
-				<button type="submit" class="btn" id="export-btn">
-					<span id="export-label">{{ 'Export'|t('redirect-manager') }}</span>
-				</button>
-			</form>
-		</div>
-	{% endif %}
-</div>
+{% block scripts %}
 <script>
-	// Initialize menu buttons
-document.querySelectorAll('.menubtn').forEach(btn => {
-if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
-new Craft.MenuBtn(btn);
-} else if (typeof Garnish !== 'undefined' && Garnish.MenuBtn) {
-new Garnish.MenuBtn(btn);
-}
-});
+(function() {
+    const canEdit = {{ canEdit ? 'true' : 'false' }};
+    const canDelete = {{ canDelete ? 'true' : 'false' }};
 
-// Clear search
-const searchClearBtn = document.querySelector('.search-container .clear-btn');
-if (searchClearBtn) {
-searchClearBtn.addEventListener('click', function () {
-const searchInput = this.previousElementSibling;
-searchInput.value = '';
-searchInput.form.submit();
-});
-}
+    // Selection state (managed by cp-table layout)
+    let selectedIds = new Set();
 
-// Search on Enter
-const searchInput = document.querySelector('input[name="search"]');
-if (searchInput) {
-searchInput.addEventListener('keyup', function (e) {
-if (e.key === 'Enter') {
-this.form.submit();
-}
-});
-}
+    // Listen for selection changes from cp-table
+    document.addEventListener('lr:selectionChanged', function(e) {
+        selectedIds = new Set(e.detail.selectedIds);
+    });
 
-// Sort buttons
-document.querySelectorAll('th.orderable button').forEach(button => {
-button.addEventListener('click', function () {
-const sortField = this.dataset.sort;
-const currentSort = '{{ sort }}';
-const currentDir = '{{ dir }}';
-let newDir = 'asc';
+    // Initialize bulk action menu buttons
+    const bulkStatusBtn = document.getElementById('lr-bulk-status-btn');
+    if (bulkStatusBtn && typeof Craft !== 'undefined' && Craft.MenuBtn) {
+        new Craft.MenuBtn(bulkStatusBtn);
+    }
 
-if (sortField === currentSort) {
-newDir = currentDir === 'asc' ? 'desc' : 'asc';
-}
+    const bulkActionsBtn = document.getElementById('lr-bulk-actions-btn');
+    if (bulkActionsBtn && typeof Craft !== 'undefined' && Craft.MenuBtn) {
+        new Craft.MenuBtn(bulkActionsBtn);
+    }
 
-window.location.href = '?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType={{ creationTypeFilter }}&search={{ search }}&sort=' + sortField + '&dir=' + newDir + '&page=1';
-});
-});
+    // Bulk enable
+    document.getElementById('lr-bulk-enable-action')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        const ids = Array.from(selectedIds);
+        if (ids.length === 0) return;
 
-// Pagination
-document.querySelector('.prev-page:not(.disabled)')?.addEventListener('click', function () {
-window.location.href = '?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}&page={{ page - 1 }}';
-});
+        Craft.sendActionRequest('POST', 'redirect-manager/redirects/bulk-enable', {
+            data: { redirectIds: ids }
+        }).then(function(response) {
+            if (response.data.success) {
+                Craft.cp.displayNotice(`Enabled ${response.data.updated} redirect${response.data.updated > 1 ? 's' : ''}`);
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        });
+    });
 
-document.querySelector('.next-page:not(.disabled)')?.addEventListener('click', function () {
-window.location.href = '?status={{ statusFilter }}&matchType={{ matchTypeFilter }}&creationType={{ creationTypeFilter }}&search={{ search }}&sort={{ sort }}&dir={{ dir }}&page={{ page + 1 }}';
-});
+    // Bulk disable
+    document.getElementById('lr-bulk-disable-action')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        const ids = Array.from(selectedIds);
+        if (ids.length === 0) return;
 
-// Checkbox functionality
-const selectAllCheckbox = document.querySelector('.selectallcontainer .checkbox');
-const checkboxes = document.querySelectorAll('tbody .checkbox');
-let selectedIds = new Set();
+        Craft.sendActionRequest('POST', 'redirect-manager/redirects/bulk-disable', {
+            data: { redirectIds: ids }
+        }).then(function(response) {
+            if (response.data.success) {
+                Craft.cp.displayNotice(`Disabled ${response.data.updated} redirect${response.data.updated > 1 ? 's' : ''}`);
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        });
+    });
 
-function toggleCheckbox(checkbox, checked) {
-if (checked) {
-checkbox.classList.add('checked');
-checkbox.setAttribute('aria-checked', 'true');
-} else {
-checkbox.classList.remove('checked');
-checkbox.setAttribute('aria-checked', 'false');
-}
-}
+    // Bulk delete
+    document.getElementById('lr-bulk-delete-action')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        const ids = Array.from(selectedIds);
+        if (ids.length === 0) return;
 
-function updateBulkButtons() {
-const hasSelection = selectedIds.size > 0;
-const actionsContainer = document.getElementById('actions-container');
-const exportLabel = document.getElementById('export-label');
-const exportRedirectIds = document.getElementById('export-redirect-ids');
+        if (!confirm(`Delete ${ids.length} redirect${ids.length > 1 ? 's' : ''}?`)) return;
 
-if (hasSelection) {
-actionsContainer.style.display = '';
-const count = selectedIds.size;
-exportLabel.textContent = `{{ 'Export'|t('redirect-manager') }} (${count})`;
-exportRedirectIds.value = JSON.stringify(Array.from(selectedIds));
-} else {
-actionsContainer.style.display = 'none';
-exportLabel.textContent = '{{ 'Export'|t('redirect-manager') }}';
-exportRedirectIds.value = '';
-}
-}
+        Craft.sendActionRequest('POST', 'redirect-manager/redirects/bulk-delete', {
+            data: { redirectIds: ids }
+        }).then(function(response) {
+            if (response.data.success) {
+                Craft.cp.displayNotice(`Deleted ${response.data.deleted} redirects`);
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        });
+    });
 
-// Select all
-if (selectAllCheckbox) {
-	selectAllCheckbox.addEventListener('click', function () {
-		const isChecked = !this.classList.contains('checked');
-		toggleCheckbox(this, isChecked);
+    // Individual delete buttons
+    function attachDeleteListeners() {
+        document.querySelectorAll('.row-delete-btn').forEach(deleteBtn => {
+            if (deleteBtn._hasListener) return;
+            deleteBtn._hasListener = true;
 
-		checkboxes.forEach(checkbox => {
-			toggleCheckbox(checkbox, isChecked);
-			const id = checkbox.closest('tr').dataset.id;
-			if (isChecked) {
-				selectedIds.add(id);
-			} else {
-				selectedIds.delete(id);
-			}
-		});
+            deleteBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const row = this.closest('tr');
+                const id = this.dataset.id;
 
-		updateBulkButtons();
-	});
-}
+                if (!confirm('Delete this redirect?')) return;
 
-// Individual checkboxes
-checkboxes.forEach(checkbox => {
-	checkbox.addEventListener('click', function () {
-		const isChecked = !this.classList.contains('checked');
-		toggleCheckbox(this, isChecked);
-
-		const id = this.closest('tr').dataset.id;
-		if (isChecked) {
-			selectedIds.add(id);
-		} else {
-			selectedIds.delete(id);
-		}
-		updateBulkButtons();
-	});
-});
-
-// Initialize bulk actions menu button
-const bulkActionsBtn = document.getElementById('bulk-actions-btn');
-if (bulkActionsBtn) {
-if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
-new Craft.MenuBtn(bulkActionsBtn);
-} else if (typeof Garnish !== 'undefined' && Garnish.MenuBtn) {
-new Garnish.MenuBtn(bulkActionsBtn);
-}
-}
-
-// Initialize settings menu button
-const settingsBtn = document.getElementById('settings-btn');
-if (settingsBtn) {
-if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
-new Craft.MenuBtn(settingsBtn);
-} else if (typeof Garnish !== 'undefined' && Garnish.MenuBtn) {
-new Garnish.MenuBtn(settingsBtn);
-}
-}
-
-// Bulk enable
-document.getElementById('bulk-enable-action') ?. addEventListener('click', function (e) {
-e.preventDefault();
-const ids = Array.from(selectedIds);
-
-Craft.sendActionRequest('POST', 'redirect-manager/redirects/bulk-enable', {
-data: {
-redirectIds: ids
-}
-}).then(function (response) {
-if (response.data.success) {
-Craft.cp.displayNotice(`Enabled ${
-response.data.updated
-} redirect${
-response.data.updated > 1 ? 's' : ''
-}`);
-setTimeout(() => window.location.reload(), 1000);
-}
-});
-});
-
-// Bulk disable
-document.getElementById('bulk-disable-action') ?. addEventListener('click', function (e) {
-e.preventDefault();
-const ids = Array.from(selectedIds);
-
-Craft.sendActionRequest('POST', 'redirect-manager/redirects/bulk-disable', {
-data: {
-redirectIds: ids
-}
-}).then(function (response) {
-if (response.data.success) {
-Craft.cp.displayNotice(`Disabled ${
-response.data.updated
-} redirect${
-response.data.updated > 1 ? 's' : ''
-}`);
-setTimeout(() => window.location.reload(), 1000);
-}
-});
-});
-
-// Bulk delete
-document.getElementById('bulk-delete-action') ?. addEventListener('click', function (e) {
-e.preventDefault();
-const ids = Array.from(selectedIds);
-if (!confirm(`Delete ${
-ids.length
-} redirect${
-ids.length > 1 ? 's' : ''
-}?`)) 
-return;
-
-
-
-Craft.sendActionRequest('POST', 'redirect-manager/redirects/bulk-delete', {
-data: {
-redirectIds: ids
-}
-}).then(function (response) {
-if (response.data.success) {
-Craft.cp.displayNotice (`Deleted ${
-response.data.deleted
-} redirects`);
-setTimeout(() => window.location.reload(), 1000);
-}
-});
-});
-
-// Individual delete
-document.querySelectorAll('.btn.delete').forEach(deleteBtn => {
-deleteBtn.addEventListener('click', function (e) {
-e.preventDefault();
-const row = this.closest('tr');
-const id = row.dataset.id;
-
-if (!confirm('Delete this redirect?')) 
-return;
-
-
-
-Craft.sendActionRequest('POST', 'redirect-manager/redirects/delete', {
-data: {
-redirectId: id
-}
-}).then(function (response) {
-if (response.data.success) {
-row.remove();
-Craft.cp.displayNotice('Redirect deleted');
-}
-});
-});
-});
-</script>{% endblock %}
+                Craft.sendActionRequest('POST', 'redirect-manager/redirects/delete', {
+                    data: { redirectId: id }
+                }).then(function(response) {
+                    if (response.data.success) {
+                        row.remove();
+                        Craft.cp.displayNotice('Redirect deleted');
+                    }
+                });
+            });
+        });
+    }
+    attachDeleteListeners();
+})();
+</script>
+{% endblock %}

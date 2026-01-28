@@ -652,7 +652,76 @@ class AnalyticsService extends Component
     }
 
     /**
-     * Export analytics to CSV
+     * Get analytics data formatted for export
+     *
+     * @param int|null $siteId Filter by site ID
+     * @param array|null $analyticsIds Filter by specific analytics IDs
+     * @param int|null $days Number of days to look back
+     * @param \DateTime|null $startDate Start date for filtering
+     * @param \DateTime|null $endDate End date for filtering
+     * @return array Array of analytics records formatted for export
+     * @since 5.0.0
+     */
+    public function getExportData(?int $siteId = null, ?array $analyticsIds = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
+    {
+        // Build query
+        $query = (new \craft\db\Query())
+            ->from(AnalyticsRecord::tableName())
+            ->orderBy(['lastHit' => SORT_DESC]);
+
+        // Filter by specific IDs if provided
+        if (!empty($analyticsIds)) {
+            $query->where(['in', 'id', $analyticsIds]);
+        }
+
+        // Filter by site
+        if ($siteId !== null) {
+            $query->andWhere(['siteId' => $siteId]);
+        }
+
+        // Apply date filtering
+        if ($startDate !== null) {
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($startDate)]);
+        }
+        if ($endDate !== null) {
+            $query->andWhere(['<', 'lastHit', Db::prepareDateForDb($endDate)]);
+        } elseif ($days !== null && $days < 36500) {
+            $date = (new \DateTime())->modify("-{$days} days");
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)]);
+        }
+
+        $analytics = $query->all();
+
+        // Format data for export
+        $exportData = [];
+        foreach ($analytics as $stat) {
+            // Get site name
+            $site = Craft::$app->sites->getSiteById($stat['siteId']);
+            $siteName = $site ? $site->name : '-';
+
+            $exportData[] = [
+                'url' => $stat['url'],
+                'siteId' => $stat['siteId'],
+                'siteName' => $siteName,
+                'count' => (int)$stat['count'],
+                'handled' => $stat['handled'] ? 'Yes' : 'No',
+                'referrer' => $stat['referrer'] ?? '',
+                'deviceType' => $stat['deviceType'] ?? '',
+                'browser' => $stat['browser'] ?? '',
+                'os' => $stat['osName'] ?? '',
+                'country' => GeoHelper::getCountryName($stat['country'] ?? ''),
+                'city' => $stat['city'] ?? '',
+                'isRobot' => $stat['isRobot'] ? 'Yes' : 'No',
+                'botName' => $stat['botName'] ?? '',
+                'lastHit' => $stat['lastHit'],
+            ];
+        }
+
+        return $exportData;
+    }
+
+    /**
+     * Export analytics to CSV or JSON string
      *
      * @param int|null $siteId
      * @param array|null $analyticsIds

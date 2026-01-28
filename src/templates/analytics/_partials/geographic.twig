@@ -5,10 +5,10 @@
 {% if settings.enableGeoDetection %}
     <h2 style="margin: 0 0 20px;">{{ "Geographic Analytics"|t('redirect-manager') }}</h2>
 
-    <div class="analytics-charts two-columns">
-        <div class="chart-container">
+    <div class="lr-analytics-charts two-columns">
+        <div class="lr-chart-container">
             <h3>{{ "Top Countries"|t('redirect-manager') }}</h3>
-            <div class="table-scroll-container">
+            <div class="lr-table-scroll">
                 <table class="data fullwidth" id="countries-table">
                     <thead>
                         <tr>
@@ -39,9 +39,9 @@
             </div>
         </div>
 
-        <div class="chart-container">
+        <div class="lr-chart-container">
             <h3>{{ "Top Cities"|t('redirect-manager') }}</h3>
-            <div class="table-scroll-container">
+            <div class="lr-table-scroll">
                 <table class="data fullwidth" id="cities-table">
                     <thead>
                         <tr>
@@ -75,8 +75,8 @@
         </div>
     </div>
 {% else %}
-    <div class="pane" style="text-align: center; padding: 60px 20px;">
-        <p class="light">{{ "Geographic detection is disabled."|t('redirect-manager') }}</p>
+    <div class="lr-analytics-empty">
+        <p>{{ "Geographic detection is disabled."|t('redirect-manager') }}</p>
         <p><a href="{{ url('redirect-manager/settings/analytics') }}" class="btn">{{ "Enable in Settings"|t('redirect-manager') }}</a></p>
     </div>
 {% endif %}
