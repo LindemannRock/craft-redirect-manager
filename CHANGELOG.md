@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.23.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.22.0...v5.23.0) (2026-01-28)
+
+
+### Features
+
+* enhance redirects listing page and improve dashboard settings ([51d56f1](https://github.com/LindemannRock/craft-redirect-manager/commit/51d56f1b2b051de6464b9c2e80b5247d08d38034))
+
 ## [5.22.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.21.0...v5.22.0) (2026-01-26)
 
 
