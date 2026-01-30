@@ -51,6 +51,10 @@ class ImportExportController extends Controller
         $this->requireAnyImportExportPermission();
 
         $settings = RedirectManager::$plugin->getSettings();
+        $importLimits = [
+            'maxRows' => CsvImportHelper::DEFAULT_MAX_ROWS,
+            'maxBytes' => CsvImportHelper::DEFAULT_MAX_BYTES,
+        ];
         $canImport = $this->canImport();
         $canExport = $this->canExport();
         $history = ImportHistoryRecord::find()
@@ -81,6 +85,7 @@ class ImportExportController extends Controller
             'importHistory' => $formattedHistory,
             'canImport' => $canImport,
             'canExport' => $canExport,
+            'importLimits' => $importLimits,
         ]);
     }
 
@@ -361,8 +366,8 @@ class ImportExportController extends Controller
         // Parse CSV and store data in session (not file path - for Servd/load-balanced hosting)
         try {
             $parsed = CsvImportHelper::parseUpload($file, [
-                'maxRows' => 4000,
-                'maxBytes' => 5242880,
+                'maxRows' => CsvImportHelper::DEFAULT_MAX_ROWS,
+                'maxBytes' => CsvImportHelper::DEFAULT_MAX_BYTES,
                 'delimiter' => $delimiter,
                 'detectDelimiter' => $detectDelimiter,
             ]);

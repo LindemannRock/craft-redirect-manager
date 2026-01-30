@@ -32,6 +32,10 @@
 
 {% set canCreateBackup = currentUser.can('redirectManager:manageBackups') or currentUser.can('redirectManager:createBackups') %}
 
+{% set maxRows = importLimits.maxRows ?? 4000 %}
+{% set maxBytes = importLimits.maxBytes ?? 5242880 %}
+{% set maxSize = craft.app.formatter.asShortSize(maxBytes, 2) %}
+
 {% block content %}
 	<div id="import-export">
 		<h2 style="margin-top: 0px;">{{ "Export Redirects"|t('redirect-manager') }}</h2>
@@ -124,6 +128,10 @@
 			backupEnabled: settings.backupEnabled,
 			backupOnImport: settings.backupOnImport,
 			backupWarning: 'Backups are disabled in settings.'|t('redirect-manager'),
+			infoBoxMessage: 'The maximum file size is {size} and the import is limited to {rows} rows per file.'|t('redirect-manager', {
+				size: maxSize,
+				rows: maxRows|number_format
+			}),
 			submitLabel: 'Upload & Map Columns'|t('redirect-manager'),
 		} %}
 		{% else %}
