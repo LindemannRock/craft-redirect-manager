@@ -21,25 +21,62 @@
 {% import "_includes/forms" as forms %}
 
 {% block content %}
+    <style>
+        .lr-analytics-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .lr-analytics-stats.compact {
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+        }
+        .lr-stat-box {
+            background: #f3f7fc;
+            padding: 24px;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid var(--hairline-color, #e3e5e8);
+        }
+        .lr-stat-box-colored {
+            background: transparent;
+            border-style: solid;
+            border-width: 1px;
+        }
+        .lr-stat-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: #0d78f2;
+            margin-bottom: 8px;
+        }
+        .lr-stat-label {
+            font-size: 14px;
+            color: #596673;
+        }
+    </style>
+
     <h2 style="margin-top: 0px;">{{ "Import Preview"|t('redirect-manager') }}</h2>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 30px 0;">
-        <div style="background: #f7f7f7; padding: 20px; border-radius: 4px; text-align: center; border: 1px solid #e0e0e0;">
-            <div style="font-size: 32px; font-weight: bold; color: #333;">{{ summary.totalRows|number }}</div>
-            <div style="color: #666; margin-top: 5px;">{{ "Total Rows"|t('redirect-manager') }}</div>
-        </div>
-        <div style="background: #e8f5e9; padding: 20px; border-radius: 4px; text-align: center; border: 1px solid #a5d6a7;">
-            <div style="font-size: 32px; font-weight: bold; color: #28a745;">{{ summary.validRows|number }}</div>
-            <div style="color: #666; margin-top: 5px;">{{ "Valid"|t('redirect-manager') }}</div>
-        </div>
-        <div style="background: #fff3cd; padding: 20px; border-radius: 4px; text-align: center; border: 1px solid #ffd966;">
-            <div style="font-size: 32px; font-weight: bold; color: #f59e0b;">{{ summary.duplicates|number }}</div>
-            <div style="color: #666; margin-top: 5px;">{{ "Duplicates"|t('redirect-manager') }}</div>
-        </div>
-        <div style="background: #f8d7da; padding: 20px; border-radius: 4px; text-align: center; border: 1px solid #f5c2c7;">
-            <div style="font-size: 32px; font-weight: bold; color: #dc3545;">{{ summary.errors|number }}</div>
-            <div style="color: #666; margin-top: 5px;">{{ "Errors"|t('redirect-manager') }}</div>
-        </div>
+    <div class="lr-analytics-stats" style="margin: 30px 0;">
+        {% include 'lindemannrock-base/_components/stat-box' with {
+            value: summary.totalRows,
+            label: 'Total Rows'|t('redirect-manager'),
+        } only %}
+        {% include 'lindemannrock-base/_components/stat-box' with {
+            value: summary.validRows,
+            label: 'Valid'|t('redirect-manager'),
+            palette: 'green',
+        } only %}
+        {% include 'lindemannrock-base/_components/stat-box' with {
+            value: summary.duplicates,
+            label: 'Duplicates'|t('redirect-manager'),
+            palette: 'amber',
+        } only %}
+        {% include 'lindemannrock-base/_components/stat-box' with {
+            value: summary.errors,
+            label: 'Errors'|t('redirect-manager'),
+            palette: 'red',
+        } only %}
     </div>
 
     {% if createBackup %}

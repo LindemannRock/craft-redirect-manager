@@ -404,6 +404,7 @@ class RedirectManager extends Plugin
             'redirect-manager/import-export/map' => 'redirect-manager/import-export/map',
             'redirect-manager/import-export/preview' => 'redirect-manager/import-export/preview',
             'redirect-manager/import-export/export' => 'redirect-manager/import-export/export',
+            'redirect-manager/import-export/clear-logs' => 'redirect-manager/import-export/clear-logs',
             'redirect-manager/backups' => 'redirect-manager/import-export/backups',
 
             // Settings routes
@@ -450,6 +451,12 @@ class RedirectManager extends Plugin
                     ],
                     'redirectManager:exportRedirects' => [
                         'label' => Craft::t('redirect-manager', 'Export {plural}', ['plural' => $plural]),
+                    ],
+                    'redirectManager:viewImportHistory' => [
+                        'label' => Craft::t('redirect-manager', 'View import history'),
+                    ],
+                    'redirectManager:clearImportHistory' => [
+                        'label' => Craft::t('redirect-manager', 'Clear import history'),
                     ],
                 ],
             ],

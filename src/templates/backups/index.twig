@@ -34,7 +34,7 @@
 			</svg>
 			<span>
 				<strong>{{ "Backup Location:"|t('redirect-manager') }}</strong>
-				<code>{{ settings.getBackupPath() }}/imports</code>
+				<code>{{ settings.getBackupPath() }}</code>
 			</span>
 		</p>
 	</div>
@@ -60,11 +60,12 @@ function renderRowActions(actionsHtml) {
 }
 
 function renderBackupsTable(backups) {
+    const numberFormatter = new Intl.NumberFormat();
     let rows = '';
     backups.forEach(backup => {
-        const date = escapeHtml((backup.date || '').replace('_', ' '));
+        const date = escapeHtml((backup.formattedDate || backup.date || '').toString().replace('_', ' '));
         const user = escapeHtml(backup.user || '');
-        const count = escapeHtml(backup.redirectCount ?? 0);
+        const count = escapeHtml(numberFormatter.format(backup.redirectCount ?? 0));
         const size = escapeHtml(backup.formattedSize || '-');
         const reasonBadge = renderReasonBadge(backup.reasonBadgeHtml);
         const rowActions = renderRowActions(backup.rowActionsHtml);

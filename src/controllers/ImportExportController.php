@@ -9,11 +9,13 @@
 namespace lindemannrock\redirectmanager\controllers;
 
 use Craft;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use lindemannrock\base\helpers\CsvImportHelper;
+use lindemannrock\base\helpers\DateTimeHelper;
 use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\records\ImportHistoryRecord;
@@ -57,18 +59,20 @@ class ImportExportController extends Controller
         ];
         $canImport = $this->canImport();
         $canExport = $this->canExport();
+        $canViewHistory = $this->canViewHistory();
         $history = ImportHistoryRecord::find()
             ->orderBy(['dateCreated' => SORT_DESC])
             ->limit(20)
             ->all();
 
         $formattedHistory = [];
-        if ($canImport) {
+        if ($canViewHistory) {
             /** @var ImportHistoryRecord $record */
             foreach ($history as $record) {
                 $user = Craft::$app->getUsers()->getUserById($record->userId);
                 $formattedHistory[] = [
                     'date' => $record->dateCreated,
+                    'formattedDate' => DateTimeHelper::formatDatetime($record->dateCreated),
                     'user' => $user?->username ?? Craft::t('redirect-manager', 'Unknown'),
                     'filename' => $record->filename,
                     'filesize' => $record->filesize,
@@ -85,8 +89,42 @@ class ImportExportController extends Controller
             'importHistory' => $formattedHistory,
             'canImport' => $canImport,
             'canExport' => $canExport,
+            'canViewHistory' => $canViewHistory,
             'importLimits' => $importLimits,
         ]);
+    }
+
+    /**
+     * Clear import history logs
+     *
+     * @return Response
+     * @since 5.24.0
+     */
+    public function actionClearLogs(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+        $this->requireClearImportHistoryPermission();
+
+        try {
+            Db::delete(ImportHistoryRecord::tableName());
+            $this->logInfo('User cleared all import logs', [
+                'userId' => Craft::$app->getUser()->getId(),
+            ]);
+
+            Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'Import history cleared successfully.'));
+
+            return $this->asJson([
+                'success' => true,
+            ]);
+        } catch (\Throwable $e) {
+            $this->logError('Failed to clear import logs', ['error' => $e->getMessage()]);
+
+            return $this->asJson([
+                'success' => false,
+                'error' => Craft::t('redirect-manager', 'Failed to clear import history.'),
+            ]);
+        }
     }
 
     /**
@@ -132,6 +170,20 @@ class ImportExportController extends Controller
         $formatted = [];
 
         foreach ($backups as $backup) {
+            $formattedDate = null;
+            $timestamp = $backup['timestamp'] ?? null;
+            if (is_numeric($timestamp)) {
+                $dateTime = new \DateTime('@' . (int)$timestamp);
+                $dateTime->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
+                $formattedDate = DateTimeHelper::formatDatetime($dateTime);
+            } elseif (!empty($backup['date'])) {
+                $dateTime = \DateTime::createFromFormat('Y-m-d_H-i-s', $backup['date']);
+                if ($dateTime) {
+                    $dateTime->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
+                    $formattedDate = DateTimeHelper::formatDatetime($dateTime);
+                }
+            }
+
             $reason = $backup['reason'] ?? 'import';
             $reasonInfo = $this->formatBackupReason($reason);
             $badgeHtml = $view->renderTemplate('lindemannrock-base/_components/badge', [
@@ -181,6 +233,7 @@ class ImportExportController extends Controller
             ]);
 
             $formatted[] = array_merge($backup, $reasonInfo, [
+                'formattedDate' => $formattedDate ?? ($backup['date'] ?? ''),
                 'reasonBadgeHtml' => $badgeHtml,
                 'rowActionsHtml' => $rowActionsHtml,
             ]);
@@ -303,27 +356,11 @@ class ImportExportController extends Controller
             ];
         }
 
-        // Send as download using ExportHelper for consistent filename
+        // Send as CSV download using ExportHelper for consistent filename
         $settings = RedirectManager::$plugin->getSettings();
-        $format = $request->getParam('format', 'csv');
+        $filename = ExportHelper::filename($settings, ['export'], 'csv');
 
-        if (!ExportHelper::isFormatEnabled($format)) {
-            throw new \yii\web\BadRequestHttpException(Craft::t('app', 'Export format not enabled.'));
-        }
-
-        $extension = match ($format) {
-            'excel', 'xlsx', 'xls' => 'xlsx',
-            'json' => 'json',
-            default => 'csv',
-        };
-
-        $filename = ExportHelper::filename($settings, ['export'], $extension);
-
-        return match ($format) {
-            'json' => ExportHelper::toJson($rows, $filename, ['lastHit']),
-            'excel', 'xlsx', 'xls' => ExportHelper::toExcel($rows, $headers, $filename, ['lastHit']),
-            default => ExportHelper::toCsv($rows, $headers, $filename, ['lastHit']),
-        };
+        return ExportHelper::toCsv($rows, $headers, $filename, ['lastHit']);
     }
 
     /**
@@ -1179,6 +1216,19 @@ class ImportExportController extends Controller
     }
 
     /**
+     * Check if user can view import history
+     *
+     * @return bool
+     * @since 5.24.0
+     */
+    private function canViewHistory(): bool
+    {
+        $user = Craft::$app->getUser();
+        return $user->checkPermission('redirectManager:manageImportExport') ||
+            $user->checkPermission('redirectManager:viewImportHistory');
+    }
+
+    /**
      * Require import permission (legacy manageImportExport or importRedirects)
      *
      * @return void
@@ -1188,6 +1238,20 @@ class ImportExportController extends Controller
     {
         if (!$this->canImport()) {
             throw new ForbiddenHttpException('User does not have permission to import redirects');
+        }
+    }
+
+    /**
+     * Require clear history permission
+     *
+     * @return void
+     * @since 5.24.0
+     */
+    private function requireClearImportHistoryPermission(): void
+    {
+        if (!Craft::$app->getUser()->checkPermission('redirectManager:manageImportExport') &&
+            !Craft::$app->getUser()->checkPermission('redirectManager:clearImportHistory')) {
+            throw new ForbiddenHttpException('User does not have permission to clear import history');
         }
     }
 
@@ -1212,7 +1276,7 @@ class ImportExportController extends Controller
      */
     private function requireAnyImportExportPermission(): void
     {
-        if (!$this->canImport() && !$this->canExport()) {
+        if (!$this->canImport() && !$this->canExport() && !$this->canViewHistory()) {
             throw new ForbiddenHttpException('User does not have permission to manage import/export');
         }
     }

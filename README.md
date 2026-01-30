@@ -473,23 +473,56 @@ php craft console/controller/eval \
 
 Redirect Manager provides granular user permissions for fine-grained access control:
 
+### Redirect Management
+
 | Permission | Description |
 |------------|-------------|
-| **View redirects** | View redirect list. Users can see redirects but not modify them. |
-| **Create redirects** | Create new redirects. Shows "New Redirect" button and enables creating from 404 list. |
-| **Edit redirects** | Modify existing redirects. Makes redirect names clickable, shows enable/disable options. |
-| **Delete redirects** | Remove redirects. Shows delete buttons and enables bulk delete. |
-| **Manage import/export** | Access Import/Export section. Import CSV files and export redirect data. |
+| **Manage redirects** | Parent permission for all redirect operations. |
+| ↳ View redirects | View redirect list. Users can see redirects but not modify them. |
+| ↳ Create redirects | Create new redirects. Shows "New Redirect" button and enables creating from 404 list. |
+| ↳ Edit redirects | Modify existing redirects. Makes redirect names clickable, shows enable/disable options. |
+| ↳ Delete redirects | Remove redirects. Shows delete buttons and enables bulk delete. |
+
+### Import/Export
+
+| Permission | Description |
+|------------|-------------|
+| **Manage import/export** | Parent permission for import/export operations. |
+| ↳ Import redirects | Import redirects from CSV files. |
+| ↳ Export redirects | Export redirects to CSV files. |
+| ↳ View import history | View import history tab. See past CSV imports and their results. |
+| ↳ Clear import history | Clear import history logs. Permanently delete import tracking history. |
+
+### Backups
+
+| Permission | Description |
+|------------|-------------|
+| **Manage backups** | Parent permission for backup operations. |
+| ↳ Create backups | Create manual backups of redirects. |
+| ↳ Download backups | Download backup files as ZIP. |
+| ↳ Restore backups | Restore redirects from a backup. |
+| ↳ Delete backups | Delete backup files. |
+
+### Analytics
+
+| Permission | Description |
+|------------|-------------|
 | **View analytics** | Access Dashboard (404 list) and Analytics (charts). View 404 tracking data. |
-| **Clear analytics** | Clear all analytics data. Permanently delete 404 tracking history. Nested under View analytics. |
+| ↳ Export analytics | Export analytics data to CSV. |
+| ↳ Clear analytics | Clear all analytics data. Permanently delete 404 tracking history. |
+
+### Other
+
+| Permission | Description |
+|------------|-------------|
 | **Clear cache** | Clear redirect caches. Shows cache options in Craft's Clear Caches utility. |
 | **View logs** | Access plugin logs. View log entries and file details. |
-| **Download logs** | Download log files. Nested under View logs. |
+| ↳ Download logs | Download log files. |
 | **Manage settings** | Access Settings section. Modify all plugin configuration. |
 
 ### Permission Behavior
 
-- **All permissions are independent** - Each can be enabled/disabled separately without affecting others
+- **Nested permissions** - Child permissions are nested under parent permissions in Craft's user permission UI
 - **CP navigation visibility** - Plugin nav items only show if user has at least one relevant permission
 - **UI adaptation** - Buttons, links, and actions automatically show/hide based on user permissions
 - **Controller protection** - All controller actions verify permissions before executing
@@ -497,15 +530,13 @@ Redirect Manager provides granular user permissions for fine-grained access cont
 ### Example Configurations
 
 **Editor (Create & Edit only):**
-- ✅ View redirects
-- ✅ Create redirects
-- ✅ Edit redirects
+- ✅ Manage redirects → View, Create, Edit
 - ❌ Delete redirects
 - ❌ Manage import/export
 - ❌ Manage settings
 
 **Analyst (View only):**
-- ✅ View redirects
+- ✅ Manage redirects → View
 - ✅ View analytics
 - ✅ View logs
 - ❌ Create/Edit/Delete redirects

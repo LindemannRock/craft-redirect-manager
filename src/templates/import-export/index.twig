@@ -10,8 +10,9 @@
 
 ] %}
 
+{% set canImportExport = canImport or canExport %}
 {% set tabs = {} %}
-{% if canImport or canExport %}
+{% if canImportExport %}
     {% set tabs = tabs|merge({
         importExport: {
             label: 'Import/Export'|t('redirect-manager'),
@@ -19,13 +20,17 @@
         },
     }) %}
 {% endif %}
-{% if canImport %}
+{% if canViewHistory %}
     {% set tabs = tabs|merge({
         importHistory: {
             label: 'Import History'|t('redirect-manager'),
             url: '#import-history',
         },
     }) %}
+{% endif %}
+
+{% if not canImportExport and canViewHistory %}
+    {% set selectedTab = 'importHistory' %}
 {% endif %}
 
 {% import "_includes/forms" as forms %}
@@ -139,10 +144,17 @@
 		{% endif %}
 	</div>
 
-	{% if canImport %}
+	{% if canViewHistory %}
 	<div id="import-history" class="hidden">
 		<h2>{{ "Import History"|t('redirect-manager') }}</h2>
 		<p>{{ "Recent CSV imports and their results."|t('redirect-manager') }}</p>
+		{% if importHistory|length and (currentUser.can('redirectManager:manageImportExport') or currentUser.can('redirectManager:clearImportHistory')) %}
+			<div style="margin: 0 0 1rem auto;">
+				<button type="button" class="btn" id="clear-logs-btn">
+					{{ "Clear history"|t('redirect-manager') }}
+				</button>
+			</div>
+		{% endif %}
 
 		{% if importHistory|length > 0 %}
 			<table class="data fullwidth">
@@ -154,21 +166,21 @@
 						<th>{{ "Size"|t('redirect-manager') }}</th>
 						<th>{{ "Imported"|t('redirect-manager') }}</th>
 						<th>{{ "Failed"|t('redirect-manager') }}</th>
-						<th>{{ "Backup"|t('redirect-manager') }}</th>
+						<th class="rightalign">{{ "Backup"|t('redirect-manager') }}</th>
 					</tr>
 				</thead>
 				<tbody>
 					{% for item in importHistory %}
 						<tr>
-							<td>{{ item.date|datetime('short') }}</td>
+							<td>{{ item.formattedDate ?? (item.date|datetime('short')) }}</td>
 							<td>{{ item.user }}</td>
 							<td>{{ item.filename ?? '-' }}</td>
 							<td><code style="font-size: 11px;">{{ item.formattedSize }}</code></td>
-							<td><strong>{{ item.imported }}</strong></td>
-							<td>{{ item.failed }}</td>
-							<td>
+							<td><strong>{{ item.imported|number_format }}</strong></td>
+							<td>{{ item.failed|number_format }}</td>
+							<td class="rightalign">
 								{% if item.backupPath %}
-									<a href="{{ url('redirect-manager/backups') }}" class="go">{{ item.backupPath }}</a>
+									<a href="{{ url('redirect-manager/backups') }}" class="go">{{ "View"|t('redirect-manager') }}</a>
 								{% else %}
 									-
 								{% endif %}
@@ -188,6 +200,39 @@
 {% endblock %}
 
 {% js %}
+    // Show history tab after reload if requested
+    if (sessionStorage.getItem('showHistoryTab') === 'true') {
+        sessionStorage.removeItem('showHistoryTab');
+        const historyTab = document.querySelector('a[href="#import-history"]');
+        if (historyTab) {
+            historyTab.click();
+        }
+    }
+
+    // Clear history button
+    document.getElementById('clear-logs-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        if (!confirm('{{ "Are you sure you want to clear all import logs? This action cannot be undone."|t('redirect-manager')|e('js') }}')) {
+            return;
+        }
+
+        const button = this;
+        button.classList.add('loading');
+        button.disabled = true;
+
+        Craft.sendActionRequest('POST', 'redirect-manager/import-export/clear-logs')
+            .then(() => {
+                sessionStorage.setItem('showHistoryTab', 'true');
+                window.location.reload(true);
+            })
+            .catch(error => {
+                button.classList.remove('loading');
+                button.disabled = false;
+                Craft.cp.displayError(error.response?.data?.error || '{{ "Failed to clear history."|t('redirect-manager')|e('js') }}');
+            });
+    });
+
     // Initialize menu buttons
     document.querySelectorAll('.menubtn').forEach(btn => {
         if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
