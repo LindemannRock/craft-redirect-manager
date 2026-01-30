@@ -100,8 +100,12 @@ class Install extends Migration
                 'enableRedirectCache' => $this->boolean()->notNull()->defaultValue(true),
                 'redirectCacheDuration' => $this->integer()->notNull()->defaultValue(3600),
                 'cacheStorageMethod' => $this->string(10)->notNull()->defaultValue('file')->comment('Cache storage method: file or redis'),
-                'backupPath' => $this->string()->defaultValue('@storage/redirect-manager/backups/imports'),
+                'backupPath' => $this->string()->defaultValue('@storage/redirect-manager/backups'),
                 'backupVolumeUid' => $this->string()->null(),
+                'backupEnabled' => $this->boolean()->defaultValue(true),
+                'backupOnImport' => $this->boolean()->defaultValue(true),
+                'backupSchedule' => $this->string(20)->defaultValue('manual'),
+                'backupRetentionDays' => $this->integer()->defaultValue(30),
                 'dateCreated' => $this->dateTime()->notNull(),
                 'dateUpdated' => $this->dateTime()->notNull(),
                 'uid' => $this->uid(),
@@ -182,6 +186,34 @@ class Install extends Migration
             );
         }
 
+        // Create import history table
+        if (!$this->db->tableExists('{{%redirectmanager_import_history}}')) {
+            $this->createTable('{{%redirectmanager_import_history}}', [
+                'id' => $this->primaryKey(),
+                'userId' => $this->integer()->null(),
+                'filename' => $this->string(255)->null(),
+                'filesize' => $this->integer()->null(),
+                'imported' => $this->integer()->notNull()->defaultValue(0),
+                'failed' => $this->integer()->notNull()->defaultValue(0),
+                'backupPath' => $this->string(255)->null(),
+                'uid' => $this->uid(),
+                'dateCreated' => $this->dateTime()->notNull(),
+                'dateUpdated' => $this->dateTime()->notNull(),
+            ]);
+
+            $this->createIndex(null, '{{%redirectmanager_import_history}}', ['userId']);
+            $this->createIndex(null, '{{%redirectmanager_import_history}}', ['dateCreated']);
+            $this->addForeignKey(
+                null,
+                '{{%redirectmanager_import_history}}',
+                ['userId'],
+                Table::USERS,
+                ['id'],
+                'SET NULL',
+                'CASCADE'
+            );
+        }
+
         return true;
     }
 
@@ -191,6 +223,7 @@ class Install extends Migration
     public function safeDown(): bool
     {
         // Drop tables in reverse order
+        $this->dropTableIfExists('{{%redirectmanager_import_history}}');
         $this->dropTableIfExists('{{%redirectmanager_analytics}}');
         $this->dropTableIfExists('{{%redirectmanager_settings}}');
         $this->dropTableIfExists('{{%redirectmanager_redirects}}');

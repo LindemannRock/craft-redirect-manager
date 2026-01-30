@@ -148,14 +148,33 @@ return [
         // ========================================
         // BACKUP SETTINGS
         // ========================================
-        // Import backup storage configuration
+        // Import backup storage configuration and scheduling
+
+        // Enable Backups
+        // Master switch for automatic backup functionality
+        'backupEnabled' => true,
+
+        // Backup Before Import
+        // Automatically create a backup before importing CSV files
+        'backupOnImport' => true,
+
+        // Backup Schedule
+        // Options: 'manual', 'daily', 'weekly', 'monthly'
+        // Uses Craft's queue if running, or set up a cron job:
+        // craft redirect-manager/backup/scheduled
+        'backupSchedule' => 'manual',
+
+        // Backup Retention Days
+        // Number of days to keep automatic backups (0 = keep forever)
+        // Manual backups are never deleted automatically
+        'backupRetentionDays' => 30,
 
         // Backup Path
         // Local filesystem path for storing import backups
         // Supports aliases: @storage, @root
         // Supports environment variables: $BACKUP_PATH
-        // Default: @storage/redirect-manager/backups/imports
-        'backupPath' => '@storage/redirect-manager/backups/imports',
+        // Default: @storage/redirect-manager/backups
+        'backupPath' => '@storage/redirect-manager/backups',
 
         // Backup Volume UID
         // Optional: Store backups in an asset volume instead of local filesystem

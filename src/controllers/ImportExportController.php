@@ -10,11 +10,15 @@ namespace lindemannrock\redirectmanager\controllers;
 
 use Craft;
 use craft\helpers\FileHelper;
+use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use lindemannrock\base\helpers\CsvImportHelper;
 use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
+use lindemannrock\redirectmanager\records\ImportHistoryRecord;
 use lindemannrock\redirectmanager\RedirectManager;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 /**
@@ -44,15 +48,192 @@ class ImportExportController extends Controller
      */
     public function actionIndex(): Response
     {
-        $this->requirePermission('redirectManager:manageImportExport');
+        $this->requireAnyImportExportPermission();
 
         $settings = RedirectManager::$plugin->getSettings();
-        $backups = $this->getBackups();
+        $canImport = $this->canImport();
+        $canExport = $this->canExport();
+        $history = ImportHistoryRecord::find()
+            ->orderBy(['dateCreated' => SORT_DESC])
+            ->limit(20)
+            ->all();
+
+        $formattedHistory = [];
+        if ($canImport) {
+            /** @var ImportHistoryRecord $record */
+            foreach ($history as $record) {
+                $user = Craft::$app->getUsers()->getUserById($record->userId);
+                $formattedHistory[] = [
+                    'date' => $record->dateCreated,
+                    'user' => $user?->username ?? Craft::t('redirect-manager', 'Unknown'),
+                    'filename' => $record->filename,
+                    'filesize' => $record->filesize,
+                    'formattedSize' => $record->filesize ? Craft::$app->getFormatter()->asShortSize($record->filesize, 2) : '-',
+                    'imported' => $record->imported,
+                    'failed' => $record->failed,
+                    'backupPath' => $record->backupPath,
+                ];
+            }
+        }
 
         return $this->renderTemplate('redirect-manager/import-export/index', [
             'settings' => $settings,
-            'backups' => $backups,
+            'importHistory' => $formattedHistory,
+            'canImport' => $canImport,
+            'canExport' => $canExport,
         ]);
+    }
+
+    /**
+     * Backups page
+     *
+     * @return Response
+     */
+    public function actionBackups(): Response
+    {
+        $this->requireAnyBackupPermission();
+
+        $settings = RedirectManager::$plugin->getSettings();
+        if (!$settings->backupEnabled) {
+            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backups are disabled in settings.'));
+            return $this->redirect('redirect-manager/import-export');
+        }
+
+        return $this->renderTemplate('redirect-manager/backups/index', [
+            'settings' => $settings,
+        ]);
+    }
+
+    /**
+     * Get backups as JSON (for async loading)
+     *
+     * @return Response
+     */
+    public function actionGetBackups(): Response
+    {
+        $this->requireAnyBackupPermission();
+
+        $settings = RedirectManager::$plugin->getSettings();
+        if (!$settings->backupEnabled) {
+            return $this->asJson([
+                'success' => false,
+                'message' => Craft::t('redirect-manager', 'Backups are disabled in settings.'),
+                'backups' => [],
+            ]);
+        }
+
+        $view = Craft::$app->getView();
+        $backups = RedirectManager::$plugin->backup->getBackups();
+        $formatted = [];
+
+        foreach ($backups as $backup) {
+            $reason = $backup['reason'] ?? 'import';
+            $reasonInfo = $this->formatBackupReason($reason);
+            $badgeHtml = $view->renderTemplate('lindemannrock-base/_components/badge', [
+                'label' => $reasonInfo['reasonLabel'],
+                'value' => $reasonInfo['reasonValue'],
+                'colorSet' => 'backupReason',
+            ]);
+
+            $downloadUrl = UrlHelper::actionUrl('redirect-manager/import-export/download-backup', [
+                'dirname' => $backup['dirname'] ?? '',
+            ]);
+
+            $rowActionsHtml = $view->renderTemplate('lindemannrock-base/_components/row-actions', [
+                'item' => $backup,
+                'actions' => [
+                    'type' => 'menu',
+                    'icon' => 'settings',
+                    'items' => [
+                        [
+                            'label' => Craft::t('redirect-manager', 'Restore'),
+                            'class' => 'restore-backup',
+                            'jsAction' => 'restore',
+                            'permission' => 'redirectManager:restoreBackups',
+                            'data' => [
+                                'dirname' => $backup['dirname'] ?? '',
+                                'date' => $backup['date'] ?? '',
+                                'count' => $backup['redirectCount'] ?? 0,
+                            ],
+                        ],
+                        [
+                            'label' => Craft::t('redirect-manager', 'Download ZIP'),
+                            'url' => $downloadUrl,
+                            'permission' => 'redirectManager:downloadBackups',
+                        ],
+                        ['type' => 'divider'],
+                        [
+                            'label' => Craft::t('redirect-manager', 'Delete'),
+                            'class' => 'delete-backup error',
+                            'jsAction' => 'delete',
+                            'permission' => 'redirectManager:deleteBackups',
+                            'data' => [
+                                'dirname' => $backup['dirname'] ?? '',
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+
+            $formatted[] = array_merge($backup, $reasonInfo, [
+                'reasonBadgeHtml' => $badgeHtml,
+                'rowActionsHtml' => $rowActionsHtml,
+            ]);
+        }
+
+        return $this->asJson([
+            'success' => true,
+            'backups' => $formatted,
+        ]);
+    }
+
+    /**
+     * Create a backup on demand
+     *
+     * @return Response
+     */
+    public function actionCreateBackup(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireBackupPermission('redirectManager:createBackups');
+
+        $request = Craft::$app->getRequest();
+        $settings = RedirectManager::$plugin->getSettings();
+
+        if (!$settings->backupEnabled) {
+            $message = Craft::t('redirect-manager', 'Backups are disabled in settings.');
+            if ($request->getAcceptsJson()) {
+                return $this->asJson(['success' => false, 'message' => $message]);
+            }
+            Craft::$app->getSession()->setError($message);
+            return $this->redirect('redirect-manager/backups');
+        }
+
+        $backupPath = RedirectManager::$plugin->backup->createBackup('manual');
+
+        if (!$backupPath) {
+            $message = Craft::t('redirect-manager', 'No redirects found to back up.');
+            Craft::$app->getSession()->setError($message);
+            if ($request->getAcceptsJson()) {
+                return $this->asJson([
+                    'success' => false,
+                    'message' => $message,
+                ]);
+            }
+            return $this->redirect('redirect-manager/backups');
+        }
+
+        $message = Craft::t('redirect-manager', 'Backup created.');
+        Craft::$app->getSession()->setNotice($message);
+
+        if ($request->getAcceptsJson()) {
+            return $this->asJson([
+                'success' => true,
+                'message' => $message,
+            ]);
+        }
+
+        return $this->redirect('redirect-manager/backups');
     }
 
     /**
@@ -62,7 +243,7 @@ class ImportExportController extends Controller
      */
     public function actionExport(): Response
     {
-        $this->requirePermission('redirectManager:manageImportExport');
+        $this->requireExportPermission();
 
         $request = Craft::$app->getRequest();
 
@@ -99,44 +280,45 @@ class ImportExportController extends Controller
             'sourcePlugin',
         ];
 
-        // Create CSV content
-        $csv = [];
-        $csv[] = $headers;
-
+        $rows = [];
         foreach ($redirects as $redirect) {
-            $csv[] = [
-                $this->sanitizeCsvValue($redirect['sourceUrl']),
-                $this->sanitizeCsvValue($redirect['destinationUrl']),
-                $redirect['siteId'] ?? '',
-                $redirect['redirectSrcMatch'],
-                $redirect['matchType'],
-                $redirect['statusCode'],
-                $redirect['priority'],
-                $redirect['enabled'] ? '1' : '0',
-                $redirect['hitCount'] ?? 0,
-                $redirect['lastHit'] ?? '',
-                $redirect['creationType'],
-                $this->sanitizeCsvValue($redirect['sourcePlugin'] ?? 'redirect-manager'),
+            $rows[] = [
+                'sourceUrl' => $redirect['sourceUrl'],
+                'destinationUrl' => $redirect['destinationUrl'],
+                'siteId' => $redirect['siteId'] ?? '',
+                'redirectSrcMatch' => $redirect['redirectSrcMatch'],
+                'matchType' => $redirect['matchType'],
+                'statusCode' => $redirect['statusCode'],
+                'priority' => $redirect['priority'],
+                'enabled' => $redirect['enabled'] ? '1' : '0',
+                'hitCount' => $redirect['hitCount'] ?? 0,
+                'lastHit' => $redirect['lastHit'] ?? '',
+                'creationType' => $redirect['creationType'],
+                'sourcePlugin' => $redirect['sourcePlugin'] ?? 'redirect-manager',
             ];
         }
 
-        // Generate CSV string
-        $output = fopen('php://temp', 'r+');
-        foreach ($csv as $row) {
-            fputcsv($output, $row);
-        }
-        rewind($output);
-        $csvContent = stream_get_contents($output);
-        fclose($output);
-
         // Send as download using ExportHelper for consistent filename
         $settings = RedirectManager::$plugin->getSettings();
-        $filename = ExportHelper::filename($settings, ['export'], 'csv');
+        $format = $request->getParam('format', 'csv');
 
-        return Craft::$app->getResponse()
-            ->sendContentAsFile($csvContent, $filename, [
-                'mimeType' => 'text/csv',
-            ]);
+        if (!ExportHelper::isFormatEnabled($format)) {
+            throw new \yii\web\BadRequestHttpException(Craft::t('app', 'Export format not enabled.'));
+        }
+
+        $extension = match ($format) {
+            'excel', 'xlsx', 'xls' => 'xlsx',
+            'json' => 'json',
+            default => 'csv',
+        };
+
+        $filename = ExportHelper::filename($settings, ['export'], $extension);
+
+        return match ($format) {
+            'json' => ExportHelper::toJson($rows, $filename, ['lastHit']),
+            'excel', 'xlsx', 'xls' => ExportHelper::toExcel($rows, $headers, $filename, ['lastHit']),
+            default => ExportHelper::toCsv($rows, $headers, $filename, ['lastHit']),
+        };
     }
 
     /**
@@ -147,7 +329,7 @@ class ImportExportController extends Controller
     public function actionUpload(): Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:manageImportExport');
+        $this->requireImportPermission();
 
         $file = UploadedFile::getInstanceByName('csvFile');
 
@@ -156,92 +338,48 @@ class ImportExportController extends Controller
             return $this->redirect('redirect-manager/import-export');
         }
 
-        // Validate file type
-        $extension = strtolower($file->getExtension());
-        if (!in_array($extension, ['csv', 'txt'])) {
-            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Invalid file type. Please upload a CSV file.'));
-            return $this->redirect('redirect-manager/import-export');
+        // Get delimiter (auto-detect by default)
+        $delimiter = Craft::$app->getRequest()->getBodyParam('delimiter', 'auto');
+        $detectDelimiter = true;
+        if ($delimiter !== 'auto') {
+            if ($delimiter === "\t") {
+                $delimiter = "\t"; // Handle tab character
+            }
+            $detectDelimiter = false;
+        } else {
+            $delimiter = null;
         }
 
-        // Get delimiter
-        $delimiter = Craft::$app->getRequest()->getBodyParam('delimiter', ',');
-        if ($delimiter === "\t") {
-            $delimiter = "\t"; // Handle tab character
-        }
+        $settings = RedirectManager::$plugin->getSettings();
+        $defaultCreateBackup = $settings->backupEnabled && $settings->backupOnImport;
+        $createBackup = (bool)Craft::$app->getRequest()->getBodyParam('createBackup', $defaultCreateBackup);
 
-        $createBackup = (bool)Craft::$app->getRequest()->getBodyParam('createBackup', true);
-
-        // Save file temporarily for parsing
-        $tempPath = Craft::$app->getPath()->getTempPath() . '/redirect-import-' . uniqid() . '.csv';
-
-        if (!$file->saveAs($tempPath)) {
-            $this->logError('Failed to save uploaded file', ['tempPath' => $tempPath]);
-            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to save uploaded file. Please try again.'));
-            return $this->redirect('redirect-manager/import-export');
+        if (!$settings->backupEnabled || !$settings->backupOnImport) {
+            $createBackup = false;
         }
 
         // Parse CSV and store data in session (not file path - for Servd/load-balanced hosting)
         try {
-            $handle = fopen($tempPath, 'r');
-
-            if ($handle === false) {
-                throw new \Exception('Could not open uploaded file for reading.');
-            }
-
-            $headers = fgetcsv($handle, 0, $delimiter);
-
-            if (!$headers) {
-                fclose($handle);
-                throw new \Exception('Could not read CSV headers');
-            }
-
-            // Validate delimiter - check if we got only 1 column (likely wrong delimiter)
-            if (count($headers) === 1 && strpos($headers[0], ',') !== false) {
-                fclose($handle);
-                throw new \Exception('CSV appears to use comma (,) delimiter but you selected: ' . ($delimiter === "\t" ? 'Tab' : $delimiter) . '. Please select the correct delimiter.');
-            } elseif (count($headers) === 1 && strpos($headers[0], ';') !== false) {
-                fclose($handle);
-                throw new \Exception('CSV appears to use semicolon (;) delimiter but you selected: ' . ($delimiter === "\t" ? 'Tab' : $delimiter) . '. Please select the correct delimiter.');
-            } elseif (count($headers) === 1 && strpos($headers[0], '|') !== false) {
-                fclose($handle);
-                throw new \Exception('CSV appears to use pipe (|) delimiter but you selected: ' . ($delimiter === "\t" ? 'Tab' : $delimiter) . '. Please select the correct delimiter.');
-            } elseif (count($headers) === 1 && strpos($headers[0], "\t") !== false) {
-                fclose($handle);
-                throw new \Exception('CSV appears to use Tab delimiter but you selected: ' . $delimiter . '. Please select the correct delimiter.');
-            }
-
-            // Read ALL rows into memory (store in session instead of file path)
-            $allRows = [];
-            while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
-                $allRows[] = $row;
-            }
-
-            fclose($handle);
-
-            // Delete temp file immediately - we have the data in memory now
-            @unlink($tempPath);
-
-            $rowCount = count($allRows);
-
-            // Check for reasonable size limit (prevent session bloat)
-            // Estimate ~500 bytes per row average, limit to ~2MB of session data
-            if ($rowCount > 4000) {
-                throw new \Exception('CSV file is too large. Maximum 4000 rows allowed for import. Please split your file into smaller batches.');
-            }
+            $parsed = CsvImportHelper::parseUpload($file, [
+                'maxRows' => 4000,
+                'maxBytes' => 5242880,
+                'delimiter' => $delimiter,
+                'detectDelimiter' => $detectDelimiter,
+            ]);
 
             // Store parsed data in session (not file path)
             Craft::$app->getSession()->set('redirect-import', [
-                'headers' => $headers,
-                'allRows' => $allRows,
-                'rowCount' => $rowCount,
+                'headers' => $parsed['headers'],
+                'allRows' => $parsed['allRows'],
+                'rowCount' => $parsed['rowCount'],
                 'createBackup' => $createBackup,
+                'filename' => $file->name,
+                'filesize' => $file->size,
             ]);
 
             // Redirect to column mapping
             return $this->redirect('redirect-manager/import-export/map');
         } catch (\Exception $e) {
-            // Clean up temp file on error
-            @unlink($tempPath);
             $this->logError('Failed to parse CSV', ['error' => $e->getMessage()]);
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to parse CSV: {error}', ['error' => $e->getMessage()]));
             return $this->redirect('redirect-manager/import-export');
@@ -255,7 +393,7 @@ class ImportExportController extends Controller
      */
     public function actionMap(): Response
     {
-        $this->requirePermission('redirectManager:manageImportExport');
+        $this->requireImportPermission();
 
         // Get data from session (now contains actual row data, not file path)
         $importData = Craft::$app->getSession()->get('redirect-import');
@@ -283,7 +421,7 @@ class ImportExportController extends Controller
      */
     public function actionPreview(): Response
     {
-        $this->requirePermission('redirectManager:manageImportExport');
+        $this->requireImportPermission();
 
         // If GET request, show preview from session
         if (!Craft::$app->getRequest()->getIsPost()) {
@@ -601,9 +739,10 @@ class ImportExportController extends Controller
     public function actionImport(): ?Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:manageImportExport');
+        $this->requireImportPermission();
 
         $validatedData = Craft::$app->getSession()->get('redirect-import-validated');
+        $importData = Craft::$app->getSession()->get('redirect-import');
 
         if (!$validatedData) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Import session expired'));
@@ -611,7 +750,8 @@ class ImportExportController extends Controller
         }
 
         $validRows = $validatedData['validRows'];
-        $createBackup = $validatedData['createBackup'];
+        $settings = RedirectManager::$plugin->getSettings();
+        $createBackup = $validatedData['createBackup'] && $settings->backupEnabled && $settings->backupOnImport;
 
         // Create backup if requested and there are existing redirects to backup
         $backupPath = null;
@@ -621,7 +761,7 @@ class ImportExportController extends Controller
                 ->count();
 
             if ($existingCount > 0) {
-                $backupPath = $this->createBackup();
+                $backupPath = RedirectManager::$plugin->backup->createBackup('import');
                 if (!$backupPath) {
                     Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to create backup'));
                     return $this->redirect('redirect-manager/import-export');
@@ -703,159 +843,45 @@ class ImportExportController extends Controller
             $message .= ' ' . Craft::t('redirect-manager', '{failed} failed.', ['failed' => $failed]);
         }
 
+        // Save import history (best-effort)
+        try {
+            $history = new ImportHistoryRecord();
+            $history->userId = Craft::$app->getUser()->getId();
+            $history->filename = $importData['filename'] ?? null;
+            $history->filesize = $importData['filesize'] ?? null;
+            $history->imported = $imported;
+            $history->failed = $failed;
+            $history->backupPath = $backupPath ? RedirectManager::$plugin->backup->getRelativeBackupName($backupPath) : null;
+            $history->save();
+        } catch (\Throwable $e) {
+            $this->logError('Failed to save import history', ['error' => $e->getMessage()]);
+        }
+
         Craft::$app->getSession()->setNotice($message);
         return $this->redirect('redirect-manager/import-export');
     }
 
     /**
-     * Create backup of existing redirects
+     * Format backup reason for display
      *
-     * @param string $reason Reason for backup (import, restore, manual)
-     * @return string|null Backup directory path or null on failure
+     * @param string $reason
+     * @return array{reasonLabel: string, reasonValue: string}
      */
-    private function createBackup(string $reason = 'import'): ?string
+    private function formatBackupReason(string $reason): array
     {
-        try {
-            // Get all redirects
-            $redirects = (new \craft\db\Query())
-                ->from('{{%redirectmanager_redirects}}')
-                ->all();
+        $reason = strtolower($reason);
 
-            if (empty($redirects)) {
-                return null; // No redirects to backup
-            }
+        $label = match ($reason) {
+            'restore' => Craft::t('redirect-manager', 'Before Restore'),
+            'manual' => Craft::t('redirect-manager', 'Manual'),
+            'scheduled' => Craft::t('redirect-manager', 'Scheduled'),
+            default => Craft::t('redirect-manager', 'Before Import'),
+        };
 
-            $settings = RedirectManager::$plugin->getSettings();
-            $timestamp = date('Y-m-d_H-i-s');
-
-            // Create backup directory using configured path + /imports subdirectory
-            $backupDir = $settings->getBackupPath() . '/imports/' . $timestamp;
-            FileHelper::createDirectory($backupDir);
-
-            // Create metadata.json
-            $metadata = [
-                'date' => $timestamp,
-                'timestamp' => time(),
-                'reason' => $reason,
-                'user' => Craft::$app->getUser()->getIdentity()->username ?? 'unknown',
-                'userId' => Craft::$app->getUser()->getId(),
-                'redirectCount' => count($redirects),
-                'craftVersion' => Craft::$app->getVersion(),
-                'pluginVersion' => RedirectManager::$plugin->getVersion(),
-            ];
-
-            file_put_contents($backupDir . '/metadata.json', json_encode($metadata, JSON_PRETTY_PRINT));
-
-            // Create redirects.json
-            file_put_contents($backupDir . '/redirects.json', json_encode($redirects, JSON_PRETTY_PRINT));
-
-            $this->logInfo('Backup created', ['path' => $backupDir, 'count' => count($redirects), 'reason' => $reason]);
-
-            return $backupDir;
-        } catch (\Exception $e) {
-            $this->logError('Backup failed', ['error' => $e->getMessage(), 'reason' => $reason]);
-            return null;
-        }
-    }
-
-    /**
-     * Get all backups from filesystem
-     *
-     * @return array
-     */
-    private function getBackups(): array
-    {
-        $settings = RedirectManager::$plugin->getSettings();
-        $backupDir = $settings->getBackupPath() . '/imports';
-
-        if (!is_dir($backupDir)) {
-            return [];
-        }
-
-        $backups = [];
-        $dirs = glob($backupDir . '/*', GLOB_ONLYDIR);
-
-        foreach ($dirs as $dir) {
-            $metadataFile = $dir . '/metadata.json';
-            if (file_exists($metadataFile)) {
-                $metadata = json_decode(file_get_contents($metadataFile), true);
-                $metadata['path'] = $dir;
-                $metadata['dirname'] = basename($dir);
-
-                // Calculate total size of backup directory
-                $totalSize = 0;
-                $files = new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-                    \RecursiveIteratorIterator::LEAVES_ONLY
-                );
-                foreach ($files as $file) {
-                    if ($file->isFile()) {
-                        $totalSize += $file->getSize();
-                    }
-                }
-
-                // Format size for display
-                $metadata['size'] = $totalSize;
-                $metadata['formattedSize'] = Craft::$app->getFormatter()->asShortSize($totalSize, 2);
-
-                $backups[] = $metadata;
-            }
-        }
-
-        // Sort by timestamp descending (newest first)
-        usort($backups, function($a, $b) {
-            return $b['timestamp'] - $a['timestamp'];
-        });
-
-        return $backups;
-    }
-
-    /**
-     * Validate backup directory name to prevent path traversal attacks
-     *
-     * @param string|null $dirname
-     * @return string|null Validated absolute path or null if invalid
-     */
-    private function validateBackupDirname(?string $dirname): ?string
-    {
-        if ($dirname === null || $dirname === '') {
-            return null;
-        }
-
-        // Must match timestamp format: 2025-01-21_14-30-45
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/', $dirname)) {
-            $this->logWarning('Invalid backup dirname format', ['dirname' => $dirname]);
-            return null;
-        }
-
-        $settings = RedirectManager::$plugin->getSettings();
-        $backupRoot = $settings->getBackupPath() . '/imports';
-
-        // Ensure backup root exists
-        if (!is_dir($backupRoot)) {
-            return null;
-        }
-
-        $realBackupRoot = realpath($backupRoot);
-        if ($realBackupRoot === false) {
-            return null;
-        }
-
-        $backupDir = $realBackupRoot . DIRECTORY_SEPARATOR . $dirname;
-
-        // Verify directory exists
-        if (!is_dir($backupDir)) {
-            return null;
-        }
-
-        // Resolve to real path and verify it's within backup root
-        $realBackupDir = realpath($backupDir);
-        if ($realBackupDir === false || !str_starts_with($realBackupDir, $realBackupRoot)) {
-            $this->logWarning('Path traversal attempt blocked', ['dirname' => $dirname]);
-            return null;
-        }
-
-        return $realBackupDir;
+        return [
+            'reasonLabel' => $label,
+            'reasonValue' => $reason ?: 'import',
+        ];
     }
 
     /**
@@ -865,14 +891,20 @@ class ImportExportController extends Controller
      */
     public function actionDownloadBackup(): Response
     {
-        $this->requirePermission('redirectManager:manageImportExport');
+        $this->requireBackupPermission('redirectManager:downloadBackups');
+
+        $settings = RedirectManager::$plugin->getSettings();
+        if (!$settings->backupEnabled) {
+            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backups are disabled in settings.'));
+            return $this->redirect('redirect-manager/import-export');
+        }
 
         $dirname = Craft::$app->getRequest()->getQueryParam('dirname');
-        $backupDir = $this->validateBackupDirname($dirname);
+        $backupDir = RedirectManager::$plugin->backup->validateBackupDirname($dirname);
 
         if ($backupDir === null || !file_exists($backupDir . '/metadata.json')) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backup not found'));
-            return $this->redirect('redirect-manager/import-export');
+            return $this->redirect('redirect-manager/backups');
         }
 
         // Create temporary ZIP file
@@ -891,7 +923,7 @@ class ImportExportController extends Controller
         }
 
         Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to create backup ZIP'));
-        return $this->redirect('redirect-manager/import-export');
+        return $this->redirect('redirect-manager/backups');
     }
 
     /**
@@ -902,19 +934,36 @@ class ImportExportController extends Controller
     public function actionRestoreBackup(): ?Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:manageImportExport');
+        $this->requireBackupPermission('redirectManager:restoreBackups');
 
-        $dirname = Craft::$app->getRequest()->getBodyParam('dirname');
-        $backupDir = $this->validateBackupDirname($dirname);
+        $request = Craft::$app->getRequest();
+        $settings = RedirectManager::$plugin->getSettings();
+        if (!$settings->backupEnabled) {
+            $message = Craft::t('redirect-manager', 'Backups are disabled in settings.');
+            if ($request->getAcceptsJson()) {
+                return $this->asJson(['success' => false, 'message' => $message]);
+            }
+            Craft::$app->getSession()->setError($message);
+            return $this->redirect('redirect-manager/import-export');
+        }
+
+        $dirname = $request->getBodyParam('dirname');
+        $backupDir = RedirectManager::$plugin->backup->validateBackupDirname($dirname);
 
         if ($backupDir === null || !file_exists($backupDir . '/redirects.json')) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backup not found'));
-            return $this->redirect('redirect-manager/import-export');
+            if ($request->getAcceptsJson()) {
+                return $this->asJson([
+                    'success' => false,
+                    'message' => Craft::t('redirect-manager', 'Backup not found'),
+                ]);
+            }
+            return $this->redirect('redirect-manager/backups');
         }
 
         try {
             // Create backup BEFORE restoring (in case restore fails)
-            $preRestoreBackup = $this->createBackup('restore');
+            $preRestoreBackup = RedirectManager::$plugin->backup->createBackup('restore');
             if (!$preRestoreBackup) {
                 $this->logWarning('No backup created before restore (no existing redirects to backup)');
             }
@@ -946,12 +995,31 @@ class ImportExportController extends Controller
 
             $this->logInfo('Backup restored', ['dirname' => basename($backupDir), 'count' => $restored]);
 
-            Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'Successfully restored {count} redirect(s) from backup', ['count' => $restored]));
-            return $this->redirect('redirect-manager/redirects');
+            $successMessage = Craft::t('redirect-manager', 'Successfully restored {count} redirect(s) from backup', ['count' => $restored]);
+            Craft::$app->getSession()->setNotice($successMessage);
+
+            if ($request->getAcceptsJson()) {
+                return $this->asJson([
+                    'success' => true,
+                    'message' => $successMessage,
+                    'restored' => $restored,
+                ]);
+            }
+
+            return $this->redirect('redirect-manager/backups');
         } catch (\Exception $e) {
             $this->logError('Restore failed', ['error' => $e->getMessage()]);
-            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to restore backup: {error}', ['error' => $e->getMessage()]));
-            return $this->redirect('redirect-manager/import-export');
+            $errorMessage = Craft::t('redirect-manager', 'Failed to restore backup: {error}', ['error' => $e->getMessage()]);
+            Craft::$app->getSession()->setError($errorMessage);
+
+            if ($request->getAcceptsJson()) {
+                return $this->asJson([
+                    'success' => false,
+                    'message' => $errorMessage,
+                ]);
+            }
+
+            return $this->redirect('redirect-manager/backups');
         }
     }
 
@@ -963,14 +1031,31 @@ class ImportExportController extends Controller
     public function actionDeleteBackup(): ?Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:manageImportExport');
+        $this->requireBackupPermission('redirectManager:deleteBackups');
 
-        $dirname = Craft::$app->getRequest()->getBodyParam('dirname');
-        $backupDir = $this->validateBackupDirname($dirname);
+        $request = Craft::$app->getRequest();
+        $settings = RedirectManager::$plugin->getSettings();
+        if (!$settings->backupEnabled) {
+            $message = Craft::t('redirect-manager', 'Backups are disabled in settings.');
+            if ($request->getAcceptsJson()) {
+                return $this->asJson(['success' => false, 'message' => $message]);
+            }
+            Craft::$app->getSession()->setError($message);
+            return $this->redirect('redirect-manager/import-export');
+        }
+
+        $dirname = $request->getBodyParam('dirname');
+        $backupDir = RedirectManager::$plugin->backup->validateBackupDirname($dirname);
 
         if ($backupDir === null) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backup not found'));
-            return $this->redirect('redirect-manager/import-export');
+            if ($request->getAcceptsJson()) {
+                return $this->asJson([
+                    'success' => false,
+                    'message' => Craft::t('redirect-manager', 'Backup not found'),
+                ]);
+            }
+            return $this->redirect('redirect-manager/backups');
         }
 
         try {
@@ -979,37 +1064,33 @@ class ImportExportController extends Controller
 
             $this->logInfo('Backup deleted', ['dirname' => basename($backupDir)]);
 
-            Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'Backup deleted successfully'));
-            return $this->redirect('redirect-manager/import-export#history');
+            $successMessage = Craft::t('redirect-manager', 'Backup deleted successfully');
+            Craft::$app->getSession()->setNotice($successMessage);
+
+            if ($request->getAcceptsJson()) {
+                return $this->asJson([
+                    'success' => true,
+                    'message' => $successMessage,
+                ]);
+            }
+
+            return $this->redirect('redirect-manager/backups');
         } catch (\Exception $e) {
             $this->logError('Delete backup failed', ['error' => $e->getMessage()]);
-            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to delete backup'));
-            return $this->redirect('redirect-manager/import-export');
+            $errorMessage = Craft::t('redirect-manager', 'Failed to delete backup: {error}', ['error' => $e->getMessage()]);
+            Craft::$app->getSession()->setError($errorMessage);
+
+            if ($request->getAcceptsJson()) {
+                return $this->asJson([
+                    'success' => false,
+                    'message' => $errorMessage,
+                ]);
+            }
+
+            return $this->redirect('redirect-manager/backups');
         }
     }
 
-    /**
-     * Sanitize a value for CSV export to prevent formula injection
-     *
-     * Values starting with =, +, -, @, tab, or carriage return can be
-     * interpreted as formulas by spreadsheet applications like Excel.
-     *
-     * @param mixed $value
-     * @return mixed
-     */
-    private function sanitizeCsvValue(mixed $value): mixed
-    {
-        if (!is_string($value)) {
-            return $value;
-        }
-
-        // Check for formula injection characters
-        if (preg_match('/^[=+\-@\t\r]/', $value)) {
-            return "'" . $value;
-        }
-
-        return $value;
-    }
 
     /**
      * Strip formula escape prefix from imported values
@@ -1028,5 +1109,106 @@ class ImportExportController extends Controller
         }
 
         return $value;
+    }
+
+    /**
+     * Require any backup-related permission (view access)
+     *
+     * @return void
+     * @since 5.23.0
+     */
+    private function requireAnyBackupPermission(): void
+    {
+        $user = Craft::$app->getUser();
+        $hasAccess =
+            $user->checkPermission('redirectManager:manageBackups') ||
+            $user->checkPermission('redirectManager:createBackups') ||
+            $user->checkPermission('redirectManager:downloadBackups') ||
+            $user->checkPermission('redirectManager:restoreBackups') ||
+            $user->checkPermission('redirectManager:deleteBackups');
+
+        if (!$hasAccess) {
+            throw new ForbiddenHttpException('User does not have permission to manage backups');
+        }
+    }
+
+    /**
+     * Require a specific backup permission (or manageBackups)
+     *
+     * @param string $permission
+     * @return void
+     * @since 5.23.0
+     */
+    private function requireBackupPermission(string $permission): void
+    {
+        $user = Craft::$app->getUser();
+        if (!$user->checkPermission('redirectManager:manageBackups') && !$user->checkPermission($permission)) {
+            throw new ForbiddenHttpException('User does not have permission to manage backups');
+        }
+    }
+
+    /**
+     * Check if user can import redirects
+     *
+     * @return bool
+     * @since 5.23.0
+     */
+    private function canImport(): bool
+    {
+        $user = Craft::$app->getUser();
+        return $user->checkPermission('redirectManager:manageImportExport') ||
+            $user->checkPermission('redirectManager:importRedirects');
+    }
+
+    /**
+     * Check if user can export redirects
+     *
+     * @return bool
+     * @since 5.23.0
+     */
+    private function canExport(): bool
+    {
+        $user = Craft::$app->getUser();
+        return $user->checkPermission('redirectManager:manageImportExport') ||
+            $user->checkPermission('redirectManager:exportRedirects');
+    }
+
+    /**
+     * Require import permission (legacy manageImportExport or importRedirects)
+     *
+     * @return void
+     * @since 5.23.0
+     */
+    private function requireImportPermission(): void
+    {
+        if (!$this->canImport()) {
+            throw new ForbiddenHttpException('User does not have permission to import redirects');
+        }
+    }
+
+    /**
+     * Require export permission (legacy manageImportExport or exportRedirects)
+     *
+     * @return void
+     * @since 5.23.0
+     */
+    private function requireExportPermission(): void
+    {
+        if (!$this->canExport()) {
+            throw new ForbiddenHttpException('User does not have permission to export redirects');
+        }
+    }
+
+    /**
+     * Require any import/export permission for the main page
+     *
+     * @return void
+     * @since 5.23.0
+     */
+    private function requireAnyImportExportPermission(): void
+    {
+        if (!$this->canImport() && !$this->canExport()) {
+            throw new ForbiddenHttpException('User does not have permission to manage import/export');
+        }
     }
 }

@@ -30,42 +30,100 @@
 
         <h2 style="margin-top: 0px;">{{ "Backup Settings"|t('redirect-manager') }}</h2>
 
-        {# Asset volume selection dropdown for backups #}
-        {% set volumeOptions = [{label: 'Use custom path'|t('redirect-manager'), value: ''}] %}
-        {% for volume in craft.app.volumes.getAllVolumes() %}
-            {% set volumeOptions = volumeOptions|merge([{
-                label: volume.name,
-                value: volume.uid
-            }]) %}
-        {% endfor %}
-
-        {{ forms.selectField({
-            label: "Backup Storage Volume"|t('redirect-manager'),
-            instructions: "Select an asset volume or use a custom path for storing backups."|t('redirect-manager'),
-            id: 'backupVolumeUid',
-            name: 'settings[backupVolumeUid]',
-            options: volumeOptions,
-            value: settings.backupVolumeUid ?? '',
-            disabled: settings.isOverriddenByConfig('backupVolumeUid'),
-            warning: settings.isOverriddenByConfig('backupVolumeUid') ?
-                "This is being overridden by the <code>backupVolumeUid</code> setting in <code>config/redirect-manager.php</code>."|raw : null,
+        {{ forms.lightswitchField({
+            label: "Enable Backups"|t('redirect-manager'),
+            instructions: "Enable automatic backup functionality for redirects"|t('redirect-manager'),
+            id: 'backupEnabled',
+            name: 'settings[backupEnabled]',
+            on: settings.backupEnabled,
+            toggle: 'backup-settings',
+            disabled: settings.isOverriddenByConfig('backupEnabled'),
+            warning: settings.isOverriddenByConfig('backupEnabled') ?
+                "This is being overridden by the <code>backupEnabled</code> setting in <code>config/redirect-manager.php</code>."|raw : null,
         }) }}
 
-        <div id="custom-backup-path" class="{{ settings.backupVolumeUid ? 'hidden' }}">
-            {{ forms.autosuggestField({
-                label: "Custom Backup Path"|t('redirect-manager'),
-                instructions: "The custom path where backups should be stored (only used when no volume is selected)"|t('redirect-manager'),
-                tip: "Use Craft path aliases: <code>@storage/redirect-manager/backups</code> (recommended) or <code>@root/backups/redirect-manager</code>. Paths must be outside webroot for security. Environment variables like <code>$ENV_VAR</code> are supported."|t('redirect-manager')|raw,
-                id: 'backupPath',
-                name: 'settings[backupPath]',
-                value: settings.backupPath,
-                errors: settings.getErrors('backupPath'),
-                required: not settings.backupVolumeUid,
-                suggestEnvVars: true,
-                disabled: settings.isOverriddenByConfig('backupPath'),
-                warning: settings.isOverriddenByConfig('backupPath') ?
-                    "This is being overridden by the <code>backupPath</code> setting in <code>config/redirect-manager.php</code>."|raw : null,
+        <div id="backup-settings" class="{{ not settings.backupEnabled ? 'hidden' }}">
+            {{ forms.lightswitchField({
+                label: "Backup Before Import"|t('redirect-manager'),
+                instructions: "Automatically create a backup before importing CSV files"|t('redirect-manager'),
+                id: 'backupOnImport',
+                name: 'settings[backupOnImport]',
+                on: settings.backupOnImport,
+                disabled: settings.isOverriddenByConfig('backupOnImport'),
+                warning: settings.isOverriddenByConfig('backupOnImport') ?
+                    "This is being overridden by the <code>backupOnImport</code> setting in <code>config/redirect-manager.php</code>."|raw : null,
             }) }}
+
+            {{ forms.selectField({
+                label: "Backup Schedule"|t('redirect-manager'),
+                instructions: "How often to create automatic backups. Uses Craft's queue if running, or set up a cron job:"|t('redirect-manager') ~ '<br><code style="display: inline-block; margin-top: 4px;">craft redirect-manager/backup/scheduled</code>',
+                id: 'backupSchedule',
+                name: 'settings[backupSchedule]',
+                value: settings.backupSchedule,
+                options: [
+                    { label: 'Manual Only', value: 'manual' },
+                    { label: 'Daily', value: 'daily' },
+                    { label: 'Weekly', value: 'weekly' },
+                    { label: 'Monthly', value: 'monthly' },
+                ],
+                errors: settings.getErrors('backupSchedule'),
+                disabled: settings.isOverriddenByConfig('backupSchedule'),
+                warning: settings.isOverriddenByConfig('backupSchedule') ?
+                    "This is being overridden by the <code>backupSchedule</code> setting in <code>config/redirect-manager.php</code>."|raw : null,
+            }) }}
+
+            {{ forms.textField({
+                label: "Retention Period"|t('redirect-manager'),
+                instructions: "Number of days to keep automatic backups (0 = keep forever). Manual backups are never deleted automatically."|t('redirect-manager'),
+                id: 'backupRetentionDays',
+                name: 'settings[backupRetentionDays]',
+                value: settings.backupRetentionDays,
+                errors: settings.getErrors('backupRetentionDays'),
+                type: 'number',
+                min: 0,
+                max: 365,
+                disabled: settings.isOverriddenByConfig('backupRetentionDays'),
+                warning: settings.isOverriddenByConfig('backupRetentionDays') ?
+                    "This is being overridden by the <code>backupRetentionDays</code> setting in <code>config/redirect-manager.php</code>."|raw : null,
+            }) }}
+
+            {# Asset volume selection dropdown for backups #}
+            {% set volumeOptions = [{label: 'Use custom path'|t('redirect-manager'), value: ''}] %}
+            {% for volume in craft.app.volumes.getAllVolumes() %}
+                {% set volumeOptions = volumeOptions|merge([{
+                    label: volume.name,
+                    value: volume.uid
+                }]) %}
+            {% endfor %}
+
+            {{ forms.selectField({
+                label: "Backup Storage Volume"|t('redirect-manager'),
+                instructions: "Select an asset volume or use a custom path for storing backups."|t('redirect-manager'),
+                id: 'backupVolumeUid',
+                name: 'settings[backupVolumeUid]',
+                options: volumeOptions,
+                value: settings.backupVolumeUid ?? '',
+                disabled: settings.isOverriddenByConfig('backupVolumeUid'),
+                warning: settings.isOverriddenByConfig('backupVolumeUid') ?
+                    "This is being overridden by the <code>backupVolumeUid</code> setting in <code>config/redirect-manager.php</code>."|raw : null,
+            }) }}
+
+            <div id="custom-backup-path" class="{{ settings.backupVolumeUid ? 'hidden' }}">
+                {{ forms.autosuggestField({
+                    label: "Custom Backup Path"|t('redirect-manager'),
+                    instructions: "The custom path where backups should be stored (only used when no volume is selected)"|t('redirect-manager'),
+                    tip: "Use Craft path aliases: <code>@storage/redirect-manager/backups</code> (recommended) or <code>@root/backups/redirect-manager</code>. Paths must be outside webroot for security. Environment variables like <code>$ENV_VAR</code> are supported."|t('redirect-manager')|raw,
+                    id: 'backupPath',
+                    name: 'settings[backupPath]',
+                    value: settings.backupPath,
+                    errors: settings.getErrors('backupPath'),
+                    required: not settings.backupVolumeUid,
+                    suggestEnvVars: true,
+                    disabled: settings.isOverriddenByConfig('backupPath'),
+                    warning: settings.isOverriddenByConfig('backupPath') ?
+                        "This is being overridden by the <code>backupPath</code> setting in <code>config/redirect-manager.php</code>."|raw : null,
+                }) }}
+            </div>
         </div>
 
         <div class="buttons">
@@ -74,15 +132,9 @@
     </form>
 
     {% set backupPath = settings.getBackupPath() %}
-    <div style="margin-top: 2rem; padding: 1rem; background: #f3f4f6; border-radius: 4px;">
-        <p class="light" style="margin: 0; display: flex; align-items: flex-start; gap: 8px;">
-            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" style="flex-shrink: 0; margin-top: 2px;">
-                <circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                <text x="8" y="12" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor">i</text>
-            </svg>
-            <span><strong>{{ "Backup Location:"|t('redirect-manager') }}</strong> <code>{{ backupPath }}</code></span>
-        </p>
-    </div>
+    {% include 'lindemannrock-base/_components/info-box' with {
+        message: '<strong>' ~ "Backup Location:"|t('redirect-manager') ~ '</strong> <code>' ~ backupPath ~ '</code>'
+    } %}
 
     {% include 'lindemannrock-base/_components/plugin-credit' %}
 {% endblock %}

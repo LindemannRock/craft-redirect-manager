@@ -10,32 +10,45 @@
 
 ] %}
 
-{% set tabs = {
-    importExport: {
-        label: 'Import/Export'|t('redirect-manager'),
-        url: '#import-export',
-    },
-    history: {
-        label: 'Backup History'|t('redirect-manager'),
-        url: '#history',
-    },
-} %}
+{% set tabs = {} %}
+{% if canImport or canExport %}
+    {% set tabs = tabs|merge({
+        importExport: {
+            label: 'Import/Export'|t('redirect-manager'),
+            url: '#import-export',
+        },
+    }) %}
+{% endif %}
+{% if canImport %}
+    {% set tabs = tabs|merge({
+        importHistory: {
+            label: 'Import History'|t('redirect-manager'),
+            url: '#import-history',
+        },
+    }) %}
+{% endif %}
 
 {% import "_includes/forms" as forms %}
+
+{% set canCreateBackup = currentUser.can('redirectManager:manageBackups') or currentUser.can('redirectManager:createBackups') %}
 
 {% block content %}
 	<div id="import-export">
 		<h2 style="margin-top: 0px;">{{ "Export Redirects"|t('redirect-manager') }}</h2>
 
-		<p>{{ "Download all your current redirects as a CSV file for backup or migration to another site."|t('redirect-manager') }}</p>
+		{% if canExport %}
+			<p>{{ "Download all your current redirects as a CSV file for backup or migration to another site."|t('redirect-manager') }}</p>
 
-		<form method="post" action="{{ actionUrl('redirect-manager/import-export/export') }}" style="margin-bottom: 50px;">
-			{{ csrfInput() }}
+			<form method="post" action="{{ actionUrl('redirect-manager/import-export/export') }}" style="margin-bottom: 50px;">
+				{{ csrfInput() }}
 
-			<button type="submit" class="btn secondary">
-				{{ "Export All Redirects as CSV"|t('redirect-manager') }}
-			</button>
-		</form>
+				<button type="submit" class="btn secondary">
+					{{ "Export All Redirects as CSV"|t('redirect-manager') }}
+				</button>
+			</form>
+		{% else %}
+			<p class="light">{{ "You do not have permission to export redirects."|t('redirect-manager') }}</p>
+		{% endif %}
 
 		<hr>
 
@@ -86,127 +99,81 @@
 "^/legacy-(.*)","$1","301","regex"</pre>
 		{% endset %}
 
-		<div class="field">
-			<div class="heading">
-				<label>{{ "Import from CSV"|t('redirect-manager') }}</label>
-				<span class="info">{{ csvFormatTip|raw }}</span>
-				<div class="instructions">
-					<p>{{ "Import redirects from a CSV file. You'll be able to map columns and preview before importing."|t('redirect-manager') }}</p>
-				</div>
-			</div>
-		</div>
-
-		<form method="post" action="{{ actionUrl('redirect-manager/import-export/upload') }}" enctype="multipart/form-data" id="uploadForm">
-			{{ csrfInput() }}
-
-			{{ forms.fileField({
-            label: 'CSV File'|t('redirect-manager'),
-            instructions: 'Select a CSV file to import redirects'|t('redirect-manager'),
-            id: 'csvFile',
-            name: 'csvFile',
-            required: true,
-        }) }}
-
-			{{ forms.selectField({
-            label: 'CSV Delimiter'|t('redirect-manager'),
-            instructions: 'Character used to separate values in your CSV'|t('redirect-manager'),
-            id: 'delimiter',
-            name: 'delimiter',
-            value: ',',
-            options: {
-                ',': 'Comma (,)'|t('redirect-manager'),
-                ';': 'Semicolon (;)'|t('redirect-manager'),
-                "\t": 'Tab'|t('redirect-manager'),
-                '|': 'Pipe (|)'|t('redirect-manager'),
-            },
-            required: true,
-        }) }}
-
-			{{ forms.lightswitchField({
-            label: 'Create Backup Before Import'|t('redirect-manager'),
-            instructions: 'Automatically backup existing redirects before importing (recommended)'|t('redirect-manager'),
-            id: 'createBackup',
-            name: 'createBackup',
-            on: true,
-        }) }}
-
-			<div class="buttons">
-				<button type="submit" class="btn submit">{{ "Upload & Map Columns"|t('redirect-manager') }}</button>
-			</div>
-		</form>
+		{% if canImport %}
+		{% include 'lindemannrock-base/_partials/import-csv' with {
+			action: actionUrl('redirect-manager/import-export/upload'),
+			formId: 'uploadForm',
+			title: 'Import from CSV'|t('redirect-manager'),
+			description: "Import redirects from a CSV file. You'll be able to map columns and preview before importing."|t('redirect-manager'),
+			csvFormatTip: csvFormatTip,
+			fileLabel: 'CSV File'|t('redirect-manager'),
+			fileInstructions: 'Select a CSV file to import redirects'|t('redirect-manager'),
+			delimiterLabel: 'CSV Delimiter'|t('redirect-manager'),
+			delimiterInstructions: 'Character used to separate values in your CSV (auto-detect is default)'|t('redirect-manager'),
+			delimiterValue: 'auto',
+			delimiterOptions: {
+				'auto': 'Auto (detect)'|t('redirect-manager'),
+				',': 'Comma (,)'|t('redirect-manager'),
+				';': 'Semicolon (;)'|t('redirect-manager'),
+				"\t": 'Tab'|t('redirect-manager'),
+				'|': 'Pipe (|)'|t('redirect-manager'),
+			},
+			showBackupToggle: canCreateBackup,
+			backupLabel: 'Create Backup Before Import'|t('redirect-manager'),
+			backupInstructions: 'Automatically backup existing redirects before importing (recommended)'|t('redirect-manager'),
+			backupEnabled: settings.backupEnabled,
+			backupOnImport: settings.backupOnImport,
+			backupWarning: 'Backups are disabled in settings.'|t('redirect-manager'),
+			submitLabel: 'Upload & Map Columns'|t('redirect-manager'),
+		} %}
+		{% else %}
+			<p class="light">{{ "You do not have permission to import redirects."|t('redirect-manager') }}</p>
+		{% endif %}
 	</div>
 
-	<div id="history" class="hidden">
-		<h2>{{ "Backup History"|t('redirect-manager') }}</h2>
-		<p>{{ "Backups are automatically created when you import redirects (if enabled). You can restore or download any backup."|t('redirect-manager') }}</p>
+	{% if canImport %}
+	<div id="import-history" class="hidden">
+		<h2>{{ "Import History"|t('redirect-manager') }}</h2>
+		<p>{{ "Recent CSV imports and their results."|t('redirect-manager') }}</p>
 
-		{% if backups|length > 0 %}
+		{% if importHistory|length > 0 %}
 			<table class="data fullwidth">
 				<thead>
 					<tr>
 						<th>{{ "Date"|t('redirect-manager') }}</th>
 						<th>{{ "Created By"|t('redirect-manager') }}</th>
-						<th>{{ "Redirect Count"|t('redirect-manager') }}</th>
+						<th>{{ "Filename"|t('redirect-manager') }}</th>
 						<th>{{ "Size"|t('redirect-manager') }}</th>
-						<th class="thin">{{ "Actions"|t('redirect-manager') }}</th>
+						<th>{{ "Imported"|t('redirect-manager') }}</th>
+						<th>{{ "Failed"|t('redirect-manager') }}</th>
+						<th>{{ "Backup"|t('redirect-manager') }}</th>
 					</tr>
 				</thead>
 				<tbody>
-					{% for backup in backups %}
+					{% for item in importHistory %}
 						<tr>
-							<td>{{ backup.date|replace('_', ' ') }}</td>
-							<td>{{ backup.user }}</td>
-							<td style="color: #28a745;">
-								<strong>{{ backup.redirectCount }}</strong>
-							</td>
-							<td><code style="font-size: 11px;">{{ backup.formattedSize }}</code></td>
-							<td class="thin">
-								<button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('redirect-manager') }}"></button>
-								<div class="menu" data-align="right">
-									<ul>
-										<li>
-											<a href="#" class="restore-backup" data-dirname="{{ backup.dirname }}" data-date="{{ backup.date }}">
-												<span class="icon" aria-hidden="true">{{ svg('@appicons/share.svg') }}</span>
-												{{ "Restore"|t('redirect-manager') }}
-											</a>
-										</li>
-										<li>
-											<a href="{{ actionUrl('redirect-manager/import-export/download-backup', {dirname: backup.dirname}) }}">
-												<span class="icon" aria-hidden="true">{{ svg('@appicons/download.svg') }}</span>
-												{{ "Download ZIP"|t('redirect-manager') }}
-											</a>
-										</li>
-										<li><hr></li>
-										<li>
-											<a href="#" class="delete-backup error" data-dirname="{{ backup.dirname }}">
-												<span class="icon" aria-hidden="true">{{ svg('@appicons/trash.svg') }}</span>
-												{{ "Delete"|t('redirect-manager') }}
-											</a>
-										</li>
-									</ul>
-								</div>
+							<td>{{ item.date|datetime('short') }}</td>
+							<td>{{ item.user }}</td>
+							<td>{{ item.filename ?? '-' }}</td>
+							<td><code style="font-size: 11px;">{{ item.formattedSize }}</code></td>
+							<td><strong>{{ item.imported }}</strong></td>
+							<td>{{ item.failed }}</td>
+							<td>
+								{% if item.backupPath %}
+									<a href="{{ url('redirect-manager/backups') }}" class="go">{{ item.backupPath }}</a>
+								{% else %}
+									-
+								{% endif %}
 							</td>
 						</tr>
 					{% endfor %}
 				</tbody>
 			</table>
-		{% else %}
-			<p class="light" style="text-align: center; padding: 40px;">{{ "No backup history yet. Backups are created automatically when you import redirects."|t('redirect-manager') }}</p>
-		{% endif %}
-
-		<div style="margin-top: 2rem; padding: 1rem; background: #f3f4f6; border-radius: 4px;">
-			<p class="light" style="margin: 0; display: flex; align-items: flex-start; gap: 8px;">
-				<svg aria-hidden="true" width="16" height="16" viewbox="0 0 16 16" style="flex-shrink: 0; margin-top: 2px;">
-					<circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/>
-					<text x="8" y="12" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor">i</text>
-				</svg>
-				<span>
-					<strong>{{ "Import Backup Location:"|t('redirect-manager') }}</strong>
-					<code>{{ craft.redirectManager.plugin.settings.getBackupPath() }}/imports</code>
-				</span>
-			</p>
-		</div>
+	{% else %}
+			<p class="light" style="text-align: center; padding: 40px;">{{ "No import history yet."|t('redirect-manager') }}</p>
+	{% endif %}
 	</div>
+	{% endif %}
 
 	{% include 'lindemannrock-base/_components/plugin-credit' %}
 
@@ -219,67 +186,6 @@
             new Craft.MenuBtn(btn);
         } else if (typeof Garnish !== 'undefined' && Garnish.MenuBtn) {
             new Garnish.MenuBtn(btn);
-        }
-    });
-
-    // Handle restore backup using event delegation
-    document.body.addEventListener('click', function(e) {
-        const target = e.target.closest('.restore-backup');
-        if (target) {
-            e.preventDefault();
-            const dirname = target.getAttribute('data-dirname');
-            const date = target.getAttribute('data-date');
-
-            if (confirm('Restore backup from ' + date + '? This will DELETE all current redirects and restore from the backup.')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '{{ actionUrl('redirect-manager/import-export/restore-backup') }}';
-
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '{{ craft.app.config.general.csrfTokenName }}';
-                csrfInput.value = '{{ craft.app.request.csrfToken }}';
-                form.appendChild(csrfInput);
-
-                const dirnameInput = document.createElement('input');
-                dirnameInput.type = 'hidden';
-                dirnameInput.name = 'dirname';
-                dirnameInput.value = dirname;
-                form.appendChild(dirnameInput);
-
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
-    });
-
-    // Handle delete backup using event delegation
-    document.body.addEventListener('click', function(e) {
-        const target = e.target.closest('.delete-backup');
-        if (target) {
-            e.preventDefault();
-            const dirname = target.getAttribute('data-dirname');
-
-            if (confirm('Delete this backup? This cannot be undone.')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '{{ actionUrl('redirect-manager/import-export/delete-backup') }}';
-
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '{{ craft.app.config.general.csrfTokenName }}';
-                csrfInput.value = '{{ craft.app.request.csrfToken }}';
-                form.appendChild(csrfInput);
-
-                const dirnameInput = document.createElement('input');
-                dirnameInput.type = 'hidden';
-                dirnameInput.name = 'dirname';
-                dirnameInput.value = dirname;
-                form.appendChild(dirnameInput);
-
-                document.body.appendChild(form);
-                form.submit();
-            }
         }
     });
 {% endjs %}

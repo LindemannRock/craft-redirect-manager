@@ -32,8 +32,10 @@ use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\logginglibrary\LoggingLibrary;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\jobs\CleanupAnalyticsJob;
+use lindemannrock\redirectmanager\jobs\CreateBackupJob;
 use lindemannrock\redirectmanager\models\Settings;
 use lindemannrock\redirectmanager\services\AnalyticsService;
+use lindemannrock\redirectmanager\services\BackupService;
 use lindemannrock\redirectmanager\services\DeviceDetectionService;
 use lindemannrock\redirectmanager\services\MatchingService;
 use lindemannrock\redirectmanager\services\RedirectsService;
@@ -54,6 +56,7 @@ use yii\base\Event;
  * @property-read AnalyticsService $analytics
  * @property-read MatchingService $matching
  * @property-read DeviceDetectionService $deviceDetection
+ * @property-read BackupService $backup
  * @property-read Settings $settings
  * @method Settings getSettings()
  */
@@ -123,10 +126,12 @@ class RedirectManager extends Plugin
             'analytics' => AnalyticsService::class,
             'matching' => MatchingService::class,
             'deviceDetection' => DeviceDetectionService::class,
+            'backup' => BackupService::class,
         ]);
 
         // Schedule analytics cleanup if retention is enabled
         $this->scheduleAnalyticsCleanup();
+        $this->scheduleBackupJob();
 
         // Register translations
         Craft::$app->i18n->translations['redirect-manager'] = [
@@ -219,6 +224,25 @@ class RedirectManager extends Plugin
     /**
      * @inheritdoc
      */
+    public function setSettings(array|Model $settings): void
+    {
+        $oldSettings = $this->getSettings();
+        parent::setSettings($settings);
+
+        if ($settings instanceof Settings) {
+            $settings->saveToDatabase();
+
+            if ($oldSettings->backupEnabled !== $settings->backupEnabled ||
+                $oldSettings->backupSchedule !== $settings->backupSchedule
+            ) {
+                $this->handleBackupScheduleChange($settings);
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCpNavItem(): ?array
     {
         $item = parent::getCpNavItem();
@@ -227,12 +251,22 @@ class RedirectManager extends Plugin
         // Check if user has view access to each section
         $hasRedirectsAccess = $user->checkPermission('redirectManager:viewRedirects');
         $hasAnalyticsAccess = $user->checkPermission('redirectManager:viewAnalytics');
-        $hasImportExportAccess = $user->checkPermission('redirectManager:manageImportExport');
+        $hasImportExportAccess = $user->checkPermission('redirectManager:manageImportExport') ||
+            $user->checkPermission('redirectManager:importRedirects') ||
+            $user->checkPermission('redirectManager:exportRedirects');
+        $hasBackupAccess = $user->checkPermission('redirectManager:manageBackups');
         $hasLogsAccess = $user->checkPermission('redirectManager:viewLogs');
         $hasSettingsAccess = $user->checkPermission('redirectManager:manageSettings');
 
         // If no access at all, hide the plugin from nav
-        if (!$hasRedirectsAccess && !$hasAnalyticsAccess && !$hasImportExportAccess && !$hasLogsAccess && !$hasSettingsAccess) {
+        if (
+            !$hasRedirectsAccess &&
+            !$hasAnalyticsAccess &&
+            !$hasImportExportAccess &&
+            !$hasBackupAccess &&
+            !$hasLogsAccess &&
+            !$hasSettingsAccess
+        ) {
             return null;
         }
 
@@ -263,6 +297,13 @@ class RedirectManager extends Plugin
                 $item['subnav']['import-export'] = [
                     'label' => Craft::t('redirect-manager', 'Import/Export'),
                     'url' => 'redirect-manager/import-export',
+                ];
+            }
+
+            if ($hasBackupAccess && $this->getSettings()->backupEnabled) {
+                $item['subnav']['backups'] = [
+                    'label' => Craft::t('redirect-manager', 'Backups'),
+                    'url' => 'redirect-manager/backups',
                 ];
             }
 
@@ -363,6 +404,7 @@ class RedirectManager extends Plugin
             'redirect-manager/import-export/map' => 'redirect-manager/import-export/map',
             'redirect-manager/import-export/preview' => 'redirect-manager/import-export/preview',
             'redirect-manager/import-export/export' => 'redirect-manager/import-export/export',
+            'redirect-manager/backups' => 'redirect-manager/import-export/backups',
 
             // Settings routes
             'redirect-manager/settings' => 'redirect-manager/settings/index',
@@ -402,6 +444,31 @@ class RedirectManager extends Plugin
             ],
             'redirectManager:manageImportExport' => [
                 'label' => Craft::t('redirect-manager', 'Manage import/export'),
+                'nested' => [
+                    'redirectManager:importRedirects' => [
+                        'label' => Craft::t('redirect-manager', 'Import {plural}', ['plural' => $plural]),
+                    ],
+                    'redirectManager:exportRedirects' => [
+                        'label' => Craft::t('redirect-manager', 'Export {plural}', ['plural' => $plural]),
+                    ],
+                ],
+            ],
+            'redirectManager:manageBackups' => [
+                'label' => Craft::t('redirect-manager', 'Manage backups'),
+                'nested' => [
+                    'redirectManager:createBackups' => [
+                        'label' => Craft::t('redirect-manager', 'Create backups'),
+                    ],
+                    'redirectManager:downloadBackups' => [
+                        'label' => Craft::t('redirect-manager', 'Download backups'),
+                    ],
+                    'redirectManager:restoreBackups' => [
+                        'label' => Craft::t('redirect-manager', 'Restore backups'),
+                    ],
+                    'redirectManager:deleteBackups' => [
+                        'label' => Craft::t('redirect-manager', 'Delete backups'),
+                    ],
+                ],
             ],
             'redirectManager:viewAnalytics' => [
                 'label' => Craft::t('redirect-manager', 'View analytics'),
@@ -459,6 +526,107 @@ class RedirectManager extends Plugin
                 $this->logInfo('Scheduled initial analytics cleanup job', ['interval' => '24 hours']);
             }
         }
+    }
+
+    /**
+     * Schedule backup job if enabled
+     * Called on every plugin init to ensure job is always in queue
+     *
+     * @since 5.23.0
+     */
+    private function scheduleBackupJob(): void
+    {
+        $settings = $this->getSettings();
+
+        if (!$settings->backupEnabled || $settings->backupSchedule === 'manual') {
+            return;
+        }
+
+        $existingJob = (new \craft\db\Query())
+            ->from('{{%queue}}')
+            ->where(['like', 'job', 'redirectmanager'])
+            ->andWhere(['like', 'job', 'CreateBackupJob'])
+            ->exists();
+
+        if (!$existingJob) {
+            $delay = match ($settings->backupSchedule) {
+                'daily' => 86400,
+                'weekly' => 604800,
+                'monthly' => 2592000,
+                default => 86400,
+            };
+
+            $job = new CreateBackupJob([
+                'reason' => 'scheduled',
+                'reschedule' => true,
+            ]);
+
+            Craft::$app->getQueue()->delay($delay)->push($job);
+
+            $this->logInfo('Scheduled initial backup job', [
+                'delay_seconds' => $delay,
+                'schedule' => $settings->backupSchedule,
+            ]);
+        }
+    }
+
+    /**
+     * Handle backup schedule changes when settings are saved
+     *
+     * @since 5.23.0
+     */
+    private function handleBackupScheduleChange(Settings $settings): void
+    {
+        if (!$settings->backupEnabled || $settings->backupSchedule === 'manual') {
+            $this->cancelScheduledBackupJobs();
+            $this->logInfo('Backup scheduling disabled');
+            return;
+        }
+
+        $existingJob = (new \craft\db\Query())
+            ->from('{{%queue}}')
+            ->where(['like', 'job', 'redirectmanager'])
+            ->andWhere(['like', 'job', 'CreateBackupJob'])
+            ->andWhere(['fail' => false])
+            ->andWhere(['timePushed' => null])
+            ->exists();
+
+        if ($existingJob) {
+            $this->logInfo('Scheduled backup job already exists, not creating a new one');
+            return;
+        }
+
+        $delay = match ($settings->backupSchedule) {
+            'daily' => 86400,
+            'weekly' => 604800,
+            'monthly' => 2592000,
+            default => 86400,
+        };
+
+        $job = new CreateBackupJob([
+            'reason' => 'scheduled',
+            'reschedule' => true,
+        ]);
+
+        Craft::$app->getQueue()->delay($delay)->push($job);
+
+        $this->logInfo('Scheduled backup job queued', ['schedule' => $settings->backupSchedule]);
+    }
+
+    /**
+     * Cancel any existing scheduled backup jobs
+     *
+     * @since 5.23.0
+     */
+    private function cancelScheduledBackupJobs(): void
+    {
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%queue}}', [
+                'and',
+                ['like', 'job', 'redirectmanager'],
+                ['like', 'job', 'CreateBackupJob'],
+            ])
+            ->execute();
     }
 
     /**

@@ -185,12 +185,36 @@ class Settings extends Model
     /**
      * @var string Local filesystem path for storing import backups
      */
-    public string $backupPath = '@storage/redirect-manager/backups/imports';
+    public string $backupPath = '@storage/redirect-manager/backups';
 
     /**
      * @var string|null Optional asset volume UID for storing backups
      */
     public ?string $backupVolumeUid = null;
+
+    /**
+     * @var bool Whether to enable automatic backups
+     * @since 5.23.0
+     */
+    public bool $backupEnabled = true;
+
+    /**
+     * @var bool Whether to create a backup before importing
+     * @since 5.23.0
+     */
+    public bool $backupOnImport = true;
+
+    /**
+     * @var string Backup schedule (manual, daily, weekly, monthly)
+     * @since 5.23.0
+     */
+    public string $backupSchedule = 'manual';
+
+    /**
+     * @var int Number of days to keep automatic backups (0 = keep forever)
+     * @since 5.23.0
+     */
+    public int $backupRetentionDays = 30;
 
     /**
      * @inheritdoc
@@ -252,6 +276,8 @@ class Settings extends Model
             'enableApiEndpoint',
             'enableRedirectCache',
             'cacheDeviceDetection',
+            'backupEnabled',
+            'backupOnImport',
         ];
     }
 
@@ -268,6 +294,7 @@ class Settings extends Model
             'redirectCacheDuration',
             'undoWindowMinutes',
             'deviceDetectionCacheDuration',
+            'backupRetentionDays',
         ];
     }
 
@@ -331,6 +358,8 @@ class Settings extends Model
                     'stripQueryStringFromStats',
                     'autoTrimAnalytics',
                     'enableApiEndpoint',
+                    'backupEnabled',
+                    'backupOnImport',
                 ],
                 'boolean',
             ],
@@ -365,6 +394,8 @@ class Settings extends Model
             ['backupPath', 'string'],
             ['backupPath', 'validateBackupPath'],
             ['backupVolumeUid', 'string'],
+            ['backupRetentionDays', 'integer', 'min' => 0, 'max' => 365],
+            ['backupSchedule', 'in', 'range' => ['manual', 'daily', 'weekly', 'monthly']],
         ];
     }
 
