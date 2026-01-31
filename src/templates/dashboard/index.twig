@@ -236,6 +236,7 @@
         {% include 'lindemannrock-base/_components/export-menu' with {
             action: 'redirect-manager/analytics/export',
             permission: 'redirectManager:exportAnalytics',
+            pluginHandle: pluginHandle,
             selectionAware: true,
             idsParam: 'analyticIds',
             extraParams: {dateRange: 'all'},

@@ -10,6 +10,7 @@ namespace lindemannrock\redirectmanager\services;
 
 use craft\base\Component;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
+use lindemannrock\redirectmanager\RedirectManager;
 
 /**
  * Matching Service
@@ -30,7 +31,7 @@ class MatchingService extends Component
     public function init(): void
     {
         parent::init();
-        $this->setLoggingHandle('redirect-manager');
+        $this->setLoggingHandle(RedirectManager::$plugin->id);
     }
 
     /**

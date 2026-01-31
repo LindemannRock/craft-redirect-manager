@@ -46,7 +46,7 @@ class CreateBackupJob extends BaseJob
     public function init(): void
     {
         parent::init();
-        $this->setLoggingHandle('redirect-manager');
+        $this->setLoggingHandle(RedirectManager::$plugin->id);
 
         if ($this->reschedule && !$this->nextRunTime) {
             $settings = RedirectManager::getInstance()->getSettings();

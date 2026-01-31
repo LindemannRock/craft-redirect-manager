@@ -37,7 +37,7 @@ class DeviceDetectionService extends Component
     public function init(): void
     {
         parent::init();
-        $this->setLoggingHandle('redirect-manager');
+        $this->setLoggingHandle(RedirectManager::$plugin->id);
     }
 
     /**

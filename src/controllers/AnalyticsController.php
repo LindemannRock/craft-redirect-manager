@@ -10,6 +10,7 @@ namespace lindemannrock\redirectmanager\controllers;
 
 use Craft;
 use craft\web\Controller;
+use lindemannrock\base\helpers\DateRangeHelper;
 use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
@@ -80,7 +81,7 @@ class AnalyticsController extends Controller
     public function init(): void
     {
         parent::init();
-        $this->setLoggingHandle('redirect-manager');
+        $this->setLoggingHandle(RedirectManager::$plugin->id);
     }
 
     /**
@@ -295,7 +296,7 @@ class AnalyticsController extends Controller
         $request = Craft::$app->getRequest();
         $siteId = $request->getQueryParam('siteId');
         $siteId = $siteId ? (int)$siteId : null; // Convert empty string to null
-        $dateRange = $request->getQueryParam('dateRange', 'last30days');
+        $dateRange = $request->getQueryParam('dateRange', DateRangeHelper::getDefaultDateRange(RedirectManager::$plugin->id));
 
         // Convert date range to days
         $days = $this->_convertDateRangeToDays($dateRange);
@@ -705,7 +706,7 @@ class AnalyticsController extends Controller
         $request = Craft::$app->getRequest();
         $siteId = $request->getBodyParam('siteId');
         $siteId = $siteId ? (int)$siteId : null; // Convert empty string to null
-        $dateRange = $request->getBodyParam('dateRange', 'last30days');
+        $dateRange = $request->getBodyParam('dateRange', DateRangeHelper::getDefaultDateRange(RedirectManager::$plugin->id));
         $type = $request->getBodyParam('type', 'summary');
 
         // Convert date range to days

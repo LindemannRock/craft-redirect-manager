@@ -42,7 +42,7 @@ class CleanupAnalyticsJob extends BaseJob
     public function init(): void
     {
         parent::init();
-        $this->setLoggingHandle('redirect-manager');
+        $this->setLoggingHandle(RedirectManager::$plugin->id);
 
         // Calculate and set next run time if not already set
         if ($this->reschedule && !$this->nextRunTime) {

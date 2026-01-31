@@ -212,6 +212,33 @@ return [
             // ['name' => 'X-Robots-Tag', 'value' => 'noindex, nofollow'], // IMPORTANT: Prevents search engines from indexing old URLs
             // ['name' => 'X-Redirect-By', 'value' => 'Redirect Manager'],  // Debugging/tracking
         ],
+
+
+        // ========================================
+        // BASE PLUGIN OVERRIDES
+        // ========================================
+        // Override settings from lindemannrock-base config
+        // These affect all LindemannRock plugins, but can be overridden here per-plugin
+        //
+        // Configure globally in: config/lindemannrock-base.php
+        // Or override per-plugin below:
+        //
+        // Date/time formatting:
+        // 'timeFormat' => '12',       // '12' (AM/PM) or '24' (military)
+        // 'dateOrder' => 'dmy',       // 'dmy', 'mdy', or 'ymd'
+        // 'dateSeparator' => '/',     // '/', '-', or '.'
+        // 'monthFormat' => 'numeric', // 'numeric', 'short', 'long'
+        // 'showSeconds' => false,     // Include seconds in time display
+        //
+        // Analytics defaults:
+        // 'defaultDateRange' => 'last7days',  // Default date range for analytics (today, yesterday, last7days, last30days, thisMonth, lastMonth, last90days, thisYear, allTime)
+        //
+        // Export formats:
+        // 'exports' => [
+        //     'excel' => true,
+        //     'csv' => true,
+        //     'json' => true,
+        // ],
     ],
 
     // Dev environment settings

@@ -33,7 +33,7 @@ class SettingsController extends Controller
     public function init(): void
     {
         parent::init();
-        $this->setLoggingHandle('redirect-manager');
+        $this->setLoggingHandle(RedirectManager::$plugin->id);
     }
 
     /**

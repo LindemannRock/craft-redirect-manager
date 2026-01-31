@@ -244,6 +244,7 @@
         {% include 'lindemannrock-base/_components/export-menu' with {
             action: 'redirect-manager/import-export/export',
             permission: 'redirectManager:manageImportExport',
+            pluginHandle: pluginHandle,
             selectionAware: true,
             idsParam: 'redirectIds',
         } only %}
