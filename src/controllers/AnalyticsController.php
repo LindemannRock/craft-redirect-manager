@@ -129,7 +129,7 @@ class AnalyticsController extends Controller
                 return $this->redirect('redirect-manager/import-export');
             }
             if ($user->checkPermission('redirectManager:viewLogs')) {
-                return $this->redirect('redirect-manager/logs');
+                return $this->redirect('redirect-manager/logs/system');
             }
             if ($user->checkPermission('redirectManager:manageSettings')) {
                 return $this->redirect('redirect-manager/settings');

@@ -25,7 +25,7 @@ return [
     'Edit redirects' => 'Edit redirects',
     'Delete redirects' => 'Delete redirects',
     'View analytics' => 'View analytics',
-    'View logs' => 'View logs',
+    'View system logs' => 'View system logs',
     'Manage settings' => 'Manage settings',
 
     // Redirects

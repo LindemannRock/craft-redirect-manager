@@ -410,10 +410,6 @@ class RedirectManager extends Plugin
             // Settings routes
             'redirect-manager/settings' => 'redirect-manager/settings/index',
             'redirect-manager/settings/<section:\w+>' => 'redirect-manager/settings/<section>',
-
-            // Logging routes
-            'redirect-manager/logs' => 'logging-library/logs/index',
-            'redirect-manager/logs/download' => 'logging-library/logs/download',
         ];
     }
 
@@ -492,10 +488,10 @@ class RedirectManager extends Plugin
                 'label' => Craft::t('redirect-manager', 'Clear cache'),
             ],
             'redirectManager:viewLogs' => [
-                'label' => Craft::t('redirect-manager', 'View logs'),
+                'label' => Craft::t('redirect-manager', 'View system logs'),
                 'nested' => [
                     'redirectManager:downloadLogs' => [
-                        'label' => Craft::t('redirect-manager', 'Download logs'),
+                        'label' => Craft::t('redirect-manager', 'Download system logs'),
                     ],
                 ],
             ],
