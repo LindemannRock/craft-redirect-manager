@@ -927,7 +927,7 @@ class RedirectsService extends Component
             return null;
         }
 
-        $cacheKey = 'redirectmanager:redirect:' . md5($url . '_' . $siteId);
+        $cacheKey = PluginHelper::getCacheKeyPrefix(RedirectManager::$plugin->id, 'redirect') . md5($url . '_' . $siteId);
 
         // Use Redis/database cache if configured
         if ($settings->cacheStorageMethod === 'redis') {
@@ -979,7 +979,7 @@ class RedirectsService extends Component
         }
 
         $duration = $settings->redirectCacheDuration ?? 3600;
-        $cacheKey = 'redirectmanager:redirect:' . md5($url . '_' . $siteId);
+        $cacheKey = PluginHelper::getCacheKeyPrefix(RedirectManager::$plugin->id, 'redirect') . md5($url . '_' . $siteId);
 
         // Use Redis/database cache if configured
         if ($settings->cacheStorageMethod === 'redis') {
@@ -989,7 +989,7 @@ class RedirectsService extends Component
             // Track key in set for selective deletion
             if ($cache instanceof \yii\redis\Cache) {
                 $redis = $cache->redis;
-                $redis->executeCommand('SADD', ['redirectmanager-redirect-keys', $cacheKey]);
+                $redis->executeCommand('SADD', [PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'redirect'), $cacheKey]);
             }
 
             $this->logDebug('Redirect cached (Redis)', ['url' => $url, 'duration' => $duration]);
@@ -1034,7 +1034,7 @@ class RedirectsService extends Component
                 $redis = $cache->redis;
 
                 // Get all redirect cache keys from tracking set
-                $keys = $redis->executeCommand('SMEMBERS', ['redirectmanager-redirect-keys']) ?: [];
+                $keys = $redis->executeCommand('SMEMBERS', [PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'redirect')]) ?: [];
 
                 // Delete redirect cache keys using Craft's cache component
                 foreach ($keys as $key) {
@@ -1042,7 +1042,7 @@ class RedirectsService extends Component
                 }
 
                 // Clear the tracking set
-                $redis->executeCommand('DEL', ['redirectmanager-redirect-keys']);
+                $redis->executeCommand('DEL', [PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'redirect')]);
 
                 $this->logDebug('Redirect caches invalidated (Redis)', ['count' => count($keys)]);
             }
