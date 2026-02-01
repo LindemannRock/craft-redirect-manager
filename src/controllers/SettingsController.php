@@ -585,7 +585,7 @@ class SettingsController extends Controller
                     $redis = $cache->redis;
 
                     // Get all device cache keys from tracking set
-                    $keys = $redis->executeCommand('SMEMBERS', ['redirectmanager-device-keys']) ?: [];
+                    $keys = $redis->executeCommand('SMEMBERS', [PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'device')]) ?: [];
 
                     // Delete device cache keys
                     foreach ($keys as $key) {
@@ -593,7 +593,7 @@ class SettingsController extends Controller
                     }
 
                     // Clear the tracking set
-                    $redis->executeCommand('DEL', ['redirectmanager-device-keys']);
+                    $redis->executeCommand('DEL', [PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'device')]);
                 }
             } else {
                 // Clear file cache
@@ -641,7 +641,7 @@ class SettingsController extends Controller
 
                     // Get all cache keys from tracking sets
                     $redirectKeys = $redis->executeCommand('SMEMBERS', [PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'redirect')]) ?: [];
-                    $deviceKeys = $redis->executeCommand('SMEMBERS', ['redirectmanager-device-keys']) ?: [];
+                    $deviceKeys = $redis->executeCommand('SMEMBERS', [PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'device')]) ?: [];
 
                     // Delete redirect cache keys
                     foreach ($redirectKeys as $key) {
@@ -655,7 +655,7 @@ class SettingsController extends Controller
 
                     // Clear the tracking sets
                     $redis->executeCommand('DEL', [PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'redirect')]);
-                    $redis->executeCommand('DEL', ['redirectmanager-device-keys']);
+                    $redis->executeCommand('DEL', [PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'device')]);
                 }
             } else {
                 // Clear redirect cache
