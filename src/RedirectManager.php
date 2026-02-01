@@ -97,8 +97,8 @@ class RedirectManager extends Plugin
         PluginHelper::bootstrap(
             $this,
             'redirectHelper',
-            ['redirectManager:viewLogs'],
-            ['redirectManager:downloadLogs'],
+            ['redirectManager:viewSystemLogs'],
+            ['redirectManager:downloadSystemLogs'],
             [
                 'colorSets' => [
                     'requestType' => [
@@ -261,7 +261,7 @@ class RedirectManager extends Plugin
             // Add logs section using the logging library
             if (PluginHelper::isPluginEnabled('logging-library')) {
                 $item = LoggingLibrary::addLogsNav($item, $this->handle, [
-                    'redirectManager:viewLogs',
+                    'redirectManager:viewSystemLogs',
                 ]);
             }
 
@@ -339,8 +339,8 @@ class RedirectManager extends Plugin
             $sections[] = [
                 'key' => 'logs',
                 'label' => Craft::t('redirect-manager', 'Logs'),
-                'url' => 'redirect-manager/logs/system',
-                'permissionsAll' => ['redirectManager:viewLogs'],
+                'url' => 'redirect-manager/logs',
+                'permissionsAll' => ['redirectManager:viewSystemLogs'],
                 'when' => fn() => PluginHelper::isPluginEnabled('logging-library'),
             ];
         }
@@ -509,10 +509,15 @@ class RedirectManager extends Plugin
                 'label' => Craft::t('redirect-manager', 'Clear cache'),
             ],
             'redirectManager:viewLogs' => [
-                'label' => Craft::t('redirect-manager', 'View system logs'),
+                'label' => Craft::t('redirect-manager', 'View logs'),
                 'nested' => [
-                    'redirectManager:downloadLogs' => [
-                        'label' => Craft::t('redirect-manager', 'Download system logs'),
+                    'redirectManager:viewSystemLogs' => [
+                        'label' => Craft::t('redirect-manager', 'View system logs'),
+                        'nested' => [
+                            'redirectManager:downloadSystemLogs' => [
+                                'label' => Craft::t('redirect-manager', 'Download system logs'),
+                            ],
+                        ],
                     ],
                 ],
             ],
