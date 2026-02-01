@@ -10,6 +10,7 @@ namespace lindemannrock\redirectmanager\controllers;
 
 use Craft;
 use craft\web\Controller;
+use lindemannrock\base\helpers\CpNavHelper;
 use lindemannrock\base\helpers\DateRangeHelper;
 use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
@@ -116,31 +117,20 @@ class AnalyticsController extends Controller
     public function actionDashboard(): Response
     {
         $user = Craft::$app->getUser();
+        $settings = RedirectManager::$plugin->getSettings();
 
         // If user doesn't have viewAnalytics permission, redirect to appropriate section
         if (!$user->checkPermission('redirectManager:viewAnalytics')) {
-            // Check what they do have access to and redirect there
-            if ($user->checkPermission('redirectManager:viewRedirects') ||
-                $user->checkPermission('redirectManager:createRedirects') ||
-                $user->checkPermission('redirectManager:editRedirects') ||
-                $user->checkPermission('redirectManager:deleteRedirects')) {
-                return $this->redirect('redirect-manager/redirects');
-            }
-            if ($user->checkPermission('redirectManager:manageImportExport')) {
-                return $this->redirect('redirect-manager/import-export');
-            }
-            if ($user->checkPermission('redirectManager:viewLogs')) {
-                return $this->redirect('redirect-manager/logs/system');
-            }
-            if ($user->checkPermission('redirectManager:manageSettings')) {
-                return $this->redirect('redirect-manager/settings');
+            $sections = RedirectManager::$plugin->getCpSections($settings, false, true);
+            $route = CpNavHelper::firstAccessibleRoute($user, $settings, $sections);
+            if ($route) {
+                return $this->redirect($route);
             }
             // No permissions at all - show forbidden
             $this->requirePermission('redirectManager:viewAnalytics');
         }
 
         $request = Craft::$app->getRequest();
-        $settings = RedirectManager::$plugin->getSettings();
 
         // Get filter parameters
         $search = $request->getQueryParam('search', '');

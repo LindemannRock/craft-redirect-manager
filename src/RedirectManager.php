@@ -28,6 +28,7 @@ use craft\web\ErrorHandler;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use lindemannrock\base\helpers\ColorHelper;
+use lindemannrock\base\helpers\CpNavHelper;
 use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\logginglibrary\LoggingLibrary;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
@@ -248,90 +249,110 @@ class RedirectManager extends Plugin
         $item = parent::getCpNavItem();
         $user = Craft::$app->getUser();
 
-        // Check if user has view access to each section
-        $hasRedirectsAccess = $user->checkPermission('redirectManager:viewRedirects');
-        $hasAnalyticsAccess = $user->checkPermission('redirectManager:viewAnalytics');
-        $hasImportExportAccess = $user->checkPermission('redirectManager:manageImportExport') ||
-            $user->checkPermission('redirectManager:importRedirects') ||
-            $user->checkPermission('redirectManager:exportRedirects');
-        $hasBackupAccess = $user->checkPermission('redirectManager:manageBackups');
-        $hasLogsAccess = $user->checkPermission('redirectManager:viewLogs');
-        $hasSettingsAccess = $user->checkPermission('redirectManager:manageSettings');
-
-        // If no access at all, hide the plugin from nav
-        if (
-            !$hasRedirectsAccess &&
-            !$hasAnalyticsAccess &&
-            !$hasImportExportAccess &&
-            !$hasBackupAccess &&
-            !$hasLogsAccess &&
-            !$hasSettingsAccess
-        ) {
-            return null;
-        }
-
         if ($item) {
-            $item['label'] = $this->getSettings()->getFullName();
+            $settings = $this->getSettings();
+
+            $item['label'] = $settings->getFullName();
             $item['icon'] = '@appicons/arrows-turn-right.svg';
 
-            $item['subnav'] = [];
-
-            // Dashboard - requires analytics access (shows 404 list)
-            if ($hasAnalyticsAccess) {
-                $item['subnav']['dashboard'] = [
-                    'label' => Craft::t('redirect-manager', 'Dashboard'),
-                    'url' => 'redirect-manager',
-                ];
-            }
-
-            // Redirects - requires any redirect permission
-            if ($hasRedirectsAccess) {
-                $item['subnav']['redirects'] = [
-                    'label' => Craft::t('redirect-manager', 'Redirects'),
-                    'url' => 'redirect-manager/redirects',
-                ];
-            }
-
-            // Import/Export - requires import/export permission
-            if ($hasImportExportAccess) {
-                $item['subnav']['import-export'] = [
-                    'label' => Craft::t('redirect-manager', 'Import/Export'),
-                    'url' => 'redirect-manager/import-export',
-                ];
-            }
-
-            if ($hasBackupAccess && $this->getSettings()->backupEnabled) {
-                $item['subnav']['backups'] = [
-                    'label' => Craft::t('redirect-manager', 'Backups'),
-                    'url' => 'redirect-manager/backups',
-                ];
-            }
-
-            // Add analytics if enabled and user has permission
-            if ($this->getSettings()->enableAnalytics && $hasAnalyticsAccess) {
-                $item['subnav']['analytics'] = [
-                    'label' => Craft::t('redirect-manager', 'Analytics'),
-                    'url' => 'redirect-manager/analytics',
-                ];
-            }
+            $sections = $this->getCpSections($settings);
+            $item['subnav'] = CpNavHelper::buildSubnav($user, $settings, $sections);
 
             // Add logs section using the logging library
-            if (Craft::$app->getPlugins()->isPluginInstalled('logging-library') &&
-                Craft::$app->getPlugins()->isPluginEnabled('logging-library')) {
+            if (PluginHelper::isPluginEnabled('logging-library')) {
                 $item = LoggingLibrary::addLogsNav($item, $this->handle, [
                     'redirectManager:viewLogs',
                 ]);
             }
 
-            if ($hasSettingsAccess) {
-                $item['subnav']['settings'] = [
-                    'label' => Craft::t('redirect-manager', 'Settings'),
-                    'url' => 'redirect-manager/settings',
-                ];
+            // Hide from nav if no accessible subnav items
+            if (empty($item['subnav'])) {
+                return null;
             }
         }
 
         return $item;
+    }
+
+    /**
+     * Get CP sections for nav + default route resolution
+     *
+     * @param Settings $settings
+     * @param bool $includeDashboard
+     * @param bool $includeLogs
+     * @return array
+     * @since 5.14.0
+     */
+    public function getCpSections(Settings $settings, bool $includeDashboard = true, bool $includeLogs = false): array
+    {
+        $sections = [];
+
+        if ($includeDashboard) {
+            $sections[] = [
+                'key' => 'dashboard',
+                'label' => Craft::t('redirect-manager', 'Dashboard'),
+                'url' => 'redirect-manager',
+                'permissionsAll' => ['redirectManager:viewAnalytics'],
+            ];
+        }
+
+        $sections[] = [
+            'key' => 'redirects',
+            'label' => Craft::t('redirect-manager', 'Redirects'),
+            'url' => 'redirect-manager/redirects',
+            'permissionsAny' => [
+                'redirectManager:viewRedirects',
+                'redirectManager:createRedirects',
+                'redirectManager:editRedirects',
+                'redirectManager:deleteRedirects',
+            ],
+        ];
+
+        $sections[] = [
+            'key' => 'import-export',
+            'label' => Craft::t('redirect-manager', 'Import/Export'),
+            'url' => 'redirect-manager/import-export',
+            'permissionsAny' => [
+                'redirectManager:manageImportExport',
+                'redirectManager:importRedirects',
+                'redirectManager:exportRedirects',
+            ],
+        ];
+
+        $sections[] = [
+            'key' => 'backups',
+            'label' => Craft::t('redirect-manager', 'Backups'),
+            'url' => 'redirect-manager/backups',
+            'permissionsAll' => ['redirectManager:manageBackups'],
+            'settingsFlag' => 'backupEnabled',
+        ];
+
+        $sections[] = [
+            'key' => 'analytics',
+            'label' => Craft::t('redirect-manager', 'Analytics'),
+            'url' => 'redirect-manager/analytics',
+            'permissionsAll' => ['redirectManager:viewAnalytics'],
+            'settingsFlag' => 'enableAnalytics',
+        ];
+
+        if ($includeLogs) {
+            $sections[] = [
+                'key' => 'logs',
+                'label' => Craft::t('redirect-manager', 'Logs'),
+                'url' => 'redirect-manager/logs/system',
+                'permissionsAll' => ['redirectManager:viewLogs'],
+                'when' => fn() => PluginHelper::isPluginEnabled('logging-library'),
+            ];
+        }
+
+        $sections[] = [
+            'key' => 'settings',
+            'label' => Craft::t('redirect-manager', 'Settings'),
+            'url' => 'redirect-manager/settings',
+            'permissionsAll' => ['redirectManager:manageSettings'],
+        ];
+
+        return $sections;
     }
 
     /**
