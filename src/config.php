@@ -217,27 +217,38 @@ return [
         // ========================================
         // BASE PLUGIN OVERRIDES
         // ========================================
-        // Override settings from lindemannrock-base config
-        // These affect all LindemannRock plugins, but can be overridden here per-plugin
-        //
-        // Configure globally in: config/lindemannrock-base.php
-        // Or override per-plugin below:
-        //
-        // Date/time formatting:
-        // 'timeFormat' => '12',       // '12' (AM/PM) or '24' (military)
-        // 'dateOrder' => 'dmy',       // 'dmy', 'mdy', or 'ymd'
-        // 'dateSeparator' => '/',     // '/', '-', or '.'
-        // 'monthFormat' => 'numeric', // 'numeric', 'short', 'long'
-        // 'showSeconds' => false,     // Include seconds in time display
-        //
-        // Analytics defaults:
-        // 'defaultDateRange' => 'last7days',  // Default date range for analytics (today, yesterday, last7days, last30days, thisMonth, lastMonth, last90days, thisYear, allTime)
-        //
-        // Export formats:
+        // These settings override lindemannrock-base defaults for this plugin only.
+        // Global defaults: vendor/lindemannrock/craft-plugin-base/src/config.php
+        // To customize globally: copy to config/lindemannrock-base.php
+
+        /**
+         * Date/time formatting overrides
+         * Override base plugin date/time display settings for this plugin
+         * Defaults: from config/lindemannrock-base.php
+         */
+        // 'timeFormat' => '24',      // '12' (AM/PM) or '24' (military)
+        // 'monthFormat' => 'short',  // 'numeric' (01), 'short' (Jan), 'long' (January)
+        // 'dateOrder' => 'dmy',      // 'dmy', 'mdy', 'ymd'
+        // 'dateSeparator' => '/',    // '/', '-', '.'
+        // 'showSeconds' => false,    // Show seconds in time display
+
+        /**
+         * Default date range for analytics, logs, and dashboard pages
+         * Options: 'today', 'yesterday', 'last7days', 'last30days', 'last90days',
+         *          'thisMonth', 'lastMonth', 'thisYear', 'lastYear', 'all'
+         * Default: 'last30days' (from base plugin)
+         */
+        // 'defaultDateRange' => 'last7days',
+
+        /**
+         * Export format overrides
+         * Enable/disable specific export formats for this plugin
+         * Default: all enabled (from base plugin)
+         */
         // 'exports' => [
-        //     'excel' => true,
         //     'csv' => true,
         //     'json' => true,
+        //     'excel' => true,
         // ],
     ],
 
