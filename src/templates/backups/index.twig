@@ -9,13 +9,15 @@
     { label: 'Backups'|t('redirect-manager'), url: url('redirect-manager/backups') }
 ] %}
 
+{% block actionButton %}
+    {% if currentUser.can('redirectManager:createBackups') %}
+        <button type="button" class="btn submit" id="create-backup-btn" style="background-color: #dc2626; border-color: #dc2626;">
+            {{ "Create Backup Now"|t('redirect-manager') }}
+        </button>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
-	<div class="flex flex-justify" style="align-items: center; margin-bottom: 1rem;">
-		<h2 style="margin: 0;">{{ "Backup History"|t('redirect-manager') }}</h2>
-		<button type="button" class="btn" id="create-backup-btn">
-			{{ "Create Backup Now"|t('redirect-manager') }}
-		</button>
-	</div>
 	<p>{{ "Backups are automatically created when you import redirects (if enabled). You can restore or download any backup."|t('redirect-manager') }}</p>
 
 	<div style="margin-top: 1rem;">
