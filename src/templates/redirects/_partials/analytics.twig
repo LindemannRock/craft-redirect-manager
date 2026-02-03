@@ -15,11 +15,17 @@
 
 {% embed 'lindemannrock-base/_partials/analytics-panel' with {
     config: {
+        pluginHandle: pluginHandle,
         dateRange: {
             enabled: true,
             current: dateRange,
             param: 'range',
             hash: 'analytics',
+        },
+        export: {
+            action: 'redirect-manager/analytics/export',
+            permission: 'redirectManager:exportAnalytics',
+            extraParams: {redirectId: redirect.id},
         },
     }
 } %}

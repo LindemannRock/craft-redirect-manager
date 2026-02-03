@@ -175,6 +175,7 @@ class RedirectsController extends Controller
             'statusCodes' => $statusCodes,
             'siteOptions' => $siteOptions,
             'isNew' => $redirect === null,
+            'pluginHandle' => RedirectManager::$plugin->id,
         ]);
     }
 
@@ -283,6 +284,7 @@ class RedirectsController extends Controller
             'statusCodes' => $statusCodes,
             'siteOptions' => $siteOptions,
             'isNew' => !$redirectId,
+            'pluginHandle' => RedirectManager::$plugin->id,
         ]);
     }
 

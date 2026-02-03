@@ -662,7 +662,7 @@ class AnalyticsService extends Component
      * @return array Array of analytics records formatted for export
      * @since 5.0.0
      */
-    public function getExportData(?int $siteId = null, ?array $analyticsIds = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
+    public function getExportData(?int $siteId = null, ?array $analyticsIds = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null, ?int $redirectId = null): array
     {
         // Build query
         $query = (new \craft\db\Query())
@@ -672,6 +672,11 @@ class AnalyticsService extends Component
         // Filter by specific IDs if provided
         if (!empty($analyticsIds)) {
             $query->where(['in', 'id', $analyticsIds]);
+        }
+
+        // Filter by redirect
+        if ($redirectId !== null) {
+            $query->andWhere(['redirectId' => $redirectId]);
         }
 
         // Filter by site

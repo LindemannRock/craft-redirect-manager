@@ -23,7 +23,7 @@
 
 {% set analyticsConfig = {
     plugin: {
-        handle: 'redirect-manager',
+        handle: pluginHandle ?? 'redirect-manager',
         name: redirectHelper.fullName,
     },
     page: {
@@ -73,21 +73,44 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-document.addEventListener('lr:analyticsInit', function() {
+<script data-analytics-reinit="true">
+(function() {
+    if (window.lrRedirectAnalyticsBound) {
+        return;
+    }
+    window.lrRedirectAnalyticsBound = true;
+
+document.addEventListener('lr:analyticsInit', function(e) {
     // Chart colors
     const chartColors = window.lrChartColors || [
         '#0d78f2', '#27ae60', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c',
         '#34495e', '#e67e22', '#3498db', '#2ecc71', '#c0392b', '#f1c40f'
     ];
 
-    // Get current parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentRange = urlParams.get('dateRange') || '{{ dateRange }}';
-    const currentSite = urlParams.get('siteId') || '';
+    const config = e.detail && e.detail.config ? e.detail.config : (window.lrAnalyticsConfig || {});
+    const currentRange = config.dateRange || '{{ dateRange }}';
+    const currentSite = config.siteId || '';
 
     // Load all chart data
     loadAllCharts(currentRange, currentSite);
+
+    function destroyChart(canvasId) {
+        const config = window.lrAnalyticsConfig || {};
+        const prefix = config.prefix || 'analytics';
+        const chartKey = canvasId.replace(/-/g, '_');
+        if (window.lrChartInstances && window.lrChartInstances[prefix] && window.lrChartInstances[prefix][chartKey]) {
+            window.lrChartInstances[prefix][chartKey].destroy();
+            delete window.lrChartInstances[prefix][chartKey];
+        }
+    }
+
+    function resetChartState(canvas) {
+        if (!canvas) return;
+        canvas.style.display = '';
+        const parent = canvas.parentElement || canvas.parentNode;
+        if (!parent) return;
+        parent.querySelectorAll('.zilch').forEach(el => el.remove());
+    }
 
     function loadAllCharts(dateRange, siteId) {
         const csrfToken = '{{ craft.app.request.csrfToken }}';
@@ -101,8 +124,8 @@ document.addEventListener('lr:analyticsInit', function() {
             dataType: 'json',
             data: { dateRange: dateRange, siteId: siteId, type: 'chart', [csrfName]: csrfToken },
             success: function(response) {
-                if (response.success && response.data && response.data.length > 0) {
-                    renderTrendChart(response.data);
+                if (response.success) {
+                    renderTrendChart(response.data || []);
                 }
             }
         });
@@ -114,8 +137,8 @@ document.addEventListener('lr:analyticsInit', function() {
             dataType: 'json',
             data: { dateRange: dateRange, siteId: siteId, type: 'bots', [csrfName]: csrfToken },
             success: function(response) {
-                if (response.success && response.data) {
-                    renderBotChart(response.data);
+                if (response.success) {
+                    renderBotChart(response.data || null);
                 }
             }
         });
@@ -127,8 +150,8 @@ document.addEventListener('lr:analyticsInit', function() {
             dataType: 'json',
             data: { dateRange: dateRange, siteId: siteId, type: 'devices', [csrfName]: csrfToken },
             success: function(response) {
-                if (response.success && response.data && response.data.labels && response.data.labels.length > 0) {
-                    renderDeviceChart(response.data);
+                if (response.success) {
+                    renderDeviceChart(response.data || null);
                 }
             }
         });
@@ -140,8 +163,8 @@ document.addEventListener('lr:analyticsInit', function() {
             dataType: 'json',
             data: { dateRange: dateRange, siteId: siteId, type: 'browsers', [csrfName]: csrfToken },
             success: function(response) {
-                if (response.success && response.data && response.data.labels && response.data.labels.length > 0) {
-                    renderBrowserChart(response.data);
+                if (response.success) {
+                    renderBrowserChart(response.data || null);
                 }
             }
         });
@@ -153,8 +176,8 @@ document.addEventListener('lr:analyticsInit', function() {
             dataType: 'json',
             data: { dateRange: dateRange, siteId: siteId, type: 'os', [csrfName]: csrfToken },
             success: function(response) {
-                if (response.success && response.data && response.data.labels && response.data.labels.length > 0) {
-                    renderOsChart(response.data);
+                if (response.success) {
+                    renderOsChart(response.data || null);
                 }
             }
         });
@@ -163,6 +186,17 @@ document.addEventListener('lr:analyticsInit', function() {
     function renderTrendChart(data) {
         const ctx = document.getElementById('404-trend-chart');
         if (!ctx) return;
+        resetChartState(ctx);
+        if (!data || !data.length) {
+            destroyChart('404-trend-chart');
+            ctx.style.display = 'none';
+            const emptyMsg = document.createElement('div');
+            emptyMsg.className = 'zilch';
+            emptyMsg.style.padding = '48px 24px';
+            emptyMsg.innerHTML = '<p>{{ "No trend data available for the selected filters."|t('redirect-manager')|e('js') }}</p>';
+            ctx.parentElement.appendChild(emptyMsg);
+            return;
+        }
 
         window.lrCreateChart('404-trend-chart', 'line', {
             labels: data.map(d => d.date),
@@ -178,7 +212,18 @@ document.addEventListener('lr:analyticsInit', function() {
 
     function renderBotChart(data) {
         const ctx = document.getElementById('bot-chart');
-        if (!ctx || !data.chart) return;
+        if (!ctx) return;
+        resetChartState(ctx);
+        if (!data || !data.chart || !data.chart.labels || !data.chart.labels.length) {
+            destroyChart('bot-chart');
+            ctx.style.display = 'none';
+            const emptyMsg = document.createElement('div');
+            emptyMsg.className = 'zilch';
+            emptyMsg.style.padding = '48px 24px';
+            emptyMsg.innerHTML = '<p>{{ "No bot data available for the selected filters."|t('redirect-manager')|e('js') }}</p>';
+            ctx.parentElement.appendChild(emptyMsg);
+            return;
+        }
 
         window.lrCreateChart('bot-chart', 'doughnut', {
             labels: data.chart.labels,
@@ -195,6 +240,19 @@ document.addEventListener('lr:analyticsInit', function() {
     }
 
     function renderDeviceChart(data) {
+        const ctx = document.getElementById('device-chart');
+        if (!ctx) return;
+        resetChartState(ctx);
+        if (!data || !data.labels || !data.labels.length) {
+            destroyChart('device-chart');
+            ctx.style.display = 'none';
+            const emptyMsg = document.createElement('div');
+            emptyMsg.className = 'zilch';
+            emptyMsg.style.padding = '48px 24px';
+            emptyMsg.innerHTML = '<p>{{ "No device data available for the selected filters."|t('redirect-manager')|e('js') }}</p>';
+            ctx.parentElement.appendChild(emptyMsg);
+            return;
+        }
         window.lrCreateChart('device-chart', 'doughnut', {
             labels: data.labels,
             datasets: [{ data: data.values, backgroundColor: chartColors.slice(0, data.labels.length) }]
@@ -206,6 +264,17 @@ document.addEventListener('lr:analyticsInit', function() {
     function renderBrowserChart(data) {
         const ctx = document.getElementById('browser-chart');
         if (!ctx) return;
+        resetChartState(ctx);
+        if (!data || !data.labels || !data.labels.length) {
+            destroyChart('browser-chart');
+            ctx.style.display = 'none';
+            const emptyMsg = document.createElement('div');
+            emptyMsg.className = 'zilch';
+            emptyMsg.style.padding = '48px 24px';
+            emptyMsg.innerHTML = '<p>{{ "No browser data available for the selected filters."|t('redirect-manager')|e('js') }}</p>';
+            ctx.parentElement.appendChild(emptyMsg);
+            return;
+        }
         ctx.parentElement.style.minHeight = '300px';
 
         window.lrCreateChart('browser-chart', 'bar', {
@@ -218,6 +287,19 @@ document.addEventListener('lr:analyticsInit', function() {
     }
 
     function renderOsChart(data) {
+        const ctx = document.getElementById('os-chart');
+        if (!ctx) return;
+        resetChartState(ctx);
+        if (!data || !data.labels || !data.labels.length) {
+            destroyChart('os-chart');
+            ctx.style.display = 'none';
+            const emptyMsg = document.createElement('div');
+            emptyMsg.className = 'zilch';
+            emptyMsg.style.padding = '48px 24px';
+            emptyMsg.innerHTML = '<p>{{ "No OS data available for the selected filters."|t('redirect-manager')|e('js') }}</p>';
+            ctx.parentElement.appendChild(emptyMsg);
+            return;
+        }
         window.lrCreateChart('os-chart', 'doughnut', {
             labels: data.labels,
             datasets: [{ data: data.values, backgroundColor: chartColors }]
@@ -226,5 +308,6 @@ document.addEventListener('lr:analyticsInit', function() {
         });
     }
 });
+})();
 </script>
 {% endblock %}

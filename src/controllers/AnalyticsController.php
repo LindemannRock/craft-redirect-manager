@@ -14,6 +14,7 @@ use lindemannrock\base\helpers\CpNavHelper;
 use lindemannrock\base\helpers\DateRangeHelper;
 use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
+use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\RedirectManager;
 use yii\web\Response;
 
@@ -341,6 +342,7 @@ class AnalyticsController extends Controller
             'dateRange' => $dateRange,
             'siteId' => $siteId,
             'sites' => $sites,
+            'pluginHandle' => RedirectManager::$plugin->id,
         ]);
     }
 
@@ -579,13 +581,16 @@ class AnalyticsController extends Controller
         $request = Craft::$app->getRequest();
         $siteId = $request->getQueryParam('siteId');
         $siteId = $siteId ? (int)$siteId : null;
+        $redirectId = $request->getQueryParam('redirectId');
+        $redirectId = $redirectId ? (int)$redirectId : null;
 
         // Check if specific analytics were selected (from query param or body param)
         $analyticIdsJson = $request->getQueryParam('analyticIds') ?? $request->getBodyParam('analyticIds');
         $analyticIds = $analyticIdsJson ? json_decode($analyticIdsJson, true) : null;
 
         // Get date range and format from query params
-        $dateRange = $request->getQueryParam('dateRange', 'all');
+        // Accept both 'range' and 'dateRange' parameter names
+        $dateRange = $request->getQueryParam('range') ?? $request->getQueryParam('dateRange', 'all');
         $format = $request->getQueryParam('format', 'csv');
 
         // Convert date range to days and get date filter
@@ -595,7 +600,7 @@ class AnalyticsController extends Controller
         $endDate = $dateFilter['end'] ?? null;
 
         // Get analytics data
-        $analyticsData = RedirectManager::$plugin->analytics->getExportData($siteId, $analyticIds, $days, $startDate, $endDate);
+        $analyticsData = RedirectManager::$plugin->analytics->getExportData($siteId, $analyticIds, $days, $startDate, $endDate, $redirectId);
 
         // Check for empty data
         if (empty($analyticsData)) {
@@ -607,7 +612,20 @@ class AnalyticsController extends Controller
 
         // Build filename parts
         $dateRangeLabel = $dateRange === 'all' ? 'alltime' : $dateRange;
-        $filenameParts = ['analytics', $dateRangeLabel];
+        $filenameParts = ['analytics'];
+
+        // Add redirect source to filename if filtered
+        if ($redirectId) {
+            $redirect = RedirectRecord::findOne($redirectId);
+            if ($redirect) {
+                // Clean the source URL for filename (remove special chars, limit length)
+                $cleanSource = preg_replace('/[^a-zA-Z0-9-_]/', '-', $redirect->sourceUrl);
+                $cleanSource = preg_replace('/-+/', '-', $cleanSource); // Remove multiple dashes
+                $cleanSource = trim($cleanSource, '-');
+                $cleanSource = substr($cleanSource, 0, 50); // Limit length
+                $filenameParts[] = $cleanSource;
+            }
+        }
 
         // Add site to filename if filtered
         if ($siteId) {
@@ -616,6 +634,8 @@ class AnalyticsController extends Controller
                 $filenameParts[] = strtolower(preg_replace('/[^a-zA-Z0-9-_]/', '', str_replace(' ', '-', $site->name)));
             }
         }
+
+        $filenameParts[] = $dateRangeLabel;
 
         // CSV/Excel headers
         $headers = [
