@@ -91,7 +91,7 @@ class Install extends Migration
                 'analyticsLimit' => $this->integer()->notNull()->defaultValue(1000),
                 'analyticsRetention' => $this->integer()->notNull()->defaultValue(30),
                 'autoTrimAnalytics' => $this->boolean()->notNull()->defaultValue(true),
-                'refreshIntervalSecs' => $this->integer()->notNull()->defaultValue(5),
+                'refreshIntervalSecs' => $this->integer()->null()->defaultValue(null),
                 'itemsPerPage' => $this->integer()->notNull()->defaultValue(100),
                 'enableApiEndpoint' => $this->boolean()->notNull()->defaultValue(false),
                 'excludePatterns' => $this->text()->null()->comment('JSON array'),

@@ -138,9 +138,9 @@ class Settings extends Model
     public bool $autoTrimAnalytics = true;
 
     /**
-     * @var int Dashboard refresh interval in seconds
+     * @var int|null Dashboard refresh interval in seconds (null = disabled)
      */
-    public int $refreshIntervalSecs = 5;
+    public ?int $refreshIntervalSecs = null;
 
     /**
      * @var int Items per page in list views
@@ -370,8 +370,8 @@ class Settings extends Model
             ['analyticsLimit', 'default', 'value' => 1000],
             ['analyticsRetention', 'integer', 'min' => 0],
             ['analyticsRetention', 'default', 'value' => 30],
-            ['refreshIntervalSecs', 'integer', 'min' => 0],
-            ['refreshIntervalSecs', 'default', 'value' => 5],
+            ['refreshIntervalSecs', 'integer', 'min' => 0, 'skipOnEmpty' => true],
+            ['refreshIntervalSecs', 'default', 'value' => null],
             ['itemsPerPage', 'integer', 'min' => 10, 'max' => 500],
             ['itemsPerPage', 'default', 'value' => 100],
             ['undoWindowMinutes', 'integer'],
