@@ -25,21 +25,23 @@
 } %}
     {% block content %}
         {# Stats Overview #}
-        <div class="lr-analytics-stats">
-            {% include 'lindemannrock-base/_components/stat-box' with {
+        <div class="lr-unified-cards">
+            {% include 'lindemannrock-base/_components/cards/unified-card' with {
                 value: analytics.totalHits,
-                label: 'Total Hits'|t('redirect-manager'),
+                description: 'Total Hits'|t('redirect-manager'),
+                align: 'center',
             } only %}
 
-            {% include 'lindemannrock-base/_components/stat-box' with {
+            {% include 'lindemannrock-base/_components/cards/unified-card' with {
                 value: analytics.botVsHuman.human,
-                label: 'Human Visits'|t('redirect-manager'),
+                description: 'Human Visits'|t('redirect-manager'),
+                align: 'center',
             } only %}
 
-            {% include 'lindemannrock-base/_components/stat-box' with {
+            {% include 'lindemannrock-base/_components/cards/unified-card' with {
                 value: analytics.botVsHuman.bot,
-                label: 'Bot Visits'|t('redirect-manager'),
-                color: '#f59e0b',
+                description: 'Bot Visits'|t('redirect-manager'),
+                align: 'center',
             } only %}
         </div>
 
