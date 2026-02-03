@@ -516,8 +516,9 @@ Redirect Manager provides granular user permissions for fine-grained access cont
 | Permission | Description |
 |------------|-------------|
 | **Clear cache** | Clear redirect caches. Shows cache options in Craft's Clear Caches utility. |
-| **View system logs** | Access plugin logs. View log entries and file details. |
-| ↳ Download logs | Download log files. |
+| **View logs** | Parent permission for log access. |
+| ↳ View system logs | Access plugin logs. View log entries and file details. |
+| &nbsp;&nbsp;↳ Download system logs | Download log files. |
 | **Manage settings** | Access Settings section. Modify all plugin configuration. |
 
 ### Permission Behavior
@@ -538,7 +539,7 @@ Redirect Manager provides granular user permissions for fine-grained access cont
 **Analyst (View only):**
 - ✅ Manage redirects → View
 - ✅ View analytics
-- ✅ View system logs
+- ✅ View logs → View system logs
 - ❌ Create/Edit/Delete redirects
 - ❌ Manage settings
 

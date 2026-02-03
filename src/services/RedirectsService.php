@@ -120,9 +120,23 @@ class RedirectsService extends Component
             $fullUrlForMatching = $fullUrl;
         }
 
+        // Strip site base path for matching (e.g., /en/about-us → /about-us)
+        // This allows redirects to be stored without site prefix while matching URLs with prefix
+        $currentSite = Craft::$app->getSites()->getCurrentSite();
+        $siteBaseUrl = $currentSite->getBaseUrl();
+        $siteBasePath = parse_url($siteBaseUrl, PHP_URL_PATH) ?: '';
+        $siteBasePath = '/' . trim($siteBasePath, '/');
+
+        $pathOnlyStripped = $pathOnlyForMatching;
+        if ($siteBasePath !== '/' && str_starts_with($pathOnlyForMatching, $siteBasePath . '/')) {
+            $pathOnlyStripped = substr($pathOnlyForMatching, strlen($siteBasePath));
+        }
+
         $this->logDebug('Handling 404', [
             'originalFullUrl' => $fullUrl,
             'pathForMatching' => $pathOnlyForMatching,
+            'pathStripped' => $pathOnlyStripped,
+            'siteBasePath' => $siteBasePath,
             'userAgent' => $request->getUserAgent(),
         ]);
 
@@ -132,8 +146,13 @@ class RedirectsService extends Component
             return;
         }
 
-        // Try to find a redirect (using query-stripped URLs for matching)
-        $redirect = $this->findRedirect($fullUrlForMatching, $pathOnlyForMatching);
+        // Try to find a redirect with stripped path first (for site-specific redirects without prefix)
+        $redirect = $this->findRedirect($fullUrlForMatching, $pathOnlyStripped);
+
+        // Fall back to original path if no match found and paths differ
+        if (!$redirect && $pathOnlyStripped !== $pathOnlyForMatching) {
+            $redirect = $this->findRedirect($fullUrlForMatching, $pathOnlyForMatching);
+        }
 
         if ($redirect) {
             // Record the hit BEFORE executing redirect (since redirect ends the script)
