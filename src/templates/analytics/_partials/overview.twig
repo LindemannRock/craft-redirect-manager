@@ -1,31 +1,28 @@
 {# Overview Tab - Stats, Trend, Most Common, Recent Unhandled #}
 
-<div class="lr-analytics-stats">
-    {% include 'lindemannrock-base/_components/stat-box' with {
+<div class="lr-unified-cards">
+    {% include 'lindemannrock-base/_components/cards/unified-card' with {
         value: totalCount ?? 0,
-        label: 'Total 404s'|t('redirect-manager'),
-        id: 'total-404s',
+        description: 'Total 404s'|t('redirect-manager'),
+        align: 'center',
     } only %}
 
-    {% include 'lindemannrock-base/_components/stat-box' with {
+    {% include 'lindemannrock-base/_components/cards/unified-card' with {
         value: handledCount ?? 0,
-        label: 'Handled'|t('redirect-manager'),
-        color: '#10b981',
-        id: 'handled-404s',
+        description: 'Handled'|t('redirect-manager'),
+        align: 'center',
     } only %}
 
-    {% include 'lindemannrock-base/_components/stat-box' with {
+    {% include 'lindemannrock-base/_components/cards/unified-card' with {
         value: unhandledCount ?? 0,
-        label: 'Unhandled'|t('redirect-manager'),
-        color: '#ef4444',
-        id: 'unhandled-404s',
+        description: 'Unhandled'|t('redirect-manager'),
+        align: 'center',
     } only %}
 
-    {% include 'lindemannrock-base/_components/stat-box' with {
-        value: totalCount > 0 ? ((handledCount / totalCount * 100)|round) : 0,
-        suffix: '%',
-        label: 'Success Rate'|t('redirect-manager'),
-        id: 'success-rate',
+    {% include 'lindemannrock-base/_components/cards/unified-card' with {
+        value: (totalCount > 0 ? ((handledCount / totalCount * 100)|round) : 0) ~ '%',
+        description: 'Success Rate'|t('redirect-manager'),
+        align: 'center',
     } only %}
 </div>
 
