@@ -21,61 +21,31 @@
 {% import "_includes/forms" as forms %}
 
 {% block content %}
-    <style>
-        .lr-analytics-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-        .lr-analytics-stats.compact {
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-        }
-        .lr-stat-box {
-            background: #f3f7fc;
-            padding: 24px;
-            border-radius: 4px;
-            text-align: center;
-            border: 1px solid var(--hairline-color, #e3e5e8);
-        }
-        .lr-stat-box-colored {
-            background: transparent;
-            border-style: solid;
-            border-width: 1px;
-        }
-        .lr-stat-value {
-            font-size: 32px;
-            font-weight: 600;
-            color: #0d78f2;
-            margin-bottom: 8px;
-        }
-        .lr-stat-label {
-            font-size: 14px;
-            color: #596673;
-        }
-    </style>
-
     <h2 style="margin-top: 0px;">{{ "Import Preview"|t('redirect-manager') }}</h2>
 
-    <div class="lr-analytics-stats" style="margin: 30px 0;">
-        {% include 'lindemannrock-base/_components/stat-box' with {
+    <div class="lr-unified-cards cols-4" style="margin: 30px 0;">
+        {% include 'lindemannrock-base/_components/cards/unified-card' with {
             value: summary.totalRows,
-            label: 'Total Rows'|t('redirect-manager'),
+            description: 'Total Rows'|t('redirect-manager'),
+            align: 'center',
         } only %}
-        {% include 'lindemannrock-base/_components/stat-box' with {
+        {% include 'lindemannrock-base/_components/cards/unified-card' with {
             value: summary.validRows,
-            label: 'Valid'|t('redirect-manager'),
+            description: 'Valid'|t('redirect-manager'),
             palette: 'green',
+            align: 'center',
         } only %}
-        {% include 'lindemannrock-base/_components/stat-box' with {
+        {% include 'lindemannrock-base/_components/cards/unified-card' with {
             value: summary.duplicates,
-            label: 'Duplicates'|t('redirect-manager'),
+            description: 'Duplicates'|t('redirect-manager'),
             palette: 'amber',
+            align: 'center',
         } only %}
-        {% include 'lindemannrock-base/_components/stat-box' with {
+        {% include 'lindemannrock-base/_components/cards/unified-card' with {
             value: summary.errors,
-            label: 'Errors'|t('redirect-manager'),
+            description: 'Errors'|t('redirect-manager'),
             palette: 'red',
+            align: 'center',
         } only %}
     </div>
 
