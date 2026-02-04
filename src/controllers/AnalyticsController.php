@@ -289,16 +289,14 @@ class AnalyticsController extends Controller
         $siteId = $siteId ? (int)$siteId : null; // Convert empty string to null
         $dateRange = $request->getQueryParam('dateRange', DateRangeHelper::getDefaultDateRange(RedirectManager::$plugin->id));
 
-        // Convert date range to days
+        // Convert date range to days + bounds
         $days = $this->_convertDateRangeToDays($dateRange);
-
-        // Get explicit date range filter (for today/yesterday)
         $dateFilter = $this->_getDateRangeFilter($dateRange);
         $startDate = $dateFilter['start'] ?? null;
         $endDate = $dateFilter['end'] ?? null;
 
         // Get chart data
-        $chartData = RedirectManager::$plugin->analytics->getChartData($siteId, $days);
+        $chartData = RedirectManager::$plugin->analytics->getChartData($siteId, $days, $startDate, $endDate);
 
         // Get most common 404s
         $mostCommon = RedirectManager::$plugin->analytics->getMostCommon404s($siteId, 15, null, $days, $startDate, $endDate);
@@ -313,14 +311,14 @@ class AnalyticsController extends Controller
         $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, false, $days, $startDate, $endDate);
 
         // Get device analytics
-        $deviceBreakdown = RedirectManager::$plugin->analytics->getDeviceBreakdown($siteId, $days);
-        $browserBreakdown = RedirectManager::$plugin->analytics->getBrowserBreakdown($siteId, $days);
-        $osBreakdown = RedirectManager::$plugin->analytics->getOsBreakdown($siteId, $days);
-        $botStats = RedirectManager::$plugin->analytics->getBotStats($siteId, $days);
+        $deviceBreakdown = RedirectManager::$plugin->analytics->getDeviceBreakdown($siteId, $days, $startDate, $endDate);
+        $browserBreakdown = RedirectManager::$plugin->analytics->getBrowserBreakdown($siteId, $days, $startDate, $endDate);
+        $osBreakdown = RedirectManager::$plugin->analytics->getOsBreakdown($siteId, $days, $startDate, $endDate);
+        $botStats = RedirectManager::$plugin->analytics->getBotStats($siteId, $days, $startDate, $endDate);
 
         // Get geographic analytics
-        $topCountries = RedirectManager::$plugin->analytics->getTopCountries($siteId, $days);
-        $topCities = RedirectManager::$plugin->analytics->getTopCities($siteId, $days);
+        $topCountries = RedirectManager::$plugin->analytics->getTopCountries($siteId, $days, 15, $startDate, $endDate);
+        $topCities = RedirectManager::$plugin->analytics->getTopCities($siteId, $days, 15, $startDate, $endDate);
 
         // Get all sites for site selector
         $sites = Craft::$app->getSites()->getAllSites();
@@ -741,11 +739,11 @@ class AnalyticsController extends Controller
                 $recentUnhandled = RedirectManager::$plugin->analytics->getRecent404s($siteId, 5, false, $days, $startDate, $endDate);
 
                 // Get bot stats
-                $botStats = RedirectManager::$plugin->analytics->getBotStats($siteId, $days);
+                $botStats = RedirectManager::$plugin->analytics->getBotStats($siteId, $days, $startDate, $endDate);
 
                 // Get geographic data
-                $topCountries = RedirectManager::$plugin->analytics->getTopCountries($siteId, $days);
-                $topCities = RedirectManager::$plugin->analytics->getTopCities($siteId, $days);
+                $topCountries = RedirectManager::$plugin->analytics->getTopCountries($siteId, $days, 15, $startDate, $endDate);
+                $topCities = RedirectManager::$plugin->analytics->getTopCities($siteId, $days, 15, $startDate, $endDate);
 
                 $data = [
                     'totalCount' => $totalCount,
@@ -760,31 +758,31 @@ class AnalyticsController extends Controller
                 break;
 
             case 'chart':
-                $data = RedirectManager::$plugin->analytics->getChartData($siteId, $days);
+                $data = RedirectManager::$plugin->analytics->getChartData($siteId, $days, $startDate, $endDate);
                 break;
 
             case 'devices':
-                $data = RedirectManager::$plugin->analytics->getDeviceBreakdown($siteId, $days);
+                $data = RedirectManager::$plugin->analytics->getDeviceBreakdown($siteId, $days, $startDate, $endDate);
                 break;
 
             case 'browsers':
-                $data = RedirectManager::$plugin->analytics->getBrowserBreakdown($siteId, $days);
+                $data = RedirectManager::$plugin->analytics->getBrowserBreakdown($siteId, $days, $startDate, $endDate);
                 break;
 
             case 'os':
-                $data = RedirectManager::$plugin->analytics->getOsBreakdown($siteId, $days);
+                $data = RedirectManager::$plugin->analytics->getOsBreakdown($siteId, $days, $startDate, $endDate);
                 break;
 
             case 'bots':
-                $data = RedirectManager::$plugin->analytics->getBotStats($siteId, $days);
+                $data = RedirectManager::$plugin->analytics->getBotStats($siteId, $days, $startDate, $endDate);
                 break;
 
             case 'countries':
-                $data = RedirectManager::$plugin->analytics->getTopCountries($siteId, $days);
+                $data = RedirectManager::$plugin->analytics->getTopCountries($siteId, $days, 15, $startDate, $endDate);
                 break;
 
             case 'cities':
-                $data = RedirectManager::$plugin->analytics->getTopCities($siteId, $days);
+                $data = RedirectManager::$plugin->analytics->getTopCities($siteId, $days, 15, $startDate, $endDate);
                 break;
         }
 
@@ -802,15 +800,22 @@ class AnalyticsController extends Controller
      */
     private function _convertDateRangeToDays(string $dateRange): int
     {
-        return match ($dateRange) {
-            'today' => 1,
-            'yesterday' => 2, // Need 2 days to include yesterday's data
-            'last7days' => 7,
-            'last30days' => 30,
-            'last90days' => 90,
-            'all' => 36500, // ~100 years (effectively all data)
-            default => 30,
-        };
+        $bounds = DateRangeHelper::getBounds($dateRange);
+        $start = $bounds['start'] ?? null;
+        $end = $bounds['end'] ?? null;
+
+        if (!$start && !$end) {
+            return 36500; // ~100 years (effectively all data)
+        }
+
+        $end = $end ?? new \DateTime('now', new \DateTimeZone('UTC'));
+
+        if (!$start) {
+            return 30;
+        }
+
+        $days = (int)$start->diff($end)->format('%a');
+        return max(1, $days);
     }
 
     /**
@@ -821,32 +826,14 @@ class AnalyticsController extends Controller
      */
     private function _getDateRangeFilter(string $dateRange): ?array
     {
-        return match ($dateRange) {
-            'today' => [
-                'start' => (new \DateTime())->setTime(0, 0, 0),
-                'end' => null, // up to now
-            ],
-            'yesterday' => [
-                'start' => (new \DateTime())->modify('-1 day')->setTime(0, 0, 0),
-                'end' => (new \DateTime())->setTime(0, 0, 0),
-            ],
-            'last7days' => [
-                'start' => (new \DateTime())->modify('-7 days'),
-                'end' => null,
-            ],
-            'last30days' => [
-                'start' => (new \DateTime())->modify('-30 days'),
-                'end' => null,
-            ],
-            'last90days' => [
-                'start' => (new \DateTime())->modify('-90 days'),
-                'end' => null,
-            ],
-            'all' => null,
-            default => [
-                'start' => (new \DateTime())->modify('-30 days'),
-                'end' => null,
-            ],
-        };
+        $bounds = DateRangeHelper::getBounds($dateRange);
+        if (!$bounds['start'] && !$bounds['end']) {
+            return null;
+        }
+
+        return [
+            'start' => $bounds['start'] ?? null,
+            'end' => $bounds['end'] ?? null,
+        ];
     }
 }

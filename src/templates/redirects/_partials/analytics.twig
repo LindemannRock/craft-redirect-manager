@@ -8,7 +8,7 @@
  #}
 
 {# Get date range from URL #}
-{% set dateRange = craft.app.request.getQueryParam('range') ?? 'last30days' %}
+{% set dateRange = craft.app.request.getQueryParam('range') ?? lrDefaultDateRange(pluginHandle) %}
 
 {# Get analytics data for this redirect #}
 {% set analytics = craft.redirectManager.getRedirectAnalytics(redirect.id, dateRange) %}

@@ -12,6 +12,7 @@ use Craft;
 use craft\base\Component;
 use craft\db\Query;
 use craft\helpers\Db;
+use lindemannrock\base\helpers\DateRangeHelper;
 use lindemannrock\base\helpers\GeoHelper;
 use lindemannrock\base\traits\GeoLookupTrait;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
@@ -401,12 +402,12 @@ class AnalyticsService extends Component
      *
      * @param int|null $siteId
      * @param int $days Number of days to look back
+     * @param \DateTime|null $startDate Start date for filtering
+     * @param \DateTime|null $endDate End date for filtering
      * @return array
      */
-    public function getChartData(?int $siteId = null, int $days = 30): array
+    public function getChartData(?int $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
-        $date = (new \DateTime())->modify("-{$days} days");
-
         $query = (new Query())
             ->select([
                 'DATE(lastHit) as date',
@@ -415,9 +416,20 @@ class AnalyticsService extends Component
                 'SUM(CASE WHEN handled = 0 THEN 1 ELSE 0 END) as unhandled',
             ])
             ->from(AnalyticsRecord::tableName())
-            ->where(['>=', 'lastHit', Db::prepareDateForDb($date)])
             ->groupBy('DATE(lastHit)')
             ->orderBy('date ASC');
+
+        if ($startDate !== null) {
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($startDate)]);
+        }
+        if ($endDate !== null) {
+            $query->andWhere(['<', 'lastHit', Db::prepareDateForDb($endDate)]);
+        }
+        // Otherwise fall back to days parameter
+        elseif ($days < 36500) {
+            $date = (new \DateTime())->modify("-{$days} days");
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)]);
+        }
 
         if ($siteId !== null) {
             $query->andWhere(['siteId' => $siteId]);
@@ -827,19 +839,30 @@ class AnalyticsService extends Component
      *
      * @param int|null $siteId
      * @param int $days
+     * @param \DateTime|null $startDate Start date for filtering
+     * @param \DateTime|null $endDate End date for filtering
      * @return array
      */
-    public function getDeviceBreakdown(?int $siteId = null, int $days = 30): array
+    public function getDeviceBreakdown(?int $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
-        $date = (new \DateTime())->modify("-{$days} days");
-
         $query = (new Query())
             ->select(['deviceType', 'COUNT(*) as count'])
             ->from(AnalyticsRecord::tableName())
             ->where(['not', ['deviceType' => null]])
-            ->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)])
             ->groupBy('deviceType')
             ->orderBy(['count' => SORT_DESC]);
+
+        if ($startDate !== null) {
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($startDate)]);
+        }
+        if ($endDate !== null) {
+            $query->andWhere(['<', 'lastHit', Db::prepareDateForDb($endDate)]);
+        }
+        // Otherwise fall back to days parameter
+        elseif ($days < 36500) {
+            $date = (new \DateTime())->modify("-{$days} days");
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)]);
+        }
 
         if ($siteId) {
             $query->andWhere(['siteId' => $siteId]);
@@ -860,20 +883,31 @@ class AnalyticsService extends Component
      *
      * @param int|null $siteId
      * @param int $days
+     * @param \DateTime|null $startDate Start date for filtering
+     * @param \DateTime|null $endDate End date for filtering
      * @return array
      */
-    public function getBrowserBreakdown(?int $siteId = null, int $days = 30): array
+    public function getBrowserBreakdown(?int $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
-        $date = (new \DateTime())->modify("-{$days} days");
-
         $query = (new Query())
             ->select(['browser', 'COUNT(*) as count'])
             ->from(AnalyticsRecord::tableName())
             ->where(['not', ['browser' => null]])
-            ->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)])
             ->groupBy('browser')
             ->orderBy(['count' => SORT_DESC])
             ->limit(10);
+
+        if ($startDate !== null) {
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($startDate)]);
+        }
+        if ($endDate !== null) {
+            $query->andWhere(['<', 'lastHit', Db::prepareDateForDb($endDate)]);
+        }
+        // Otherwise fall back to days parameter
+        elseif ($days < 36500) {
+            $date = (new \DateTime())->modify("-{$days} days");
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)]);
+        }
 
         if ($siteId) {
             $query->andWhere(['siteId' => $siteId]);
@@ -892,19 +926,30 @@ class AnalyticsService extends Component
      *
      * @param int|null $siteId
      * @param int $days
+     * @param \DateTime|null $startDate Start date for filtering
+     * @param \DateTime|null $endDate End date for filtering
      * @return array
      */
-    public function getOsBreakdown(?int $siteId = null, int $days = 30): array
+    public function getOsBreakdown(?int $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
-        $date = (new \DateTime())->modify("-{$days} days");
-
         $query = (new Query())
             ->select(['osName', 'COUNT(*) as count'])
             ->from(AnalyticsRecord::tableName())
             ->where(['not', ['osName' => null]])
-            ->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)])
             ->groupBy('osName')
             ->orderBy(['count' => SORT_DESC]);
+
+        if ($startDate !== null) {
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($startDate)]);
+        }
+        if ($endDate !== null) {
+            $query->andWhere(['<', 'lastHit', Db::prepareDateForDb($endDate)]);
+        }
+        // Otherwise fall back to days parameter
+        elseif ($days < 36500) {
+            $date = (new \DateTime())->modify("-{$days} days");
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)]);
+        }
 
         if ($siteId) {
             $query->andWhere(['siteId' => $siteId]);
@@ -923,15 +968,26 @@ class AnalyticsService extends Component
      *
      * @param int|null $siteId
      * @param int $days
+     * @param \DateTime|null $startDate Start date for filtering
+     * @param \DateTime|null $endDate End date for filtering
      * @return array
      */
-    public function getBotStats(?int $siteId = null, int $days = 30): array
+    public function getBotStats(?int $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
-        $date = (new \DateTime())->modify("-{$days} days");
-
         $query = (new Query())
-            ->from(AnalyticsRecord::tableName())
-            ->where(['>=', 'lastHit', Db::prepareDateForDb($date)]);
+            ->from(AnalyticsRecord::tableName());
+
+        if ($startDate !== null) {
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($startDate)]);
+        }
+        if ($endDate !== null) {
+            $query->andWhere(['<', 'lastHit', Db::prepareDateForDb($endDate)]);
+        }
+        // Otherwise fall back to days parameter
+        elseif ($days < 36500) {
+            $date = (new \DateTime())->modify("-{$days} days");
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)]);
+        }
 
         if ($siteId) {
             $query->andWhere(['siteId' => $siteId]);
@@ -1085,21 +1141,32 @@ class AnalyticsService extends Component
      * @param int|null $siteId
      * @param int $days
      * @param int $limit
+     * @param \DateTime|null $startDate Start date for filtering
+     * @param \DateTime|null $endDate End date for filtering
      * @return array
      */
-    public function getTopCountries(?int $siteId = null, int $days = 30, int $limit = 15): array
+    public function getTopCountries(?int $siteId = null, int $days = 30, int $limit = 15, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
-        $date = (new \DateTime())->modify("-{$days} days");
-
         $query = (new Query())
             ->select(['country', 'COUNT(*) as count'])
             ->from(AnalyticsRecord::tableName())
             ->where(['not', ['country' => null]])
             ->andWhere(['not', ['country' => '']])
-            ->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)])
             ->groupBy(['country'])
             ->orderBy(['count' => SORT_DESC])
             ->limit($limit);
+
+        if ($startDate !== null) {
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($startDate)]);
+        }
+        if ($endDate !== null) {
+            $query->andWhere(['<', 'lastHit', Db::prepareDateForDb($endDate)]);
+        }
+        // Otherwise fall back to days parameter
+        elseif ($days < 36500) {
+            $date = (new \DateTime())->modify("-{$days} days");
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)]);
+        }
 
         if ($siteId) {
             $query->andWhere(['siteId' => $siteId]);
@@ -1127,21 +1194,32 @@ class AnalyticsService extends Component
      * @param int|null $siteId
      * @param int $days
      * @param int $limit
+     * @param \DateTime|null $startDate Start date for filtering
+     * @param \DateTime|null $endDate End date for filtering
      * @return array
      */
-    public function getTopCities(?int $siteId = null, int $days = 30, int $limit = 15): array
+    public function getTopCities(?int $siteId = null, int $days = 30, int $limit = 15, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
-        $date = (new \DateTime())->modify("-{$days} days");
-
         $query = (new Query())
             ->select(['city', 'country', 'COUNT(*) as count'])
             ->from(AnalyticsRecord::tableName())
             ->where(['not', ['city' => null]])
             ->andWhere(['not', ['city' => '']])
-            ->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)])
             ->groupBy(['city', 'country'])
             ->orderBy(['count' => SORT_DESC])
             ->limit($limit);
+
+        if ($startDate !== null) {
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($startDate)]);
+        }
+        if ($endDate !== null) {
+            $query->andWhere(['<', 'lastHit', Db::prepareDateForDb($endDate)]);
+        }
+        // Otherwise fall back to days parameter
+        elseif ($days < 36500) {
+            $date = (new \DateTime())->modify("-{$days} days");
+            $query->andWhere(['>=', 'lastHit', Db::prepareDateForDb($date)]);
+        }
 
         if ($siteId) {
             $query->andWhere(['siteId' => $siteId]);
@@ -1303,33 +1381,22 @@ class AnalyticsService extends Component
      */
     private function getDateRangeCondition(string $dateRange): ?array
     {
-        $now = new \DateTime();
+        $bounds = DateRangeHelper::getBounds($dateRange);
+        $start = $bounds['start'] ?? null;
+        $end = $bounds['end'] ?? null;
 
-        switch ($dateRange) {
-            case 'today':
-                $start = (clone $now)->setTime(0, 0, 0);
-                return ['>=', 'lastHit', Db::prepareDateForDb($start)];
-
-            case 'yesterday':
-                $start = (clone $now)->modify('-1 day')->setTime(0, 0, 0);
-                $end = (clone $now)->setTime(0, 0, 0);
-                return ['and', ['>=', 'lastHit', Db::prepareDateForDb($start)], ['<', 'lastHit', Db::prepareDateForDb($end)]];
-
-            case 'last7days':
-                $start = (clone $now)->modify('-7 days');
-                return ['>=', 'lastHit', Db::prepareDateForDb($start)];
-
-            case 'last30days':
-                $start = (clone $now)->modify('-30 days');
-                return ['>=', 'lastHit', Db::prepareDateForDb($start)];
-
-            case 'last90days':
-                $start = (clone $now)->modify('-90 days');
-                return ['>=', 'lastHit', Db::prepareDateForDb($start)];
-
-            case 'all':
-            default:
-                return null;
+        if (!$start && !$end) {
+            return null;
         }
+
+        $conditions = ['and'];
+        if ($start) {
+            $conditions[] = ['>=', 'lastHit', Db::prepareDateForDb($start)];
+        }
+        if ($end) {
+            $conditions[] = ['<', 'lastHit', Db::prepareDateForDb($end)];
+        }
+
+        return $conditions;
     }
 }
