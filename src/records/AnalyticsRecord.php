@@ -66,6 +66,7 @@ class AnalyticsRecord extends ActiveRecord
      * Returns the analytics record's site
      *
      * @return ActiveQueryInterface
+     * @since 5.1.0
      */
     public function getSite(): ActiveQueryInterface
     {

@@ -401,6 +401,11 @@ class Settings extends Model
 
     /**
      * Validate log level - debug requires devMode
+     *
+     * @param string $attribute
+     * @param array|null $params
+     * @param \yii\validators\Validator|null $validator
+     * @since 5.0.0
      */
     public function validateLogLevel($attribute, $params, $validator)
     {
@@ -437,6 +442,11 @@ class Settings extends Model
 
     /**
      * Validate backup path - only allow secure aliases
+     *
+     * @param string $attribute
+     * @param array|null $params
+     * @param \yii\validators\Validator|null $validator
+     * @since 5.23.0
      */
     public function validateBackupPath($attribute, $params, $validator)
     {
@@ -491,6 +501,7 @@ class Settings extends Model
      * Get the resolved backup path (base path without subdirectories)
      *
      * @return string
+     * @since 5.23.0
      */
     public function getBackupPath(): string
     {

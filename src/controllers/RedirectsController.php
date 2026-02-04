@@ -39,6 +39,7 @@ class RedirectsController extends Controller
      * List all redirects
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionIndex(): Response
     {
@@ -133,6 +134,7 @@ class RedirectsController extends Controller
      *
      * @param int|null $redirectId
      * @return Response
+     * @since 5.0.0
      */
     public function actionEdit(?int $redirectId = null): Response
     {
@@ -183,6 +185,7 @@ class RedirectsController extends Controller
      * Save a redirect
      *
      * @return Response|null
+     * @since 5.0.0
      */
     public function actionSave(): ?Response
     {
@@ -292,6 +295,7 @@ class RedirectsController extends Controller
      * Delete a redirect
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionDelete(): Response
     {
@@ -311,6 +315,7 @@ class RedirectsController extends Controller
      * Bulk delete redirects
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionBulkDelete(): Response
     {
@@ -336,6 +341,7 @@ class RedirectsController extends Controller
      * Toggle redirect enabled status
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionToggleEnabled(): Response
     {
@@ -356,6 +362,7 @@ class RedirectsController extends Controller
      * Bulk enable redirects
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionBulkEnable(): Response
     {
@@ -381,6 +388,7 @@ class RedirectsController extends Controller
      * Bulk disable redirects
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionBulkDisable(): Response
     {
@@ -406,6 +414,7 @@ class RedirectsController extends Controller
      * Test a redirect
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionTest(): Response
     {

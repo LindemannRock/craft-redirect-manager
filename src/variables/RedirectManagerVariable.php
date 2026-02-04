@@ -23,6 +23,7 @@ class RedirectManagerVariable
      * Get plugin settings
      *
      * @return \lindemannrock\redirectmanager\models\Settings
+     * @since 5.0.0
      */
     public function getSettings()
     {
@@ -33,6 +34,7 @@ class RedirectManagerVariable
      * Get plugin instance
      *
      * @return RedirectManager
+     * @since 5.0.0
      */
     public function getPlugin()
     {
@@ -45,6 +47,7 @@ class RedirectManagerVariable
      * @param int $redirectId
      * @param string $dateRange
      * @return array
+     * @since 5.1.0
      */
     public function getRedirectAnalytics(int $redirectId, string $dateRange = 'last30days'): array
     {

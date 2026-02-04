@@ -41,6 +41,7 @@ class MatchingService extends Component
      * @param string $pattern
      * @param string $url
      * @return bool
+     * @since 5.0.0
      */
     public function matches(string $matchType, string $pattern, string $url): bool
     {
@@ -60,6 +61,7 @@ class MatchingService extends Component
      * @param string $pattern The pattern to match against
      * @param string $url The URL to test
      * @return array{matched: bool, captures: array}
+     * @since 5.10.0
      */
     public function matchWithCaptures(string $matchType, string $pattern, string $url): array
     {
@@ -82,6 +84,7 @@ class MatchingService extends Component
      * @param string $destination The destination URL template (e.g., "/new/$1/page")
      * @param array $captures The captured groups from matching
      * @return string The destination with captures applied
+     * @since 5.10.0
      */
     public function applyCaptures(string $destination, array $captures): string
     {
@@ -305,6 +308,7 @@ class MatchingService extends Component
      * Get all available match types
      *
      * @return array
+     * @since 5.0.0
      */
     public function getMatchTypes(): array
     {

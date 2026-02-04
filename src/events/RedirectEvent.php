@@ -21,11 +21,13 @@ class RedirectEvent extends Event
 {
     /**
      * @var array The redirect data
+     * @since 5.0.0
      */
     public array $redirect = [];
 
     /**
      * @var bool Whether the event is valid (can be set to false to prevent the action)
+     * @since 5.0.0
      */
     public bool $isValid = true;
 }

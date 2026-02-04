@@ -47,6 +47,7 @@ class ImportExportController extends Controller
      * Import/Export settings page
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionIndex(): Response
     {
@@ -131,6 +132,7 @@ class ImportExportController extends Controller
      * Backups page
      *
      * @return Response
+     * @since 5.23.0
      */
     public function actionBackups(): Response
     {
@@ -151,6 +153,7 @@ class ImportExportController extends Controller
      * Get backups as JSON (for async loading)
      *
      * @return Response
+     * @since 5.23.0
      */
     public function actionGetBackups(): Response
     {
@@ -249,6 +252,7 @@ class ImportExportController extends Controller
      * Create a backup on demand
      *
      * @return Response
+     * @since 5.23.0
      */
     public function actionCreateBackup(): Response
     {
@@ -298,6 +302,7 @@ class ImportExportController extends Controller
      * Export redirects to CSV
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionExport(): Response
     {
@@ -373,6 +378,7 @@ class ImportExportController extends Controller
      * Upload and parse CSV file
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionUpload(): Response
     {
@@ -438,6 +444,7 @@ class ImportExportController extends Controller
      * Map CSV columns
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionMap(): Response
     {
@@ -466,6 +473,7 @@ class ImportExportController extends Controller
      * Preview import with mapped columns (POST - process mapping)
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionPreview(): Response
     {
@@ -783,6 +791,7 @@ class ImportExportController extends Controller
      * Perform the import
      *
      * @return Response|null
+     * @since 5.0.0
      */
     public function actionImport(): ?Response
     {
@@ -936,6 +945,7 @@ class ImportExportController extends Controller
      * Download backup as ZIP
      *
      * @return Response
+     * @since 5.23.0
      */
     public function actionDownloadBackup(): Response
     {
@@ -978,6 +988,7 @@ class ImportExportController extends Controller
      * Restore from backup
      *
      * @return Response|null
+     * @since 5.23.0
      */
     public function actionRestoreBackup(): ?Response
     {
@@ -1075,6 +1086,7 @@ class ImportExportController extends Controller
      * Delete backup
      *
      * @return Response|null
+     * @since 5.23.0
      */
     public function actionDeleteBackup(): ?Response
     {

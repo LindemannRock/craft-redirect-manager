@@ -114,6 +114,7 @@ class AnalyticsController extends Controller
      * Dashboard - 404 list with filters
      *
      * @return Response
+     * @since 5.1.0
      */
     public function actionDashboard(): Response
     {
@@ -279,6 +280,7 @@ class AnalyticsController extends Controller
      * Analytics index - Charts and analytics
      *
      * @return Response
+     * @since 5.1.0
      */
     public function actionIndex(): Response
     {
@@ -349,6 +351,7 @@ class AnalyticsController extends Controller
      * Get dashboard data via AJAX (for auto-refresh without full page reload)
      *
      * @return Response
+     * @since 5.1.0
      */
     public function actionGetDashboardData(): Response
     {
@@ -508,6 +511,7 @@ class AnalyticsController extends Controller
      * Create redirect from 404
      *
      * @return Response
+     * @since 5.1.0
      */
     public function actionCreateRedirectFrom404(): Response
     {
@@ -528,6 +532,7 @@ class AnalyticsController extends Controller
      * Delete an analytic
      *
      * @return Response
+     * @since 5.1.0
      */
     public function actionDelete(): Response
     {
@@ -547,6 +552,7 @@ class AnalyticsController extends Controller
      * Clear all analytics
      *
      * @return Response
+     * @since 5.1.0
      */
     public function actionClearAll(): Response
     {
@@ -572,6 +578,7 @@ class AnalyticsController extends Controller
      * Export analytics
      *
      * @return Response
+     * @since 5.1.0
      */
     public function actionExport(): Response
     {
@@ -676,6 +683,7 @@ class AnalyticsController extends Controller
      * Used by dashboard for bulk export of selected items.
      *
      * @return Response
+     * @since 5.1.0
      */
     public function actionExportCsv(): Response
     {
@@ -686,6 +694,7 @@ class AnalyticsController extends Controller
      * Get chart data (AJAX)
      *
      * @return Response
+     * @since 5.1.0
      */
     public function actionGetChartData(): Response
     {
@@ -708,6 +717,7 @@ class AnalyticsController extends Controller
      * Get analytics data via AJAX (for date range filtering)
      *
      * @return Response
+     * @since 5.1.0
      */
     public function actionGetData(): Response
     {

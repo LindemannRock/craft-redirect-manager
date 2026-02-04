@@ -40,6 +40,7 @@ class SettingsController extends Controller
      * Settings index
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionIndex(): Response
     {
@@ -50,6 +51,7 @@ class SettingsController extends Controller
      * General settings
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionGeneral(): Response
     {
@@ -66,6 +68,7 @@ class SettingsController extends Controller
      * Analytics settings
      *
      * @return Response
+     * @since 5.1.0
      */
     public function actionAnalytics(): Response
     {
@@ -82,6 +85,7 @@ class SettingsController extends Controller
      * Interface settings
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionInterface(): Response
     {
@@ -98,6 +102,7 @@ class SettingsController extends Controller
      * Cache settings
      *
      * @return Response
+     * @since 5.1.0
      */
     public function actionCache(): Response
     {
@@ -114,6 +119,7 @@ class SettingsController extends Controller
      * Advanced settings
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionAdvanced(): Response
     {
@@ -130,6 +136,7 @@ class SettingsController extends Controller
      * Backup settings
      *
      * @return Response
+     * @since 5.23.0
      */
     public function actionBackup(): Response
     {
@@ -146,6 +153,7 @@ class SettingsController extends Controller
      * Save settings
      *
      * @return Response|null
+     * @since 5.0.0
      */
     public function actionSave(): ?Response
     {
@@ -202,6 +210,7 @@ class SettingsController extends Controller
      * Apply recommended exclude patterns and headers
      *
      * @return Response|null
+     * @since 5.0.0
      */
     public function actionApplyRecommended(): ?Response
     {
@@ -275,6 +284,7 @@ class SettingsController extends Controller
      * Apply WordPress migration filters
      *
      * @return Response|null
+     * @since 5.0.0
      */
     public function actionApplyWordpressFilters(): ?Response
     {
@@ -333,6 +343,7 @@ class SettingsController extends Controller
      * Apply security probe filters (block common vulnerability scanning)
      *
      * @return Response|null
+     * @since 5.0.0
      */
     public function actionApplySecurityFilters(): ?Response
     {
@@ -422,6 +433,7 @@ class SettingsController extends Controller
      * Test redirects page
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionTest(): Response
     {
@@ -438,6 +450,7 @@ class SettingsController extends Controller
      * Test a URL to see if it matches any redirects
      *
      * @return Response
+     * @since 5.0.0
      */
     public function actionTestUrl(): Response
     {
@@ -522,6 +535,9 @@ class SettingsController extends Controller
 
     /**
      * Clear redirect cache
+     *
+     * @return Response
+     * @since 5.1.0
      */
     public function actionClearRedirectCache(): Response
     {
@@ -568,6 +584,9 @@ class SettingsController extends Controller
 
     /**
      * Clear device detection cache
+     *
+     * @return Response
+     * @since 5.1.0
      */
     public function actionClearDeviceCache(): Response
     {
@@ -623,6 +642,9 @@ class SettingsController extends Controller
 
     /**
      * Clear all caches
+     *
+     * @return Response
+     * @since 5.1.0
      */
     public function actionClearAllCaches(): Response
     {
@@ -688,6 +710,9 @@ class SettingsController extends Controller
 
     /**
      * Clear all analytics data
+     *
+     * @return Response
+     * @since 5.1.0
      */
     public function actionClearAllAnalytics(): Response
     {

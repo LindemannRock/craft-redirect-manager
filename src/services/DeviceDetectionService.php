@@ -40,6 +40,7 @@ class DeviceDetectionService extends Component
      *
      * @param string|null $userAgent
      * @return array Device information array
+     * @since 5.1.0
      */
     public function detectDevice(?string $userAgent = null): array
     {
@@ -51,6 +52,7 @@ class DeviceDetectionService extends Component
      *
      * @param array $deviceInfo
      * @return bool
+     * @since 5.1.0
      */
     public function isMobileDevice(array $deviceInfo): bool
     {
@@ -62,6 +64,7 @@ class DeviceDetectionService extends Component
      *
      * @param array $deviceInfo
      * @return bool
+     * @since 5.1.0
      */
     public function isBot(array $deviceInfo): bool
     {
