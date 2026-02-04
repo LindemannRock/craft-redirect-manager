@@ -269,16 +269,16 @@
 				{% if redirect.lastHit %}
 					<div class="data">
 						<dt class="heading">{{ 'Last hit'|t('redirect-manager') }}</dt>
-						<dd class="value">{{ redirect.lastHit|datetime('short') }}</dd>
+						<dd class="value">{{ redirect.lastHit|lrDatetime('short') }}</dd>
 					</div>
 				{% endif %}
 				<div class="data">
 					<dt class="heading">{{ 'Created'|t('redirect-manager') }}</dt>
-					<dd class="value">{{ redirect.dateCreated|datetime('short') }}</dd>
+					<dd class="value">{{ redirect.dateCreated|lrDatetime('short') }}</dd>
 				</div>
 				<div class="data">
 					<dt class="heading">{{ 'Updated'|t('redirect-manager') }}</dt>
-					<dd class="value">{{ redirect.dateUpdated|datetime('short') }}</dd>
+					<dd class="value">{{ redirect.dateUpdated|lrDatetime('short') }}</dd>
 				</div>
 			</dl>
 		</fieldset>

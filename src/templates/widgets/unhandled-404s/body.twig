@@ -20,7 +20,7 @@
                                 </a>
                                 {% if stat.lastHit %}
                                     <div class="last-hit">
-                                        {{ "Last seen"|t('redirect-manager') }}: {{ stat.lastHit|datetime('short') }}
+                                        {{ "Last seen"|t('redirect-manager') }}: {{ stat.lastHit|lrDatetime('short') }}
                                     </div>
                                 {% endif %}
                             </div>
