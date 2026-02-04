@@ -297,6 +297,7 @@ class AnalyticsController extends Controller
 
         // Get chart data
         $chartData = RedirectManager::$plugin->analytics->getChartData($siteId, $days, $startDate, $endDate);
+        $chartData = $this->_normalizeChartData($chartData, $startDate, $endDate);
 
         // Get most common 404s
         $mostCommon = RedirectManager::$plugin->analytics->getMostCommon404s($siteId, 15, null, $days, $startDate, $endDate);
@@ -695,6 +696,7 @@ class AnalyticsController extends Controller
         $days = (int)Craft::$app->getRequest()->getQueryParam('days', 30);
 
         $chartData = RedirectManager::$plugin->analytics->getChartData($siteId, $days);
+        $chartData = $this->_normalizeChartData($chartData, $this->_getDaysStartDate($days), null);
 
         return $this->asJson([
             'success' => true,
@@ -759,6 +761,7 @@ class AnalyticsController extends Controller
 
             case 'chart':
                 $data = RedirectManager::$plugin->analytics->getChartData($siteId, $days, $startDate, $endDate);
+                $data = $this->_normalizeChartData($data, $startDate, $endDate);
                 break;
 
             case 'devices':
@@ -835,5 +838,82 @@ class AnalyticsController extends Controller
             'start' => $bounds['start'] ?? null,
             'end' => $bounds['end'] ?? null,
         ];
+    }
+
+    /**
+     * Normalize chart rows into a local-time label range.
+     *
+     * @param array $rows
+     * @param \DateTime|null $startDateUtc
+     * @param \DateTime|null $endDateUtc
+     * @return array
+     */
+    private function _normalizeChartData(array $rows, ?\DateTime $startDateUtc, ?\DateTime $endDateUtc): array
+    {
+        if (empty($rows)) {
+            return [];
+        }
+
+        $tz = new \DateTimeZone(Craft::$app->getTimeZone());
+        $startLocal = $startDateUtc ? (clone $startDateUtc)->setTimezone($tz) : null;
+        $endLocal = $endDateUtc ? (clone $endDateUtc)->setTimezone($tz)->modify('-1 day') : new \DateTime('now', $tz);
+
+        $map = [];
+        foreach ($rows as $row) {
+            $rowDate = new \DateTime($row['date'], new \DateTimeZone('UTC'));
+            $localKey = $rowDate->setTimezone($tz)->format('Y-m-d');
+            if (!isset($map[$localKey])) {
+                $map[$localKey] = [
+                    'total' => 0,
+                    'handled' => 0,
+                    'unhandled' => 0,
+                ];
+            }
+            $map[$localKey]['total'] += (int)($row['total'] ?? 0);
+            $map[$localKey]['handled'] += (int)($row['handled'] ?? 0);
+            $map[$localKey]['unhandled'] += (int)($row['unhandled'] ?? 0);
+        }
+
+        if ($startLocal === null) {
+            ksort($map);
+            $normalized = [];
+            foreach ($map as $date => $counts) {
+                $normalized[] = ['date' => $date] + $counts;
+            }
+            return $normalized;
+        }
+
+        $startLocal->setTime(0, 0, 0);
+        $endLocal->setTime(0, 0, 0);
+        $cursor = clone $startLocal;
+
+        $normalized = [];
+        while ($cursor <= $endLocal) {
+            $key = $cursor->format('Y-m-d');
+            $counts = $map[$key] ?? ['total' => 0, 'handled' => 0, 'unhandled' => 0];
+            $normalized[] = ['date' => $key] + $counts;
+            $cursor->modify('+1 day');
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Build a UTC start date for "last X days" ranges.
+     *
+     * @param int $days
+     * @return \DateTime|null
+     */
+    private function _getDaysStartDate(int $days): ?\DateTime
+    {
+        if ($days >= 36500) {
+            return null;
+        }
+
+        $tz = new \DateTimeZone(Craft::$app->getTimeZone());
+        $startLocal = new \DateTime('now', $tz);
+        $startLocal->modify("-{$days} days")->setTime(0, 0, 0);
+
+        return $startLocal->setTimezone(new \DateTimeZone('UTC'));
     }
 }
