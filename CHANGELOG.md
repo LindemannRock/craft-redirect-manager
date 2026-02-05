@@ -1,5 +1,27 @@
 # Changelog
 
+## [5.24.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.23.0...v5.24.0) (2026-02-05)
+
+
+### Features
+
+* **backups:** Implement backup functionality for redirects ([62a9fb1](https://github.com/LindemannRock/craft-redirect-manager/commit/62a9fb1ab8a95f904d47bab4cdc811256f600ff1))
+* **import-export:** add clear import history functionality and view history permissions ([fa194ca](https://github.com/LindemannRock/craft-redirect-manager/commit/fa194ca007ec3ed3fff3602eaad5f87e27a86a9c))
+* **import-export:** add import limits to controller and template ([35b7519](https://github.com/LindemannRock/craft-redirect-manager/commit/35b75192f28fa7a795165b1e381bbc49e1e6da71))
+
+
+### Bug Fixes
+
+* **actionExport:** handle empty data case in export action ([7546545](https://github.com/LindemannRock/craft-redirect-manager/commit/754654510ec53031b6e1fa63408c0c7f15fdb9f2))
+* **RedirectManager:** update [@since](https://github.com/since) version in getCpSections method to 5.24.0 ([c5580f0](https://github.com/LindemannRock/craft-redirect-manager/commit/c5580f0506c6da1f28a06ab1f6cc42bad4bd7268))
+* **RedirectsService:** 404 handling by stripping site base path ([ff7c7b1](https://github.com/LindemannRock/craft-redirect-manager/commit/ff7c7b18bc4e4cbeff6b786f29d00cc3aa7bf6b6))
+
+
+### Miscellaneous Chores
+
+* remove unused dependency from composer.json ([7a3ba83](https://github.com/LindemannRock/craft-redirect-manager/commit/7a3ba839a29fe8d3c2138cfc91b047ccf3a71f0a))
+* update package.json with author and company details ([3d58f43](https://github.com/LindemannRock/craft-redirect-manager/commit/3d58f4338019a71f7022eb6264313203b474e521))
+
 ## [5.23.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.22.0...v5.23.0) (2026-01-28)
 
 
