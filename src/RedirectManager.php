@@ -134,15 +134,6 @@ class RedirectManager extends Plugin
         $this->scheduleAnalyticsCleanup();
         $this->scheduleBackupJob();
 
-        // Register translations
-        Craft::$app->i18n->translations['redirect-manager'] = [
-            'class' => \craft\i18n\PhpMessageSource::class,
-            'sourceLanguage' => 'en',
-            'basePath' => __DIR__ . '/translations',
-            'forceTranslation' => true,
-            'allowOverrides' => true,
-        ];
-
         // Register variables
         Event::on(
             CraftVariable::class,
