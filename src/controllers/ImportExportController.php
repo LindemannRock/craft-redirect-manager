@@ -15,7 +15,7 @@ use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use lindemannrock\base\helpers\CsvImportHelper;
-use lindemannrock\base\helpers\DateTimeHelper;
+use lindemannrock\base\helpers\DateFormatHelper;
 use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\records\ImportHistoryRecord;
@@ -73,7 +73,7 @@ class ImportExportController extends Controller
                 $user = Craft::$app->getUsers()->getUserById($record->userId);
                 $formattedHistory[] = [
                     'date' => $record->dateCreated,
-                    'formattedDate' => DateTimeHelper::formatDatetime($record->dateCreated),
+                    'formattedDate' => DateFormatHelper::formatDatetime($record->dateCreated),
                     'user' => $user?->username ?? Craft::t('redirect-manager', 'Unknown'),
                     'filename' => $record->filename,
                     'filesize' => $record->filesize,
@@ -178,12 +178,12 @@ class ImportExportController extends Controller
             if (is_numeric($timestamp)) {
                 $dateTime = new \DateTime('@' . (int)$timestamp);
                 $dateTime->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
-                $formattedDate = DateTimeHelper::formatDatetime($dateTime);
+                $formattedDate = DateFormatHelper::formatDatetime($dateTime);
             } elseif (!empty($backup['date'])) {
                 $dateTime = \DateTime::createFromFormat('Y-m-d_H-i-s', $backup['date']);
                 if ($dateTime) {
                     $dateTime->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
-                    $formattedDate = DateTimeHelper::formatDatetime($dateTime);
+                    $formattedDate = DateFormatHelper::formatDatetime($dateTime);
                 }
             }
 

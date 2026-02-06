@@ -12,6 +12,7 @@ use Craft;
 use craft\base\Component;
 use craft\db\Query;
 use craft\helpers\Db;
+use lindemannrock\base\helpers\DateFormatHelper;
 use lindemannrock\base\helpers\DateRangeHelper;
 use lindemannrock\base\helpers\GeoHelper;
 use lindemannrock\base\traits\GeoLookupTrait;
@@ -415,15 +416,17 @@ class AnalyticsService extends Component
      */
     public function getChartData(?int $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
+        $localDate = DateFormatHelper::localDateExpression('lastHit');
+
         $query = (new Query())
             ->select([
-                'DATE(lastHit) as date',
+                'date' => $localDate,
                 'COUNT(*) as total',
                 'SUM(CASE WHEN handled = 1 THEN 1 ELSE 0 END) as handled',
                 'SUM(CASE WHEN handled = 0 THEN 1 ELSE 0 END) as unhandled',
             ])
             ->from(AnalyticsRecord::tableName())
-            ->groupBy('DATE(lastHit)')
+            ->groupBy($localDate)
             ->orderBy('date ASC');
 
         if ($startDate !== null) {
