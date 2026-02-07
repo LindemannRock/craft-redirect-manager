@@ -16,6 +16,7 @@ use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\RedirectManager;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 /**
@@ -87,6 +88,27 @@ class AnalyticsController extends Controller
     }
 
     /**
+     * Validate and resolve a siteId against the user's editable sites.
+     *
+     * @param int|null $siteId The requested site ID (null = all editable sites)
+     * @return int|array<int> Validated site ID, or array of editable site IDs
+     * @throws ForbiddenHttpException if user doesn't have access to the requested site
+     */
+    private function _resolveSiteId(?int $siteId): int|array
+    {
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+
+        if ($siteId !== null) {
+            if (!in_array($siteId, $editableSiteIds, true)) {
+                throw new ForbiddenHttpException('You do not have permission to view analytics for this site.');
+            }
+            return $siteId;
+        }
+
+        return $editableSiteIds;
+    }
+
+    /**
      * Detect the type of a 404 request
      *
      * @param array $stat Analytics record data
@@ -148,9 +170,13 @@ class AnalyticsController extends Controller
         $limit = $settings->itemsPerPage ?? 100;
         $offset = ($page - 1) * $limit;
 
+        // Scope to user's editable sites
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+
         // Build query
         $query = (new \craft\db\Query())
-            ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName());
+            ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName())
+            ->andWhere(['siteId' => $editableSiteIds]);
 
         // Apply handled filter
         if ($handledFilter === 'handled') {
@@ -238,14 +264,15 @@ class AnalyticsController extends Controller
             }
         }
 
-        // Get overall counts
-        $allCount = RedirectManager::$plugin->analytics->getAnalyticsCount();
-        $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount(null, true);
-        $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount(null, false);
+        // Get overall counts (scoped to editable sites)
+        $allCount = RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds);
+        $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds, true);
+        $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds, false);
 
-        // Get type counts (for filter display)
+        // Get type counts (for filter display, scoped to editable sites)
         $allAnalyticsForCounts = (new \craft\db\Query())
             ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName())
+            ->andWhere(['siteId' => $editableSiteIds])
             ->all();
 
         foreach ($allAnalyticsForCounts as $stat) {
@@ -289,6 +316,7 @@ class AnalyticsController extends Controller
         $request = Craft::$app->getRequest();
         $siteId = $request->getQueryParam('siteId');
         $siteId = $siteId ? (int)$siteId : null; // Convert empty string to null
+        $effectiveSiteId = $this->_resolveSiteId($siteId);
         $dateRange = $request->getQueryParam('dateRange', DateRangeHelper::getDefaultDateRange(RedirectManager::$plugin->id));
 
         // Convert date range to days + bounds
@@ -298,33 +326,33 @@ class AnalyticsController extends Controller
         $endDate = $dateFilter['end'] ?? null;
 
         // Get chart data
-        $chartData = RedirectManager::$plugin->analytics->getChartData($siteId, $days, $startDate, $endDate);
+        $chartData = RedirectManager::$plugin->analytics->getChartData($effectiveSiteId, $days, $startDate, $endDate);
         $chartData = $this->_normalizeChartData($chartData, $startDate, $endDate);
 
         // Get most common 404s
-        $mostCommon = RedirectManager::$plugin->analytics->getMostCommon404s($siteId, 15, null, $days, $startDate, $endDate);
+        $mostCommon = RedirectManager::$plugin->analytics->getMostCommon404s($effectiveSiteId, 15, null, $days, $startDate, $endDate);
 
         // Get recent 404s
-        $recentHandled = RedirectManager::$plugin->analytics->getRecent404s($siteId, 5, true, $days, $startDate, $endDate);
-        $recentUnhandled = RedirectManager::$plugin->analytics->getRecent404s($siteId, 5, false, $days, $startDate, $endDate);
+        $recentHandled = RedirectManager::$plugin->analytics->getRecent404s($effectiveSiteId, 5, true, $days, $startDate, $endDate);
+        $recentUnhandled = RedirectManager::$plugin->analytics->getRecent404s($effectiveSiteId, 5, false, $days, $startDate, $endDate);
 
         // Get counts
-        $totalCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, null, $days, $startDate, $endDate);
-        $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, true, $days, $startDate, $endDate);
-        $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, false, $days, $startDate, $endDate);
+        $totalCount = RedirectManager::$plugin->analytics->getAnalyticsCount($effectiveSiteId, null, $days, $startDate, $endDate);
+        $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($effectiveSiteId, true, $days, $startDate, $endDate);
+        $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($effectiveSiteId, false, $days, $startDate, $endDate);
 
         // Get device analytics
-        $deviceBreakdown = RedirectManager::$plugin->analytics->getDeviceBreakdown($siteId, $days, $startDate, $endDate);
-        $browserBreakdown = RedirectManager::$plugin->analytics->getBrowserBreakdown($siteId, $days, $startDate, $endDate);
-        $osBreakdown = RedirectManager::$plugin->analytics->getOsBreakdown($siteId, $days, $startDate, $endDate);
-        $botStats = RedirectManager::$plugin->analytics->getBotStats($siteId, $days, $startDate, $endDate);
+        $deviceBreakdown = RedirectManager::$plugin->analytics->getDeviceBreakdown($effectiveSiteId, $days, $startDate, $endDate);
+        $browserBreakdown = RedirectManager::$plugin->analytics->getBrowserBreakdown($effectiveSiteId, $days, $startDate, $endDate);
+        $osBreakdown = RedirectManager::$plugin->analytics->getOsBreakdown($effectiveSiteId, $days, $startDate, $endDate);
+        $botStats = RedirectManager::$plugin->analytics->getBotStats($effectiveSiteId, $days, $startDate, $endDate);
 
         // Get geographic analytics
-        $topCountries = RedirectManager::$plugin->analytics->getTopCountries($siteId, $days, 15, $startDate, $endDate);
-        $topCities = RedirectManager::$plugin->analytics->getTopCities($siteId, $days, 15, $startDate, $endDate);
+        $topCountries = RedirectManager::$plugin->analytics->getTopCountries($effectiveSiteId, $days, 15, $startDate, $endDate);
+        $topCities = RedirectManager::$plugin->analytics->getTopCities($effectiveSiteId, $days, 15, $startDate, $endDate);
 
-        // Get all sites for site selector
-        $sites = Craft::$app->getSites()->getAllSites();
+        // Get editable sites for site selector
+        $sites = Craft::$app->getSites()->getEditableSites();
 
         return $this->renderTemplate('redirect-manager/analytics/index', [
             'chartData' => $chartData,
@@ -360,6 +388,9 @@ class AnalyticsController extends Controller
         $request = Craft::$app->getRequest();
         $settings = RedirectManager::$plugin->getSettings();
 
+        // Scope to user's editable sites
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+
         // Get filter parameters
         $search = $request->getQueryParam('search', '');
         $handledFilter = $request->getQueryParam('handled', 'all');
@@ -376,7 +407,8 @@ class AnalyticsController extends Controller
 
         // Build query
         $query = (new \craft\db\Query())
-            ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName());
+            ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName())
+            ->andWhere(['siteId' => $editableSiteIds]);
 
         // Apply handled filter
         if ($handledFilter === 'handled') {
@@ -469,14 +501,15 @@ class AnalyticsController extends Controller
             }
         }
 
-        // Get overall counts
-        $allCount = RedirectManager::$plugin->analytics->getAnalyticsCount();
-        $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount(null, true);
-        $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount(null, false);
+        // Get overall counts (scoped to editable sites)
+        $allCount = RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds);
+        $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds, true);
+        $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds, false);
 
-        // Get type counts (for filter display)
+        // Get type counts (for filter display, scoped to editable sites)
         $allAnalyticsForCounts = (new \craft\db\Query())
             ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName())
+            ->andWhere(['siteId' => $editableSiteIds])
             ->all();
 
         foreach ($allAnalyticsForCounts as $stat) {
@@ -561,8 +594,9 @@ class AnalyticsController extends Controller
 
         $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
         $siteId = $siteId ? (int)$siteId : null;
+        $effectiveSiteId = $this->_resolveSiteId($siteId);
 
-        $deleted = RedirectManager::$plugin->analytics->clearAnalytics($siteId);
+        $deleted = RedirectManager::$plugin->analytics->clearAnalytics($effectiveSiteId);
 
         Craft::$app->getSession()->setNotice(
             Craft::t('redirect-manager', '{count} analytics cleared', ['count' => $deleted])
@@ -587,6 +621,7 @@ class AnalyticsController extends Controller
         $request = Craft::$app->getRequest();
         $siteId = $request->getQueryParam('siteId');
         $siteId = $siteId ? (int)$siteId : null;
+        $effectiveSiteId = $this->_resolveSiteId($siteId);
         $redirectId = $request->getQueryParam('redirectId');
         $redirectId = $redirectId ? (int)$redirectId : null;
 
@@ -606,7 +641,7 @@ class AnalyticsController extends Controller
         $endDate = $dateFilter['end'] ?? null;
 
         // Get analytics data
-        $analyticsData = RedirectManager::$plugin->analytics->getExportData($siteId, $analyticIds, $days, $startDate, $endDate, $redirectId);
+        $analyticsData = RedirectManager::$plugin->analytics->getExportData($effectiveSiteId, $analyticIds, $days, $startDate, $endDate, $redirectId);
 
         // Check for empty data
         if (empty($analyticsData)) {
@@ -702,9 +737,10 @@ class AnalyticsController extends Controller
 
         $siteId = Craft::$app->getRequest()->getQueryParam('siteId');
         $siteId = $siteId ? (int)$siteId : null;
+        $effectiveSiteId = $this->_resolveSiteId($siteId);
         $days = (int)Craft::$app->getRequest()->getQueryParam('days', 30);
 
-        $chartData = RedirectManager::$plugin->analytics->getChartData($siteId, $days);
+        $chartData = RedirectManager::$plugin->analytics->getChartData($effectiveSiteId, $days);
         $chartData = $this->_normalizeChartData($chartData, $this->_getDaysStartDate($days), null);
 
         return $this->asJson([
@@ -726,6 +762,7 @@ class AnalyticsController extends Controller
         $request = Craft::$app->getRequest();
         $siteId = $request->getBodyParam('siteId');
         $siteId = $siteId ? (int)$siteId : null; // Convert empty string to null
+        $effectiveSiteId = $this->_resolveSiteId($siteId);
         $dateRange = $request->getBodyParam('dateRange', DateRangeHelper::getDefaultDateRange(RedirectManager::$plugin->id));
         $type = $request->getBodyParam('type', 'summary');
 
@@ -742,20 +779,20 @@ class AnalyticsController extends Controller
         switch ($type) {
             case 'summary':
                 // Get counts
-                $totalCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, null, $days, $startDate, $endDate);
-                $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, true, $days, $startDate, $endDate);
-                $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($siteId, false, $days, $startDate, $endDate);
+                $totalCount = RedirectManager::$plugin->analytics->getAnalyticsCount($effectiveSiteId, null, $days, $startDate, $endDate);
+                $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($effectiveSiteId, true, $days, $startDate, $endDate);
+                $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($effectiveSiteId, false, $days, $startDate, $endDate);
 
                 // Get tables data
-                $mostCommon = RedirectManager::$plugin->analytics->getMostCommon404s($siteId, 15, null, $days, $startDate, $endDate);
-                $recentUnhandled = RedirectManager::$plugin->analytics->getRecent404s($siteId, 5, false, $days, $startDate, $endDate);
+                $mostCommon = RedirectManager::$plugin->analytics->getMostCommon404s($effectiveSiteId, 15, null, $days, $startDate, $endDate);
+                $recentUnhandled = RedirectManager::$plugin->analytics->getRecent404s($effectiveSiteId, 5, false, $days, $startDate, $endDate);
 
                 // Get bot stats
-                $botStats = RedirectManager::$plugin->analytics->getBotStats($siteId, $days, $startDate, $endDate);
+                $botStats = RedirectManager::$plugin->analytics->getBotStats($effectiveSiteId, $days, $startDate, $endDate);
 
                 // Get geographic data
-                $topCountries = RedirectManager::$plugin->analytics->getTopCountries($siteId, $days, 15, $startDate, $endDate);
-                $topCities = RedirectManager::$plugin->analytics->getTopCities($siteId, $days, 15, $startDate, $endDate);
+                $topCountries = RedirectManager::$plugin->analytics->getTopCountries($effectiveSiteId, $days, 15, $startDate, $endDate);
+                $topCities = RedirectManager::$plugin->analytics->getTopCities($effectiveSiteId, $days, 15, $startDate, $endDate);
 
                 $data = [
                     'totalCount' => $totalCount,
@@ -770,32 +807,32 @@ class AnalyticsController extends Controller
                 break;
 
             case 'chart':
-                $data = RedirectManager::$plugin->analytics->getChartData($siteId, $days, $startDate, $endDate);
+                $data = RedirectManager::$plugin->analytics->getChartData($effectiveSiteId, $days, $startDate, $endDate);
                 $data = $this->_normalizeChartData($data, $startDate, $endDate);
                 break;
 
             case 'devices':
-                $data = RedirectManager::$plugin->analytics->getDeviceBreakdown($siteId, $days, $startDate, $endDate);
+                $data = RedirectManager::$plugin->analytics->getDeviceBreakdown($effectiveSiteId, $days, $startDate, $endDate);
                 break;
 
             case 'browsers':
-                $data = RedirectManager::$plugin->analytics->getBrowserBreakdown($siteId, $days, $startDate, $endDate);
+                $data = RedirectManager::$plugin->analytics->getBrowserBreakdown($effectiveSiteId, $days, $startDate, $endDate);
                 break;
 
             case 'os':
-                $data = RedirectManager::$plugin->analytics->getOsBreakdown($siteId, $days, $startDate, $endDate);
+                $data = RedirectManager::$plugin->analytics->getOsBreakdown($effectiveSiteId, $days, $startDate, $endDate);
                 break;
 
             case 'bots':
-                $data = RedirectManager::$plugin->analytics->getBotStats($siteId, $days, $startDate, $endDate);
+                $data = RedirectManager::$plugin->analytics->getBotStats($effectiveSiteId, $days, $startDate, $endDate);
                 break;
 
             case 'countries':
-                $data = RedirectManager::$plugin->analytics->getTopCountries($siteId, $days, 15, $startDate, $endDate);
+                $data = RedirectManager::$plugin->analytics->getTopCountries($effectiveSiteId, $days, 15, $startDate, $endDate);
                 break;
 
             case 'cities':
-                $data = RedirectManager::$plugin->analytics->getTopCities($siteId, $days, 15, $startDate, $endDate);
+                $data = RedirectManager::$plugin->analytics->getTopCities($effectiveSiteId, $days, 15, $startDate, $endDate);
                 break;
         }
 

@@ -307,6 +307,7 @@ class RedirectManager extends Plugin
                 'redirectManager:manageImportExport',
                 'redirectManager:importRedirects',
                 'redirectManager:exportRedirects',
+                'redirectManager:viewImportHistory',
             ],
         ];
 

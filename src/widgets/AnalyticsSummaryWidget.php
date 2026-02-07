@@ -38,6 +38,15 @@ class AnalyticsSummaryWidget extends Widget
     /**
      * @inheritdoc
      */
+    public static function isSelectable(): bool
+    {
+        return parent::isSelectable() &&
+            Craft::$app->getUser()->checkPermission('redirectManager:viewAnalytics');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function displayName(): string
     {
         $pluginName = RedirectManager::$plugin->getSettings()->getFullName();
@@ -92,13 +101,17 @@ class AnalyticsSummaryWidget extends Widget
      */
     public function getBodyHtml(): ?string
     {
-        // Check if analytics are enabled
+        if (!Craft::$app->getUser()->checkPermission('redirectManager:viewAnalytics')) {
+            return '<p class="light">' . Craft::t('redirect-manager', 'You don\'t have permission to view analytics.') . '</p>';
+        }
+
         if (!RedirectManager::$plugin->getSettings()->enableAnalytics) {
             return '<p class="light">' . Craft::t('redirect-manager', 'Analytics are disabled in plugin settings.') . '</p>';
         }
 
-        // Get analytics data
-        $chartData = RedirectManager::$plugin->analytics->getChartData(null, $this->days);
+        // Get analytics data scoped to user's editable sites
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $chartData = RedirectManager::$plugin->analytics->getChartData($editableSiteIds, $this->days);
 
         // Calculate totals
         $totalHandled = array_sum(array_column($chartData, 'handled'));

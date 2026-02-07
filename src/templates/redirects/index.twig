@@ -29,7 +29,7 @@
         name: redirectHelper.fullName,
     },
     page: {
-        title: redirectHelper.fullName|t('redirect-manager'),
+        title: redirectHelper.pluralDisplayName|t('redirect-manager'),
         subnav: 'redirects',
         crumbs: [
             { label: redirectHelper.fullName, url: url('redirect-manager') },
@@ -109,7 +109,7 @@
         itemLabel: {singular: redirectHelper.lowerDisplayName, plural: redirectHelper.pluralLowerDisplayName},
     },
     checkboxes: canEdit or canDelete,
-    rowActions: canDelete,
+    rowActions: canEdit or canDelete,
     newButton: canCreate ? {
         url: url('redirect-manager/redirects/new'),
         label: 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}),
@@ -203,10 +203,34 @@
 {% endblock %}
 
 {% block rowActions %}
-    {% if canDelete %}
+    {% set hasRowActions = canEdit or canDelete %}
+    {% if hasRowActions %}
         <td class="thin" style="text-align: right;">
-            <button type="button" class="btn icon delete row-delete-btn" data-id="{{ item.id }}" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}"></button>
+            <button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}"></button>
+            <div class="menu">
+                <ul>
+                    {% if canEdit %}
+                        <li>
+                            <a href="{{ url('redirect-manager/redirects/' ~ item.id) }}">
+                                {{ 'Edit'|t('app') }}
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if canDelete %}
+                        {% if canEdit %}
+                            <li><hr class="padded"></li>
+                        {% endif %}
+                        <li>
+                            <a class="error row-delete-btn" data-id="{{ item.id }}">
+                                {{ 'Delete'|t('app') }}
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
         </td>
+    {% else %}
+        <td class="thin"></td>
     {% endif %}
 {% endblock %}
 

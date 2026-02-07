@@ -209,13 +209,13 @@ class AnalyticsService extends Component
     /**
      * Get all analytics
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @param int|null $limit
      * @param string $orderBy
      * @return array
      * @since 5.1.0
      */
-    public function getAllAnalytics(?int $siteId = null, ?int $limit = null, string $orderBy = 'lastHit DESC'): array
+    public function getAllAnalytics(int|array|null $siteId = null, ?int $limit = null, string $orderBy = 'lastHit DESC'): array
     {
         $query = (new Query())
             ->from(AnalyticsRecord::tableName());
@@ -313,12 +313,12 @@ class AnalyticsService extends Component
     /**
      * Get unhandled 404s (not resolved by redirects)
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @param int|null $limit
      * @return array
      * @since 5.1.0
      */
-    public function getUnhandled404s(?int $siteId = null, ?int $limit = null): array
+    public function getUnhandled404s(int|array|null $siteId = null, ?int $limit = null): array
     {
         $query = (new Query())
             ->from(AnalyticsRecord::tableName())
@@ -340,12 +340,12 @@ class AnalyticsService extends Component
     /**
      * Get handled 404s (resolved by redirects)
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @param int|null $limit
      * @return array
      * @since 5.1.0
      */
-    public function getHandled404s(?int $siteId = null, ?int $limit = null): array
+    public function getHandled404s(int|array|null $siteId = null, ?int $limit = null): array
     {
         $query = (new Query())
             ->from(AnalyticsRecord::tableName())
@@ -367,7 +367,7 @@ class AnalyticsService extends Component
     /**
      * Get analytics count
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @param bool|null $handled
      * @param int|null $days Number of days to look back (null for all time)
      * @param \DateTime|null $startDate Start date for filtering
@@ -375,7 +375,7 @@ class AnalyticsService extends Component
      * @return int
      * @since 5.1.0
      */
-    public function getAnalyticsCount(?int $siteId = null, ?bool $handled = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): int
+    public function getAnalyticsCount(int|array|null $siteId = null, ?bool $handled = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): int
     {
         $query = (new Query())
             ->from(AnalyticsRecord::tableName());
@@ -407,14 +407,14 @@ class AnalyticsService extends Component
     /**
      * Get analytics for dashboard charts
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @param int $days Number of days to look back
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
      * @since 5.1.0
      */
-    public function getChartData(?int $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
+    public function getChartData(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $localDate = DateFormatHelper::localDateExpression('lastHit');
 
@@ -451,7 +451,7 @@ class AnalyticsService extends Component
     /**
      * Get most common 404s
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @param int $limit
      * @param bool|null $handled
      * @param int|null $days Number of days to look back (null for all time)
@@ -460,7 +460,7 @@ class AnalyticsService extends Component
      * @return array
      * @since 5.1.0
      */
-    public function getMostCommon404s(?int $siteId = null, int $limit = 10, ?bool $handled = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
+    public function getMostCommon404s(int|array|null $siteId = null, int $limit = 10, ?bool $handled = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $query = (new Query())
             ->from(AnalyticsRecord::tableName())
@@ -506,7 +506,7 @@ class AnalyticsService extends Component
     /**
      * Get recent 404s
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @param int $limit
      * @param bool|null $handled
      * @param int|null $days Number of days to look back (null for all time)
@@ -515,7 +515,7 @@ class AnalyticsService extends Component
      * @return array
      * @since 5.1.0
      */
-    public function getRecent404s(?int $siteId = null, int $limit = 10, ?bool $handled = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
+    public function getRecent404s(int|array|null $siteId = null, int $limit = 10, ?bool $handled = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $query = (new Query())
             ->from(AnalyticsRecord::tableName())
@@ -585,11 +585,11 @@ class AnalyticsService extends Component
     /**
      * Clear all analytics
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @return int Number of records deleted
      * @since 5.1.0
      */
-    public function clearAnalytics(?int $siteId = null): int
+    public function clearAnalytics(int|array|null $siteId = null): int
     {
         if ($siteId !== null) {
             $count = Craft::$app->getDb()->createCommand()
@@ -682,7 +682,7 @@ class AnalyticsService extends Component
     /**
      * Get analytics data formatted for export
      *
-     * @param int|null $siteId Filter by site ID
+     * @param int|array<int>|null $siteId Filter by site ID
      * @param array|null $analyticsIds Filter by specific analytics IDs
      * @param int|null $days Number of days to look back
      * @param \DateTime|null $startDate Start date for filtering
@@ -690,7 +690,7 @@ class AnalyticsService extends Component
      * @return array Array of analytics records formatted for export
      * @since 5.0.0
      */
-    public function getExportData(?int $siteId = null, ?array $analyticsIds = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null, ?int $redirectId = null): array
+    public function getExportData(int|array|null $siteId = null, ?array $analyticsIds = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null, ?int $redirectId = null): array
     {
         // Build query
         $query = (new \craft\db\Query())
@@ -756,7 +756,7 @@ class AnalyticsService extends Component
     /**
      * Export analytics to CSV or JSON string
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @param array|null $analyticsIds
      * @param int|null $days Number of days to look back
      * @param \DateTime|null $startDate Start date for filtering
@@ -765,7 +765,7 @@ class AnalyticsService extends Component
      * @return string CSV or JSON content
      * @since 5.1.0
      */
-    public function exportToCsv(?int $siteId = null, ?array $analyticsIds = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null, string $format = 'csv'): string
+    public function exportToCsv(int|array|null $siteId = null, ?array $analyticsIds = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null, string $format = 'csv'): string
     {
         // If specific IDs provided, fetch only those
         if (!empty($analyticsIds)) {
@@ -854,14 +854,14 @@ class AnalyticsService extends Component
     /**
      * Get device type breakdown
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @param int $days
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
      * @since 5.1.0
      */
-    public function getDeviceBreakdown(?int $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
+    public function getDeviceBreakdown(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $query = (new Query())
             ->select(['deviceType', 'COUNT(*) as count'])
@@ -899,14 +899,14 @@ class AnalyticsService extends Component
     /**
      * Get browser breakdown
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @param int $days
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
      * @since 5.1.0
      */
-    public function getBrowserBreakdown(?int $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
+    public function getBrowserBreakdown(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $query = (new Query())
             ->select(['browser', 'COUNT(*) as count'])
@@ -943,14 +943,14 @@ class AnalyticsService extends Component
     /**
      * Get OS breakdown
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @param int $days
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
      * @since 5.1.0
      */
-    public function getOsBreakdown(?int $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
+    public function getOsBreakdown(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $query = (new Query())
             ->select(['osName', 'COUNT(*) as count'])
@@ -986,14 +986,14 @@ class AnalyticsService extends Component
     /**
      * Get bot traffic stats
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @param int $days
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
      * @since 5.1.0
      */
-    public function getBotStats(?int $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
+    public function getBotStats(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $query = (new Query())
             ->from(AnalyticsRecord::tableName());
@@ -1160,7 +1160,7 @@ class AnalyticsService extends Component
     /**
      * Get top countries
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @param int $days
      * @param int $limit
      * @param \DateTime|null $startDate Start date for filtering
@@ -1168,7 +1168,7 @@ class AnalyticsService extends Component
      * @return array
      * @since 5.9.0
      */
-    public function getTopCountries(?int $siteId = null, int $days = 30, int $limit = 15, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
+    public function getTopCountries(int|array|null $siteId = null, int $days = 30, int $limit = 15, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $query = (new Query())
             ->select(['country', 'COUNT(*) as count'])
@@ -1214,7 +1214,7 @@ class AnalyticsService extends Component
     /**
      * Get top cities
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @param int $days
      * @param int $limit
      * @param \DateTime|null $startDate Start date for filtering
@@ -1222,7 +1222,7 @@ class AnalyticsService extends Component
      * @return array
      * @since 5.9.0
      */
-    public function getTopCities(?int $siteId = null, int $days = 30, int $limit = 15, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
+    public function getTopCities(int|array|null $siteId = null, int $days = 30, int $limit = 15, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $query = (new Query())
             ->select(['city', 'country', 'COUNT(*) as count'])

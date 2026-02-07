@@ -148,7 +148,7 @@
 	<div id="import-history" class="hidden">
 		<h2>{{ "Import History"|t('redirect-manager') }}</h2>
 		<p>{{ "Recent CSV imports and their results."|t('redirect-manager') }}</p>
-		{% if importHistory|length and (currentUser.can('redirectManager:manageImportExport') or currentUser.can('redirectManager:clearImportHistory')) %}
+		{% if importHistory|length and currentUser.can('redirectManager:clearImportHistory') %}
 			<div style="margin: 0 0 1rem auto;">
 				<button type="button" class="btn" id="clear-logs-btn">
 					{{ "Clear history"|t('redirect-manager') }}

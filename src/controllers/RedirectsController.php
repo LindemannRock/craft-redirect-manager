@@ -13,6 +13,7 @@ use craft\web\Controller;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\RedirectManager;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 /**
@@ -33,6 +34,22 @@ class RedirectsController extends Controller
     {
         parent::init();
         $this->setLoggingHandle(RedirectManager::$plugin->id);
+    }
+
+    /**
+     * Verify that the user has access to the given redirect's site.
+     *
+     * @param RedirectRecord $redirect
+     * @throws ForbiddenHttpException
+     */
+    private function _requireEditableRedirect(RedirectRecord $redirect): void
+    {
+        if ($redirect->siteId !== null) {
+            $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+            if (!in_array((int)$redirect->siteId, $editableSiteIds, true)) {
+                throw new ForbiddenHttpException('You do not have permission to modify redirects for this site.');
+            }
+        }
     }
 
     /**
@@ -63,9 +80,13 @@ class RedirectsController extends Controller
         $limit = $settings->itemsPerPage ?? 100;
         $offset = ($page - 1) * $limit;
 
+        // Scope to user's editable sites (redirects with null siteId = all sites, always visible)
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+
         // Build query
         $query = (new \craft\db\Query())
-            ->from(\lindemannrock\redirectmanager\records\RedirectRecord::tableName());
+            ->from(\lindemannrock\redirectmanager\records\RedirectRecord::tableName())
+            ->andWhere(['or', ['siteId' => null], ['siteId' => $editableSiteIds]]);
 
         // Apply status filter
         if ($statusFilter === 'enabled') {
@@ -160,15 +181,23 @@ class RedirectsController extends Controller
             410 => '410 - Gone',
         ];
 
-        // Get sites for dropdown
+        // Get editable sites for dropdown
         $siteOptions = [
             ['label' => Craft::t('redirect-manager', 'All Sites'), 'value' => ''],
         ];
-        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+        foreach (Craft::$app->getSites()->getEditableSites() as $site) {
             $siteOptions[] = [
                 'label' => $site->name,
                 'value' => $site->id,
             ];
+        }
+
+        // Verify user has access to this redirect's site
+        if ($redirect && $redirect->siteId !== null) {
+            $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+            if (!in_array((int)$redirect->siteId, $editableSiteIds, true)) {
+                throw new ForbiddenHttpException('You do not have permission to edit redirects for this site.');
+            }
         }
 
         return $this->renderTemplate('redirect-manager/redirects/edit', [
@@ -196,6 +225,16 @@ class RedirectsController extends Controller
 
         $this->requirePermission($redirectId ? 'redirectManager:editRedirects' : 'redirectManager:createRedirects');
 
+        $submittedSiteId = $request->getBodyParam('siteId') ? (int)$request->getBodyParam('siteId') : null;
+
+        // Validate that user has access to the submitted site
+        if ($submittedSiteId !== null) {
+            $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+            if (!in_array($submittedSiteId, $editableSiteIds, true)) {
+                throw new ForbiddenHttpException('You do not have permission to create redirects for this site.');
+            }
+        }
+
         $attributes = [
             'sourceUrl' => $request->getBodyParam('sourceUrl'),
             'destinationUrl' => $request->getBodyParam('destinationUrl'),
@@ -204,7 +243,7 @@ class RedirectsController extends Controller
             'statusCode' => (int)$request->getBodyParam('statusCode', 301),
             'enabled' => (bool)$request->getBodyParam('enabled', true),
             'priority' => (int)$request->getBodyParam('priority', 0),
-            'siteId' => $request->getBodyParam('siteId') ? (int)$request->getBodyParam('siteId') : null,
+            'siteId' => $submittedSiteId,
         ];
 
         $success = false;
@@ -254,11 +293,11 @@ class RedirectsController extends Controller
             410 => '410 - Gone',
         ];
 
-        // Get sites for dropdown
+        // Get editable sites for dropdown
         $siteOptions = [
             ['label' => Craft::t('redirect-manager', 'All Sites'), 'value' => ''],
         ];
-        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+        foreach (Craft::$app->getSites()->getEditableSites() as $site) {
             $siteOptions[] = [
                 'label' => $site->name,
                 'value' => $site->id,
@@ -304,6 +343,11 @@ class RedirectsController extends Controller
 
         $redirectId = Craft::$app->getRequest()->getRequiredBodyParam('redirectId');
 
+        $redirect = RedirectRecord::findOne($redirectId);
+        if ($redirect) {
+            $this->_requireEditableRedirect($redirect);
+        }
+
         if (RedirectManager::$plugin->redirects->deleteRedirect($redirectId)) {
             return $this->asJson(['success' => true]);
         }
@@ -323,9 +367,14 @@ class RedirectsController extends Controller
         $this->requirePermission('redirectManager:deleteRedirects');
 
         $redirectIds = Craft::$app->getRequest()->getRequiredBodyParam('redirectIds');
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
         $deleted = 0;
         foreach ($redirectIds as $redirectId) {
+            $redirect = RedirectRecord::findOne($redirectId);
+            if ($redirect && $redirect->siteId !== null && !in_array((int)$redirect->siteId, $editableSiteIds, true)) {
+                continue; // Skip redirects for sites user can't access
+            }
             if (RedirectManager::$plugin->redirects->deleteRedirect($redirectId)) {
                 $deleted++;
             }
@@ -351,6 +400,11 @@ class RedirectsController extends Controller
         $redirectId = Craft::$app->getRequest()->getRequiredBodyParam('redirectId');
         $enabled = (bool)Craft::$app->getRequest()->getRequiredBodyParam('enabled');
 
+        $redirect = RedirectRecord::findOne($redirectId);
+        if ($redirect) {
+            $this->_requireEditableRedirect($redirect);
+        }
+
         if (RedirectManager::$plugin->redirects->updateRedirect($redirectId, ['enabled' => $enabled])) {
             return $this->asJson(['success' => true]);
         }
@@ -370,9 +424,14 @@ class RedirectsController extends Controller
         $this->requirePermission('redirectManager:editRedirects');
 
         $redirectIds = Craft::$app->getRequest()->getRequiredBodyParam('redirectIds');
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
         $updated = 0;
         foreach ($redirectIds as $redirectId) {
+            $redirect = RedirectRecord::findOne($redirectId);
+            if ($redirect && $redirect->siteId !== null && !in_array((int)$redirect->siteId, $editableSiteIds, true)) {
+                continue;
+            }
             if (RedirectManager::$plugin->redirects->updateRedirect($redirectId, ['enabled' => true])) {
                 $updated++;
             }
@@ -396,9 +455,14 @@ class RedirectsController extends Controller
         $this->requirePermission('redirectManager:editRedirects');
 
         $redirectIds = Craft::$app->getRequest()->getRequiredBodyParam('redirectIds');
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
         $updated = 0;
         foreach ($redirectIds as $redirectId) {
+            $redirect = RedirectRecord::findOne($redirectId);
+            if ($redirect && $redirect->siteId !== null && !in_array((int)$redirect->siteId, $editableSiteIds, true)) {
+                continue;
+            }
             if (RedirectManager::$plugin->redirects->updateRedirect($redirectId, ['enabled' => false])) {
                 $updated++;
             }

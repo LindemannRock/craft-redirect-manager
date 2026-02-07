@@ -38,6 +38,15 @@ class Unhandled404sWidget extends Widget
     /**
      * @inheritdoc
      */
+    public static function isSelectable(): bool
+    {
+        return parent::isSelectable() &&
+            Craft::$app->getUser()->checkPermission('redirectManager:viewAnalytics');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function displayName(): string
     {
         $pluginName = RedirectManager::$plugin->getSettings()->getFullName();
@@ -92,13 +101,17 @@ class Unhandled404sWidget extends Widget
      */
     public function getBodyHtml(): ?string
     {
-        // Check if analytics are enabled
+        if (!Craft::$app->getUser()->checkPermission('redirectManager:viewAnalytics')) {
+            return '<p class="light">' . Craft::t('redirect-manager', 'You don\'t have permission to view analytics.') . '</p>';
+        }
+
         if (!RedirectManager::$plugin->getSettings()->enableAnalytics) {
             return '<p class="light">' . Craft::t('redirect-manager', 'Analytics are disabled in plugin settings.') . '</p>';
         }
 
-        // Get unhandled 404s
-        $analytics = RedirectManager::$plugin->analytics->getAllAnalytics(null, $this->limit);
+        // Get unhandled 404s scoped to user's editable sites
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $analytics = RedirectManager::$plugin->analytics->getAllAnalytics($editableSiteIds, $this->limit);
 
         // Filter only unhandled ones
         $unhandled404s = array_filter($analytics, function($stat) {

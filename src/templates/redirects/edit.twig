@@ -24,8 +24,8 @@
     },
 } %}
 
-{# Add analytics tab if redirect exists and analytics are enabled #}
-{% if not isNew and plugin.settings.enableAnalytics %}
+{# Add analytics tab if redirect exists, analytics are enabled, and user has permission #}
+{% if not isNew and plugin.settings.enableAnalytics and currentUser.can('redirectManager:viewAnalytics') %}
     {% set tabs = tabs|merge({
         analytics: {
             label: 'Analytics'|t('redirect-manager'),
@@ -222,8 +222,8 @@
 	{% include 'lindemannrock-base/_components/plugin-credit' %}
 	</div>{# /fields #}
 
-	{# Analytics Tab Content - only for existing redirects #}
-	{% if not isNew and plugin.settings.enableAnalytics %}
+	{# Analytics Tab Content - only for existing redirects with analytics permission #}
+	{% if not isNew and plugin.settings.enableAnalytics and currentUser.can('redirectManager:viewAnalytics') %}
 		<div id="analytics" class="hidden">
 			{% include "redirect-manager/redirects/_partials/analytics" with {
 				redirect: redirect

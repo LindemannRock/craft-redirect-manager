@@ -1215,9 +1215,7 @@ class ImportExportController extends Controller
      */
     private function canImport(): bool
     {
-        $user = Craft::$app->getUser();
-        return $user->checkPermission('redirectManager:manageImportExport') ||
-            $user->checkPermission('redirectManager:importRedirects');
+        return Craft::$app->getUser()->checkPermission('redirectManager:importRedirects');
     }
 
     /**
@@ -1228,9 +1226,7 @@ class ImportExportController extends Controller
      */
     private function canExport(): bool
     {
-        $user = Craft::$app->getUser();
-        return $user->checkPermission('redirectManager:manageImportExport') ||
-            $user->checkPermission('redirectManager:exportRedirects');
+        return Craft::$app->getUser()->checkPermission('redirectManager:exportRedirects');
     }
 
     /**
@@ -1241,13 +1237,11 @@ class ImportExportController extends Controller
      */
     private function canViewHistory(): bool
     {
-        $user = Craft::$app->getUser();
-        return $user->checkPermission('redirectManager:manageImportExport') ||
-            $user->checkPermission('redirectManager:viewImportHistory');
+        return Craft::$app->getUser()->checkPermission('redirectManager:viewImportHistory');
     }
 
     /**
-     * Require import permission (legacy manageImportExport or importRedirects)
+     * Require import permission
      *
      * @return void
      * @since 5.23.0
@@ -1267,14 +1261,13 @@ class ImportExportController extends Controller
      */
     private function requireClearImportHistoryPermission(): void
     {
-        if (!Craft::$app->getUser()->checkPermission('redirectManager:manageImportExport') &&
-            !Craft::$app->getUser()->checkPermission('redirectManager:clearImportHistory')) {
+        if (!Craft::$app->getUser()->checkPermission('redirectManager:clearImportHistory')) {
             throw new ForbiddenHttpException('User does not have permission to clear import history');
         }
     }
 
     /**
-     * Require export permission (legacy manageImportExport or exportRedirects)
+     * Require export permission
      *
      * @return void
      * @since 5.23.0
@@ -1294,7 +1287,8 @@ class ImportExportController extends Controller
      */
     private function requireAnyImportExportPermission(): void
     {
-        if (!$this->canImport() && !$this->canExport() && !$this->canViewHistory()) {
+        if (!Craft::$app->getUser()->checkPermission('redirectManager:manageImportExport') &&
+            !$this->canImport() && !$this->canExport() && !$this->canViewHistory()) {
             throw new ForbiddenHttpException('User does not have permission to manage import/export');
         }
     }
