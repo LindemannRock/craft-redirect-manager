@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.24.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.24.0...v5.24.1) (2026-02-07)
+
+
+### Bug Fixes
+
+* **ImportExportController, AnalyticsService:** replace DateTimeHelper with DateFormatHelper for date formatting ([a4a78fa](https://github.com/LindemannRock/craft-redirect-manager/commit/a4a78fac4ef9cfb3f348537bf45c1ee37b8419af))
+
 ## [5.24.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.23.0...v5.24.0) (2026-02-05)
 
 
