@@ -766,6 +766,11 @@ class AnalyticsController extends Controller
         $dateRange = $request->getBodyParam('dateRange', DateRangeHelper::getDefaultDateRange(RedirectManager::$plugin->id));
         $type = $request->getBodyParam('type', 'summary');
 
+        $validTypes = ['summary', 'chart', 'devices', 'browsers', 'os', 'bots', 'countries', 'cities'];
+        if (!in_array($type, $validTypes, true)) {
+            throw new \yii\web\BadRequestHttpException('Invalid data type.');
+        }
+
         // Convert date range to days
         $days = $this->_convertDateRangeToDays($dateRange);
 

@@ -11,6 +11,7 @@ namespace lindemannrock\redirectmanager\services;
 use Craft;
 use craft\base\Component;
 use craft\db\Query;
+use craft\helpers\App;
 use craft\helpers\Db;
 use lindemannrock\base\helpers\DateFormatHelper;
 use lindemannrock\base\helpers\DateRangeHelper;
@@ -1098,8 +1099,8 @@ class AnalyticsService extends Component
     private function getDefaultLocation(): array
     {
         $settings = RedirectManager::$plugin->getSettings();
-        $defaultCountry = $settings->defaultCountry ?: (getenv('REDIRECT_MANAGER_DEFAULT_COUNTRY') ?: 'AE');
-        $defaultCity = $settings->defaultCity ?: (getenv('REDIRECT_MANAGER_DEFAULT_CITY') ?: 'Dubai');
+        $defaultCountry = $settings->defaultCountry ?: (App::env('REDIRECT_MANAGER_DEFAULT_COUNTRY') ?: 'AE');
+        $defaultCity = $settings->defaultCity ?: (App::env('REDIRECT_MANAGER_DEFAULT_CITY') ?: 'Dubai');
 
         // Predefined locations for common cities worldwide
         $locations = [
