@@ -60,7 +60,7 @@ class RedirectsController extends Controller
      */
     public function actionIndex(): Response
     {
-        $this->requirePermission('redirectManager:viewRedirects');
+        $this->requirePermission('redirectManager:manageRedirects');
 
         $request = Craft::$app->getRequest();
         $settings = RedirectManager::$plugin->getSettings();
@@ -483,7 +483,7 @@ class RedirectsController extends Controller
     public function actionTest(): Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:viewRedirects');
+        $this->requirePermission('redirectManager:manageRedirects');
 
         $testUrl = Craft::$app->getRequest()->getRequiredBodyParam('testUrl');
         $matchType = Craft::$app->getRequest()->getBodyParam('matchType', 'exact');

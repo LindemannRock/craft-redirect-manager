@@ -1,7 +1,7 @@
 {% extends 'lindemannrock-base/_layouts/cp-utilities' %}
 
 {# Permission checks #}
-{% set hasRedirectsAccess = currentUser.can('redirectManager:viewRedirects') or currentUser.can('redirectManager:createRedirects') or currentUser.can('redirectManager:editRedirects') or currentUser.can('redirectManager:deleteRedirects') %}
+{% set hasRedirectsAccess = currentUser.can('redirectManager:manageRedirects') %}
 {% set hasAnalyticsAccess = currentUser.can('redirectManager:viewAnalytics') and settings.enableAnalytics %}
 {% set hasSettingsAccess = currentUser.can('redirectManager:manageSettings') %}
 {% set canClearCache = currentUser.can('redirectManager:clearCache') and (settings.enableRedirectCache or settings.cacheDeviceDetection) %}

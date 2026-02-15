@@ -291,12 +291,7 @@ class RedirectManager extends Plugin
             'key' => 'redirects',
             'label' => Craft::t('redirect-manager', 'Redirects'),
             'url' => 'redirect-manager/redirects',
-            'permissionsAny' => [
-                'redirectManager:viewRedirects',
-                'redirectManager:createRedirects',
-                'redirectManager:editRedirects',
-                'redirectManager:deleteRedirects',
-            ],
+            'permissionsAll' => ['redirectManager:manageRedirects'],
         ];
 
         $sections[] = [
@@ -438,9 +433,6 @@ class RedirectManager extends Plugin
             'redirectManager:manageRedirects' => [
                 'label' => Craft::t('redirect-manager', 'Manage {plural}', ['plural' => $plural]),
                 'nested' => [
-                    'redirectManager:viewRedirects' => [
-                        'label' => Craft::t('redirect-manager', 'View {plural}', ['plural' => $plural]),
-                    ],
                     'redirectManager:createRedirects' => [
                         'label' => Craft::t('redirect-manager', 'Create {plural}', ['plural' => $plural]),
                     ],
