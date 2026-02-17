@@ -306,12 +306,13 @@ class ImportExportController extends Controller
      */
     public function actionExport(): Response
     {
+        $this->requirePostRequest();
         $this->requireExportPermission();
 
         $request = Craft::$app->getRequest();
 
-        // Check if specific redirects were selected (from query param or body param)
-        $redirectIdsJson = $request->getQueryParam('redirectIds') ?? $request->getBodyParam('redirectIds');
+        // Check if specific redirects were selected
+        $redirectIdsJson = $request->getBodyParam('redirectIds');
         $redirectIds = $redirectIdsJson ? json_decode($redirectIdsJson, true) : null;
 
         // Build query

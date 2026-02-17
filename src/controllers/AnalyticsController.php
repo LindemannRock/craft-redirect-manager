@@ -616,23 +616,24 @@ class AnalyticsController extends Controller
      */
     public function actionExport(): Response
     {
+        $this->requirePostRequest();
         $this->requirePermission('redirectManager:exportAnalytics');
 
         $request = Craft::$app->getRequest();
-        $siteId = $request->getQueryParam('siteId');
+        $siteId = $request->getBodyParam('siteId');
         $siteId = $siteId ? (int)$siteId : null;
         $effectiveSiteId = $this->_resolveSiteId($siteId);
-        $redirectId = $request->getQueryParam('redirectId');
+        $redirectId = $request->getBodyParam('redirectId');
         $redirectId = $redirectId ? (int)$redirectId : null;
 
-        // Check if specific analytics were selected (from query param or body param)
-        $analyticIdsJson = $request->getQueryParam('analyticIds') ?? $request->getBodyParam('analyticIds');
+        // Check if specific analytics were selected
+        $analyticIdsJson = $request->getBodyParam('analyticIds');
         $analyticIds = $analyticIdsJson ? json_decode($analyticIdsJson, true) : null;
 
-        // Get date range and format from query params
+        // Get date range and format from body params
         // Accept both 'range' and 'dateRange' parameter names
-        $dateRange = $request->getQueryParam('range') ?? $request->getQueryParam('dateRange', 'all');
-        $format = $request->getQueryParam('format', 'csv');
+        $dateRange = $request->getBodyParam('range') ?? $request->getBodyParam('dateRange', 'all');
+        $format = $request->getBodyParam('format', 'csv');
 
         // Convert date range to days and get date filter
         $days = $this->_convertDateRangeToDays($dateRange);
