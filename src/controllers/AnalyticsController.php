@@ -11,6 +11,7 @@ namespace lindemannrock\redirectmanager\controllers;
 use Craft;
 use craft\web\Controller;
 use lindemannrock\base\helpers\CpNavHelper;
+use lindemannrock\base\helpers\DateFormatHelper;
 use lindemannrock\base\helpers\DateRangeHelper;
 use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
@@ -325,49 +326,21 @@ class AnalyticsController extends Controller
         $startDate = $dateFilter['start'] ?? null;
         $endDate = $dateFilter['end'] ?? null;
 
-        // Get chart data
-        $chartData = RedirectManager::$plugin->analytics->getChartData($effectiveSiteId, $days, $startDate, $endDate);
-        $chartData = $this->_normalizeChartData($chartData, $startDate, $endDate);
-
-        // Get most common 404s
+        // Overview tab: counts + most common (server-rendered)
+        // Everything else is lazy-loaded via AJAX on tab click
         $mostCommon = RedirectManager::$plugin->analytics->getMostCommon404s($effectiveSiteId, 15, null, $days, $startDate, $endDate);
-
-        // Get recent 404s
-        $recentHandled = RedirectManager::$plugin->analytics->getRecent404s($effectiveSiteId, 5, true, $days, $startDate, $endDate);
-        $recentUnhandled = RedirectManager::$plugin->analytics->getRecent404s($effectiveSiteId, 5, false, $days, $startDate, $endDate);
-
-        // Get counts
         $totalCount = RedirectManager::$plugin->analytics->getAnalyticsCount($effectiveSiteId, null, $days, $startDate, $endDate);
         $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($effectiveSiteId, true, $days, $startDate, $endDate);
         $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($effectiveSiteId, false, $days, $startDate, $endDate);
-
-        // Get device analytics
-        $deviceBreakdown = RedirectManager::$plugin->analytics->getDeviceBreakdown($effectiveSiteId, $days, $startDate, $endDate);
-        $browserBreakdown = RedirectManager::$plugin->analytics->getBrowserBreakdown($effectiveSiteId, $days, $startDate, $endDate);
-        $osBreakdown = RedirectManager::$plugin->analytics->getOsBreakdown($effectiveSiteId, $days, $startDate, $endDate);
-        $botStats = RedirectManager::$plugin->analytics->getBotStats($effectiveSiteId, $days, $startDate, $endDate);
-
-        // Get geographic analytics
-        $topCountries = RedirectManager::$plugin->analytics->getTopCountries($effectiveSiteId, $days, 15, $startDate, $endDate);
-        $topCities = RedirectManager::$plugin->analytics->getTopCities($effectiveSiteId, $days, 15, $startDate, $endDate);
 
         // Get editable sites for site selector
         $sites = Craft::$app->getSites()->getEditableSites();
 
         return $this->renderTemplate('redirect-manager/analytics/index', [
-            'chartData' => $chartData,
             'mostCommon' => $mostCommon,
-            'recentHandled' => $recentHandled,
-            'recentUnhandled' => $recentUnhandled,
             'totalCount' => $totalCount,
             'handledCount' => $handledCount,
             'unhandledCount' => $unhandledCount,
-            'deviceBreakdown' => $deviceBreakdown,
-            'browserBreakdown' => $browserBreakdown,
-            'osBreakdown' => $osBreakdown,
-            'botStats' => $botStats,
-            'topCountries' => $topCountries,
-            'topCities' => $topCities,
             'dateRange' => $dateRange,
             'siteId' => $siteId,
             'sites' => $sites,
@@ -767,7 +740,7 @@ class AnalyticsController extends Controller
         $dateRange = $request->getBodyParam('dateRange', DateRangeHelper::getDefaultDateRange(RedirectManager::$plugin->id));
         $type = $request->getBodyParam('type', 'summary');
 
-        $validTypes = ['summary', 'chart', 'devices', 'browsers', 'os', 'bots', 'countries', 'cities'];
+        $validTypes = ['summary', 'chart', 'devices', 'browsers', 'os', 'bots', 'bot-stats', 'countries', 'cities', 'recent-handled', 'recent-unhandled'];
         if (!in_array($type, $validTypes, true)) {
             throw new \yii\web\BadRequestHttpException('Invalid data type.');
         }
@@ -784,31 +757,18 @@ class AnalyticsController extends Controller
 
         switch ($type) {
             case 'summary':
-                // Get counts
+                // Overview tab: counts + most common table only
                 $totalCount = RedirectManager::$plugin->analytics->getAnalyticsCount($effectiveSiteId, null, $days, $startDate, $endDate);
                 $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($effectiveSiteId, true, $days, $startDate, $endDate);
                 $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($effectiveSiteId, false, $days, $startDate, $endDate);
 
-                // Get tables data
                 $mostCommon = RedirectManager::$plugin->analytics->getMostCommon404s($effectiveSiteId, 15, null, $days, $startDate, $endDate);
-                $recentUnhandled = RedirectManager::$plugin->analytics->getRecent404s($effectiveSiteId, 5, false, $days, $startDate, $endDate);
-
-                // Get bot stats
-                $botStats = RedirectManager::$plugin->analytics->getBotStats($effectiveSiteId, $days, $startDate, $endDate);
-
-                // Get geographic data
-                $topCountries = RedirectManager::$plugin->analytics->getTopCountries($effectiveSiteId, $days, 15, $startDate, $endDate);
-                $topCities = RedirectManager::$plugin->analytics->getTopCities($effectiveSiteId, $days, 15, $startDate, $endDate);
 
                 $data = [
                     'totalCount' => $totalCount,
                     'handledCount' => $handledCount,
                     'unhandledCount' => $unhandledCount,
                     'mostCommon' => $mostCommon,
-                    'recentUnhandled' => $recentUnhandled,
-                    'topBots' => $botStats['topBots'] ?? [],
-                    'topCountries' => $topCountries,
-                    'topCities' => $topCities,
                 ];
                 break;
 
@@ -833,6 +793,10 @@ class AnalyticsController extends Controller
                 $data = RedirectManager::$plugin->analytics->getBotStats($effectiveSiteId, $days, $startDate, $endDate);
                 break;
 
+            case 'bot-stats':
+                $data = RedirectManager::$plugin->analytics->getBotStats($effectiveSiteId, $days, $startDate, $endDate);
+                break;
+
             case 'countries':
                 $data = RedirectManager::$plugin->analytics->getTopCountries($effectiveSiteId, $days, 15, $startDate, $endDate);
                 break;
@@ -840,12 +804,65 @@ class AnalyticsController extends Controller
             case 'cities':
                 $data = RedirectManager::$plugin->analytics->getTopCities($effectiveSiteId, $days, 15, $startDate, $endDate);
                 break;
+
+            case 'recent-handled':
+                $data = $this->_formatRecentForAjax(
+                    RedirectManager::$plugin->analytics->getRecent404s($effectiveSiteId, 5, true, $days, $startDate, $endDate)
+                );
+                break;
+
+            case 'recent-unhandled':
+                $data = $this->_formatRecentForAjax(
+                    RedirectManager::$plugin->analytics->getRecent404s($effectiveSiteId, 5, false, $days, $startDate, $endDate)
+                );
+                break;
         }
 
         return $this->asJson([
             'success' => true,
             'data' => $data,
         ]);
+    }
+
+    /**
+     * Format recent 404s data for AJAX response.
+     *
+     * Resolves site names and formats dates server-side so the JS
+     * render functions only need to escape and display.
+     *
+     * @param array $results Raw results from AnalyticsService::getRecent404s()
+     * @return array Formatted results with date/time strings and site names
+     */
+    private function _formatRecentForAjax(array $results): array
+    {
+        $formatted = [];
+
+        foreach ($results as $stat) {
+            $date = $stat['lastHit'] ?? null;
+
+            // Resolve site name server-side (avoids N+1 in JS)
+            $siteName = null;
+            if (!empty($stat['siteId'])) {
+                $site = Craft::$app->getSites()->getSiteById((int)$stat['siteId']);
+                $siteName = $site ? $site->name : null;
+            }
+
+            $formatted[] = [
+                'url' => $stat['url'] ?? '',
+                'count' => (int)($stat['count'] ?? 0),
+                'referrer' => $stat['referrer'] ?? null,
+                'siteId' => $stat['siteId'] ?? null,
+                'siteName' => $siteName ?? '—',
+                'date' => $date instanceof \DateTime
+                    ? DateFormatHelper::formatDate($date, 'short', true, false)
+                    : null,
+                'time' => $date instanceof \DateTime
+                    ? DateFormatHelper::formatTime($date, 'short', null, false)
+                    : null,
+            ];
+        }
+
+        return $formatted;
     }
 
     /**
