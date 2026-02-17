@@ -85,6 +85,11 @@
     unhandledLabel: 'Unhandled'|t('redirect-manager'),
     botTraffic: 'of traffic is from bots'|t('redirect-manager'),
     redirectsLabel: '404s'|t('redirect-manager'),
+    noRecentUnhandled: 'No unhandled 404s! Great job!'|t('redirect-manager'),
+    noBotData: 'No bot data available'|t('redirect-manager'),
+    noCountryData: 'No country data available'|t('redirect-manager'),
+    noCityData: 'No city data available'|t('redirect-manager'),
+    createRedirect: 'Create redirect'|t('redirect-manager'),
 } %}
 
 {% set redirectAnalyticsConfig = {
@@ -94,6 +99,7 @@
     csrfName: craft.app.config.general.csrfTokenName,
     csrfToken: craft.app.request.csrfToken,
     dataEndpoint: analyticsConfig.charts.dataEndpoint,
+    createRedirectUrl: url('redirect-manager/redirects/new'),
     strings: redirectStrings,
 } %}
 

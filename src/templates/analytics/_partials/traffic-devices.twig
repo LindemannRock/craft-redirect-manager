@@ -1,4 +1,4 @@
-{# Traffic & Devices Tab - Bot stats, Device Types, Browsers, OS #}
+{# Traffic & Devices Tab - Bot stats, Device Types, Browsers, OS (all AJAX-loaded) #}
 
 <h2 style="margin: 0 0 20px;">{{ "Traffic Analysis"|t('redirect-manager') }}</h2>
 
@@ -6,9 +6,7 @@
     <div class="lr-chart-container">
         <h3>{{ "Bot vs Human Traffic"|t('redirect-manager') }}</h3>
         <canvas id="bot-chart"></canvas>
-        <div id="bot-percentage-text" style="text-align: center; margin-top: 10px; color: #666;">
-            <strong>{{ botStats.botPercentage }}%</strong> {{ "of traffic is from bots"|t('redirect-manager') }}
-        </div>
+        <div id="bot-percentage-text" style="text-align: center; margin-top: 10px; color: #666;"></div>
     </div>
 
     <div class="lr-chart-container">
@@ -21,21 +19,10 @@
                         <th>{{ "404s"|t('redirect-manager') }}</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% if botStats.topBots|length > 0 %}
-                        {% for bot in botStats.topBots %}
-                            <tr>
-                                <td>{{ bot.botName }}</td>
-                                <td>{{ bot.count|number }}</td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="2" style="text-align: center; color: #999;">
-                                {{ "No bot data available"|t('redirect-manager') }}
-                            </td>
-                        </tr>
-                    {% endif %}
+                <tbody id="top-bots-body">
+                    <tr>
+                        <td colspan="2" class="thin light" style="text-align: center;">{{ "Loading…"|t('redirect-manager') }}</td>
+                    </tr>
                 </tbody>
             </table>
         </div>

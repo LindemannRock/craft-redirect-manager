@@ -1,4 +1,4 @@
-{# Geographic Tab - Countries and Cities #}
+{# Geographic Tab - Countries and Cities (all AJAX-loaded) #}
 
 {% set settings = craft.app.plugins.getPlugin('redirect-manager').settings %}
 
@@ -17,23 +17,10 @@
                             <th>{{ "Percentage"|t('redirect-manager') }}</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% set topCountries = topCountries ?? [] %}
-                        {% if topCountries|length > 0 %}
-                            {% for country in topCountries %}
-                                <tr>
-                                    <td>{{ country.name }}</td>
-                                    <td>{{ country.count|number }}</td>
-                                    <td>{{ country.percentage }}%</td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="3" style="text-align: center; color: #999;">
-                                    {{ "No country data available"|t('redirect-manager') }}
-                                </td>
-                            </tr>
-                        {% endif %}
+                    <tbody id="countries-body">
+                        <tr>
+                            <td colspan="3" class="thin light" style="text-align: center;">{{ "Loading…"|t('redirect-manager') }}</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -51,24 +38,10 @@
                             <th>{{ "Percentage"|t('redirect-manager') }}</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% set topCities = topCities ?? [] %}
-                        {% if topCities|length > 0 %}
-                            {% for city in topCities %}
-                                <tr>
-                                    <td>{{ city.city }}</td>
-                                    <td>{{ city.countryName }}</td>
-                                    <td>{{ city.count|number }}</td>
-                                    <td>{{ city.percentage }}%</td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="4" style="text-align: center; color: #999;">
-                                    {{ "No city data available"|t('redirect-manager') }}
-                                </td>
-                            </tr>
-                        {% endif %}
+                    <tbody id="cities-body">
+                        <tr>
+                            <td colspan="4" class="thin light" style="text-align: center;">{{ "Loading…"|t('redirect-manager') }}</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>

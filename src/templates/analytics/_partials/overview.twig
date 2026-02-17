@@ -110,36 +110,10 @@
                         <th></th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% for stat in recentUnhandled %}
-                        <tr>
-                            <td>
-                                <a class="label-link" href="{{ stat.url }}" target="_blank">
-                                    <span><code>{{ stat.url|slice(0, 80) }}</code></span>
-                                </a>
-                            </td>
-                            <td>
-                                {% if stat.siteId %}
-                                    {% set site = craft.app.sites.getSiteById(stat.siteId) %}
-                                    {{ site ? site.name : '—' }}
-                                {% else %}
-                                    —
-                                {% endif %}
-                            </td>
-                            <td>{{ stat.count|number }}</td>
-                            <td>{{ stat.referrer ? stat.referrer|slice(0, 40) : '-' }}</td>
-                            <td>{{ stat.lastHit|lrDatetime('short') }}</td>
-                            <td>
-                                <a href="{{ url('redirect-manager/redirects/new', { sourceUrl: stat.url }) }}"
-                                   class="btn submit icon add"
-                                   title="{{ 'Create redirect'|t('redirect-manager') }}"></a>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="6" class="thin light">{{ "No unhandled 404s! Great job!"|t('redirect-manager') }}</td>
-                        </tr>
-                    {% endfor %}
+                <tbody id="recent-unhandled-body">
+                    <tr>
+                        <td colspan="6" class="thin light">{{ "Loading…"|t('redirect-manager') }}</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
