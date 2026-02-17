@@ -609,7 +609,7 @@ class ImportExportController extends Controller
                         }
                     } elseif ($fieldName === 'sourceUrl' || $fieldName === 'destinationUrl') {
                         // Strip formula escape prefix for round-trip compatibility
-                        $redirect[$fieldName] = $this->stripFormulaEscapePrefix($value);
+                        $redirect[$fieldName] = CsvImportHelper::stripFormulaEscapePrefix($value);
                     } else {
                         $redirect[$fieldName] = $value;
                     }
@@ -1152,25 +1152,6 @@ class ImportExportController extends Controller
         }
     }
 
-
-    /**
-     * Strip formula escape prefix from imported values
-     *
-     * Reverses the sanitization done during export so that round-trip
-     * export/import preserves the original value.
-     *
-     * @param string $value
-     * @return string
-     */
-    private function stripFormulaEscapePrefix(string $value): string
-    {
-        // If value starts with ' followed by a formula character, strip the '
-        if (preg_match("/^'(\\s*[=+\\-@])/", $value)) {
-            return substr($value, 1);
-        }
-
-        return $value;
-    }
 
     /**
      * Require any backup-related permission (view access)
