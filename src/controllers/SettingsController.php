@@ -163,6 +163,10 @@ class SettingsController extends Controller
         // Load current settings from database
         $settings = Settings::loadFromDatabase();
 
+        // Capture old backup settings before applying new values (for schedule change detection)
+        $oldBackupEnabled = $settings->backupEnabled;
+        $oldBackupSchedule = $settings->backupSchedule;
+
         // Get only the posted settings (fields from the current page)
         $settingsData = Craft::$app->getRequest()->getBodyParam('settings', []);
 
@@ -194,8 +198,12 @@ class SettingsController extends Controller
 
         // Save settings to database
         if ($settings->saveToDatabase()) {
-            // Update the plugin's cached settings (CRITICAL - forces Craft to refresh)
-            RedirectManager::$plugin->setSettings($settings->getAttributes());
+            // Detect backup schedule changes and update queue jobs
+            if ($oldBackupEnabled !== $settings->backupEnabled ||
+                $oldBackupSchedule !== $settings->backupSchedule
+            ) {
+                RedirectManager::$plugin->handleBackupScheduleChange($settings);
+            }
 
             Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'Settings saved.'));
         } else {
@@ -262,8 +270,6 @@ class SettingsController extends Controller
 
         // Save settings
         if ($settings->saveToDatabase()) {
-            RedirectManager::$plugin->setSettings($settings->getAttributes());
-
             if ($addedPatterns > 0 || $addedHeaders > 0) {
                 $message = Craft::t('redirect-manager', 'Added {patterns} exclude pattern(s) and {headers} header(s).', [
                     'patterns' => $addedPatterns,
@@ -322,8 +328,6 @@ class SettingsController extends Controller
 
         // Save settings
         if ($settings->saveToDatabase()) {
-            RedirectManager::$plugin->setSettings($settings->getAttributes());
-
             if ($addedPatterns > 0) {
                 $message = Craft::t('redirect-manager', 'Added {patterns} WordPress exclude pattern(s). Note: /wp-content/uploads patterns are NOT excluded - those may need redirects for migrated media files.', [
                     'patterns' => $addedPatterns,
@@ -412,8 +416,6 @@ class SettingsController extends Controller
 
         // Save settings
         if ($settings->saveToDatabase()) {
-            RedirectManager::$plugin->setSettings($settings->getAttributes());
-
             if ($addedPatterns > 0) {
                 $message = Craft::t('redirect-manager', 'Added {patterns} security filter pattern(s). Vulnerability scanning requests will now be ignored.', [
                     'patterns' => $addedPatterns,

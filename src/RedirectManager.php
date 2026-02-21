@@ -218,18 +218,7 @@ class RedirectManager extends Plugin
      */
     public function setSettings(array|Model $settings): void
     {
-        $oldSettings = $this->getSettings();
-        parent::setSettings($settings);
-
-        if ($settings instanceof Settings) {
-            $settings->saveToDatabase();
-
-            if ($oldSettings->backupEnabled !== $settings->backupEnabled ||
-                $oldSettings->backupSchedule !== $settings->backupSchedule
-            ) {
-                $this->handleBackupScheduleChange($settings);
-            }
-        }
+        // No-op: settings come from loadFromDatabase() in createSettingsModel()
     }
 
     /**
@@ -588,7 +577,7 @@ class RedirectManager extends Plugin
      *
      * @since 5.23.0
      */
-    private function handleBackupScheduleChange(Settings $settings): void
+    public function handleBackupScheduleChange(Settings $settings): void
     {
         if (!$settings->backupEnabled || $settings->backupSchedule === 'manual') {
             $this->cancelScheduledBackupJobs();
