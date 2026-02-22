@@ -22,7 +22,7 @@ use lindemannrock\redirectmanager\RedirectManager;
  *
  * @author    LindemannRock
  * @package   RedirectManager
- * @since     5.0.0
+ * @since     5.7.0
  */
 class AnalyticsBreakdownService
 {
@@ -37,7 +37,7 @@ class AnalyticsBreakdownService
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getDeviceBreakdown(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -69,7 +69,7 @@ class AnalyticsBreakdownService
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getBrowserBreakdown(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -100,7 +100,7 @@ class AnalyticsBreakdownService
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getOsBreakdown(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -130,7 +130,7 @@ class AnalyticsBreakdownService
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getBotStats(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -288,6 +288,7 @@ class AnalyticsBreakdownService
      * Get geo config from plugin settings
      *
      * @return array<string, mixed>
+     * @since 5.9.0
      */
     public function getGeoConfig(): array
     {

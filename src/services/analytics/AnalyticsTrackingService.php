@@ -22,7 +22,7 @@ use lindemannrock\redirectmanager\RedirectManager;
  *
  * @author    LindemannRock
  * @package   RedirectManager
- * @since     5.0.0
+ * @since     5.7.0
  */
 class AnalyticsTrackingService
 {
@@ -30,6 +30,10 @@ class AnalyticsTrackingService
 
     private AnalyticsExportService $exportService;
 
+    /**
+     * @param AnalyticsExportService $exportService
+     * @since 5.7.0
+     */
     public function __construct(AnalyticsExportService $exportService)
     {
         $this->exportService = $exportService;
@@ -43,7 +47,7 @@ class AnalyticsTrackingService
      * @param bool $handled Whether the 404 was handled by a redirect
      * @param array $context Optional context data (source plugin, metadata)
      * @return void
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function record404(string $url, bool $handled, array $context = []): void
     {

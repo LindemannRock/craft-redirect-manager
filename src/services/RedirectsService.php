@@ -34,31 +34,43 @@ class RedirectsService extends Component
 
     /**
      * Cache key prefix
+     *
+     * @since 5.0.0
      */
     public const CACHE_KEY = 'redirectmanager_redirect_';
 
     /**
      * Cache tag for all redirects
+     *
+     * @since 5.0.0
      */
     public const CACHE_TAG = 'redirectmanager_redirects';
 
     /**
      * Event triggered before a redirect is saved
+     *
+     * @since 5.0.0
      */
     public const EVENT_BEFORE_SAVE_REDIRECT = 'beforeSaveRedirect';
 
     /**
      * Event triggered after a redirect is saved
+     *
+     * @since 5.0.0
      */
     public const EVENT_AFTER_SAVE_REDIRECT = 'afterSaveRedirect';
 
     /**
      * Event triggered before a redirect is deleted
+     *
+     * @since 5.0.0
      */
     public const EVENT_BEFORE_DELETE_REDIRECT = 'beforeDeleteRedirect';
 
     /**
      * Event triggered after a redirect is deleted
+     *
+     * @since 5.0.0
      */
     public const EVENT_AFTER_DELETE_REDIRECT = 'afterDeleteRedirect';
 
@@ -73,7 +85,7 @@ class RedirectsService extends Component
     private array $_lastMatchCaptures = [];
 
     /**
-     * Initialize the service
+     * @inheritdoc
      */
     public function init(): void
     {

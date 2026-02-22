@@ -21,6 +21,7 @@ class Unhandled404sWidget extends Widget
 {
     /**
      * @var int Number of 404s to show
+     * @since 5.1.0
      */
     public int $limit = 10;
 
