@@ -19,7 +19,7 @@ use lindemannrock\redirectmanager\RedirectManager;
  *
  * Uses Matomo DeviceDetector library for accurate device, browser, and OS detection
  *
- * @since 5.1.0
+ * @since 5.14.0
  */
 class DeviceDetectionService extends Component
 {
@@ -40,7 +40,7 @@ class DeviceDetectionService extends Component
      *
      * @param string|null $userAgent
      * @return array Device information array
-     * @since 5.1.0
+     * @since 5.14.0
      */
     public function detectDevice(?string $userAgent = null): array
     {
@@ -52,7 +52,7 @@ class DeviceDetectionService extends Component
      *
      * @param array $deviceInfo
      * @return bool
-     * @since 5.1.0
+     * @since 5.14.0
      */
     public function isMobileDevice(array $deviceInfo): bool
     {
@@ -64,7 +64,7 @@ class DeviceDetectionService extends Component
      *
      * @param array $deviceInfo
      * @return bool
-     * @since 5.1.0
+     * @since 5.14.0
      */
     public function isBot(array $deviceInfo): bool
     {

@@ -67,21 +67,25 @@ class RedirectManager extends Plugin
 
     /**
      * @var RedirectManager|null Singleton plugin instance
+     * @since 5.0.0
      */
     public static ?RedirectManager $plugin = null;
 
     /**
      * @var string Plugin schema version for migrations
+     * @since 5.0.0
      */
     public string $schemaVersion = '1.0.0';
 
     /**
      * @var bool Whether the plugin exposes a control panel settings page
+     * @since 5.0.0
      */
     public bool $hasCpSettings = true;
 
     /**
      * @var bool Whether the plugin registers a control panel section
+     * @since 5.0.0
      */
     public bool $hasCpSection = true;
 
@@ -533,8 +537,6 @@ class RedirectManager extends Plugin
     /**
      * Schedule backup job if enabled
      * Called on every plugin init to ensure job is always in queue
-     *
-     * @since 5.23.0
      */
     private function scheduleBackupJob(): void
     {
@@ -617,8 +619,6 @@ class RedirectManager extends Plugin
 
     /**
      * Cancel any existing scheduled backup jobs
-     *
-     * @since 5.23.0
      */
     private function cancelScheduledBackupJobs(): void
     {

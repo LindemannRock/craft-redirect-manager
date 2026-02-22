@@ -26,7 +26,7 @@ class MatchingService extends Component
     use LoggingTrait;
 
     /**
-     * Initialize the service
+     * @inheritdoc
      */
     public function init(): void
     {

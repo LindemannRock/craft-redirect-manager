@@ -25,8 +25,6 @@ class BackupService extends Component
 
     /**
      * Backup subfolders by type
-     *
-     * @since 5.23.0
      */
     private const BACKUP_FOLDERS = ['scheduled', 'imports', 'maintenance', 'manual', 'other'];
 

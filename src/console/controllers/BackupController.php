@@ -24,11 +24,13 @@ class BackupController extends Controller
 {
     /**
      * @var string|null The reason for the backup
+     * @since 5.23.0
      */
     public ?string $reason = null;
 
     /**
      * @var bool Whether to clean old backups
+     * @since 5.23.0
      */
     public bool $clean = true;
 

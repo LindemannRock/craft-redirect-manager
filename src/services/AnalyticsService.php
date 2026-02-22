@@ -25,20 +25,27 @@ use lindemannrock\redirectmanager\services\analytics\AnalyticsTrackingService;
  *
  * @author    LindemannRock
  * @package   RedirectManager
- * @since     5.0.0
+ * @since     5.7.0
  */
 class AnalyticsService extends Component
 {
     use LoggingTrait;
     use GeoLookupTrait;
 
+    /** @since 5.7.0 */
     public AnalyticsTrackingService $tracking;
+
+    /** @since 5.7.0 */
     public AnalyticsQueryService $query;
+
+    /** @since 5.7.0 */
     public AnalyticsBreakdownService $breakdown;
+
+    /** @since 5.7.0 */
     public AnalyticsExportService $export;
 
     /**
-     * Initialize the service and sub-services
+     * @inheritdoc
      */
     public function init(): void
     {
@@ -60,7 +67,7 @@ class AnalyticsService extends Component
      * @param bool $handled Whether the 404 was handled by a redirect
      * @param array $context Optional context data (source plugin, metadata)
      * @return void
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function record404(string $url, bool $handled, array $context = []): void
     {
@@ -76,7 +83,7 @@ class AnalyticsService extends Component
      * @param int|null $limit
      * @param string $orderBy
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getAllAnalytics(int|array|null $siteId = null, ?int $limit = null, string $orderBy = 'lastHit DESC'): array
     {
@@ -89,7 +96,7 @@ class AnalyticsService extends Component
      * @param int $redirectId
      * @param string $dateRange
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getRedirectAnalytics(int $redirectId, string $dateRange = 'last30days'): array
     {
@@ -102,7 +109,7 @@ class AnalyticsService extends Component
      * @param int|array<int>|null $siteId
      * @param int|null $limit
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getUnhandled404s(int|array|null $siteId = null, ?int $limit = null): array
     {
@@ -115,7 +122,7 @@ class AnalyticsService extends Component
      * @param int|array<int>|null $siteId
      * @param int|null $limit
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getHandled404s(int|array|null $siteId = null, ?int $limit = null): array
     {
@@ -131,7 +138,7 @@ class AnalyticsService extends Component
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return int
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getAnalyticsCount(int|array|null $siteId = null, ?bool $handled = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): int
     {
@@ -146,7 +153,7 @@ class AnalyticsService extends Component
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getChartData(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -163,7 +170,7 @@ class AnalyticsService extends Component
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getMostCommon404s(int|array|null $siteId = null, int $limit = 10, ?bool $handled = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -180,7 +187,7 @@ class AnalyticsService extends Component
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getRecent404s(int|array|null $siteId = null, int $limit = 10, ?bool $handled = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -197,7 +204,7 @@ class AnalyticsService extends Component
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getDeviceBreakdown(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -212,7 +219,7 @@ class AnalyticsService extends Component
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getBrowserBreakdown(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -227,7 +234,7 @@ class AnalyticsService extends Component
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getOsBreakdown(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -242,7 +249,7 @@ class AnalyticsService extends Component
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function getBotStats(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -315,7 +322,7 @@ class AnalyticsService extends Component
      * @param \DateTime|null $endDate End date for filtering
      * @param int|null $redirectId Filter by redirect ID
      * @return array Array of analytics records formatted for export
-     * @since 5.0.0
+     * @since 5.7.0
      */
     public function getExportData(int|array|null $siteId = null, ?array $analyticsIds = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null, ?int $redirectId = null): array
     {
@@ -332,7 +339,7 @@ class AnalyticsService extends Component
      * @param \DateTime|null $endDate End date for filtering
      * @param string $format Export format ('csv' or 'json')
      * @return string CSV or JSON content
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function exportToCsv(int|array|null $siteId = null, ?array $analyticsIds = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null, string $format = 'csv'): string
     {
@@ -344,7 +351,7 @@ class AnalyticsService extends Component
      *
      * @param int $id
      * @return bool
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function deleteAnalytic(int $id): bool
     {
@@ -356,7 +363,7 @@ class AnalyticsService extends Component
      *
      * @param int|array<int>|null $siteId
      * @return int Number of records deleted
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function clearAnalytics(int|array|null $siteId = null): int
     {
@@ -367,7 +374,7 @@ class AnalyticsService extends Component
      * Trim analytics to respect the limit
      *
      * @return int Number of records deleted
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function trimAnalytics(): int
     {
@@ -378,7 +385,7 @@ class AnalyticsService extends Component
      * Clean up old analytics based on retention setting
      *
      * @return int Number of records deleted
-     * @since 5.1.0
+     * @since 5.7.0
      */
     public function cleanupOldAnalytics(): int
     {

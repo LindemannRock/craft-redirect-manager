@@ -1157,7 +1157,6 @@ class ImportExportController extends Controller
      * Require any backup-related permission (view access)
      *
      * @return void
-     * @since 5.23.0
      */
     private function requireAnyBackupPermission(): void
     {
@@ -1179,7 +1178,6 @@ class ImportExportController extends Controller
      *
      * @param string $permission
      * @return void
-     * @since 5.23.0
      */
     private function requireBackupPermission(string $permission): void
     {
@@ -1193,7 +1191,6 @@ class ImportExportController extends Controller
      * Check if user can import redirects
      *
      * @return bool
-     * @since 5.23.0
      */
     private function canImport(): bool
     {
@@ -1204,7 +1201,6 @@ class ImportExportController extends Controller
      * Check if user can export redirects
      *
      * @return bool
-     * @since 5.23.0
      */
     private function canExport(): bool
     {
@@ -1215,7 +1211,6 @@ class ImportExportController extends Controller
      * Check if user can view import history
      *
      * @return bool
-     * @since 5.24.0
      */
     private function canViewHistory(): bool
     {
@@ -1226,7 +1221,6 @@ class ImportExportController extends Controller
      * Require import permission
      *
      * @return void
-     * @since 5.23.0
      */
     private function requireImportPermission(): void
     {
@@ -1239,7 +1233,6 @@ class ImportExportController extends Controller
      * Require clear history permission
      *
      * @return void
-     * @since 5.24.0
      */
     private function requireClearImportHistoryPermission(): void
     {
@@ -1252,7 +1245,6 @@ class ImportExportController extends Controller
      * Require export permission
      *
      * @return void
-     * @since 5.23.0
      */
     private function requireExportPermission(): void
     {
@@ -1265,7 +1257,6 @@ class ImportExportController extends Controller
      * Require any import/export permission for the main page
      *
      * @return void
-     * @since 5.23.0
      */
     private function requireAnyImportExportPermission(): void
     {
