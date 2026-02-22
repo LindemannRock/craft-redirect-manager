@@ -1,0 +1,25 @@
+[
+    {
+        "title": "Get Started",
+        "collapsable": false,
+        "children": [
+            "get-started/quickstart",
+            "get-started/installation",
+            "get-started/requirements",
+            "get-started/configuration"
+        ]
+    },
+    {
+        "title": "Developers",
+        "collapsable": true,
+        "open": false,
+        "children": [
+            "developers/template-variables",
+            "developers/twig-globals",
+            "developers/console-commands",
+            "developers/events",
+            "developers/permissions",
+            "developers/shared-features"
+        ]
+    }
+]
