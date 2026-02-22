@@ -10,6 +10,31 @@
         ]
     },
     {
+        "title": "Feature Tour",
+        "collapsable": true,
+        "open": true,
+        "children": [
+            "feature-tour/overview",
+            "feature-tour/redirects",
+            "feature-tour/auto-redirects",
+            "feature-tour/analytics",
+            "feature-tour/query-strings",
+            "feature-tour/import-export",
+            "feature-tour/backups",
+            "feature-tour/plugin-integration",
+            "feature-tour/dashboard-widgets"
+        ]
+    },
+    {
+        "title": "Resources",
+        "collapsable": true,
+        "open": false,
+        "children": [
+            "resources/troubleshooting",
+            "resources/logging"
+        ]
+    },
+    {
         "title": "Developers",
         "collapsable": true,
         "open": false,
