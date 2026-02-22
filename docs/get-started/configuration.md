@@ -45,7 +45,7 @@ Configure Redirect Manager by creating a config file at `config/redirect-manager
 |--------|------|---------|-------------|
 | `enableGeoDetection` | `bool` | `false` | Enable geographic detection from IP addresses |
 | `geoProvider` | `string` | `'ip-api.com'` | Geo IP provider (`ip-api.com`, `ipapi.co`, `ipinfo.io`) |
-| `geoApiKey` | `string\|null` | `null` | API key for paid provider tiers (enables HTTPS for ip-api.com) |
+| `geoApiKey` | `string\|null` | `null` | API key for paid provider tiers (enables HTTPS for ip-api.com). Use `App::env('YOUR_VAR')` in your config file to load from an environment variable |
 | `defaultCountry` | `string\|null` | `null` | Default country for local dev. Falls back to `REDIRECT_MANAGER_DEFAULT_COUNTRY` env var |
 | `defaultCity` | `string\|null` | `null` | Default city for local dev. Falls back to `REDIRECT_MANAGER_DEFAULT_CITY` env var |
 
@@ -79,7 +79,6 @@ Configure Redirect Manager by creating a config file at `config/redirect-manager
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `enableApiEndpoint` | `bool` | `false` | Enable GraphQL endpoint |
 | `excludePatterns` | `array` | `[]` | Regex patterns to exclude URLs from redirect handling |
 | `logLevel` | `string` | `'error'` | Log level (`debug`, `info`, `warning`, `error`). Debug requires devMode |
 
@@ -90,7 +89,6 @@ Configure Redirect Manager by creating a config file at `config/redirect-manager
 | `REDIRECT_MANAGER_IP_SALT` | `ipHashSalt` | IP hash salt for privacy-focused analytics |
 | `REDIRECT_MANAGER_DEFAULT_COUNTRY` | `defaultCountry` | Default country code for local development |
 | `REDIRECT_MANAGER_DEFAULT_CITY` | `defaultCity` | Default city for local development |
-| `REDIRECT_MANAGER_GEO_API_KEY` | `geoApiKey` | Geo provider API key |
 
 ## Example Configuration
 

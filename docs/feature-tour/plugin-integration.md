@@ -157,7 +157,7 @@ Returns the matching redirect as an array with `destinationUrl` and `statusCode`
 
 Returns `true` on success, `false` on failure.
 
-### `handleUndoRedirect(string $oldUrl, string $newUrl, int $siteId, string $creationType, string $sourcePlugin): bool`
+### `handleUndoRedirect(string $oldUrl, string $newUrl, ?int $siteId, string $creationType, string $sourcePlugin): bool`
 
 Looks for an existing redirect created within the undo window where `source = $newUrl` and `destination = $oldUrl`. If found, deletes it and returns `true`. Otherwise returns `false`.
 

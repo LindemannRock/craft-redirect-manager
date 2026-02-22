@@ -77,7 +77,7 @@ Auto-redirects are created per site. When a multi-site entry changes its URI, a 
 
 ## Reviewing Auto-Created Redirects
 
-Auto-created redirects appear in the redirect list alongside manually created ones. They are identified by a `creationType` of `auto` in the underlying data. You can edit, disable, or delete them like any other redirect.
+Auto-created redirects appear in the redirect list alongside manually created ones. They are identified by a `creationType` of `entry-change` in the underlying data. You can edit, disable, or delete them like any other redirect.
 
 ## Programmatic Integration
 

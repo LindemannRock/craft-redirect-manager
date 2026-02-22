@@ -77,8 +77,11 @@ To restore your redirect library to a previous state:
 
 ### Create a Backup
 
-```bash
+```bash title="PHP"
 php craft redirect-manager/backup/create
+```
+
+```bash title="DDEV"
 ddev craft redirect-manager/backup/create
 ```
 
@@ -93,8 +96,11 @@ Options:
 
 Checks whether a backup is due based on `backupSchedule` and creates one if needed:
 
-```bash
+```bash title="PHP"
 php craft redirect-manager/backup/scheduled
+```
+
+```bash title="DDEV"
 ddev craft redirect-manager/backup/scheduled
 ```
 
@@ -106,8 +112,11 @@ Add this to your server's cron schedule to automate backups:
 
 ### List Backups
 
-```bash
+```bash title="PHP"
 php craft redirect-manager/backup/list
+```
+
+```bash title="DDEV"
 ddev craft redirect-manager/backup/list
 ```
 
@@ -115,8 +124,11 @@ ddev craft redirect-manager/backup/list
 
 Removes backups that exceed the retention period:
 
-```bash
+```bash title="PHP"
 php craft redirect-manager/backup/clean
+```
+
+```bash title="DDEV"
 ddev craft redirect-manager/backup/clean
 ```
 

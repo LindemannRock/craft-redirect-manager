@@ -10,8 +10,12 @@ See [Installation](installation.md) for full details including DDEV and Composer
 
 Run the security command to set up privacy-focused IP hashing for analytics:
 
-```bash
+```bash title="PHP"
 php craft redirect-manager/security/generate-salt
+```
+
+```bash title="DDEV"
+ddev craft redirect-manager/security/generate-salt
 ```
 
 This adds `REDIRECT_MANAGER_IP_SALT` to your `.env` file automatically.
