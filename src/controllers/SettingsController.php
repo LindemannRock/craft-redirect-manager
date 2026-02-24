@@ -40,7 +40,6 @@ class SettingsController extends Controller
      * Settings index
      *
      * @return Response
-     * @since 5.0.0
      */
     public function actionIndex(): Response
     {
@@ -51,7 +50,6 @@ class SettingsController extends Controller
      * General settings
      *
      * @return Response
-     * @since 5.0.0
      */
     public function actionGeneral(): Response
     {
@@ -85,7 +83,6 @@ class SettingsController extends Controller
      * Interface settings
      *
      * @return Response
-     * @since 5.0.0
      */
     public function actionInterface(): Response
     {
@@ -119,7 +116,6 @@ class SettingsController extends Controller
      * Advanced settings
      *
      * @return Response
-     * @since 5.0.0
      */
     public function actionAdvanced(): Response
     {
@@ -153,7 +149,6 @@ class SettingsController extends Controller
      * Save settings
      *
      * @return Response|null
-     * @since 5.0.0
      */
     public function actionSave(): ?Response
     {
@@ -220,7 +215,6 @@ class SettingsController extends Controller
      * Apply recommended exclude patterns and headers
      *
      * @return Response|null
-     * @since 5.0.0
      */
     public function actionApplyRecommended(): ?Response
     {
@@ -292,7 +286,6 @@ class SettingsController extends Controller
      * Apply WordPress migration filters
      *
      * @return Response|null
-     * @since 5.0.0
      */
     public function actionApplyWordpressFilters(): ?Response
     {
@@ -349,7 +342,6 @@ class SettingsController extends Controller
      * Apply security probe filters (block common vulnerability scanning)
      *
      * @return Response|null
-     * @since 5.0.0
      */
     public function actionApplySecurityFilters(): ?Response
     {
@@ -437,7 +429,6 @@ class SettingsController extends Controller
      * Test redirects page
      *
      * @return Response
-     * @since 5.0.0
      */
     public function actionTest(): Response
     {
@@ -454,7 +445,6 @@ class SettingsController extends Controller
      * Test a URL to see if it matches any redirects
      *
      * @return Response
-     * @since 5.0.0
      */
     public function actionTestUrl(): Response
     {

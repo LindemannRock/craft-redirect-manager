@@ -36,7 +36,6 @@ class AnalyticsQueryService
      * @param int|null $limit
      * @param string $orderBy
      * @return array
-     * @since 5.7.0
      */
     public function getAllAnalytics(int|array|null $siteId = null, ?int $limit = null, string $orderBy = 'lastHit DESC'): array
     {
@@ -62,7 +61,6 @@ class AnalyticsQueryService
      * @param int $redirectId
      * @param string $dateRange
      * @return array
-     * @since 5.7.0
      */
     public function getRedirectAnalytics(int $redirectId, string $dateRange = 'last30days'): array
     {
@@ -139,7 +137,6 @@ class AnalyticsQueryService
      * @param int|array<int>|null $siteId
      * @param int|null $limit
      * @return array
-     * @since 5.7.0
      */
     public function getUnhandled404s(int|array|null $siteId = null, ?int $limit = null): array
     {
@@ -166,7 +163,6 @@ class AnalyticsQueryService
      * @param int|array<int>|null $siteId
      * @param int|null $limit
      * @return array
-     * @since 5.7.0
      */
     public function getHandled404s(int|array|null $siteId = null, ?int $limit = null): array
     {
@@ -196,7 +192,6 @@ class AnalyticsQueryService
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return int
-     * @since 5.7.0
      */
     public function getAnalyticsCount(int|array|null $siteId = null, ?bool $handled = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): int
     {
@@ -235,7 +230,6 @@ class AnalyticsQueryService
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.7.0
      */
     public function getChartData(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -268,7 +262,6 @@ class AnalyticsQueryService
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.7.0
      */
     public function getMostCommon404s(int|array|null $siteId = null, int $limit = 10, ?bool $handled = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -323,7 +316,6 @@ class AnalyticsQueryService
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.7.0
      */
     public function getRecent404s(int|array|null $siteId = null, int $limit = 10, ?bool $handled = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {

@@ -42,7 +42,6 @@ class BackupService extends Component
      *
      * @param string $reason Reason for backup (import, restore, manual, scheduled)
      * @return string|null Backup directory path or null on failure
-     * @since 5.23.0
      */
     public function createBackup(string $reason = 'import'): ?string
     {
@@ -110,7 +109,6 @@ class BackupService extends Component
      * Get all backups from filesystem
      *
      * @return array
-     * @since 5.23.0
      */
     public function getBackups(): array
     {
@@ -155,7 +153,6 @@ class BackupService extends Component
      * Clean old automatic backups based on retention settings
      *
      * @return int Number of backups deleted
-     * @since 5.23.0
      */
     public function cleanupOldBackups(): int
     {
@@ -193,7 +190,6 @@ class BackupService extends Component
      *
      * @param string|null $dirname
      * @return string|null Validated absolute path or null if invalid
-     * @since 5.23.0
      */
     public function validateBackupDirname(?string $dirname): ?string
     {
@@ -263,7 +259,6 @@ class BackupService extends Component
      * Get the base backup directory
      *
      * @return string
-     * @since 5.23.0
      */
     public function getBackupRoot(): string
     {
@@ -276,7 +271,6 @@ class BackupService extends Component
      *
      * @param string $backupDir
      * @return string
-     * @since 5.23.0
      */
     public function getRelativeBackupName(string $backupDir): string
     {

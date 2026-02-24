@@ -26,20 +26,17 @@ class CreateBackupJob extends BaseJob
 
     /**
      * @var string The reason for the backup
-     * @since 5.23.0
      */
     public string $reason = 'scheduled';
 
     /**
      * @var bool Whether to reschedule after completion
-     * @since 5.23.0
      * @deprecated Use cron for scheduling instead
      */
     public bool $reschedule = false;
 
     /**
      * @var string|null Next run time display string
-     * @since 5.23.0
      */
     public ?string $nextRunTime = null;
 

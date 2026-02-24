@@ -34,193 +34,161 @@ class Settings extends Model
 
     /**
      * @var string The public-facing name of the plugin
-     * @since 5.0.0
      */
     public string $pluginName = 'Redirect Manager';
 
     /**
      * @var bool Controls whether redirects automatically created when entry URIs change
-     * @since 5.0.0
      */
     public bool $autoCreateRedirects = true;
 
     /**
      * @var int Time window in minutes for detecting immediate undo (30, 60, 120, 240)
-     * @since 5.0.0
      */
     public int $undoWindowMinutes = 60;
 
     /**
      * @var string Should the legacy URL be matched by path or full URL
-     * @since 5.0.0
      */
     public string $redirectSrcMatch = 'pathonly';
 
     /**
      * @var bool Should the query string be stripped from all 404 URLs before evaluation
-     * @since 5.0.0
      */
     public bool $stripQueryString = false;
 
     /**
      * @var bool Should the query string be preserved and passed to the destination
-     * @since 5.0.0
      */
     public bool $preserveQueryString = false;
 
     /**
      * @var bool Should no-cache headers be set on redirect responses
-     * @since 5.0.0
      */
     public bool $setNoCacheHeaders = true;
 
     /**
      * @var bool Enable analytics tracking (master switch - controls IP tracking, device detection, geo detection)
-     * @since 5.0.0
      */
     public bool $enableAnalytics = true;
 
     /**
      * @var bool Should IP addresses be anonymized before hashing
-     * @since 5.0.0
      */
     public bool $anonymizeIpAddress = false;
 
     /**
      * @var bool Enable geographic detection from IP addresses
-     * @since 5.0.0
      */
     public bool $enableGeoDetection = false;
 
     /**
      * @var string Geo IP lookup provider (ip-api.com, ipapi.co, ipinfo.io)
-     * @since 5.0.0
      */
     public string $geoProvider = 'ip-api.com';
 
     /**
      * @var string|null API key for paid provider tiers (enables HTTPS for ip-api.com)
-     * @since 5.0.0
      */
     public ?string $geoApiKey = null;
 
     /**
      * @var string|null Default country for local development (when IP is private)
-     * @since 5.0.0
      */
     public ?string $defaultCountry = null;
 
     /**
      * @var string|null Default city for local development (when IP is private)
-     * @since 5.0.0
      */
     public ?string $defaultCity = null;
 
     /**
      * @var bool Cache device detection results
-     * @since 5.0.0
      */
     public bool $cacheDeviceDetection = true;
 
     /**
      * @var int Device detection cache duration in seconds (1 hour)
-     * @since 5.0.0
      */
     public int $deviceDetectionCacheDuration = 3600;
 
     /**
      * @var string|null IP hash salt from .env
-     * @since 5.0.0
      */
     public ?string $ipHashSalt = null;
 
     /**
      * @var bool Should query strings be stripped from analytics URLs
-     * @since 5.0.0
      */
     public bool $stripQueryStringFromStats = true;
 
     /**
      * @var int Maximum number of unique 404 records to retain
-     * @since 5.0.0
      */
     public int $analyticsLimit = 1000;
 
     /**
      * @var int Number of days to retain analytics (0 = keep forever)
-     * @since 5.0.0
      */
     public int $analyticsRetention = 30;
 
     /**
      * @var bool Whether analytics should be automatically trimmed
-     * @since 5.0.0
      */
     public bool $autoTrimAnalytics = true;
 
     /**
      * @var int|null Dashboard refresh interval in seconds (null = disabled)
-     * @since 5.0.0
      */
     public ?int $refreshIntervalSecs = null;
 
     /**
      * @var int Items per page in list views
-     * @since 5.0.0
      */
     public int $itemsPerPage = 100;
 
     /**
      * @var bool Whether to enable GraphQL endpoint
-     * @since 5.0.0
      */
     public bool $enableApiEndpoint = false;
 
     /**
      * @var array Regular expressions to exclude URLs from redirect handling
-     * @since 5.0.0
      */
     public array $excludePatterns = [];
 
     /**
      * @var array Additional HTTP headers to add to redirect responses
-     * @since 5.0.0
      */
     public array $additionalHeaders = [];
 
     /**
      * @var string Log level for the logging library
-     * @since 5.0.0
      */
     public string $logLevel = 'error';
 
     /**
      * @var bool Enable redirect caching
-     * @since 5.0.0
      */
     public bool $enableRedirectCache = true;
 
     /**
      * @var int Redirect cache duration in seconds
-     * @since 5.0.0
      */
     public int $redirectCacheDuration = 3600;
 
     /**
      * @var string Cache storage method (file or redis)
-     * @since 5.0.0
      */
     public string $cacheStorageMethod = 'file';
 
     /**
      * @var string Local filesystem path for storing import backups
-     * @since 5.0.0
      */
     public string $backupPath = '@storage/redirect-manager/backups';
 
     /**
      * @var string|null Optional asset volume UID for storing backups
-     * @since 5.0.0
      */
     public ?string $backupVolumeUid = null;
 
@@ -437,7 +405,6 @@ class Settings extends Model
      * @param string $attribute
      * @param array|null $params
      * @param \yii\validators\Validator|null $validator
-     * @since 5.0.0
      */
     public function validateLogLevel($attribute, $params, $validator)
     {

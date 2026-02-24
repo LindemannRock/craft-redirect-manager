@@ -34,43 +34,31 @@ class RedirectsService extends Component
 
     /**
      * Cache key prefix
-     *
-     * @since 5.0.0
      */
     public const CACHE_KEY = 'redirectmanager_redirect_';
 
     /**
      * Cache tag for all redirects
-     *
-     * @since 5.0.0
      */
     public const CACHE_TAG = 'redirectmanager_redirects';
 
     /**
      * Event triggered before a redirect is saved
-     *
-     * @since 5.0.0
      */
     public const EVENT_BEFORE_SAVE_REDIRECT = 'beforeSaveRedirect';
 
     /**
      * Event triggered after a redirect is saved
-     *
-     * @since 5.0.0
      */
     public const EVENT_AFTER_SAVE_REDIRECT = 'afterSaveRedirect';
 
     /**
      * Event triggered before a redirect is deleted
-     *
-     * @since 5.0.0
      */
     public const EVENT_BEFORE_DELETE_REDIRECT = 'beforeDeleteRedirect';
 
     /**
      * Event triggered after a redirect is deleted
-     *
-     * @since 5.0.0
      */
     public const EVENT_AFTER_DELETE_REDIRECT = 'afterDeleteRedirect';
 
@@ -98,7 +86,6 @@ class RedirectsService extends Component
      *
      * @param NotFoundHttpException $exception
      * @return void
-     * @since 5.0.0
      */
     public function handle404(NotFoundHttpException $exception): void
     {
@@ -188,7 +175,6 @@ class RedirectsService extends Component
      * @param string $fullUrl
      * @param string $pathOnly
      * @return array|null Returns redirect array with '_captures' key if match uses capture groups
-     * @since 5.0.0
      */
     public function findRedirect(string $fullUrl, string $pathOnly): ?array
     {
@@ -432,7 +418,6 @@ class RedirectsService extends Component
      *
      * @param ElementInterface $element
      * @return void
-     * @since 5.0.0
      */
     public function stashElementUri(ElementInterface $element): void
     {
@@ -468,7 +453,6 @@ class RedirectsService extends Component
      *
      * @param ElementInterface $element
      * @return void
-     * @since 5.0.0
      */
     public function handleElementUriChange(ElementInterface $element): void
     {
@@ -697,7 +681,6 @@ class RedirectsService extends Component
      * @param array $attributes
      * @param bool $showNotification Whether to show user notification
      * @return int|false The new redirect ID on success, false on failure
-     * @since 5.0.0
      */
     public function createRedirect(array $attributes, bool $showNotification = false): int|false
     {
@@ -814,7 +797,6 @@ class RedirectsService extends Component
      * @param int $id
      * @param array $attributes
      * @return bool
-     * @since 5.0.0
      */
     public function updateRedirect(int $id, array $attributes): bool
     {
@@ -882,7 +864,6 @@ class RedirectsService extends Component
      *
      * @param int $id
      * @return bool
-     * @since 5.0.0
      */
     public function deleteRedirect(int $id): bool
     {
@@ -922,7 +903,6 @@ class RedirectsService extends Component
      *
      * @param int|null $siteId
      * @return array
-     * @since 5.0.0
      */
     public function getEnabledRedirects(?int $siteId = null): array
     {
@@ -1063,7 +1043,6 @@ class RedirectsService extends Component
      * Invalidate all redirect caches
      *
      * @return void
-     * @since 5.0.0
      */
     public function invalidateCaches(): void
     {

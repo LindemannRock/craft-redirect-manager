@@ -47,7 +47,6 @@ class ImportExportController extends Controller
      * Import/Export settings page
      *
      * @return Response
-     * @since 5.0.0
      */
     public function actionIndex(): Response
     {
@@ -302,7 +301,6 @@ class ImportExportController extends Controller
      * Export redirects to CSV
      *
      * @return Response
-     * @since 5.0.0
      */
     public function actionExport(): Response
     {
@@ -379,7 +377,6 @@ class ImportExportController extends Controller
      * Upload and parse CSV file
      *
      * @return Response
-     * @since 5.0.0
      */
     public function actionUpload(): Response
     {
@@ -445,7 +442,6 @@ class ImportExportController extends Controller
      * Map CSV columns
      *
      * @return Response
-     * @since 5.0.0
      */
     public function actionMap(): Response
     {
@@ -474,7 +470,6 @@ class ImportExportController extends Controller
      * Preview import with mapped columns (POST - process mapping)
      *
      * @return Response
-     * @since 5.0.0
      */
     public function actionPreview(): Response
     {
@@ -792,7 +787,6 @@ class ImportExportController extends Controller
      * Perform the import
      *
      * @return Response|null
-     * @since 5.0.0
      */
     public function actionImport(): ?Response
     {

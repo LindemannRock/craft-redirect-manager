@@ -32,7 +32,6 @@ class AnalyticsTrackingService
 
     /**
      * @param AnalyticsExportService $exportService
-     * @since 5.7.0
      */
     public function __construct(AnalyticsExportService $exportService)
     {
@@ -47,7 +46,6 @@ class AnalyticsTrackingService
      * @param bool $handled Whether the 404 was handled by a redirect
      * @param array $context Optional context data (source plugin, metadata)
      * @return void
-     * @since 5.7.0
      */
     public function record404(string $url, bool $handled, array $context = []): void
     {

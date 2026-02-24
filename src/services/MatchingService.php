@@ -41,7 +41,6 @@ class MatchingService extends Component
      * @param string $pattern
      * @param string $url
      * @return bool
-     * @since 5.0.0
      */
     public function matches(string $matchType, string $pattern, string $url): bool
     {
@@ -308,7 +307,6 @@ class MatchingService extends Component
      * Get all available match types
      *
      * @return array
-     * @since 5.0.0
      */
     public function getMatchTypes(): array
     {

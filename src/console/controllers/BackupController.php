@@ -24,13 +24,11 @@ class BackupController extends Controller
 {
     /**
      * @var string|null The reason for the backup
-     * @since 5.23.0
      */
     public ?string $reason = null;
 
     /**
      * @var bool Whether to clean old backups
-     * @since 5.23.0
      */
     public bool $clean = true;
 
@@ -55,7 +53,6 @@ class BackupController extends Controller
      * Creates a backup of all redirects
      *
      * @return int
-     * @since 5.23.0
      */
     public function actionCreate(): int
     {
@@ -103,7 +100,6 @@ class BackupController extends Controller
      * Runs scheduled backup based on settings
      *
      * @return int
-     * @since 5.23.0
      */
     public function actionScheduled(): int
     {
@@ -145,7 +141,6 @@ class BackupController extends Controller
      * Lists all backups
      *
      * @return int
-     * @since 5.23.0
      */
     public function actionList(): int
     {
@@ -180,7 +175,6 @@ class BackupController extends Controller
      * Cleans old backups based on retention settings
      *
      * @return int
-     * @since 5.23.0
      */
     public function actionClean(): int
     {

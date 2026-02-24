@@ -66,7 +66,6 @@ class RedirectRecord extends ActiveRecord
      * Validate source URL based on match mode and match type
      *
      * @param string $attribute
-     * @since 5.0.0
      */
     public function validateSourceUrl($attribute): void
     {
@@ -138,7 +137,6 @@ class RedirectRecord extends ActiveRecord
      * Validate destination URL
      *
      * @param string $attribute
-     * @since 5.0.0
      */
     public function validateDestinationUrl($attribute): void
     {
@@ -160,7 +158,6 @@ class RedirectRecord extends ActiveRecord
      * Returns the redirect's site
      *
      * @return ActiveQueryInterface
-     * @since 5.0.0
      */
     public function getSite(): ActiveQueryInterface
     {

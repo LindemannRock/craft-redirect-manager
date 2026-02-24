@@ -30,9 +30,6 @@ class AnalyticsExportService
     use AnalyticsQueryTrait;
     use LoggingTrait;
 
-    /**
-     * @since 5.7.0
-     */
     public function __construct()
     {
         $this->setLoggingHandle(RedirectManager::$plugin->id);
@@ -48,7 +45,6 @@ class AnalyticsExportService
      * @param \DateTime|null $endDate End date for filtering
      * @param int|null $redirectId Filter by redirect ID
      * @return array Array of analytics records formatted for export
-     * @since 5.7.0
      */
     public function getExportData(int|array|null $siteId = null, ?array $analyticsIds = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null, ?int $redirectId = null): array
     {
@@ -123,7 +119,6 @@ class AnalyticsExportService
      * @param \DateTime|null $endDate End date for filtering
      * @param string $format Export format ('csv' or 'json')
      * @return string CSV or JSON content
-     * @since 5.7.0
      */
     public function exportToCsv(int|array|null $siteId = null, ?array $analyticsIds = null, ?int $days = null, ?\DateTime $startDate = null, ?\DateTime $endDate = null, string $format = 'csv'): string
     {
@@ -216,7 +211,6 @@ class AnalyticsExportService
      *
      * @param int $id
      * @return bool
-     * @since 5.7.0
      */
     public function deleteAnalytic(int $id): bool
     {
@@ -240,7 +234,6 @@ class AnalyticsExportService
      *
      * @param int|array<int>|null $siteId
      * @return int Number of records deleted
-     * @since 5.7.0
      */
     public function clearAnalytics(int|array|null $siteId = null): int
     {
@@ -263,7 +256,6 @@ class AnalyticsExportService
      * Trim analytics to respect the limit
      *
      * @return int Number of records deleted
-     * @since 5.7.0
      */
     public function trimAnalytics(): int
     {
@@ -305,7 +297,6 @@ class AnalyticsExportService
      * Clean up old analytics based on retention setting
      *
      * @return int Number of records deleted
-     * @since 5.7.0
      */
     public function cleanupOldAnalytics(): int
     {

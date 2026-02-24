@@ -21,7 +21,6 @@ class AnalyticsSummaryWidget extends Widget
 {
     /**
      * @var int Number of days to show stats for
-     * @since 5.1.0
      */
     public int $days = 7;
 
