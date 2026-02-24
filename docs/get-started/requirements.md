@@ -4,8 +4,8 @@
 
 | Requirement | Version |
 |-------------|---------|
-| Craft CMS | 5.0+ |
-| PHP | 8.2+ |
+| [Craft CMS](https://craftcms.com/) | 5.0+ |
+| [PHP](https://php.net/) | 8.2+ |
 
 ## Dependencies
 
