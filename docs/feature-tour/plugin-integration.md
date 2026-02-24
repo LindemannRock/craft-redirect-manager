@@ -10,7 +10,7 @@ Redirect Manager provides a pluggable architecture that lets other plugins parti
 |--------|---------|---------|
 | `handleRedirect404(string $url, string $source, array $context)` | `?array` | Check if Redirect Manager has a matching redirect for a 404 URL |
 | `createRedirectRule(array $attributes, bool $showNotification)` | `bool` | Create a new redirect rule in Redirect Manager |
-| `handleUndoRedirect(string $oldUrl, string $newUrl, int $siteId, string $creationType, string $sourcePlugin)` | `bool` | Detect and handle an immediate undo (flip-flop redirect within the undo window) |
+| `handleUndoRedirect(string $oldUrl, string $newUrl, ?int $siteId, string $creationType, string $sourcePlugin)` | `bool` | Detect and handle an immediate undo (flip-flop redirect within the undo window) |
 
 > [!NOTE]
 > The trait only provides these three methods. Functions like `handleDeletedItem()` or `handle404()` are examples you write in your own plugin. The trait's methods are the building blocks you call from those functions.

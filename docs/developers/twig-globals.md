@@ -2,7 +2,7 @@
 
 Redirect Manager provides the following global variables in your Twig templates.
 
-## `redirectHelper`
+## `redirectHelper` @since(5.0.0)
 
 *Provided by `lindemannrock/base`*
 
@@ -23,6 +23,3 @@ Redirect Manager provides the following global variables in your Twig templates.
 {{ redirectHelper.lowerDisplayName }}
 {{ redirectHelper.pluralLowerDisplayName }}
 ```
-
----
-

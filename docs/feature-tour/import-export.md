@@ -49,7 +49,7 @@ By default, Redirect Manager creates a backup of your current redirects before p
 
 Disable this setting to skip the pre-import backup (not recommended for large imports).
 
-### Import History @since(5.24.0)
+### Import History @since(5.23.0)
 
 Every import is logged in the Import History tab. Each entry shows:
 

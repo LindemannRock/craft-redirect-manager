@@ -10,14 +10,22 @@ A redirect exists in the CP but visiting the URL does not redirect.
 
 1. **Is the plugin installed and enabled?**
 
-   ```bash
+   ```bash title="PHP"
    php craft plugin/list
+   ```
+
+   ```bash title="DDEV"
+   ddev craft plugin/list
    ```
 
 2. **Are the database tables present?**
 
-   ```bash
+   ```bash title="PHP"
    php craft migrate/all --plugin=redirect-manager
+   ```
+
+   ```bash title="DDEV"
+   ddev craft migrate/all --plugin=redirect-manager
    ```
 
 3. **Is the redirect enabled?** Go to **Redirect Manager > Redirects** and check that the redirect row shows as enabled (not greyed out).
@@ -26,8 +34,12 @@ A redirect exists in the CP but visiting the URL does not redirect.
 
 5. **Is the redirect cache stale?** Clear caches:
 
-   ```bash
+   ```bash title="PHP"
    php craft clear-caches/all
+   ```
+
+   ```bash title="DDEV"
+   ddev craft clear-caches/all
    ```
 
 6. **Check the logs.** Go to **Redirect Manager > Logs** or enable debug logging temporarily:
@@ -59,8 +71,12 @@ A redirect exists in the CP but visiting the URL does not redirect.
 
 3. **Is the IP hash salt configured?** An error banner appears in settings when the salt is missing. Generate one:
 
-   ```bash
+   ```bash title="PHP"
    php craft redirect-manager/security/generate-salt
+   ```
+
+   ```bash title="DDEV"
+   ddev craft redirect-manager/security/generate-salt
    ```
 
 4. **Check the database directly:**

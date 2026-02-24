@@ -151,8 +151,12 @@ Analytics records are automatically trimmed based on these settings:
 
 When `autoTrimAnalytics` is `true`, cleanup runs as a queue job. To run it manually:
 
-```bash
+```bash title="PHP"
 php craft queue/run
+```
+
+```bash title="DDEV"
+ddev craft queue/run
 ```
 
 ## Exporting Analytics

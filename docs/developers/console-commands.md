@@ -18,7 +18,7 @@ ddev craft redirect-manager/security/generate-salt
 
 ## Backups @since(5.23.0)
 
-### `redirect-manager/backup/create`
+### `redirect-manager/backup/create` @since(5.23.0)
 
 Creates a manual backup of all redirects.
 
@@ -34,10 +34,10 @@ ddev craft redirect-manager/backup/create
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `--reason` | `string` | `'console'` | Reason for the backup |
+| `--reason` | `?string` | `'console'` | Reason for the backup |
 | `--clean` | `bool` | `true` | Clean old backups after creating |
 
-### `redirect-manager/backup/scheduled`
+### `redirect-manager/backup/scheduled` @since(5.23.0)
 
 Runs the scheduled backup based on the `backupSchedule` setting. Checks the time elapsed since the last scheduled backup and creates a new one if due. Intended for cron jobs.
 
@@ -49,7 +49,7 @@ php craft redirect-manager/backup/scheduled
 ddev craft redirect-manager/backup/scheduled
 ```
 
-### `redirect-manager/backup/list`
+### `redirect-manager/backup/list` @since(5.23.0)
 
 Lists all available backups with date, reason, size, and redirect count.
 
@@ -61,7 +61,7 @@ php craft redirect-manager/backup/list
 ddev craft redirect-manager/backup/list
 ```
 
-### `redirect-manager/backup/clean`
+### `redirect-manager/backup/clean` @since(5.23.0)
 
 Removes backups older than the configured `backupRetentionDays`. Does nothing if retention is set to `0` (keep forever).
 

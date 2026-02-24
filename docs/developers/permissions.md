@@ -37,7 +37,7 @@ Redirect Manager registers granular permissions that can be assigned to user gro
 
 | Permission | Description |
 |------------|-------------|
-| **`redirectManager:viewAnalytics`** | Parent — view the analytics dashboard |
+| **`redirectManager:viewAnalytics`** | Access the analytics section (view and access) |
 | └─ `redirectManager:exportAnalytics` | Export analytics data |
 | └─ `redirectManager:clearAnalytics` | Clear analytics data |
 
@@ -51,8 +51,8 @@ Redirect Manager registers granular permissions that can be assigned to user gro
 
 | Permission | Description |
 |------------|-------------|
-| **`redirectManager:viewLogs`** | Parent — view plugin logs |
-| └─ **`redirectManager:viewSystemLogs`** | View system-level logs |
+| **`redirectManager:viewLogs`** | Access the logs section (view and access) |
+| └─ `redirectManager:viewSystemLogs` | View system-level logs |
 |     └─ `redirectManager:downloadSystemLogs` | Download system log files |
 
 ### Settings

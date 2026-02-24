@@ -63,13 +63,13 @@ Redirect Manager solves this with an undo detection window. When a new URI chang
 
 | Value | Behavior |
 |-------|----------|
-| `0` | Undo detection disabled — always creates new redirects |
+| `0` | Unlimited window — always detects and removes the reverse redirect, regardless of when it was created |
 | `30` | 30-minute window |
 | `60` | 60-minute window (default) |
 | `120` | 2-hour window |
 | `240` | 4-hour window |
 
-Setting to `0` disables undo detection entirely. Use a longer window if your editors frequently revise slugs during a content session.
+Setting to `0` means undo detection always fires — no time limit. Use a shorter window if you want undo detection to only apply immediately after a change.
 
 ## Multi-Site Behavior
 

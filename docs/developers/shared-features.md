@@ -11,6 +11,7 @@ Redirect Manager uses the following shared libraries and features.
 | `SettingsConfigTrait` | Config file override detection and log level validation |
 | `SettingsDisplayNameTrait` | Standardized plugin name helper methods |
 | `SettingsPersistenceTrait` | Database persistence for Settings models |
+| `ColorHelper` | Color palette utilities for status badge color sets |
 | `GeoHelper` | Geographic utilities (country code to name conversion) |
 
 ### Details
@@ -34,6 +35,10 @@ Provides getDisplayName(), getFullName(), getPluralDisplayName(), etc.
 **SettingsPersistenceTrait**
 
 Settings are stored in database with automatic type conversion for boolean, integer, float, and JSON fields.
+
+**ColorHelper**
+
+Provides palette color lookups used to define color sets for request type, match type, and creation type badges registered via `PluginHelper::bootstrap()`
 
 **GeoHelper**
 
@@ -62,6 +67,3 @@ Provides standardized logging to dedicated plugin log files
 **LoggingLibrary::addLogsNav()**
 
 View plugin logs directly in the Control Panel
-
----
-

@@ -65,7 +65,7 @@ Navigate to **Redirect Manager > Logs** to:
 4. View file sizes and entry counts per file
 5. Download individual log files for external analysis
 
-The `redirectManager:viewLogs` permission is required to access the Logs section. The `redirectManager:downloadSystemLogs` sub-permission is required to download log files.
+The `redirectManager:viewSystemLogs` permission is required to access the Logs section. The `redirectManager:downloadSystemLogs` sub-permission is required to download log files. In the Craft permissions UI, both are nested under the `redirectManager:viewLogs` parent group.
 
 ## What Gets Logged
 
@@ -111,7 +111,8 @@ Never leave `logLevel` set to `debug` in production. Debug logging writes a log 
 
 | Action | Permission |
 |--------|------------|
-| View log entries in CP | `redirectManager:viewLogs` |
+| Access the Logs section in CP | `redirectManager:viewSystemLogs` |
 | Download log files | `redirectManager:downloadSystemLogs` |
+| Logs group (parent, Craft permissions UI only) | `redirectManager:viewLogs` |
 
 See [Permissions](../developers/permissions.md) for the full permission hierarchy.

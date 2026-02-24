@@ -13,23 +13,33 @@ Both widgets require the `redirectManager:viewAnalytics` permission. Users witho
 
 ## Unhandled 404s Widget
 
-Shows the current count of unhandled 404s — URLs that hit a 404 but have no matching redirect rule.
-
-This widget gives you a quick indicator of how many broken links need attention. A count of zero means every tracked 404 is being redirected. A rising count signals new broken links that should be reviewed in the Analytics dashboard.
+Lists the most common unhandled 404s — URLs that hit a 404 but have no matching redirect rule. This gives you a quick, actionable view of broken links without navigating to the full Analytics section.
 
 **Displayed data:**
-- Total count of unhandled 404 URLs currently in the analytics table
+- A list of the top unhandled 404 URLs, sorted by hit count
 - A link to the Analytics dashboard to review and act on them
+
+**Widget settings:**
+
+| Setting | Default | Range | Description |
+|---------|---------|-------|-------------|
+| `limit` | `10` | 5–50 | Maximum number of unhandled 404 URLs to display |
 
 ## Analytics Summary Widget
 
 An overview of recent 404 activity across your site, including:
 
-- Total 404 hits (all time or over a recent period)
-- Handled vs. unhandled breakdown
+- Total 404 hits in the configured time window
+- Handled vs. unhandled breakdown and percentage
 - A compact summary to spot trends at a glance
 
 This widget is useful for content managers who want a quick read on redirect health without navigating to the full Analytics section.
+
+**Widget settings:**
+
+| Setting | Default | Range | Description |
+|---------|---------|-------|-------------|
+| `days` | `7` | 1–365 | Number of days of 404 activity to show |
 
 ## Permissions
 

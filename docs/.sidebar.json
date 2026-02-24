@@ -3,9 +3,9 @@
         "title": "Get Started",
         "collapsable": false,
         "children": [
-            "get-started/quickstart",
-            "get-started/installation",
             "get-started/requirements",
+            "get-started/installation",
+            "get-started/quickstart",
             "get-started/configuration"
         ]
     },
@@ -39,11 +39,11 @@
         "collapsable": true,
         "open": false,
         "children": [
-            "developers/template-variables",
-            "developers/twig-globals",
+            "developers/permissions",
             "developers/console-commands",
             "developers/events",
-            "developers/permissions",
+            "developers/template-variables",
+            "developers/twig-globals",
             "developers/shared-features"
         ]
     }
