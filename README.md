@@ -36,7 +36,6 @@ This plugin is in active development and not yet available on the Craft Plugin S
 - Craft CMS 5.0+
 - PHP 8.2+
 - [Logging Library](https://github.com/LindemannRock/craft-logging-library) 5.0+ (installed automatically)
-- [Matomo Device Detector](https://github.com/matomo-org/device-detector) 6.4+ (installed automatically)
 
 ## Installation
 
