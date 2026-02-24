@@ -1,5 +1,27 @@
 # Changelog
 
+## [5.25.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.24.1...v5.25.0) (2026-02-24)
+
+
+### Features
+
+* **analytics:** enhance analytics data handling and visualization ([33973b4](https://github.com/LindemannRock/craft-redirect-manager/commit/33973b469c22dbdd81e19a6aaf0106191c08352a))
+* fix nested permission pattern — remove viewRedirects ([4c34568](https://github.com/LindemannRock/craft-redirect-manager/commit/4c34568b4ff2de33e028d575ea5bbb6e44d16d44))
+
+
+### Bug Fixes
+
+* **AnalyticsController, ImportExportController:** update request handling for export actions ([ae54b75](https://github.com/LindemannRock/craft-redirect-manager/commit/ae54b759bdbc90b2bf4de364f7140f2f9815be97))
+* **SettingsController:** validate and sanitize settings section parameter ([580a01e](https://github.com/LindemannRock/craft-redirect-manager/commit/580a01e08f7673644a13a664b88402ffcc688d72))
+* **Settings:** update validation message for undoWindowMinutes ([5434224](https://github.com/LindemannRock/craft-redirect-manager/commit/5434224276f24647946dc58dfd3600bc0b6a603a))
+* validate analytics type parameter and replace getenv() ([44e99cd](https://github.com/LindemannRock/craft-redirect-manager/commit/44e99cdbea888b29b1f61324f734c852b03d6126))
+
+
+### Miscellaneous Chores
+
+* add .gitattributes with export-ignore for Packagist distribution ([cd904e3](https://github.com/LindemannRock/craft-redirect-manager/commit/cd904e36dd7cb5c7d899c0495ac7e5f983fb65a5))
+* switch to Craft License for commercial release ([80816b0](https://github.com/LindemannRock/craft-redirect-manager/commit/80816b0ba91113752bd3f8b283764636a78ee039))
+
 ## [5.24.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.24.0...v5.24.1) (2026-02-07)
 
 
