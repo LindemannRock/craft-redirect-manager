@@ -22,10 +22,6 @@
 {% import "_includes/forms" as forms %}
 
 {% block content %}
-	{% include 'lindemannrock-base/_components/ip-salt-error' with {
-		pluginHandle: 'redirect-manager',
-		envVarName: 'REDIRECT_MANAGER_IP_SALT'
-	} %}
 
 	<form method="post" accept-charset="UTF-8">
 		{{ actionInput('redirect-manager/settings/save') }}
@@ -65,6 +61,7 @@
                 60: '60 seconds (1 minute)'|t('redirect-manager'),
                 120: '120 seconds (2 minutes)'|t('redirect-manager'),
             },
+            errors: settings.getErrors('refreshIntervalSecs'),
             disabled: settings.isOverriddenByConfig('refreshIntervalSecs'),
             warning: settings.isOverriddenByConfig('refreshIntervalSecs') ?
                 "This is being overridden by the <code>refreshIntervalSecs</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,

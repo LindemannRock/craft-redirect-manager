@@ -164,10 +164,28 @@ class SettingsController extends Controller
 
         // Get only the posted settings (fields from the current page)
         $settingsData = Craft::$app->getRequest()->getBodyParam('settings', []);
+        $integerAssignmentErrors = [];
 
         // Only update fields that were posted and are not overridden by config
         foreach ($settingsData as $key => $value) {
             if (!$settings->isOverriddenByConfig($key) && property_exists($settings, $key)) {
+                if (in_array($key, $this->_integerSettingKeys(), true)) {
+                    if (
+                        in_array($key, $this->_nullableIntegerSettingKeys(), true) &&
+                        is_string($value) &&
+                        trim($value) === ''
+                    ) {
+                        $value = null;
+                    } else {
+                        $normalized = $this->_normalizeIntegerSettingValue($value);
+                        if ($normalized === null) {
+                            $integerAssignmentErrors[$key] = Craft::t('redirect-manager', 'Value must be a whole number.');
+                            continue;
+                        }
+                        $value = $normalized;
+                    }
+                }
+
                 // Check for setter method first (handles array conversions, etc.)
                 $setterMethod = 'set' . ucfirst($key);
                 if (method_exists($settings, $setterMethod)) {
@@ -178,14 +196,25 @@ class SettingsController extends Controller
             }
         }
 
-        // Validate
-        if (!$settings->validate()) {
+        $section = $this->_validSettingsSection(
+            $this->request->getBodyParam('section', 'general'),
+        );
+        $attributesToValidate = $this->_validationAttributesForSection($section);
+        $attributesToValidate = array_values(array_filter(
+            $attributesToValidate,
+            fn(string $attribute): bool => !$settings->isOverriddenByConfig($attribute),
+        ));
+
+        // Validate only the current section
+        $isValid = $settings->validate($attributesToValidate);
+        foreach ($integerAssignmentErrors as $attribute => $message) {
+            if (in_array($attribute, $attributesToValidate, true)) {
+                $settings->addError($attribute, $message);
+            }
+        }
+        if (!$isValid || $settings->hasErrors()) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Could not save settings.'));
 
-            // Get the section to re-render the correct template with errors
-            $section = $this->_validSettingsSection(
-                $this->request->getBodyParam('section', 'general'),
-            );
             $template = "redirect-manager/settings/{$section}";
 
             return $this->renderTemplate($template, [
@@ -193,8 +222,8 @@ class SettingsController extends Controller
             ]);
         }
 
-        // Save settings to database
-        if ($settings->saveToDatabase()) {
+        // Save only current section attributes to database
+        if ($settings->saveToDatabase($attributesToValidate)) {
             // Detect backup schedule changes and update queue jobs
             if ($oldBackupEnabled !== $settings->backupEnabled ||
                 $oldBackupSchedule !== $settings->backupSchedule
@@ -265,7 +294,7 @@ class SettingsController extends Controller
         }
 
         // Save settings
-        if ($settings->saveToDatabase()) {
+        if ($settings->saveToDatabase(['excludePatterns', 'additionalHeaders'])) {
             if ($addedPatterns > 0 || $addedHeaders > 0) {
                 $message = Craft::t('redirect-manager', 'Added {patterns} exclude pattern(s) and {headers} header(s).', [
                     'patterns' => $addedPatterns,
@@ -322,7 +351,7 @@ class SettingsController extends Controller
         }
 
         // Save settings
-        if ($settings->saveToDatabase()) {
+        if ($settings->saveToDatabase(['excludePatterns'])) {
             if ($addedPatterns > 0) {
                 $message = Craft::t('redirect-manager', 'Added {patterns} WordPress exclude pattern(s). Note: /wp-content/uploads patterns are NOT excluded - those may need redirects for migrated media files.', [
                     'patterns' => $addedPatterns,
@@ -409,7 +438,7 @@ class SettingsController extends Controller
         }
 
         // Save settings
-        if ($settings->saveToDatabase()) {
+        if ($settings->saveToDatabase(['excludePatterns'])) {
             if ($addedPatterns > 0) {
                 $message = Craft::t('redirect-manager', 'Added {patterns} security filter pattern(s). Vulnerability scanning requests will now be ignored.', [
                     'patterns' => $addedPatterns,
@@ -745,5 +774,110 @@ class SettingsController extends Controller
         $allowed = ['general', 'analytics', 'interface', 'cache', 'advanced', 'backup', 'test'];
 
         return in_array($section, $allowed, true) ? $section : 'general';
+    }
+
+    /**
+     * Get validation attributes for a settings section.
+     */
+    private function _validationAttributesForSection(string $section): array
+    {
+        return match ($section) {
+            'general' => [
+                'pluginName',
+                'autoCreateRedirects',
+                'undoWindowMinutes',
+                'redirectSrcMatch',
+                'stripQueryString',
+                'preserveQueryString',
+                'setNoCacheHeaders',
+                'logLevel',
+            ],
+            'analytics' => [
+                'enableAnalytics',
+                'enableGeoDetection',
+                'geoProvider',
+                'geoApiKey',
+                'anonymizeIpAddress',
+                'stripQueryStringFromStats',
+                'analyticsRetention',
+                'analyticsLimit',
+                'autoTrimAnalytics',
+            ],
+            'interface' => [
+                'itemsPerPage',
+                'refreshIntervalSecs',
+            ],
+            'cache' => [
+                'cacheStorageMethod',
+                'cacheDeviceDetection',
+                'deviceDetectionCacheDuration',
+                'enableRedirectCache',
+                'redirectCacheDuration',
+            ],
+            'advanced' => [
+                'enableApiEndpoint',
+                'excludePatterns',
+                'additionalHeaders',
+            ],
+            'backup' => [
+                'backupEnabled',
+                'backupOnImport',
+                'backupSchedule',
+                'backupRetentionDays',
+                'backupVolumeUid',
+                'backupPath',
+            ],
+            default => [],
+        };
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function _integerSettingKeys(): array
+    {
+        return [
+            'analyticsLimit',
+            'analyticsRetention',
+            'refreshIntervalSecs',
+            'itemsPerPage',
+            'redirectCacheDuration',
+            'undoWindowMinutes',
+            'deviceDetectionCacheDuration',
+            'backupRetentionDays',
+        ];
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function _nullableIntegerSettingKeys(): array
+    {
+        return [
+            'refreshIntervalSecs',
+        ];
+    }
+
+    /**
+     * Normalize posted scalar values to int for typed settings properties.
+     *
+     * @param mixed $value
+     * @return int|null Null means invalid.
+     */
+    private function _normalizeIntegerSettingValue(mixed $value): ?int
+    {
+        if (is_int($value)) {
+            return $value;
+        }
+
+        if (is_string($value)) {
+            $value = trim($value);
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_INT) === false) {
+            return null;
+        }
+
+        return (int)$value;
     }
 }

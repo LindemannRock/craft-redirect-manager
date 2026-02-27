@@ -15,6 +15,7 @@
 {% set fullPageForm = true %}
 {% set saveShortcutRedirect = cpUrl('redirect-manager/redirects/{id}') %}
 {% set retainScrollOnSaveShortcut = true %}
+{% set errorSummary = '' %}
 
 {# Set up tabs #}
 {% set tabs = {
@@ -32,6 +33,14 @@
             url: '#analytics',
         },
     }) %}
+{% endif %}
+
+{% if redirect and redirect.hasErrors() %}
+    {% set errorSummary = include('lindemannrock-base/_partials/error-summary', {
+        errors: redirect.getErrors(),
+        linkMode: 'field-id',
+        translationCategory: 'redirect-manager'
+    })|trim %}
 {% endif %}
 
 {% block actionButton %}
@@ -73,7 +82,7 @@
 	{% endif %}
 
 	<div id="fields">
-	<div class="field" style="margin-top: 0px;">
+	<div class="field" id="redirectSrcMatch-field" style="margin-top: 0px;">
 		<div class="heading">
 			<label for="redirectSrcMatch">{{ 'Source Match Mode'|t('redirect-manager') }}
 				<span class="required" aria-label="Required"></span>
@@ -97,11 +106,18 @@
 				</select>
 			</div>
 		</div>
+        {% if redirect and redirect.getErrors('redirectSrcMatch') %}
+            <ul class="errors">
+                {% for error in redirect.getErrors('redirectSrcMatch') %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 		<p id="pathOnlyTip" class="notice has-icon" style="display: {{ srcMatchValue == 'pathonly' ? 'block' : 'none' }}; margin-top: 10px;">
 			<span class="icon" aria-hidden="true"></span>
 			<span class="visually-hidden">Tip:
 			</span>
-			<span>Full URLs entered will be automatically converted to paths when saving.</span>
+			<span>{{ 'Full URLs entered will be automatically converted to paths when saving.'|t('redirect-manager') }}</span>
 		</p>
 	</div>
 
@@ -144,11 +160,11 @@
 			<span class="icon" aria-hidden="true"></span>
 			<span class="visually-hidden">Tip:
 			</span>
-			<span>Test your pattern at
-				<a class="go" href="https://regexr.com/" target="_blank" rel="noopener">regexr.com</a>
-				before saving.</span>
-		</p>
-	</div>
+				<span>{{ 'Test your pattern at'|t('redirect-manager') }}
+					<a class="go" href="https://regexr.com/" target="_blank" rel="noopener">regexr.com</a>
+					{{ 'before saving.'|t('redirect-manager') }}</span>
+			</p>
+		</div>
 
 	{{ forms.textField({
         label: 'Destination URL'|t('redirect-manager'),
@@ -178,7 +194,7 @@
 							<option value="{{ i }}" {% if (redirect ? redirect.priority : 0) == i %} selected {% endif %}>
 								{{ i }}
 								-
-								{{ i == 0 ? 'Highest priority' : (i == 9 ? 'Lowest priority' : 'Priority ' ~ i) }}
+									{{ i == 0 ? 'Highest priority'|t('redirect-manager') : (i == 9 ? 'Lowest priority'|t('redirect-manager') : ('Priority'|t('redirect-manager') ~ ' ' ~ i)) }}
 							</option>
 						{% endfor %}
 					</select>
@@ -211,10 +227,10 @@
 			<span class="icon" aria-hidden="true"></span>
 			<span class="visually-hidden">Tip:
 			</span>
-			<span id="statusCodeTipText">Most common: Use
-				<strong>301</strong>
-				for permanent moves.
-				<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" target="_blank" rel="noopener">Learn more about HTTP status codes</a>
+				<span id="statusCodeTipText">{{ 'Most common: Use'|t('redirect-manager') }}
+					<strong>301</strong>
+					{{ 'for permanent moves.'|t('redirect-manager') }}
+					<a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" target="_blank" rel="noopener">{{ 'Learn more about HTTP status codes'|t('redirect-manager') }}</a>
 			</span>
 		</p>
 	</div>

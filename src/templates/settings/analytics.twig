@@ -24,11 +24,6 @@
 {% block content %}
     {% set pluginName = redirectHelper.fullName %}
 
-    {% include 'lindemannrock-base/_components/ip-salt-error' with {
-        pluginHandle: 'redirect-manager',
-        envVarName: 'REDIRECT_MANAGER_IP_SALT'
-    } %}
-
     <form method="post" accept-charset="UTF-8">
         {{ actionInput('redirect-manager/settings/save') }}
         {{ csrfInput() }}
@@ -44,6 +39,7 @@
             name: 'settings[enableAnalytics]',
             on: settings.enableAnalytics ?? true,
             toggle: 'analytics-settings',
+            errors: settings.getErrors('enableAnalytics'),
             disabled: settings.isOverriddenByConfig('enableAnalytics'),
             warning: settings.isOverriddenByConfig('enableAnalytics') ?
                 "This is being overridden by the <code>enableAnalytics</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
@@ -65,6 +61,7 @@
                 name: 'settings[enableGeoDetection]',
                 on: settings.enableGeoDetection ?? false,
                 toggle: 'geo-provider-settings',
+                errors: settings.getErrors('enableGeoDetection'),
                 disabled: settings.isOverriddenByConfig('enableGeoDetection'),
                 warning: settings.isOverriddenByConfig('enableGeoDetection') ?
                     "This is being overridden by the <code>enableGeoDetection</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
@@ -73,7 +70,7 @@
             <div id="geo-provider-settings" class="{{ not (settings.enableGeoDetection ?? false) ? 'hidden' }}" style="margin-top: 24px;">
                 {% include 'lindemannrock-base/_partials/geo-settings' with {
                     settings: settings,
-                    pluginHandle: 'redirect-manager'
+                    translationCategory: 'redirect-manager'
                 } %}
             </div>
 
@@ -87,6 +84,7 @@
                 id: 'anonymizeIpAddress',
                 name: 'settings[anonymizeIpAddress]',
                 on: settings.anonymizeIpAddress ?? false,
+                errors: settings.getErrors('anonymizeIpAddress'),
                 disabled: settings.isOverriddenByConfig('anonymizeIpAddress'),
                 warning: settings.isOverriddenByConfig('anonymizeIpAddress') ?
                     "This is being overridden by the <code>anonymizeIpAddress</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
@@ -110,6 +108,7 @@
                 id: 'stripQueryStringFromStats',
                 name: 'settings[stripQueryStringFromStats]',
                 on: settings.stripQueryStringFromStats,
+                errors: settings.getErrors('stripQueryStringFromStats'),
                 disabled: settings.isOverriddenByConfig('stripQueryStringFromStats'),
                 warning: settings.isOverriddenByConfig('stripQueryStringFromStats') ?
                     "This is being overridden by the <code>stripQueryStringFromStats</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
@@ -138,7 +137,10 @@
                 name: 'settings[analyticsRetention]',
                 type: 'number',
                 value: settings.analyticsRetention,
+                min: 0,
+                max: 3650,
                 required: true,
+                errors: settings.getErrors('analyticsRetention'),
                 disabled: settings.isOverriddenByConfig('analyticsRetention'),
                 warning: settings.isOverriddenByConfig('analyticsRetention') ?
                     "This is being overridden by the <code>analyticsRetention</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
@@ -151,7 +153,10 @@
                 name: 'settings[analyticsLimit]',
                 type: 'number',
                 value: settings.analyticsLimit,
+                min: 1,
+                max: 100000,
                 required: true,
+                errors: settings.getErrors('analyticsLimit'),
                 disabled: settings.isOverriddenByConfig('analyticsLimit'),
                 warning: settings.isOverriddenByConfig('analyticsLimit') ?
                     "This is being overridden by the <code>analyticsLimit</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
@@ -163,6 +168,7 @@
                 id: 'autoTrimAnalytics',
                 name: 'settings[autoTrimAnalytics]',
                 on: settings.autoTrimAnalytics,
+                errors: settings.getErrors('autoTrimAnalytics'),
                 disabled: settings.isOverriddenByConfig('autoTrimAnalytics'),
                 warning: settings.isOverriddenByConfig('autoTrimAnalytics') ?
                     "This is being overridden by the <code>autoTrimAnalytics</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,

@@ -16,6 +16,7 @@ use craft\validators\ArrayValidator;
 use lindemannrock\base\traits\SettingsConfigTrait;
 use lindemannrock\base\traits\SettingsDisplayNameTrait;
 use lindemannrock\base\traits\SettingsPersistenceTrait;
+use lindemannrock\base\validators\StoragePathValidator;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 
 /**
@@ -366,9 +367,11 @@ class Settings extends Model
             ['redirectSrcMatch', 'default', 'value' => 'pathonly'],
             ['redirectSrcMatch', 'string'],
             ['redirectSrcMatch', 'in', 'range' => ['pathonly', 'fullurl']],
-            ['analyticsLimit', 'integer', 'min' => 1],
+            ['analyticsLimit', 'required'],
+            ['analyticsLimit', 'integer', 'min' => 1, 'max' => 100000],
             ['analyticsLimit', 'default', 'value' => 1000],
-            ['analyticsRetention', 'integer', 'min' => 0],
+            ['analyticsRetention', 'required'],
+            ['analyticsRetention', 'integer', 'min' => 0, 'max' => 3650],
             ['analyticsRetention', 'default', 'value' => 30],
             ['refreshIntervalSecs', 'integer', 'min' => 0, 'skipOnEmpty' => true],
             ['refreshIntervalSecs', 'default', 'value' => null],
@@ -377,6 +380,8 @@ class Settings extends Model
             ['undoWindowMinutes', 'integer'],
             ['undoWindowMinutes', 'in', 'range' => [0, 30, 60, 120, 240]], // 0 = unlimited window (always undo, no time limit)
             ['undoWindowMinutes', 'default', 'value' => 60],
+            ['deviceDetectionCacheDuration', 'integer', 'min' => 60, 'max' => 604800],
+            ['deviceDetectionCacheDuration', 'default', 'value' => 3600],
             [
                 ['excludePatterns', 'additionalHeaders'],
                 ArrayValidator::class,
@@ -385,14 +390,21 @@ class Settings extends Model
             [['logLevel'], 'validateLogLevel'],
             ['enableRedirectCache', 'boolean'],
             ['enableRedirectCache', 'default', 'value' => true],
-            ['redirectCacheDuration', 'integer', 'min' => 0],
+            ['redirectCacheDuration', 'integer', 'min' => 60, 'max' => 86400],
             ['redirectCacheDuration', 'default', 'value' => 3600],
             [['cacheStorageMethod'], 'in', 'range' => ['file', 'redis']],
             [['geoProvider'], 'in', 'range' => ['ip-api.com', 'ipapi.co', 'ipinfo.io']],
             [['geoApiKey'], 'string', 'max' => 255, 'skipOnEmpty' => true],
             ['backupPath', 'required'],
             ['backupPath', 'string'],
-            ['backupPath', 'validateBackupPath'],
+            [
+                'backupPath',
+                StoragePathValidator::class,
+                'translationCategory' => 'redirect-manager',
+                'allowedAliases' => ['@storage', '@root'],
+                'preventWebroot' => true,
+                'requireAlias' => true,
+            ],
             ['backupVolumeUid', 'string'],
             ['backupRetentionDays', 'integer', 'min' => 0, 'max' => 365],
             ['backupSchedule', 'in', 'range' => ['manual', 'daily', 'weekly', 'monthly']],
@@ -436,63 +448,6 @@ class Settings extends Model
                 $this->logWarning('Log level automatically changed from "debug" to "info" because devMode is disabled');
                 $this->saveToDatabase();
             }
-        }
-    }
-
-    /**
-     * Validate backup path - only allow secure aliases
-     *
-     * @param string $attribute
-     * @param array|null $params
-     * @param \yii\validators\Validator|null $validator
-     * @since 5.23.0
-     */
-    public function validateBackupPath($attribute, $params, $validator)
-    {
-        $path = $this->$attribute;
-
-        // Check for directory traversal attempts
-        if (strpos($path, '..') !== false) {
-            $this->addError($attribute, Craft::t('redirect-manager', 'Backup path cannot contain directory traversal sequences (..)'));
-            return;
-        }
-
-        // If path starts with @, validate against allowed aliases (unresolved)
-        if (str_starts_with($path, '@')) {
-            $allowedAliases = ['@root', '@storage'];
-            $hasValidAlias = false;
-
-            foreach ($allowedAliases as $alias) {
-                if (str_starts_with($path, $alias)) {
-                    $hasValidAlias = true;
-                    break;
-                }
-            }
-
-            if (!$hasValidAlias) {
-                $this->addError(
-                    $attribute,
-                    Craft::t('redirect-manager', 'Backup path must start with @root or @storage (secure locations only, never web-accessible)')
-                );
-                return;
-            }
-        }
-
-        // Resolve the alias to check actual path
-        try {
-            $resolvedPath = Craft::getAlias($path);
-            $webroot = Craft::getAlias('@webroot');
-
-            // Prevent backups in web-accessible directory
-            if (str_starts_with($resolvedPath, $webroot)) {
-                $this->addError(
-                    $attribute,
-                    Craft::t('redirect-manager', 'Backup path cannot be in a web-accessible directory (@webroot)')
-                );
-                return;
-            }
-        } catch (\Exception $e) {
-            $this->addError($attribute, Craft::t('redirect-manager', 'Invalid backup path: {error}', ['error' => $e->getMessage()]));
         }
     }
 
