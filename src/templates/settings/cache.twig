@@ -51,7 +51,7 @@
 
 		<div id="cache-location-file" class="{{ (settings.cacheStorageMethod ?? 'file') == 'redis' ? 'hidden' }}">
 			{% include 'lindemannrock-base/_components/info-box' with {
-				message: '<strong>Cache Location:</strong> <code>' ~ redirectHelper.cacheBasePath ~ '</code>',
+				message: '<strong>' ~ 'Cache Location'|t('redirect-manager') ~ ':</strong> <code>' ~ redirectHelper.cacheBasePath ~ '</code>',
 				type: 'info'
 			} %}
 		</div>
@@ -60,12 +60,12 @@
 			{% if craftUsesRedis %}
 				{% include 'lindemannrock-base/_components/info-box' with {
 					type: 'success',
-					message: '<strong>Cache Location:</strong> Using Craft\'s configured Redis cache from <code>config/app.php</code>'
+					message: '<strong>' ~ 'Cache Location'|t('redirect-manager') ~ ':</strong> ' ~ "Using Craft's configured Redis cache from <code>config/app.php</code>"|t('redirect-manager')
 				} %}
 			{% else %}
 				{% include 'lindemannrock-base/_components/info-box' with {
 					type: 'warning',
-					message: '<strong>Redis Not Configured:</strong> To use Redis caching, install <code>yiisoft/yii2-redis</code> and configure it in <code>config/app.php</code>. <a href="https://craftcms.com/docs/5.x/reference/config/app.html#cache" target="_blank" rel="noopener">Learn more</a>'
+					message: '<strong>' ~ 'Redis Not Configured'|t('redirect-manager') ~ ':</strong> ' ~ "To use Redis caching, install <code>yiisoft/yii2-redis</code> and configure it in <code>config/app.php</code>."|t('redirect-manager') ~ ' <a href="https://craftcms.com/docs/5.x/reference/config/app.html#cache" target="_blank" rel="noopener">' ~ 'Learn more'|t('redirect-manager') ~ '</a>'
 				} %}
 			{% endif %}
 		</div>
@@ -92,7 +92,7 @@
 			<div id="device-cache-settings" class="{{ not (settings.cacheDeviceDetection ?? true) ? 'hidden' }}">
 				{{ forms.textField({
 	                label: "Device Detection Cache Duration"|t('redirect-manager'),
-	                instructions: ('Cache duration in seconds. Current: <strong id="deviceDetectionCacheDuration-human"></strong>')|raw,
+	                instructions: ('Cache duration in seconds. Current:'|t('redirect-manager') ~ ' <strong id="deviceDetectionCacheDuration-human"></strong>')|raw,
 	                id: 'deviceDetectionCacheDuration',
 	                name: 'settings[deviceDetectionCacheDuration]',
 	                value: settings.deviceDetectionCacheDuration ?? 3600,
@@ -107,10 +107,10 @@
 	            }) }}
 
 				{% include 'lindemannrock-base/_components/info-box' with {
-					message: '<strong>How it works:</strong><br>
-• Device detection parses user-agent strings to identify devices, browsers, and operating systems<br>
-• Results are cached to avoid re-parsing the same user-agent repeatedly<br>
-• Recommended to keep enabled for production sites'
+					message: '<strong>' ~ 'How it works'|t('redirect-manager') ~ ':</strong><br>'
+					~ '• ' ~ 'Device detection parses user-agent strings to identify devices, browsers, and operating systems'|t('redirect-manager') ~ '<br>'
+					~ '• ' ~ 'Results are cached to avoid re-parsing the same user-agent repeatedly'|t('redirect-manager') ~ '<br>'
+					~ '• ' ~ 'Recommended to keep enabled for production sites'|t('redirect-manager')
 				} %}
 			</div>
 
@@ -146,7 +146,7 @@
 		<div id="redirect-cache-settings" class="{{ not settings.enableRedirectCache ? 'hidden' }}">
 			{{ forms.textField({
 	            label: 'Redirect Cache Duration'|t('redirect-manager'),
-	            instructions: ('Cache duration in seconds. Current: <strong id="redirectCacheDuration-human"></strong>')|raw,
+	            instructions: ('Cache duration in seconds. Current:'|t('redirect-manager') ~ ' <strong id="redirectCacheDuration-human"></strong>')|raw,
 	            id: 'redirectCacheDuration',
 	            name: 'settings[redirectCacheDuration]',
 	            value: settings.redirectCacheDuration ?? 3600,
@@ -183,19 +183,29 @@ $('#cacheStorageMethod').on('change', function() {
 });
 
 // Convert seconds to human-readable duration
+var _timeUnits = {
+	second: {{ '{count} second'|t('redirect-manager', {count: '__COUNT__'})|json_encode|raw }},
+	seconds: {{ '{count} seconds'|t('redirect-manager', {count: '__COUNT__'})|json_encode|raw }},
+	minute: {{ '{count} minute'|t('redirect-manager', {count: '__COUNT__'})|json_encode|raw }},
+	minutes: {{ '{count} minutes'|t('redirect-manager', {count: '__COUNT__'})|json_encode|raw }},
+	hour: {{ '{count} hour'|t('redirect-manager', {count: '__COUNT__'})|json_encode|raw }},
+	hours: {{ '{count} hours'|t('redirect-manager', {count: '__COUNT__'})|json_encode|raw }},
+	day: {{ '{count} day'|t('redirect-manager', {count: '__COUNT__'})|json_encode|raw }},
+	days: {{ '{count} days'|t('redirect-manager', {count: '__COUNT__'})|json_encode|raw }}
+};
 function secondsToHuman(seconds) {
 	seconds = parseInt(seconds) || 0;
 	if (seconds < 60) {
-		return seconds + ' second' + (seconds !== 1 ? 's' : '');
+		return _timeUnits[seconds !== 1 ? 'seconds' : 'second'].replace('__COUNT__', seconds);
 	} else if (seconds < 3600) {
-		const mins = Math.round(seconds / 60 * 10) / 10;
-		return mins + ' minute' + (mins !== 1 ? 's' : '');
+		var mins = Math.round(seconds / 60 * 10) / 10;
+		return _timeUnits[mins !== 1 ? 'minutes' : 'minute'].replace('__COUNT__', mins);
 	} else if (seconds < 86400) {
-		const hours = Math.round(seconds / 3600 * 10) / 10;
-		return hours + ' hour' + (hours !== 1 ? 's' : '');
+		var hours = Math.round(seconds / 3600 * 10) / 10;
+		return _timeUnits[hours !== 1 ? 'hours' : 'hour'].replace('__COUNT__', hours);
 	} else {
-		const days = Math.round(seconds / 86400 * 10) / 10;
-		return days + ' day' + (days !== 1 ? 's' : '');
+		var days = Math.round(seconds / 86400 * 10) / 10;
+		return _timeUnits[days !== 1 ? 'days' : 'day'].replace('__COUNT__', days);
 	}
 }
 
