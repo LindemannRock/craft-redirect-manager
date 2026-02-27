@@ -171,12 +171,12 @@ class RedirectsController extends Controller
 
         $matchTypes = RedirectManager::$plugin->matching->getMatchTypes();
         $statusCodes = [
-            301 => '301 - Moved Permanently',
-            302 => '302 - Found (Temporary)',
-            303 => '303 - See Other',
-            307 => '307 - Temporary Redirect',
-            308 => '308 - Permanent Redirect',
-            410 => '410 - Gone',
+            301 => Craft::t('redirect-manager', '301 - Moved Permanently'),
+            302 => Craft::t('redirect-manager', '302 - Found (Temporary)'),
+            303 => Craft::t('redirect-manager', '303 - See Other'),
+            307 => Craft::t('redirect-manager', '307 - Temporary Redirect'),
+            308 => Craft::t('redirect-manager', '308 - Permanent Redirect'),
+            410 => Craft::t('redirect-manager', '410 - Gone'),
         ];
 
         // Get editable sites for dropdown
@@ -282,12 +282,12 @@ class RedirectsController extends Controller
         // Re-render edit form with submitted data
         $matchTypes = RedirectManager::$plugin->matching->getMatchTypes();
         $statusCodes = [
-            301 => '301 - Moved Permanently',
-            302 => '302 - Found (Temporary)',
-            303 => '303 - See Other',
-            307 => '307 - Temporary Redirect',
-            308 => '308 - Permanent Redirect',
-            410 => '410 - Gone',
+            301 => Craft::t('redirect-manager', '301 - Moved Permanently'),
+            302 => Craft::t('redirect-manager', '302 - Found (Temporary)'),
+            303 => Craft::t('redirect-manager', '303 - See Other'),
+            307 => Craft::t('redirect-manager', '307 - Temporary Redirect'),
+            308 => Craft::t('redirect-manager', '308 - Permanent Redirect'),
+            410 => Craft::t('redirect-manager', '410 - Gone'),
         ];
 
         // Get editable sites for dropdown
