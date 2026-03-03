@@ -10,8 +10,10 @@ namespace lindemannrock\redirectmanager\jobs;
 
 use Craft;
 use craft\queue\BaseJob;
+use lindemannrock\base\traits\QueueTtrTrait;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
+use yii\queue\RetryableJobInterface;
 
 /**
  * Cleanup Analytics Job
@@ -22,8 +24,9 @@ use lindemannrock\redirectmanager\RedirectManager;
  * @package   RedirectManager
  * @since     5.0.0
  */
-class CleanupAnalyticsJob extends BaseJob
+class CleanupAnalyticsJob extends BaseJob implements RetryableJobInterface
 {
+    use QueueTtrTrait;
     use LoggingTrait;
 
     /**
@@ -35,6 +38,14 @@ class CleanupAnalyticsJob extends BaseJob
      * @var string|null Next run time display string for queued jobs
      */
     public ?string $nextRunTime = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function canRetry($attempt, $error): bool
+    {
+        return false;
+    }
 
     /**
      * @inheritdoc

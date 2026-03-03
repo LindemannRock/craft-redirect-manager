@@ -12,16 +12,19 @@ namespace lindemannrock\redirectmanager\jobs;
 
 use Craft;
 use craft\queue\BaseJob;
+use lindemannrock\base\traits\QueueTtrTrait;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
+use yii\queue\RetryableJobInterface;
 
 /**
  * Create Backup Job
  *
  * @since 5.23.0
  */
-class CreateBackupJob extends BaseJob
+class CreateBackupJob extends BaseJob implements RetryableJobInterface
 {
+    use QueueTtrTrait;
     use LoggingTrait;
 
     /**
@@ -39,6 +42,14 @@ class CreateBackupJob extends BaseJob
      * @var string|null Next run time display string
      */
     public ?string $nextRunTime = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function canRetry($attempt, $error): bool
+    {
+        return false;
+    }
 
     /**
      * @inheritdoc
