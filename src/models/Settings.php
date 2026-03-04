@@ -10,7 +10,6 @@ namespace lindemannrock\redirectmanager\models;
 
 use Craft;
 use craft\base\Model;
-use craft\behaviors\EnvAttributeParserBehavior;
 use craft\helpers\App;
 use craft\validators\ArrayValidator;
 use lindemannrock\base\traits\SettingsConfigTrait;
@@ -331,12 +330,7 @@ class Settings extends Model
      */
     public function behaviors(): array
     {
-        return [
-            'parser' => [
-                'class' => EnvAttributeParserBehavior::class,
-                'attributes' => ['backupPath'],
-            ],
-        ];
+        return [];
     }
 
     /**
