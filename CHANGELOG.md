@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.26.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.25.0...v5.26.0) (2026-03-04)
+
+
+### Features
+
+* add complete EN/DE translation ([d534845](https://github.com/LindemannRock/craft-redirect-manager/commit/d534845a9def0b94782208cde21824bd5c10f405))
+
+
+### Bug Fixes
+
+* **jobs:** implement RetryableJobInterface in job classes ([1f348a5](https://github.com/LindemannRock/craft-redirect-manager/commit/1f348a534d74cb5f4d1fef11886ed14ebafd2538))
+* **settings:** validate integer settings and improve error handling ([495c806](https://github.com/LindemannRock/craft-redirect-manager/commit/495c806d7b107bea451af7195f44b9d4c8228aec))
+
 ## [5.25.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.24.1...v5.25.0) (2026-02-24)
 
 
