@@ -233,12 +233,4 @@
             });
     });
 
-    // Initialize menu buttons
-    document.querySelectorAll('.menubtn').forEach(btn => {
-        if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
-            new Craft.MenuBtn(btn);
-        } else if (typeof Garnish !== 'undefined' && Garnish.MenuBtn) {
-            new Garnish.MenuBtn(btn);
-        }
-    });
 {% endjs %}
