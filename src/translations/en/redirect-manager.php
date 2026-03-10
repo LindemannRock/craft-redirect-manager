@@ -628,6 +628,7 @@ return [
     'No valid redirects found to import.' => 'No valid redirects found to import.',
     'Import {count} Redirects' => 'Import {count} Redirects',
     'No Valid Redirects to Import' => 'No Valid Redirects to Import',
+    'Successfully imported {imported} {pluginName}.' => 'Successfully imported {imported} {pluginName}.',
 
     // =========================================================================
     // Utilities Page

@@ -628,6 +628,7 @@ return [
     'No valid redirects found to import.' => 'Keine gültigen Weiterleitungen zum Importieren gefunden.',
     'Import {count} Redirects' => '{count} Weiterleitungen importieren',
     'No Valid Redirects to Import' => 'Keine gültigen Weiterleitungen zum Importieren',
+    'Successfully imported {imported} {pluginName}.' => '{imported} {pluginName} erfolgreich importiert.',
 
     // =========================================================================
     // Utilities Page

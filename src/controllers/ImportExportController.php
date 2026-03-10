@@ -890,7 +890,11 @@ class ImportExportController extends Controller
         Craft::$app->getSession()->remove('redirect-import-validated');
         Craft::$app->getSession()->remove('redirect-preview');
 
-        $message = Craft::t('redirect-manager', 'Successfully imported {imported} redirect(s).', ['imported' => $imported]);
+        $pluginName = RedirectManager::$plugin->getSettings()->getPluralLowerDisplayName();
+        $message = Craft::t('redirect-manager', 'Successfully imported {imported} {pluginName}.', [
+            'imported' => $imported,
+            'pluginName' => $pluginName,
+        ]);
         if ($failed > 0) {
             $message .= ' ' . Craft::t('redirect-manager', '{failed} failed.', ['failed' => $failed]);
         }
