@@ -200,37 +200,13 @@
 {% endblock %}
 
 {% js %}
-    // Show history tab after reload if requested
-    if (sessionStorage.getItem('showHistoryTab') === 'true') {
-        sessionStorage.removeItem('showHistoryTab');
-        const historyTab = document.querySelector('a[href="#import-history"]');
-        if (historyTab) {
-            historyTab.click();
-        }
-    }
-
-    // Clear history button
-    document.getElementById('clear-logs-btn')?.addEventListener('click', function(e) {
-        e.preventDefault();
-
-        if (!confirm('{{ "Are you sure you want to clear all import logs? This action cannot be undone."|t('redirect-manager')|e('js') }}')) {
-            return;
-        }
-
-        const button = this;
-        button.classList.add('loading');
-        button.disabled = true;
-
-        Craft.sendActionRequest('POST', 'redirect-manager/import-export/clear-logs')
-            .then(() => {
-                sessionStorage.setItem('showHistoryTab', 'true');
-                window.location.reload(true);
-            })
-            .catch(error => {
-                button.classList.remove('loading');
-                button.disabled = false;
-                Craft.cp.displayError(error.response?.data?.error || '{{ "Failed to clear history."|t('redirect-manager')|e('js') }}');
-            });
-    });
+    {% include 'lindemannrock-base/_partials/import-history-js' with {
+        tabStorageKey: 'showHistoryTab',
+        tabSelector: 'a[href="#import-history"]',
+        clearButtonId: 'clear-logs-btn',
+        clearAction: 'redirect-manager/import-export/clear-logs',
+        confirmMessage: 'Are you sure you want to clear all import logs? This action cannot be undone.'|t('redirect-manager'),
+        clearErrorMessage: 'Failed to clear history.'|t('redirect-manager'),
+    } only %}
 
 {% endjs %}
