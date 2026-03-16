@@ -233,7 +233,6 @@ class RedirectManager extends Plugin
             $settings = $this->getSettings();
 
             $item['label'] = $settings->getFullName();
-            $item['icon'] = '@appicons/arrows-turn-right.svg';
 
             $sections = $this->getCpSections($settings);
             $item['subnav'] = CpNavHelper::buildSubnav($user, $settings, $sections);

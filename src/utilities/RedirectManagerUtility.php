@@ -41,7 +41,7 @@ class RedirectManagerUtility extends Utility
      */
     public static function icon(): ?string
     {
-        return 'arrows-turn-right';
+        return '@lindemannrock/redirectmanager/icon-mask.svg';
     }
 
     /**
