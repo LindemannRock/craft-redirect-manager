@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.28.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.27.0...v5.28.0) (2026-03-17)
+
+
+### Features
+
+* **analytics:** streamline IP processing and remove redundancy ([88ba22c](https://github.com/LindemannRock/craft-redirect-manager/commit/88ba22c94b7978e011519caa455a8c423bdd78ad))
+
 ## [5.27.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.26.0...v5.27.0) (2026-03-17)
 
 
