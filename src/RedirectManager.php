@@ -117,6 +117,14 @@ class RedirectManager extends Plugin
                         'entry-change' => ColorHelper::getPaletteColor('blue'),
                     ],
                 ],
+                'installExperience' => [
+                    'headline' => 'Redirect Manager',
+                    'body' => 'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.',
+                    'ctaLabel' => 'Open Redirect Manager',
+                    'ctaUrl' => 'redirect-manager',
+                    'redirectUri' => 'redirect-manager',
+                    'confettiPreset' => 'surprise',
+                ],
             ]
         );
         PluginHelper::applyPluginNameFromConfig($this);
