@@ -1,5 +1,19 @@
 # Changelog
 
+## [5.27.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.26.0...v5.27.0) (2026-03-17)
+
+
+### Features
+
+* **analytics:** implement build process and update asset management ([36d19eb](https://github.com/LindemannRock/craft-redirect-manager/commit/36d19ebe4f6fc45820bdaa48821ef8bd2948d26b))
+* **redirect-manager:** add install experience configuration ([9c4344e](https://github.com/LindemannRock/craft-redirect-manager/commit/9c4344ef16aaa8ada251457d6dc4904b1ef83367))
+
+
+### Bug Fixes
+
+* **import-export:** remove unused menu button initialization code ([382c9a0](https://github.com/LindemannRock/craft-redirect-manager/commit/382c9a00c06c40640cb870729d5a652baa81624a))
+* **settings:** remove redundant submit button from settings forms ([9dd2ff2](https://github.com/LindemannRock/craft-redirect-manager/commit/9dd2ff2c44680b613b6d748931c1d15e1e83ae95))
+
 ## [5.26.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.25.0...v5.26.0) (2026-03-04)
 
 
