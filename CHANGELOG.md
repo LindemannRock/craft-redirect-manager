@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.28.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.28.1...v5.28.2) (2026-03-18)
+
+
+### Bug Fixes
+
+* **config:** clarify log level options comment ([4e7d405](https://github.com/LindemannRock/craft-redirect-manager/commit/4e7d405848085aeef1191269ab47e4427ac0b487))
+
 ## [5.28.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.28.0...v5.28.1) (2026-03-17)
 
 
