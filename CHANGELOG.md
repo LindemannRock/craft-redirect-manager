@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.28.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.28.0...v5.28.1) (2026-03-17)
+
+
+### Miscellaneous Chores
+
+* **workflow:** update release-please.yml permissions and settings ([33bd4f4](https://github.com/LindemannRock/craft-redirect-manager/commit/33bd4f434d46f57517bfb1d67e0cf7c53fc6483c))
+
 ## [5.28.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.27.0...v5.28.0) (2026-03-17)
 
 
