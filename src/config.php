@@ -59,7 +59,7 @@ return [
         'setNoCacheHeaders' => true,
 
         // Logging Settings
-        'logLevel' => 'error',             // Log level: 'debug', 'info', 'warning', 'error'
+        'logLevel' => 'error',             // Log level options: 'debug', 'info', 'warning', 'error'
 
 
         // ========================================
