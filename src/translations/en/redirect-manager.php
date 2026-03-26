@@ -9,6 +9,8 @@
 
 return [
     'Redirect Manager' => 'Redirect Manager',
+    'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.' => 'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.',
+    'Open Redirect Manager' => 'Open Redirect Manager',
     '{name} plugin loaded' => '{name} plugin loaded',
     '{pluginName} Cache' => '{pluginName} Cache',
 
