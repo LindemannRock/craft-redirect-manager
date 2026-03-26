@@ -118,9 +118,9 @@ class RedirectManager extends Plugin
                     ],
                 ],
                 'installExperience' => [
-                    'headline' => 'Redirect Manager',
-                    'body' => 'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.',
-                    'ctaLabel' => 'Open Redirect Manager',
+                    'headline' => Craft::t('redirect-manager', 'Redirect Manager'),
+                    'body' => Craft::t('redirect-manager', 'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.'),
+                    'ctaLabel' => Craft::t('redirect-manager', 'Open Redirect Manager'),
                     'ctaUrl' => 'redirect-manager',
                     'redirectUri' => 'redirect-manager',
                     'confettiPreset' => 'surprise',
