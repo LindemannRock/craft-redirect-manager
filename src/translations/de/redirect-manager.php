@@ -8,19 +8,20 @@
  */
 
 return [
+
+    // Plugin meta
     'Redirect Manager' => 'Redirect Manager',
-    '{name} plugin loaded' => '{name} plugin loaded',
-    '{pluginName} Cache' => '{pluginName} Cache',
+    'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.' => 'Weiterleitungen erstellen, 404-Fehler überwachen und den Traffic sauber von einem Control-Panel-Arbeitsbereich aus leiten.',
+    'Open Redirect Manager' => 'Redirect Manager öffnen',
 
-    // =========================================================================
-    // Navigation & Settings Sidebar
-    // =========================================================================
-
+    // Navigation
     'Dashboard' => 'Dashboard',
     'Redirects' => 'Weiterleitungen',
+    'Import/Export' => 'Import/Export',
+    'Backups' => 'Backups',
     'Analytics' => 'Analytik',
-    'Settings' => 'Einstellungen',
     'Logs' => 'Protokolle',
+    'Settings' => 'Einstellungen',
     'General' => 'Allgemein',
     'Interface' => 'Oberfläche',
     'Backup' => 'Backup',
@@ -28,22 +29,31 @@ return [
     'Advanced' => 'Erweitert',
     'Test' => 'Test',
 
-    // =========================================================================
     // Permissions
-    // =========================================================================
-
-    'View redirects' => 'Weiterleitungen anzeigen',
-    'Create redirects' => 'Weiterleitungen erstellen',
-    'Edit redirects' => 'Weiterleitungen bearbeiten',
-    'Delete redirects' => 'Weiterleitungen löschen',
+    'Manage {plural}' => '{plural} verwalten',
+    'Create {plural}' => '{plural} erstellen',
+    'Edit {plural}' => '{plural} bearbeiten',
+    'Delete {plural}' => '{plural} löschen',
+    'Manage import/export' => 'Import/Export verwalten',
+    'Import {plural}' => '{plural} importieren',
+    'Export {plural}' => '{plural} exportieren',
+    'View import history' => 'Import-Verlauf anzeigen',
+    'Clear import history' => 'Import-Verlauf löschen',
+    'Manage backups' => 'Backups verwalten',
+    'Create backups' => 'Backups erstellen',
+    'Download backups' => 'Backups herunterladen',
+    'Restore backups' => 'Backups wiederherstellen',
+    'Delete backups' => 'Backups löschen',
     'View analytics' => 'Analytik anzeigen',
+    'Export analytics' => 'Analytik exportieren',
+    'Clear analytics' => 'Analysedaten löschen',
+    'Clear cache' => 'Cache leeren',
+    'View logs' => 'Protokolle anzeigen',
     'View system logs' => 'Systemprotokolle anzeigen',
+    'Download system logs' => 'Systemprotokolle herunterladen',
     'Manage settings' => 'Einstellungen verwalten',
 
-    // =========================================================================
-    // Common / Shared
-    // =========================================================================
-
+    // Common
     'Save Settings' => 'Einstellungen speichern',
     'All' => 'Alle',
     'All Types' => 'Alle Typen',
@@ -75,175 +85,101 @@ return [
     'Disable' => 'Deaktivieren',
     'Import' => 'Importieren',
     'Cancel' => 'Abbrechen',
-
-    // Match Types
+    'Actions' => 'Aktionen',
+    'View' => 'Anzeigen',
+    'OS' => 'Betriebssystem',
+    'Is Bot' => 'Ist Bot',
     'Exact Match' => 'Exakter Abgleich',
     'RegEx Match' => 'RegEx-Abgleich',
     'Wildcard Match' => 'Platzhalter-Abgleich',
     'Prefix Match' => 'Präfix-Abgleich',
     'Match' => 'Abgleich',
+    '{displayName} caches' => '{displayName} Caches',
 
-    // =========================================================================
-    // Dashboard (404 Analytics Table)
-    // =========================================================================
+    // Widgets
+    '{pluginName} - 404 Stats' => '{pluginName} – 404-Statistiken',
+    '{pluginName} - Unhandled 404s' => '{pluginName} – Unbehandelte 404-Fehler',
+    'Last {days} days' => 'Letzte {days} Tage',
+    'Showing {limit} most common' => 'Zeige {limit} häufigste',
+    'You don\'t have permission to view analytics.' => 'Sie haben keine Berechtigung, die Analytik anzuzeigen.',
+    'Analytics are disabled in plugin settings.' => 'Analytik ist in den Plugin-Einstellungen deaktiviert.',
+    'View full analytics' => 'Vollständige Analytik anzeigen',
+    'No 404s recorded' => 'Keine 404-Fehler aufgezeichnet',
+    '404 errors will appear here when they occur.' => '404-Fehler erscheinen hier, wenn sie auftreten.',
+    'Number of Days' => 'Anzahl der Tage',
+    'Show analytics for the last X days (1-365)' => 'Analytik für die letzten X Tage anzeigen (1-365)',
+    'Last seen' => 'Zuletzt gesehen',
+    'View all 404s' => 'Alle 404-Fehler anzeigen',
+    'No unhandled 404s' => 'Keine unbehandelten 404-Fehler',
+    'Great! All 404s are being handled by {pluginName}.' => 'Ausgezeichnet! Alle 404-Fehler werden von {pluginName} behandelt.',
+    'Number of 404s' => 'Anzahl der 404-Fehler',
+    'How many unhandled 404s to display (5-50)' => 'Wie viele unbehandelte 404-Fehler angezeigt werden sollen (5-50)',
 
-    'Search URLs...' => 'URLs suchen...',
-    'Request Type' => 'Anfragetyp',
-    'Normal' => 'Normal',
-    'Bot' => 'Bot',
-    'Security Probe' => 'Sicherheitsscan',
-    'Probe' => 'Scan',
-    'Device' => 'Gerät',
-    'Browser' => 'Browser',
-    'No analytics found.' => 'Keine Analysedaten gefunden.',
-    'New {singularName}' => 'Neue {singularName}',
-    'Visit URL' => 'URL besuchen',
-    'Edit handling redirect' => 'Behandelnde Weiterleitung bearbeiten',
-    'Security vulnerability scanning attempt' => 'Versuch eines Sicherheitslücken-Scans',
-    'Regular browser request' => 'Reguläre Browser-Anfrage',
-    'Edit {item}' => '{item} bearbeiten',
-    'Create {item}' => '{item} erstellen',
-    'Clear All' => 'Alle löschen',
-    'Clear' => 'Löschen',
-    'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Möchten Sie wirklich ALLE Analysedaten löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+    // Jobs
+    '{pluginName}: Cleaning up old analytics' => '{pluginName}: Alte Analysedaten bereinigen',
+    '{pluginName}: Scheduled auto backup' => '{pluginName}: Geplantes automatisches Backup',
 
-    // =========================================================================
-    // Redirects Listing
-    // =========================================================================
+    // Controller messages
+    'Redirect saved.' => 'Weiterleitung gespeichert.',
+    'Could not save redirect' => 'Weiterleitung konnte nicht gespeichert werden',
+    'Settings saved.' => 'Einstellungen gespeichert.',
+    'Could not save settings.' => 'Einstellungen konnten nicht gespeichert werden.',
+    'Could not save settings' => 'Einstellungen konnten nicht gespeichert werden',
+    'Import history cleared successfully.' => 'Import-Verlauf erfolgreich gelöscht.',
+    'Failed to clear import history.' => 'Import-Verlauf konnte nicht gelöscht werden.',
+    'No redirects to export.' => 'Keine Weiterleitungen zum Exportieren vorhanden.',
+    'No analytics data to export.' => 'Keine Analysedaten zum Exportieren vorhanden.',
+    '{count} analytics cleared' => '{count} Analysedatensätze gelöscht',
+    'Please select a CSV file to upload' => 'Bitte wählen Sie eine CSV-Datei zum Hochladen aus',
+    'Failed to parse CSV: {error}' => 'CSV konnte nicht verarbeitet werden: {error}',
+    'No import data found. Please upload a CSV file.' => 'Keine Importdaten gefunden. Bitte laden Sie eine CSV-Datei hoch.',
+    'No preview data found. Please map columns first.' => 'Keine Vorschaudaten gefunden. Bitte ordnen Sie zuerst die Spalten zu.',
+    'Import session expired. Please upload the file again.' => 'Import-Sitzung abgelaufen. Bitte laden Sie die Datei erneut hoch.',
+    'Source URL and Destination URL must be mapped' => 'Quell-URL und Ziel-URL müssen zugeordnet werden',
+    'Import session expired' => 'Import-Sitzung abgelaufen',
+    'Failed to create backup' => 'Backup konnte nicht erstellt werden',
+    'Successfully imported {imported} {pluginName}.' => '{imported} {pluginName} erfolgreich importiert.',
+    '{failed} failed.' => '{failed} fehlgeschlagen.',
+    'Unknown' => 'Unbekannt',
+    'No redirects found to back up.' => 'Keine Weiterleitungen zum Sichern gefunden.',
+    'Backup created.' => 'Backup erstellt.',
+    'Failed to create backup ZIP' => 'Backup-ZIP konnte nicht erstellt werden',
+    'Backup not found' => 'Backup nicht gefunden',
+    'Successfully restored {count} redirect(s) from backup' => '{count} Weiterleitungen aus dem Backup erfolgreich wiederhergestellt',
+    'Failed to restore backup: {error}' => 'Backup konnte nicht wiederhergestellt werden: {error}',
+    'Backup deleted successfully' => 'Backup erfolgreich gelöscht',
+    'Failed to delete backup: {error}' => 'Backup konnte nicht gelöscht werden: {error}',
+    'Deleted {count} analytics records.' => '{count} Analysedatensätze gelöscht.',
+    'Added {patterns} exclude pattern(s) and {headers} header(s).' => '{patterns} Ausschlussmuster und {headers} Header hinzugefügt.',
+    'All recommended settings are already applied.' => 'Alle empfohlenen Einstellungen sind bereits angewendet.',
+    'Could not apply recommended settings' => 'Empfohlene Einstellungen konnten nicht angewendet werden',
+    'Added {patterns} WordPress exclude pattern(s). Note: /wp-content/uploads patterns are NOT excluded - those may need redirects for migrated media files.' => '{patterns} WordPress-Ausschlussmuster hinzugefügt. Hinweis: /wp-content/uploads-Muster sind NICHT ausgeschlossen – diese benötigen möglicherweise Weiterleitungen für migrierte Mediendateien.',
+    'All WordPress migration filters are already applied.' => 'Alle WordPress-Migrationsfilter sind bereits angewendet.',
+    'Could not apply WordPress filters' => 'WordPress-Filter konnten nicht angewendet werden',
+    'Added {patterns} security filter pattern(s). Vulnerability scanning requests will now be ignored.' => '{patterns} Sicherheitsfilter-Muster hinzugefügt. Anfragen zum Scannen von Sicherheitslücken werden nun ignoriert.',
+    'All security filters are already applied.' => 'Alle Sicherheitsfilter sind bereits angewendet.',
+    'Could not apply security filters' => 'Sicherheitsfilter konnten nicht angewendet werden',
+    'Redirect cache cleared successfully.' => 'Weiterleitungs-Cache erfolgreich geleert.',
+    'Redirect cache cleared.' => 'Weiterleitungs-Cache geleert.',
+    'Device cache cleared successfully.' => 'Geräte-Cache erfolgreich geleert.',
+    'Cleared {count} device caches.' => '{count} Geräte-Caches geleert.',
+    'All caches cleared successfully.' => 'Alle Caches erfolgreich geleert.',
+    'Cleared redirect cache and {count} device caches.' => 'Weiterleitungs-Cache und {count} Geräte-Caches geleert.',
 
-    'Creation Type' => 'Erstellungstyp',
-    'Manual' => 'Manuell',
-    'Auto-created' => 'Automatisch erstellt',
-    'Auto' => 'Auto',
-    'Search {pluginName}...' => '{pluginName} durchsuchen...',
-    'No {items} found.' => 'Keine {items} gefunden.',
-    'Source' => 'Quelle',
-    'Entry Changes' => 'Eintragsänderungen',
-    'User' => 'Benutzer',
+    // Validation messages
+    'Found {count, number} {count, plural, =1{error} other{errors}}' => 'Es wurde {count, number} {count, plural, =1{Fehler} other{Fehler}} gefunden',
+    'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'RegEx-Muster muss spezielle RegEx-Zeichen enthalten (z.B. ^, $, .*, +, [] usw.). Verwenden Sie stattdessen den exakten Abgleich für präzise Übereinstimmungen.',
+    'Regex pattern must contain a path (e.g., ^/blog/.* or /category/[^/]+) when using Path Only mode.' => 'RegEx-Muster muss einen Pfad enthalten (z.B. ^/blog/.* oder /category/[^/]+), wenn der Nur-Pfad-Modus verwendet wird.',
+    'Regex pattern must contain a full URL with https:// or http:// (e.g., ^https://example.com/blog/.*) when using Full URL mode.' => 'RegEx-Muster muss eine vollständige URL mit https:// oder http:// enthalten (z.B. ^https://example.com/blog/.*), wenn der Vollständige-URL-Modus verwendet wird.',
+    'Source URL must be a path starting with / (e.g., /old-page or /blog/*) when using Path Only mode.' => 'Quell-URL muss ein Pfad sein, der mit / beginnt (z.B. /alte-seite oder /blog/*), wenn der Nur-Pfad-Modus verwendet wird.',
+    'Source URL must be a full URL starting with https:// or http:// (e.g., https://example.com/old-page) when using Full URL mode.' => 'Quell-URL muss eine vollständige URL sein, die mit https:// oder http:// beginnt (z.B. https://example.com/alte-seite), wenn der Vollständige-URL-Modus verwendet wird.',
+    'Wildcard character (*) is not allowed in Prefix Match. Use Wildcard Match instead, or remove the *.' => 'Platzhalterzeichen (*) ist im Präfix-Abgleich nicht erlaubt. Verwenden Sie stattdessen den Platzhalter-Abgleich oder entfernen Sie das *.',
+    'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Platzhalterzeichen (*) ist im {matchType}-Abgleich nicht erlaubt. Verwenden Sie stattdessen den Platzhalter-Abgleich.',
+    'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'Platzhalter-Abgleich erfordert mindestens ein Platzhalterzeichen * im Muster (z.B. /blog/* oder https://example.com/*).',
+    'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Bitte geben Sie eine gültige URL ein, die mit https:// oder http:// beginnt, oder einen Pfad, der mit / beginnt (z.B. https://example.com oder /seite)',
+    'Value must be a whole number.' => 'Der Wert muss eine ganze Zahl sein.',
 
-    // =========================================================================
-    // Redirect Edit Page
-    // =========================================================================
-
-    'Edit {singularName}' => '{singularName} bearbeiten',
-    'Source Match Mode' => 'Quell-Abgleichmodus',
-    'Match by complete URL including domain (e.g., https://example.com/old-page).' => 'Abgleich anhand der vollständigen URL einschließlich Domain (z.B. https://example.com/alte-seite).',
-    'Match by path only (e.g., /old-page). Works across all domains.' => 'Abgleich nur anhand des Pfads (z.B. /alte-seite). Funktioniert domainübergreifend.',
-    'Path Only' => 'Nur Pfad',
-    'Full URL' => 'Vollständige URL',
-    'Full URLs entered will be automatically converted to paths when saving.' => 'Eingegebene vollständige URLs werden beim Speichern automatisch in Pfade umgewandelt.',
-    'How the source URL should be matched' => 'Wie die Quell-URL abgeglichen werden soll',
-    'Enter the full URL to match (e.g., https://example.com/old-page).' => 'Vollständige URL zum Abgleichen eingeben (z.B. https://example.com/alte-seite).',
-    'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.' => 'Pfad zum Abgleichen eingeben (z.B. /alte-seite). Vollständige URLs werden automatisch in Pfade umgewandelt.',
-    'Test your pattern at' => 'Testen Sie Ihr Muster unter',
-    'before saving.' => 'bevor Sie speichern.',
-    'Full URL (https://example.com) or path (/page)' => 'Vollständige URL (https://example.com) oder Pfad (/seite)',
-    'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'Weiterleitungen werden in der Prioritätsreihenfolge geprüft (0 = höchste Priorität, 9 = niedrigste). Verwenden Sie dies bei überlappenden Mustern. Setzen Sie beispielsweise ein spezifisches Muster auf Priorität 0 und ein allgemeines Auffangmuster auf Priorität 9.',
-    'Highest priority' => 'Höchste Priorität',
-    'Lowest priority' => 'Niedrigste Priorität',
-    'The HTTP status code to use for the redirect' => 'Der HTTP-Statuscode für die Weiterleitung',
-    'Most common: Use' => 'Am häufigsten: Verwenden Sie',
-    'for permanent moves.' => 'für dauerhafte Weiterleitungen.',
-    'Learn more about HTTP status codes' => 'Mehr über HTTP-Statuscodes erfahren',
-    '301 - Moved Permanently' => '301 – Dauerhaft verschoben',
-    '302 - Found (Temporary)' => '302 – Gefunden (Temporär)',
-    '303 - See Other' => '303 – Siehe andere',
-    '307 - Temporary Redirect' => '307 – Temporäre Weiterleitung',
-    '308 - Permanent Redirect' => '308 – Permanente Weiterleitung',
-    '410 - Gone' => '410 – Entfernt',
-    'Are you sure you want to delete this {item}?' => 'Möchten Sie {item} wirklich löschen?',
-    'Live' => 'Live',
-    'Hit count' => 'Zugriffe',
-    'Last hit' => 'Letzter Zugriff',
-
-    // Redirect edit: source match mode instructions (JS)
-    'Match by path pattern (regex). Works across all domains.' => 'Abgleich anhand eines Pfadmusters (RegEx). Funktioniert domainübergreifend.',
-    'Match by full URL pattern (regex) including domain.' => 'Abgleich anhand eines vollständigen URL-Musters (RegEx) einschließlich Domain.',
-    'Enter a regex pattern to match paths (e.g., ^/blog/.* or /category/[^/]+).' => 'RegEx-Muster zum Abgleichen von Pfaden eingeben (z.B. ^/blog/.* oder /category/[^/]+).',
-    'Enter a regex pattern to match full URLs (e.g., ^https://example.com/blog/.*).' => 'RegEx-Muster zum Abgleichen vollständiger URLs eingeben (z.B. ^https://example.com/blog/.*).',
-    'Match by path pattern (wildcard). Works across all domains.' => 'Abgleich anhand eines Pfadmusters (Platzhalter). Funktioniert domainübergreifend.',
-    'Match by full URL pattern (wildcard) including domain.' => 'Abgleich anhand eines vollständigen URL-Musters (Platzhalter) einschließlich Domain.',
-    'Enter a wildcard pattern to match paths. Use * for any characters (e.g., /blog/* or /category/*/posts).' => 'Platzhaltermuster zum Abgleichen von Pfaden eingeben. Verwenden Sie * für beliebige Zeichen (z.B. /blog/* oder /category/*/posts).',
-    'Enter a wildcard pattern to match full URLs. Use * for any characters (e.g., https://example.com/blog/*).' => 'Platzhaltermuster zum Abgleichen vollständiger URLs eingeben. Verwenden Sie * für beliebige Zeichen (z.B. https://example.com/blog/*).',
-    'Match any path starting with the pattern. Works across all domains.' => 'Beliebigen Pfad abgleichen, der mit dem Muster beginnt. Funktioniert domainübergreifend.',
-    'Match any URL starting with the pattern including domain.' => 'Beliebige URL abgleichen, die mit dem Muster beginnt, einschließlich Domain.',
-    'Enter the starting path (e.g., /blog matches /blog, /blog/post, /blog/category).' => 'Startpfad eingeben (z.B. /blog stimmt überein mit /blog, /blog/post, /blog/category).',
-    'Enter the starting URL (e.g., https://example.com/blog matches all URLs starting with it).' => 'Start-URL eingeben (z.B. https://example.com/blog stimmt mit allen URLs überein, die damit beginnen).',
-    'Match any path containing the pattern. Works across all domains.' => 'Beliebigen Pfad abgleichen, der das Muster enthält. Funktioniert domainübergreifend.',
-    'Match any URL containing the pattern including domain.' => 'Beliebige URL abgleichen, die das Muster enthält, einschließlich Domain.',
-    'Enter text to match anywhere in the path (e.g., old-post matches /blog/old-post/123).' => 'Text eingeben, der irgendwo im Pfad vorkommt (z.B. alter-beitrag stimmt überein mit /blog/alter-beitrag/123).',
-    'Enter text to match anywhere in the URL (e.g., old-post matches any URL containing it).' => 'Text eingeben, der irgendwo in der URL vorkommt (z.B. alter-beitrag stimmt mit jeder URL überein, die ihn enthält).',
-
-    // =========================================================================
-    // Redirect Analytics Panel (redirect edit → analytics tab)
-    // =========================================================================
-
-    'Total Hits' => 'Gesamte Zugriffe',
-    'Human Visits' => 'Menschliche Besuche',
-    'Bot Visits' => 'Bot-Besuche',
-    'Top Referrers' => 'Häufigste Referrer',
-    'Devices' => 'Geräte',
-    'Browsers' => 'Browser',
-    'Countries' => 'Länder',
-    'Country' => 'Land',
-    'No analytics data for this redirect yet.' => 'Noch keine Analysedaten für diese Weiterleitung vorhanden.',
-    'Data will appear here once this redirect handles some requests.' => 'Daten erscheinen hier, sobald diese Weiterleitung einige Anfragen bearbeitet hat.',
-
-    // =========================================================================
-    // Analytics Page (404 Analytics)
-    // =========================================================================
-
-    '404 Not Found' => '404 Nicht gefunden',
-    'Overview' => 'Übersicht',
-    'Traffic & Devices' => 'Traffic & Geräte',
-    'Geographic' => 'Geografisch',
-
-    // Analytics: Overview tab
-    'Total 404s' => 'Gesamte 404-Fehler',
-    'Success Rate' => 'Erfolgsrate',
-    '404 Trend' => '404-Trend',
-    'Most Common 404s (Top 15)' => 'Häufigste 404-Fehler (Top 15)',
-    'No 404s recorded yet' => 'Noch keine 404-Fehler aufgezeichnet',
-    'Recent Unhandled 404s' => 'Aktuelle unbehandelte 404-Fehler',
-    'Loading…' => 'Wird geladen…',
-
-    // Analytics: Traffic & Devices tab
-    'Traffic Analysis' => 'Traffic-Analyse',
-    'Bot vs Human Traffic' => 'Bot- vs. menschlicher Traffic',
-    'Top Bots' => 'Häufigste Bots',
-    'Bot Name' => 'Bot-Name',
-    '404s' => '404-Fehler',
-    'Device Analytics' => 'Geräte-Analytik',
-    'Device Types' => 'Gerätetypen',
-    'Browser Usage' => 'Browser-Nutzung',
-    'Operating Systems' => 'Betriebssysteme',
-
-    // Analytics: Geographic tab
-    'Geographic Analytics' => 'Geografische Analytik',
-    'Top Countries' => 'Häufigste Länder',
-    'Percentage' => 'Prozentsatz',
-    'Top Cities' => 'Häufigste Städte',
-    'City' => 'Stadt',
-    'Geographic detection is disabled.' => 'Geografische Erkennung ist deaktiviert.',
-    'Enable in Settings' => 'In den Einstellungen aktivieren',
-
-    // Analytics: JS strings
-    'No trend data available for the selected filters.' => 'Keine Trenddaten für die ausgewählten Filter verfügbar.',
-    'No bot data available for the selected filters.' => 'Keine Bot-Daten für die ausgewählten Filter verfügbar.',
-    'No device data available for the selected filters.' => 'Keine Gerätedaten für die ausgewählten Filter verfügbar.',
-    'No browser data available for the selected filters.' => 'Keine Browser-Daten für die ausgewählten Filter verfügbar.',
-    'No OS data available for the selected filters.' => 'Keine Betriebssystem-Daten für die ausgewählten Filter verfügbar.',
-    'of traffic is from bots' => 'des Traffics stammt von Bots',
-    'No unhandled 404s! Great job!' => 'Keine unbehandelten 404-Fehler! Ausgezeichnet!',
-    'No bot data available' => 'Keine Bot-Daten verfügbar',
-    'No country data available' => 'Keine Länderdaten verfügbar',
-    'No city data available' => 'Keine Städtedaten verfügbar',
-    'Create redirect' => 'Weiterleitung erstellen',
-
-    // =========================================================================
     // Settings: General
-    // =========================================================================
-
     'General Settings' => 'Allgemeine Einstellungen',
     'Plugin Name' => 'Plugin-Name',
     'The name of the plugin as it appears in the Control Panel menu' => 'Der Name des Plugins, wie er im Control-Panel-Menü erscheint',
@@ -283,10 +219,7 @@ return [
     'Debug (Detailed debugging)' => 'Debug (Detailliertes Debugging)',
     'This is being overridden by the <code>logLevel</code> setting in <code>config/redirect-manager.php</code>.' => 'Diese Einstellung wird durch <code>logLevel</code> in <code>config/redirect-manager.php</code> überschrieben.',
 
-    // =========================================================================
     // Settings: Analytics
-    // =========================================================================
-
     'Analytics Settings' => 'Analytik-Einstellungen',
     'Enable Analytics' => 'Analytik aktivieren',
     'Track 404 analytics and visitor data' => '404-Analytik und Besucherdaten erfassen',
@@ -296,8 +229,6 @@ return [
     'Enable Geographic Detection' => 'Geografische Erkennung aktivieren',
     'Detect visitor location for analytics' => 'Besucherstandort für die Analytik erkennen',
     'This is being overridden by the <code>enableGeoDetection</code> setting in <code>config/redirect-manager.php</code>.' => 'Diese Einstellung wird durch <code>enableGeoDetection</code> in <code>config/redirect-manager.php</code> überschrieben.',
-
-    // Geo provider settings (from base partial)
     'Geo Provider' => 'Geo-Anbieter',
     'Select the geo IP lookup provider. HTTPS providers recommended for privacy.' => 'Geo-IP-Suchanbieter auswählen. HTTPS-Anbieter werden aus Datenschutzgründen empfohlen.',
     'ip-api.com (HTTP free, HTTPS paid)' => 'ip-api.com (HTTP kostenlos, HTTPS kostenpflichtig)',
@@ -311,8 +242,6 @@ return [
     'ip-api.com: HTTP free tier (45 requests/min). Add API key for HTTPS (Pro tier, $13/month). IP addresses transmitted unencrypted without API key.' => 'ip-api.com: HTTP Free-Tarif (45 Anfragen/Min). API-Schlüssel für HTTPS hinzufügen (Pro-Tarif, 13 $/Monat). IP-Adressen werden ohne API-Schlüssel unverschlüsselt übertragen.',
     'ipapi.co: HTTPS with 1,000 free requests/day. API key optional (increases rate limits).' => 'ipapi.co: HTTPS mit 1.000 kostenlosen Anfragen/Tag. API-Schlüssel optional (erhöht Ratenlimits).',
     'ipinfo.io: HTTPS with 50,000 free requests/month. API key optional (increases rate limits).' => 'ipinfo.io: HTTPS mit 50.000 kostenlosen Anfragen/Monat. API-Schlüssel optional (erhöht Ratenlimits).',
-
-    // IP salt error banner (from base partial)
     'error' => 'Fehler',
     'Configuration Required' => 'Konfiguration erforderlich',
     'IP hash salt is missing.' => 'IP-Hash-Salt fehlt.',
@@ -328,20 +257,14 @@ return [
     'Copy the same salt to staging and production environments.' => 'Kopieren Sie denselben Salt in Staging- und Produktionsumgebungen.',
     'COPIED!' => 'KOPIERT!',
     'Failed to copy to clipboard' => 'Kopieren in die Zwischenablage fehlgeschlagen',
-
-    // Analytics: IP Privacy
     'IP Address Privacy' => 'IP-Adress-Datenschutz',
     'Anonymize IP Addresses' => 'IP-Adressen anonymisieren',
     'Mask IP addresses before storage for maximum privacy. <strong>IPv4</strong>: masks last octet (192.168.1.123 → 192.168.1.0). <strong>IPv6</strong>: masks last 80 bits. <strong>Trade-off</strong>: Reduces unique visitor accuracy (users on same subnet counted as one visitor). Geo-location still works normally.' => 'IP-Adressen vor der Speicherung für maximalen Datenschutz maskieren. <strong>IPv4</strong>: Letztes Oktett maskieren (192.168.1.123 → 192.168.1.0). <strong>IPv6</strong>: Letzte 80 Bits maskieren. <strong>Kompromiss</strong>: Reduziert die Genauigkeit eindeutiger Besucher (Benutzer im selben Subnetz werden als ein Besucher gezählt). Die Geolokalisierung funktioniert weiterhin normal.',
     'This is being overridden by the <code>anonymizeIpAddress</code> setting in <code>config/redirect-manager.php</code>.' => 'Diese Einstellung wird durch <code>anonymizeIpAddress</code> in <code>config/redirect-manager.php</code> überschrieben.',
-
-    // Analytics: Additional
     'Additional Settings' => 'Weitere Einstellungen',
     'Strip Query String From Stats' => 'Query-String aus Statistiken entfernen',
     'Strip query strings from analytics URLs to consolidate similar requests' => 'Query-Strings aus Analytik-URLs entfernen, um ähnliche Anfragen zusammenzufassen',
     'This is being overridden by the <code>stripQueryStringFromStats</code> setting in <code>config/redirect-manager.php</code>.' => 'Diese Einstellung wird durch <code>stripQueryStringFromStats</code> in <code>config/redirect-manager.php</code> überschrieben.',
-
-    // Analytics: Data Retention
     'Data Retention' => 'Datenspeicherung',
     'Analytics Retention (Days)' => 'Analytik-Aufbewahrungsdauer (Tage)',
     'Number of days to retain analytics (0 = keep forever)' => 'Anzahl der Tage, für die Analysedaten aufbewahrt werden (0 = für immer aufbewahren)',
@@ -356,10 +279,7 @@ return [
     'Configure device detection and redirect caching for better performance.' => 'Geräteerkennung und Weiterleitungs-Caching für bessere Performance konfigurieren.',
     'Go to Cache Settings' => 'Zu den Cache-Einstellungen',
 
-    // =========================================================================
     // Settings: Interface
-    // =========================================================================
-
     'Interface Settings' => 'Oberflächen-Einstellungen',
     'Items Per Page' => 'Einträge pro Seite',
     'Number of items to display per page in lists' => 'Anzahl der Einträge, die pro Seite in Listen angezeigt werden',
@@ -373,10 +293,7 @@ return [
     '120 seconds (2 minutes)' => '120 Sekunden (2 Minuten)',
     'This is being overridden by the <code>refreshIntervalSecs</code> setting in <code>config/redirect-manager.php</code>.' => 'Diese Einstellung wird durch <code>refreshIntervalSecs</code> in <code>config/redirect-manager.php</code> überschrieben.',
 
-    // =========================================================================
     // Settings: Backup
-    // =========================================================================
-
     'Backup Settings' => 'Backup-Einstellungen',
     'Enable Backups' => 'Backups aktivieren',
     'Enable automatic backup functionality for redirects' => 'Automatische Backup-Funktion für Weiterleitungen aktivieren',
@@ -404,10 +321,7 @@ return [
     'This is being overridden by the <code>backupPath</code> setting in <code>config/redirect-manager.php</code>.' => 'Diese Einstellung wird durch <code>backupPath</code> in <code>config/redirect-manager.php</code> überschrieben.',
     'Backup Location:' => 'Backup-Speicherort:',
 
-    // =========================================================================
     // Settings: Cache
-    // =========================================================================
-
     'Cache Settings' => 'Cache-Einstellungen',
     'Cache Storage Settings' => 'Cache-Speichereinstellungen',
     'Cache Storage Method' => 'Cache-Speichermethode',
@@ -449,10 +363,7 @@ return [
     '{count} day' => '{count} Tag',
     '{count} days' => '{count} Tage',
 
-    // =========================================================================
     // Settings: Advanced
-    // =========================================================================
-
     'Advanced Settings' => 'Erweiterte Einstellungen',
     'API Settings' => 'API-Einstellungen',
     'Enable API Endpoint' => 'API-Endpunkt aktivieren',
@@ -482,21 +393,146 @@ return [
     'Apply Security Probe Filters' => 'Sicherheitsscan-Filter anwenden',
     'Adds specific exclude patterns for security probes: database dumps (*.sql, dump.sql.gz), config files (.env, .git/, .htaccess), admin panels (/phpmyadmin, /pma/, adminer.php), and exploit attempts (shell.php, /cgi-bin/). Patterns are precise to avoid blocking legitimate URLs like /mysql-tips or /debugging-guide.' => 'Fügt spezifische Ausschlussmuster für Sicherheitsscans hinzu: Datenbank-Dumps (*.sql, dump.sql.gz), Konfigurationsdateien (.env, .git/, .htaccess), Admin-Panels (/phpmyadmin, /pma/, adminer.php) und Exploit-Versuche (shell.php, /cgi-bin/). Muster sind präzise, um legitime URLs wie /mysql-tips oder /debugging-guide nicht zu blockieren.',
 
-    // =========================================================================
     // Settings: Test
-    // =========================================================================
-
     'Test Redirects' => 'Weiterleitungen testen',
     'Test URL Redirects' => 'URL-Weiterleitungen testen',
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Testen Sie, ob eine URL mit einer Ihrer konfigurierten Weiterleitungen übereinstimmt, ohne sie tatsächlich aufzurufen. Nützlich zur Überprüfung des Quell-Abgleichmodus (Pfad vs. vollständige URL) und der Abgleichtyp-Logik.',
     'Test URL' => 'Test-URL',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'Zu testende URL eingeben (kann eine vollständige URL wie https://example.com/alte-seite oder ein Pfad wie /alte-seite sein)',
 
-    // =========================================================================
-    // Backups Page
-    // =========================================================================
+    // Dashboard
+    'Search URLs...' => 'URLs suchen...',
+    'Request Type' => 'Anfragetyp',
+    'Normal' => 'Normal',
+    'Bot' => 'Bot',
+    'Security Probe' => 'Sicherheitsscan',
+    'Probe' => 'Scan',
+    'Device' => 'Gerät',
+    'Browser' => 'Browser',
+    'No analytics found.' => 'Keine Analysedaten gefunden.',
+    'New {singularName}' => 'Neue {singularName}',
+    'Visit URL' => 'URL besuchen',
+    'Edit handling redirect' => 'Behandelnde Weiterleitung bearbeiten',
+    'Security vulnerability scanning attempt' => 'Versuch eines Sicherheitslücken-Scans',
+    'Regular browser request' => 'Reguläre Browser-Anfrage',
+    'Edit {item}' => '{item} bearbeiten',
+    'Create {item}' => '{item} erstellen',
+    'Clear All' => 'Alle löschen',
+    'Clear' => 'Löschen',
+    'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Möchten Sie wirklich ALLE Analysedaten löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
 
-    'Backups' => 'Backups',
+    // Redirects: Index
+    'Creation Type' => 'Erstellungstyp',
+    'Manual' => 'Manuell',
+    'Auto-created' => 'Automatisch erstellt',
+    'Auto' => 'Auto',
+    'Search {pluginName}...' => '{pluginName} durchsuchen...',
+    'No {items} found.' => 'Keine {items} gefunden.',
+    'Source' => 'Quelle',
+    'Entry Changes' => 'Eintragsänderungen',
+    'User' => 'Benutzer',
+
+    // Redirects: Edit
+    'Edit {singularName}' => '{singularName} bearbeiten',
+    'Source Match Mode' => 'Quell-Abgleichmodus',
+    'Match by complete URL including domain (e.g., https://example.com/old-page).' => 'Abgleich anhand der vollständigen URL einschließlich Domain (z.B. https://example.com/alte-seite).',
+    'Match by path only (e.g., /old-page). Works across all domains.' => 'Abgleich nur anhand des Pfads (z.B. /alte-seite). Funktioniert domainübergreifend.',
+    'Path Only' => 'Nur Pfad',
+    'Full URL' => 'Vollständige URL',
+    'Full URLs entered will be automatically converted to paths when saving.' => 'Eingegebene vollständige URLs werden beim Speichern automatisch in Pfade umgewandelt.',
+    'How the source URL should be matched' => 'Wie die Quell-URL abgeglichen werden soll',
+    'Enter the full URL to match (e.g., https://example.com/old-page).' => 'Vollständige URL zum Abgleichen eingeben (z.B. https://example.com/alte-seite).',
+    'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.' => 'Pfad zum Abgleichen eingeben (z.B. /alte-seite). Vollständige URLs werden automatisch in Pfade umgewandelt.',
+    'Test your pattern at' => 'Testen Sie Ihr Muster unter',
+    'before saving.' => 'bevor Sie speichern.',
+    'Full URL (https://example.com) or path (/page)' => 'Vollständige URL (https://example.com) oder Pfad (/seite)',
+    'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'Weiterleitungen werden in der Prioritätsreihenfolge geprüft (0 = höchste Priorität, 9 = niedrigste). Verwenden Sie dies bei überlappenden Mustern. Setzen Sie beispielsweise ein spezifisches Muster auf Priorität 0 und ein allgemeines Auffangmuster auf Priorität 9.',
+    'Highest priority' => 'Höchste Priorität',
+    'Lowest priority' => 'Niedrigste Priorität',
+    'The HTTP status code to use for the redirect' => 'Der HTTP-Statuscode für die Weiterleitung',
+    'Most common: Use' => 'Am häufigsten: Verwenden Sie',
+    'for permanent moves.' => 'für dauerhafte Weiterleitungen.',
+    'Learn more about HTTP status codes' => 'Mehr über HTTP-Statuscodes erfahren',
+    '301 - Moved Permanently' => '301 – Dauerhaft verschoben',
+    '302 - Found (Temporary)' => '302 – Gefunden (Temporär)',
+    '303 - See Other' => '303 – Siehe andere',
+    '307 - Temporary Redirect' => '307 – Temporäre Weiterleitung',
+    '308 - Permanent Redirect' => '308 – Permanente Weiterleitung',
+    '410 - Gone' => '410 – Entfernt',
+    'Are you sure you want to delete this {item}?' => 'Möchten Sie {item} wirklich löschen?',
+    'Live' => 'Live',
+    'Hit count' => 'Zugriffe',
+    'Last hit' => 'Letzter Zugriff',
+    'Match by path pattern (regex). Works across all domains.' => 'Abgleich anhand eines Pfadmusters (RegEx). Funktioniert domainübergreifend.',
+    'Match by full URL pattern (regex) including domain.' => 'Abgleich anhand eines vollständigen URL-Musters (RegEx) einschließlich Domain.',
+    'Enter a regex pattern to match paths (e.g., ^/blog/.* or /category/[^/]+).' => 'RegEx-Muster zum Abgleichen von Pfaden eingeben (z.B. ^/blog/.* oder /category/[^/]+).',
+    'Enter a regex pattern to match full URLs (e.g., ^https://example.com/blog/.*).' => 'RegEx-Muster zum Abgleichen vollständiger URLs eingeben (z.B. ^https://example.com/blog/.*).',
+    'Match by path pattern (wildcard). Works across all domains.' => 'Abgleich anhand eines Pfadmusters (Platzhalter). Funktioniert domainübergreifend.',
+    'Match by full URL pattern (wildcard) including domain.' => 'Abgleich anhand eines vollständigen URL-Musters (Platzhalter) einschließlich Domain.',
+    'Enter a wildcard pattern to match paths. Use * for any characters (e.g., /blog/* or /category/*/posts).' => 'Platzhaltermuster zum Abgleichen von Pfaden eingeben. Verwenden Sie * für beliebige Zeichen (z.B. /blog/* oder /category/*/posts).',
+    'Enter a wildcard pattern to match full URLs. Use * for any characters (e.g., https://example.com/blog/*).' => 'Platzhaltermuster zum Abgleichen vollständiger URLs eingeben. Verwenden Sie * für beliebige Zeichen (z.B. https://example.com/blog/*).',
+    'Match any path starting with the pattern. Works across all domains.' => 'Beliebigen Pfad abgleichen, der mit dem Muster beginnt. Funktioniert domainübergreifend.',
+    'Match any URL starting with the pattern including domain.' => 'Beliebige URL abgleichen, die mit dem Muster beginnt, einschließlich Domain.',
+    'Enter the starting path (e.g., /blog matches /blog, /blog/post, /blog/category).' => 'Startpfad eingeben (z.B. /blog stimmt überein mit /blog, /blog/post, /blog/category).',
+    'Enter the starting URL (e.g., https://example.com/blog matches all URLs starting with it).' => 'Start-URL eingeben (z.B. https://example.com/blog stimmt mit allen URLs überein, die damit beginnen).',
+    'Match any path containing the pattern. Works across all domains.' => 'Beliebigen Pfad abgleichen, der das Muster enthält. Funktioniert domainübergreifend.',
+    'Match any URL containing the pattern including domain.' => 'Beliebige URL abgleichen, die das Muster enthält, einschließlich Domain.',
+    'Enter text to match anywhere in the path (e.g., old-post matches /blog/old-post/123).' => 'Text eingeben, der irgendwo im Pfad vorkommt (z.B. alter-beitrag stimmt überein mit /blog/alter-beitrag/123).',
+    'Enter text to match anywhere in the URL (e.g., old-post matches any URL containing it).' => 'Text eingeben, der irgendwo in der URL vorkommt (z.B. alter-beitrag stimmt mit jeder URL überein, die ihn enthält).',
+
+    // Redirects: Analytics
+    'Total Hits' => 'Gesamte Zugriffe',
+    'Human Visits' => 'Menschliche Besuche',
+    'Bot Visits' => 'Bot-Besuche',
+    'Top Referrers' => 'Häufigste Referrer',
+    'Devices' => 'Geräte',
+    'Browsers' => 'Browser',
+    'Countries' => 'Länder',
+    'Country' => 'Land',
+    'No analytics data for this redirect yet.' => 'Noch keine Analysedaten für diese Weiterleitung vorhanden.',
+    'Data will appear here once this redirect handles some requests.' => 'Daten erscheinen hier, sobald diese Weiterleitung einige Anfragen bearbeitet hat.',
+
+    // Analytics page
+    'Overview' => 'Übersicht',
+    'Traffic & Devices' => 'Traffic & Geräte',
+    'Geographic' => 'Geografisch',
+    'Total 404s' => 'Gesamte 404-Fehler',
+    'Success Rate' => 'Erfolgsrate',
+    '404 Trend' => '404-Trend',
+    'Most Common 404s (Top 15)' => 'Häufigste 404-Fehler (Top 15)',
+    'No 404s recorded yet' => 'Noch keine 404-Fehler aufgezeichnet',
+    'Recent Unhandled 404s' => 'Aktuelle unbehandelte 404-Fehler',
+    'Loading…' => 'Wird geladen…',
+    'Traffic Analysis' => 'Traffic-Analyse',
+    'Bot vs Human Traffic' => 'Bot- vs. menschlicher Traffic',
+    'Top Bots' => 'Häufigste Bots',
+    'Bot Name' => 'Bot-Name',
+    '404s' => '404-Fehler',
+    'Device Analytics' => 'Geräte-Analytik',
+    'Device Types' => 'Gerätetypen',
+    'Browser Usage' => 'Browser-Nutzung',
+    'Operating Systems' => 'Betriebssysteme',
+    'Geographic Analytics' => 'Geografische Analytik',
+    'Top Countries' => 'Häufigste Länder',
+    'Percentage' => 'Prozentsatz',
+    'Top Cities' => 'Häufigste Städte',
+    'City' => 'Stadt',
+    'Geographic detection is disabled.' => 'Geografische Erkennung ist deaktiviert.',
+    'Enable in Settings' => 'In den Einstellungen aktivieren',
+    'No trend data available for the selected filters.' => 'Keine Trenddaten für die ausgewählten Filter verfügbar.',
+    'No bot data available for the selected filters.' => 'Keine Bot-Daten für die ausgewählten Filter verfügbar.',
+    'No device data available for the selected filters.' => 'Keine Gerätedaten für die ausgewählten Filter verfügbar.',
+    'No browser data available for the selected filters.' => 'Keine Browser-Daten für die ausgewählten Filter verfügbar.',
+    'No OS data available for the selected filters.' => 'Keine Betriebssystem-Daten für die ausgewählten Filter verfügbar.',
+    'of traffic is from bots' => 'des Traffics stammt von Bots',
+    'No unhandled 404s! Great job!' => 'Keine unbehandelten 404-Fehler! Ausgezeichnet!',
+    'No bot data available' => 'Keine Bot-Daten verfügbar',
+    'No country data available' => 'Keine Länderdaten verfügbar',
+    'No city data available' => 'Keine Städtedaten verfügbar',
+    'Create redirect' => 'Weiterleitung erstellen',
+    'Site ID' => 'Website-ID',
+
+    // Backups
     'Create Backup Now' => 'Jetzt Backup erstellen',
     'Backups are automatically created when you import redirects (if enabled). You can restore or download any backup.' => 'Backups werden automatisch erstellt, wenn Sie Weiterleitungen importieren (sofern aktiviert). Sie können jedes Backup wiederherstellen oder herunterladen.',
     'No backup history yet. Backups are created automatically when you import redirects.' => 'Noch keine Backup-Historie vorhanden. Backups werden automatisch erstellt, wenn Sie Weiterleitungen importieren.',
@@ -504,9 +540,7 @@ return [
     'Created By' => 'Erstellt von',
     'Redirect Count' => 'Anzahl Weiterleitungen',
     'Size' => 'Größe',
-    'Actions' => 'Aktionen',
     'Failed to load backups: ' => 'Backups konnten nicht geladen werden: ',
-    'Backup created.' => 'Backup erstellt.',
     'Failed to create backup.' => 'Backup konnte nicht erstellt werden.',
     'Are you sure you want to restore this backup? This will replace all current redirects. A backup of the current state will be created before restoring.' => 'Möchten Sie dieses Backup wirklich wiederherstellen? Dadurch werden alle aktuellen Weiterleitungen ersetzt. Vor der Wiederherstellung wird ein Backup des aktuellen Zustands erstellt.',
     'Backup contains' => 'Backup enthält',
@@ -518,12 +552,15 @@ return [
     'Deleting backup...' => 'Backup wird gelöscht...',
     'Backup deleted.' => 'Backup gelöscht.',
     'Failed to delete backup.' => 'Backup konnte nicht gelöscht werden.',
+    'Before Restore' => 'Vor Wiederherstellung',
+    'Scheduled' => 'Geplant',
+    'Before Import' => 'Vor Import',
+    'Restore' => 'Wiederherstellen',
+    'Download ZIP' => 'ZIP herunterladen',
+    'Delete' => 'Löschen',
+    'Backups are disabled in settings.' => 'Backups sind in den Einstellungen deaktiviert.',
 
-    // =========================================================================
     // Import/Export
-    // =========================================================================
-
-    'Import/Export' => 'Import/Export',
     'Import History' => 'Import-Verlauf',
     'Export Redirects' => 'Weiterleitungen exportieren',
     'Download all your current redirects as a CSV file for backup or migration to another site.' => 'Laden Sie alle aktuellen Weiterleitungen als CSV-Datei für Backup oder Migration zu einer anderen Website herunter.',
@@ -563,7 +600,6 @@ return [
     'Pipe (|)' => 'Pipe (|)',
     'Create Backup Before Import' => 'Backup vor dem Import erstellen',
     'Automatically backup existing redirects before importing (recommended)' => 'Vorhandene Weiterleitungen vor dem Import automatisch sichern (empfohlen)',
-    'Backups are disabled in settings.' => 'Backups sind in den Einstellungen deaktiviert.',
     'The maximum file size is {size} and the import is limited to {rows} rows per file.' => 'Die maximale Dateigröße beträgt {size} und der Import ist auf {rows} Zeilen pro Datei begrenzt.',
     'Upload & Map Columns' => 'Hochladen & Spalten zuordnen',
     'You do not have permission to import redirects.' => 'Sie haben keine Berechtigung, Weiterleitungen zu importieren.',
@@ -572,12 +608,9 @@ return [
     'Filename' => 'Dateiname',
     'Imported' => 'Importiert',
     'Failed' => 'Fehlgeschlagen',
-    'View' => 'Anzeigen',
     'No import history yet.' => 'Noch kein Import-Verlauf vorhanden.',
     'Are you sure you want to clear all import logs? This action cannot be undone.' => 'Möchten Sie wirklich alle Import-Protokolle löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
     'Failed to clear history.' => 'Verlauf konnte nicht gelöscht werden.',
-
-    // Import: Map columns
     'Map CSV Columns' => 'CSV-Spalten zuordnen',
     'Map Columns' => 'Spalten zuordnen',
     'Your CSV has {count} rows. Map each CSV column to a redirect field.' => 'Ihre CSV-Datei hat {count} Zeilen. Ordnen Sie jede CSV-Spalte einem Weiterleitungsfeld zu.',
@@ -589,7 +622,6 @@ return [
     '-- Do not import --' => '-- Nicht importieren --',
     'Source URL (required)' => 'Quell-URL (erforderlich)',
     'Destination URL (required)' => 'Ziel-URL (erforderlich)',
-    'Site ID' => 'Website-ID',
     'Source Match Mode (pathonly/fullurl)' => 'Quell-Abgleichmodus (pathonly/fullurl)',
     'Match Type (exact/regex/wildcard/prefix)' => 'Abgleichtyp (exact/regex/wildcard/prefix)',
     'Status Code (301/302/etc.)' => 'Statuscode (301/302 usw.)',
@@ -603,8 +635,6 @@ return [
     'Maps to Field' => 'Zugeordnetes Feld',
     'Sample Data' => 'Beispieldaten',
     'Preview Import' => 'Import-Vorschau',
-
-    // Import: Preview
     'Import Preview' => 'Import-Vorschau',
     'Preview' => 'Vorschau',
     'Total Rows' => 'Gesamte Zeilen',
@@ -628,12 +658,8 @@ return [
     'No valid redirects found to import.' => 'Keine gültigen Weiterleitungen zum Importieren gefunden.',
     'Import {count} Redirects' => '{count} Weiterleitungen importieren',
     'No Valid Redirects to Import' => 'Keine gültigen Weiterleitungen zum Importieren',
-    'Successfully imported {imported} {pluginName}.' => '{imported} {pluginName} erfolgreich importiert.',
 
-    // =========================================================================
-    // Utilities Page
-    // =========================================================================
-
+    // Utilities
     'All Active' => 'Alle aktiv',
     'Good' => 'Gut',
     'Check' => 'Prüfen',
@@ -663,31 +689,37 @@ return [
     'Are you sure you want to permanently delete ALL analytics data? This action cannot be undone!' => 'Möchten Sie wirklich ALLE Analysedaten dauerhaft löschen? Diese Aktion kann nicht rückgängig gemacht werden!',
     'This will delete all 404 tracking data. Are you absolutely sure?' => 'Dadurch werden alle 404-Tracking-Daten gelöscht. Sind Sie absolut sicher?',
 
-    // =========================================================================
-    // Widgets
-    // =========================================================================
+    // Logs viewer
+    'All Levels' => 'Alle Stufen',
+    'Info' => 'Info',
+    'Debug' => 'Debug',
+    'Select File' => 'Datei auswählen',
+    'Select Date' => 'Datum auswählen',
+    'All Sources' => 'Alle Quellen',
+    'Search messages and context...' => 'Nachrichten und Kontext durchsuchen...',
+    'System Logs' => 'Systemprotokolle',
+    'System' => 'System',
+    'Current log level' => 'Aktueller Protokollierungsgrad',
+    'No log files found. Log files are created when plugin activities occur.' => 'Keine Protokolldateien gefunden. Protokolldateien werden erstellt, wenn Plugin-Aktivitäten auftreten.',
+    'No log entries found for the selected filters.' => 'Keine Protokolleinträge für die ausgewählten Filter gefunden.',
+    'No context data available.' => 'Keine Kontextdaten verfügbar.',
+    'Level' => 'Stufe',
+    'Message' => 'Nachricht',
+    'entry' => 'Eintrag',
+    'entries' => 'Einträge',
+    'Available Logs' => 'Verfügbare Protokolle',
+    'Current File' => 'Aktuelle Datei',
+    'Download File' => 'Datei herunterladen',
+    'Log Location' => 'Protokollspeicherort',
+    'Current Level' => 'Aktueller Grad',
+    'Retention' => 'Aufbewahrung',
+    'days' => 'Tage',
+    'Context' => 'Kontext',
+    'Entries' => 'Einträge',
+    'file' => 'Datei',
+    'files' => 'Dateien',
 
-    // Stats Summary Widget
-    'View full analytics' => 'Vollständige Analytik anzeigen',
-    'No 404s recorded' => 'Keine 404-Fehler aufgezeichnet',
-    '404 errors will appear here when they occur.' => '404-Fehler erscheinen hier, wenn sie auftreten.',
-    'Number of Days' => 'Anzahl der Tage',
-    'Show analytics for the last X days (1-365)' => 'Analytik für die letzten X Tage anzeigen (1-365)',
-
-    // Unhandled 404s Widget
-    'Last seen' => 'Zuletzt gesehen',
-    'View all 404s' => 'Alle 404-Fehler anzeigen',
-    'No unhandled 404s' => 'Keine unbehandelten 404-Fehler',
-    'Great! All 404s are being handled by {pluginName}.' => 'Ausgezeichnet! Alle 404-Fehler werden von {pluginName} behandelt.',
-    'Number of 404s' => 'Anzahl der 404-Fehler',
-    'How many unhandled 404s to display (5-50)' => 'Wie viele unbehandelte 404-Fehler angezeigt werden sollen (5-50)',
-
-    // =========================================================================
-    // Messages (flash, notices, errors)
-    // =========================================================================
-
+    // Base partials
     'Scheduled initial analytics cleanup job' => 'Initialen Analytik-Bereinigungsjob geplant',
-    'Redirect saved successfully' => 'Weiterleitung erfolgreich gespeichert',
-    'Redirect deleted successfully' => 'Weiterleitung erfolgreich gelöscht',
-    'Analytics cleared successfully' => 'Analysedaten erfolgreich gelöscht',
+
 ];

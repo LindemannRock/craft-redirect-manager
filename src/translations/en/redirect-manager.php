@@ -8,21 +8,20 @@
  */
 
 return [
+
+    // Plugin meta
     'Redirect Manager' => 'Redirect Manager',
     'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.' => 'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.',
     'Open Redirect Manager' => 'Open Redirect Manager',
-    '{name} plugin loaded' => '{name} plugin loaded',
-    '{pluginName} Cache' => '{pluginName} Cache',
 
-    // =========================================================================
-    // Navigation & Settings Sidebar
-    // =========================================================================
-
+    // Navigation
     'Dashboard' => 'Dashboard',
     'Redirects' => 'Redirects',
+    'Import/Export' => 'Import/Export',
+    'Backups' => 'Backups',
     'Analytics' => 'Analytics',
-    'Settings' => 'Settings',
     'Logs' => 'Logs',
+    'Settings' => 'Settings',
     'General' => 'General',
     'Interface' => 'Interface',
     'Backup' => 'Backup',
@@ -30,22 +29,31 @@ return [
     'Advanced' => 'Advanced',
     'Test' => 'Test',
 
-    // =========================================================================
     // Permissions
-    // =========================================================================
-
-    'View redirects' => 'View redirects',
-    'Create redirects' => 'Create redirects',
-    'Edit redirects' => 'Edit redirects',
-    'Delete redirects' => 'Delete redirects',
+    'Manage {plural}' => 'Manage {plural}',
+    'Create {plural}' => 'Create {plural}',
+    'Edit {plural}' => 'Edit {plural}',
+    'Delete {plural}' => 'Delete {plural}',
+    'Manage import/export' => 'Manage import/export',
+    'Import {plural}' => 'Import {plural}',
+    'Export {plural}' => 'Export {plural}',
+    'View import history' => 'View import history',
+    'Clear import history' => 'Clear import history',
+    'Manage backups' => 'Manage backups',
+    'Create backups' => 'Create backups',
+    'Download backups' => 'Download backups',
+    'Restore backups' => 'Restore backups',
+    'Delete backups' => 'Delete backups',
     'View analytics' => 'View analytics',
+    'Export analytics' => 'Export analytics',
+    'Clear analytics' => 'Clear analytics',
+    'Clear cache' => 'Clear cache',
+    'View logs' => 'View logs',
     'View system logs' => 'View system logs',
+    'Download system logs' => 'Download system logs',
     'Manage settings' => 'Manage settings',
 
-    // =========================================================================
-    // Common / Shared
-    // =========================================================================
-
+    // Common
     'Save Settings' => 'Save Settings',
     'All' => 'All',
     'All Types' => 'All Types',
@@ -77,175 +85,101 @@ return [
     'Disable' => 'Disable',
     'Import' => 'Import',
     'Cancel' => 'Cancel',
-
-    // Match Types
+    'Actions' => 'Actions',
+    'View' => 'View',
+    'OS' => 'OS',
+    'Is Bot' => 'Is Bot',
     'Exact Match' => 'Exact Match',
     'RegEx Match' => 'RegEx Match',
     'Wildcard Match' => 'Wildcard Match',
     'Prefix Match' => 'Prefix Match',
     'Match' => 'Match',
+    '{displayName} caches' => '{displayName} caches',
 
-    // =========================================================================
-    // Dashboard (404 Analytics Table)
-    // =========================================================================
+    // Widgets
+    '{pluginName} - 404 Stats' => '{pluginName} - 404 Stats',
+    '{pluginName} - Unhandled 404s' => '{pluginName} - Unhandled 404s',
+    'Last {days} days' => 'Last {days} days',
+    'Showing {limit} most common' => 'Showing {limit} most common',
+    'You don\'t have permission to view analytics.' => 'You don\'t have permission to view analytics.',
+    'Analytics are disabled in plugin settings.' => 'Analytics are disabled in plugin settings.',
+    'View full analytics' => 'View full analytics',
+    'No 404s recorded' => 'No 404s recorded',
+    '404 errors will appear here when they occur.' => '404 errors will appear here when they occur.',
+    'Number of Days' => 'Number of Days',
+    'Show analytics for the last X days (1-365)' => 'Show analytics for the last X days (1-365)',
+    'Last seen' => 'Last seen',
+    'View all 404s' => 'View all 404s',
+    'No unhandled 404s' => 'No unhandled 404s',
+    'Great! All 404s are being handled by {pluginName}.' => 'Great! All 404s are being handled by {pluginName}.',
+    'Number of 404s' => 'Number of 404s',
+    'How many unhandled 404s to display (5-50)' => 'How many unhandled 404s to display (5-50)',
 
-    'Search URLs...' => 'Search URLs...',
-    'Request Type' => 'Request Type',
-    'Normal' => 'Normal',
-    'Bot' => 'Bot',
-    'Security Probe' => 'Security Probe',
-    'Probe' => 'Probe',
-    'Device' => 'Device',
-    'Browser' => 'Browser',
-    'No analytics found.' => 'No analytics found.',
-    'New {singularName}' => 'New {singularName}',
-    'Visit URL' => 'Visit URL',
-    'Edit handling redirect' => 'Edit handling redirect',
-    'Security vulnerability scanning attempt' => 'Security vulnerability scanning attempt',
-    'Regular browser request' => 'Regular browser request',
-    'Edit {item}' => 'Edit {item}',
-    'Create {item}' => 'Create {item}',
-    'Clear All' => 'Clear All',
-    'Clear' => 'Clear',
-    'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Are you sure you want to clear ALL analytics? This cannot be undone.',
+    // Jobs
+    '{pluginName}: Cleaning up old analytics' => '{pluginName}: Cleaning up old analytics',
+    '{pluginName}: Scheduled auto backup' => '{pluginName}: Scheduled auto backup',
 
-    // =========================================================================
-    // Redirects Listing
-    // =========================================================================
+    // Controller messages
+    'Redirect saved.' => 'Redirect saved.',
+    'Could not save redirect' => 'Could not save redirect',
+    'Settings saved.' => 'Settings saved.',
+    'Could not save settings.' => 'Could not save settings.',
+    'Could not save settings' => 'Could not save settings',
+    'Import history cleared successfully.' => 'Import history cleared successfully.',
+    'Failed to clear import history.' => 'Failed to clear import history.',
+    'No redirects to export.' => 'No redirects to export.',
+    'No analytics data to export.' => 'No analytics data to export.',
+    '{count} analytics cleared' => '{count} analytics cleared',
+    'Please select a CSV file to upload' => 'Please select a CSV file to upload',
+    'Failed to parse CSV: {error}' => 'Failed to parse CSV: {error}',
+    'No import data found. Please upload a CSV file.' => 'No import data found. Please upload a CSV file.',
+    'No preview data found. Please map columns first.' => 'No preview data found. Please map columns first.',
+    'Import session expired. Please upload the file again.' => 'Import session expired. Please upload the file again.',
+    'Source URL and Destination URL must be mapped' => 'Source URL and Destination URL must be mapped',
+    'Import session expired' => 'Import session expired',
+    'Failed to create backup' => 'Failed to create backup',
+    'Successfully imported {imported} {pluginName}.' => 'Successfully imported {imported} {pluginName}.',
+    '{failed} failed.' => '{failed} failed.',
+    'Unknown' => 'Unknown',
+    'No redirects found to back up.' => 'No redirects found to back up.',
+    'Backup created.' => 'Backup created.',
+    'Failed to create backup ZIP' => 'Failed to create backup ZIP',
+    'Backup not found' => 'Backup not found',
+    'Successfully restored {count} redirect(s) from backup' => 'Successfully restored {count} redirect(s) from backup',
+    'Failed to restore backup: {error}' => 'Failed to restore backup: {error}',
+    'Backup deleted successfully' => 'Backup deleted successfully',
+    'Failed to delete backup: {error}' => 'Failed to delete backup: {error}',
+    'Deleted {count} analytics records.' => 'Deleted {count} analytics records.',
+    'Added {patterns} exclude pattern(s) and {headers} header(s).' => 'Added {patterns} exclude pattern(s) and {headers} header(s).',
+    'All recommended settings are already applied.' => 'All recommended settings are already applied.',
+    'Could not apply recommended settings' => 'Could not apply recommended settings',
+    'Added {patterns} WordPress exclude pattern(s). Note: /wp-content/uploads patterns are NOT excluded - those may need redirects for migrated media files.' => 'Added {patterns} WordPress exclude pattern(s). Note: /wp-content/uploads patterns are NOT excluded - those may need redirects for migrated media files.',
+    'All WordPress migration filters are already applied.' => 'All WordPress migration filters are already applied.',
+    'Could not apply WordPress filters' => 'Could not apply WordPress filters',
+    'Added {patterns} security filter pattern(s). Vulnerability scanning requests will now be ignored.' => 'Added {patterns} security filter pattern(s). Vulnerability scanning requests will now be ignored.',
+    'All security filters are already applied.' => 'All security filters are already applied.',
+    'Could not apply security filters' => 'Could not apply security filters',
+    'Redirect cache cleared successfully.' => 'Redirect cache cleared successfully.',
+    'Redirect cache cleared.' => 'Redirect cache cleared.',
+    'Device cache cleared successfully.' => 'Device cache cleared successfully.',
+    'Cleared {count} device caches.' => 'Cleared {count} device caches.',
+    'All caches cleared successfully.' => 'All caches cleared successfully.',
+    'Cleared redirect cache and {count} device caches.' => 'Cleared redirect cache and {count} device caches.',
 
-    'Creation Type' => 'Creation Type',
-    'Manual' => 'Manual',
-    'Auto-created' => 'Auto-created',
-    'Auto' => 'Auto',
-    'Search {pluginName}...' => 'Search {pluginName}...',
-    'No {items} found.' => 'No {items} found.',
-    'Source' => 'Source',
-    'Entry Changes' => 'Entry Changes',
-    'User' => 'User',
+    // Validation messages
+    'Found {count, number} {count, plural, =1{error} other{errors}}' => 'Found {count, number} {count, plural, =1{error} other{errors}}',
+    'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.',
+    'Regex pattern must contain a path (e.g., ^/blog/.* or /category/[^/]+) when using Path Only mode.' => 'Regex pattern must contain a path (e.g., ^/blog/.* or /category/[^/]+) when using Path Only mode.',
+    'Regex pattern must contain a full URL with https:// or http:// (e.g., ^https://example.com/blog/.*) when using Full URL mode.' => 'Regex pattern must contain a full URL with https:// or http:// (e.g., ^https://example.com/blog/.*) when using Full URL mode.',
+    'Source URL must be a path starting with / (e.g., /old-page or /blog/*) when using Path Only mode.' => 'Source URL must be a path starting with / (e.g., /old-page or /blog/*) when using Path Only mode.',
+    'Source URL must be a full URL starting with https:// or http:// (e.g., https://example.com/old-page) when using Full URL mode.' => 'Source URL must be a full URL starting with https:// or http:// (e.g., https://example.com/old-page) when using Full URL mode.',
+    'Wildcard character (*) is not allowed in Prefix Match. Use Wildcard Match instead, or remove the *.' => 'Wildcard character (*) is not allowed in Prefix Match. Use Wildcard Match instead, or remove the *.',
+    'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.',
+    'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).',
+    'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)',
+    'Value must be a whole number.' => 'Value must be a whole number.',
 
-    // =========================================================================
-    // Redirect Edit Page
-    // =========================================================================
-
-    'Edit {singularName}' => 'Edit {singularName}',
-    'Source Match Mode' => 'Source Match Mode',
-    'Match by complete URL including domain (e.g., https://example.com/old-page).' => 'Match by complete URL including domain (e.g., https://example.com/old-page).',
-    'Match by path only (e.g., /old-page). Works across all domains.' => 'Match by path only (e.g., /old-page). Works across all domains.',
-    'Path Only' => 'Path Only',
-    'Full URL' => 'Full URL',
-    'Full URLs entered will be automatically converted to paths when saving.' => 'Full URLs entered will be automatically converted to paths when saving.',
-    'How the source URL should be matched' => 'How the source URL should be matched',
-    'Enter the full URL to match (e.g., https://example.com/old-page).' => 'Enter the full URL to match (e.g., https://example.com/old-page).',
-    'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.' => 'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.',
-    'Test your pattern at' => 'Test your pattern at',
-    'before saving.' => 'before saving.',
-    'Full URL (https://example.com) or path (/page)' => 'Full URL (https://example.com) or path (/page)',
-    'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.',
-    'Highest priority' => 'Highest priority',
-    'Lowest priority' => 'Lowest priority',
-    'The HTTP status code to use for the redirect' => 'The HTTP status code to use for the redirect',
-    'Most common: Use' => 'Most common: Use',
-    'for permanent moves.' => 'for permanent moves.',
-    'Learn more about HTTP status codes' => 'Learn more about HTTP status codes',
-    '301 - Moved Permanently' => '301 - Moved Permanently',
-    '302 - Found (Temporary)' => '302 - Found (Temporary)',
-    '303 - See Other' => '303 - See Other',
-    '307 - Temporary Redirect' => '307 - Temporary Redirect',
-    '308 - Permanent Redirect' => '308 - Permanent Redirect',
-    '410 - Gone' => '410 - Gone',
-    'Are you sure you want to delete this {item}?' => 'Are you sure you want to delete this {item}?',
-    'Live' => 'Live',
-    'Hit count' => 'Hit count',
-    'Last hit' => 'Last hit',
-
-    // Redirect edit: source match mode instructions (JS)
-    'Match by path pattern (regex). Works across all domains.' => 'Match by path pattern (regex). Works across all domains.',
-    'Match by full URL pattern (regex) including domain.' => 'Match by full URL pattern (regex) including domain.',
-    'Enter a regex pattern to match paths (e.g., ^/blog/.* or /category/[^/]+).' => 'Enter a regex pattern to match paths (e.g., ^/blog/.* or /category/[^/]+).',
-    'Enter a regex pattern to match full URLs (e.g., ^https://example.com/blog/.*).' => 'Enter a regex pattern to match full URLs (e.g., ^https://example.com/blog/.*).',
-    'Match by path pattern (wildcard). Works across all domains.' => 'Match by path pattern (wildcard). Works across all domains.',
-    'Match by full URL pattern (wildcard) including domain.' => 'Match by full URL pattern (wildcard) including domain.',
-    'Enter a wildcard pattern to match paths. Use * for any characters (e.g., /blog/* or /category/*/posts).' => 'Enter a wildcard pattern to match paths. Use * for any characters (e.g., /blog/* or /category/*/posts).',
-    'Enter a wildcard pattern to match full URLs. Use * for any characters (e.g., https://example.com/blog/*).' => 'Enter a wildcard pattern to match full URLs. Use * for any characters (e.g., https://example.com/blog/*).',
-    'Match any path starting with the pattern. Works across all domains.' => 'Match any path starting with the pattern. Works across all domains.',
-    'Match any URL starting with the pattern including domain.' => 'Match any URL starting with the pattern including domain.',
-    'Enter the starting path (e.g., /blog matches /blog, /blog/post, /blog/category).' => 'Enter the starting path (e.g., /blog matches /blog, /blog/post, /blog/category).',
-    'Enter the starting URL (e.g., https://example.com/blog matches all URLs starting with it).' => 'Enter the starting URL (e.g., https://example.com/blog matches all URLs starting with it).',
-    'Match any path containing the pattern. Works across all domains.' => 'Match any path containing the pattern. Works across all domains.',
-    'Match any URL containing the pattern including domain.' => 'Match any URL containing the pattern including domain.',
-    'Enter text to match anywhere in the path (e.g., old-post matches /blog/old-post/123).' => 'Enter text to match anywhere in the path (e.g., old-post matches /blog/old-post/123).',
-    'Enter text to match anywhere in the URL (e.g., old-post matches any URL containing it).' => 'Enter text to match anywhere in the URL (e.g., old-post matches any URL containing it).',
-
-    // =========================================================================
-    // Redirect Analytics Panel (redirect edit → analytics tab)
-    // =========================================================================
-
-    'Total Hits' => 'Total Hits',
-    'Human Visits' => 'Human Visits',
-    'Bot Visits' => 'Bot Visits',
-    'Top Referrers' => 'Top Referrers',
-    'Devices' => 'Devices',
-    'Browsers' => 'Browsers',
-    'Countries' => 'Countries',
-    'Country' => 'Country',
-    'No analytics data for this redirect yet.' => 'No analytics data for this redirect yet.',
-    'Data will appear here once this redirect handles some requests.' => 'Data will appear here once this redirect handles some requests.',
-
-    // =========================================================================
-    // Analytics Page (404 Analytics)
-    // =========================================================================
-
-    '404 Not Found' => '404 Not Found',
-    'Overview' => 'Overview',
-    'Traffic & Devices' => 'Traffic & Devices',
-    'Geographic' => 'Geographic',
-
-    // Analytics: Overview tab
-    'Total 404s' => 'Total 404s',
-    'Success Rate' => 'Success Rate',
-    '404 Trend' => '404 Trend',
-    'Most Common 404s (Top 15)' => 'Most Common 404s (Top 15)',
-    'No 404s recorded yet' => 'No 404s recorded yet',
-    'Recent Unhandled 404s' => 'Recent Unhandled 404s',
-    'Loading…' => 'Loading…',
-
-    // Analytics: Traffic & Devices tab
-    'Traffic Analysis' => 'Traffic Analysis',
-    'Bot vs Human Traffic' => 'Bot vs Human Traffic',
-    'Top Bots' => 'Top Bots',
-    'Bot Name' => 'Bot Name',
-    '404s' => '404s',
-    'Device Analytics' => 'Device Analytics',
-    'Device Types' => 'Device Types',
-    'Browser Usage' => 'Browser Usage',
-    'Operating Systems' => 'Operating Systems',
-
-    // Analytics: Geographic tab
-    'Geographic Analytics' => 'Geographic Analytics',
-    'Top Countries' => 'Top Countries',
-    'Percentage' => 'Percentage',
-    'Top Cities' => 'Top Cities',
-    'City' => 'City',
-    'Geographic detection is disabled.' => 'Geographic detection is disabled.',
-    'Enable in Settings' => 'Enable in Settings',
-
-    // Analytics: JS strings
-    'No trend data available for the selected filters.' => 'No trend data available for the selected filters.',
-    'No bot data available for the selected filters.' => 'No bot data available for the selected filters.',
-    'No device data available for the selected filters.' => 'No device data available for the selected filters.',
-    'No browser data available for the selected filters.' => 'No browser data available for the selected filters.',
-    'No OS data available for the selected filters.' => 'No OS data available for the selected filters.',
-    'of traffic is from bots' => 'of traffic is from bots',
-    'No unhandled 404s! Great job!' => 'No unhandled 404s! Great job!',
-    'No bot data available' => 'No bot data available',
-    'No country data available' => 'No country data available',
-    'No city data available' => 'No city data available',
-    'Create redirect' => 'Create redirect',
-
-    // =========================================================================
     // Settings: General
-    // =========================================================================
-
     'General Settings' => 'General Settings',
     'Plugin Name' => 'Plugin Name',
     'The name of the plugin as it appears in the Control Panel menu' => 'The name of the plugin as it appears in the Control Panel menu',
@@ -285,10 +219,7 @@ return [
     'Debug (Detailed debugging)' => 'Debug (Detailed debugging)',
     'This is being overridden by the <code>logLevel</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>logLevel</code> setting in <code>config/redirect-manager.php</code>.',
 
-    // =========================================================================
     // Settings: Analytics
-    // =========================================================================
-
     'Analytics Settings' => 'Analytics Settings',
     'Enable Analytics' => 'Enable Analytics',
     'Track 404 analytics and visitor data' => 'Track 404 analytics and visitor data',
@@ -298,8 +229,6 @@ return [
     'Enable Geographic Detection' => 'Enable Geographic Detection',
     'Detect visitor location for analytics' => 'Detect visitor location for analytics',
     'This is being overridden by the <code>enableGeoDetection</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>enableGeoDetection</code> setting in <code>config/redirect-manager.php</code>.',
-
-    // Geo provider settings (from base partial)
     'Geo Provider' => 'Geo Provider',
     'Select the geo IP lookup provider. HTTPS providers recommended for privacy.' => 'Select the geo IP lookup provider. HTTPS providers recommended for privacy.',
     'ip-api.com (HTTP free, HTTPS paid)' => 'ip-api.com (HTTP free, HTTPS paid)',
@@ -313,8 +242,6 @@ return [
     'ip-api.com: HTTP free tier (45 requests/min). Add API key for HTTPS (Pro tier, $13/month). IP addresses transmitted unencrypted without API key.' => 'ip-api.com: HTTP free tier (45 requests/min). Add API key for HTTPS (Pro tier, $13/month). IP addresses transmitted unencrypted without API key.',
     'ipapi.co: HTTPS with 1,000 free requests/day. API key optional (increases rate limits).' => 'ipapi.co: HTTPS with 1,000 free requests/day. API key optional (increases rate limits).',
     'ipinfo.io: HTTPS with 50,000 free requests/month. API key optional (increases rate limits).' => 'ipinfo.io: HTTPS with 50,000 free requests/month. API key optional (increases rate limits).',
-
-    // IP salt error banner (from base partial)
     'error' => 'error',
     'Configuration Required' => 'Configuration Required',
     'IP hash salt is missing.' => 'IP hash salt is missing.',
@@ -330,20 +257,14 @@ return [
     'Copy the same salt to staging and production environments.' => 'Copy the same salt to staging and production environments.',
     'COPIED!' => 'COPIED!',
     'Failed to copy to clipboard' => 'Failed to copy to clipboard',
-
-    // Analytics: IP Privacy
     'IP Address Privacy' => 'IP Address Privacy',
     'Anonymize IP Addresses' => 'Anonymize IP Addresses',
     'Mask IP addresses before storage for maximum privacy. <strong>IPv4</strong>: masks last octet (192.168.1.123 → 192.168.1.0). <strong>IPv6</strong>: masks last 80 bits. <strong>Trade-off</strong>: Reduces unique visitor accuracy (users on same subnet counted as one visitor). Geo-location still works normally.' => 'Mask IP addresses before storage for maximum privacy. <strong>IPv4</strong>: masks last octet (192.168.1.123 → 192.168.1.0). <strong>IPv6</strong>: masks last 80 bits. <strong>Trade-off</strong>: Reduces unique visitor accuracy (users on same subnet counted as one visitor). Geo-location still works normally.',
     'This is being overridden by the <code>anonymizeIpAddress</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>anonymizeIpAddress</code> setting in <code>config/redirect-manager.php</code>.',
-
-    // Analytics: Additional
     'Additional Settings' => 'Additional Settings',
     'Strip Query String From Stats' => 'Strip Query String From Stats',
     'Strip query strings from analytics URLs to consolidate similar requests' => 'Strip query strings from analytics URLs to consolidate similar requests',
     'This is being overridden by the <code>stripQueryStringFromStats</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>stripQueryStringFromStats</code> setting in <code>config/redirect-manager.php</code>.',
-
-    // Analytics: Data Retention
     'Data Retention' => 'Data Retention',
     'Analytics Retention (Days)' => 'Analytics Retention (Days)',
     'Number of days to retain analytics (0 = keep forever)' => 'Number of days to retain analytics (0 = keep forever)',
@@ -358,10 +279,7 @@ return [
     'Configure device detection and redirect caching for better performance.' => 'Configure device detection and redirect caching for better performance.',
     'Go to Cache Settings' => 'Go to Cache Settings',
 
-    // =========================================================================
     // Settings: Interface
-    // =========================================================================
-
     'Interface Settings' => 'Interface Settings',
     'Items Per Page' => 'Items Per Page',
     'Number of items to display per page in lists' => 'Number of items to display per page in lists',
@@ -375,10 +293,7 @@ return [
     '120 seconds (2 minutes)' => '120 seconds (2 minutes)',
     'This is being overridden by the <code>refreshIntervalSecs</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>refreshIntervalSecs</code> setting in <code>config/redirect-manager.php</code>.',
 
-    // =========================================================================
     // Settings: Backup
-    // =========================================================================
-
     'Backup Settings' => 'Backup Settings',
     'Enable Backups' => 'Enable Backups',
     'Enable automatic backup functionality for redirects' => 'Enable automatic backup functionality for redirects',
@@ -406,10 +321,7 @@ return [
     'This is being overridden by the <code>backupPath</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>backupPath</code> setting in <code>config/redirect-manager.php</code>.',
     'Backup Location:' => 'Backup Location:',
 
-    // =========================================================================
     // Settings: Cache
-    // =========================================================================
-
     'Cache Settings' => 'Cache Settings',
     'Cache Storage Settings' => 'Cache Storage Settings',
     'Cache Storage Method' => 'Cache Storage Method',
@@ -451,10 +363,7 @@ return [
     '{count} day' => '{count} day',
     '{count} days' => '{count} days',
 
-    // =========================================================================
     // Settings: Advanced
-    // =========================================================================
-
     'Advanced Settings' => 'Advanced Settings',
     'API Settings' => 'API Settings',
     'Enable API Endpoint' => 'Enable API Endpoint',
@@ -484,21 +393,146 @@ return [
     'Apply Security Probe Filters' => 'Apply Security Probe Filters',
     'Adds specific exclude patterns for security probes: database dumps (*.sql, dump.sql.gz), config files (.env, .git/, .htaccess), admin panels (/phpmyadmin, /pma/, adminer.php), and exploit attempts (shell.php, /cgi-bin/). Patterns are precise to avoid blocking legitimate URLs like /mysql-tips or /debugging-guide.' => 'Adds specific exclude patterns for security probes: database dumps (*.sql, dump.sql.gz), config files (.env, .git/, .htaccess), admin panels (/phpmyadmin, /pma/, adminer.php), and exploit attempts (shell.php, /cgi-bin/). Patterns are precise to avoid blocking legitimate URLs like /mysql-tips or /debugging-guide.',
 
-    // =========================================================================
     // Settings: Test
-    // =========================================================================
-
     'Test Redirects' => 'Test Redirects',
     'Test URL Redirects' => 'Test URL Redirects',
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.',
     'Test URL' => 'Test URL',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)',
 
-    // =========================================================================
-    // Backups Page
-    // =========================================================================
+    // Dashboard
+    'Search URLs...' => 'Search URLs...',
+    'Request Type' => 'Request Type',
+    'Normal' => 'Normal',
+    'Bot' => 'Bot',
+    'Security Probe' => 'Security Probe',
+    'Probe' => 'Probe',
+    'Device' => 'Device',
+    'Browser' => 'Browser',
+    'No analytics found.' => 'No analytics found.',
+    'New {singularName}' => 'New {singularName}',
+    'Visit URL' => 'Visit URL',
+    'Edit handling redirect' => 'Edit handling redirect',
+    'Security vulnerability scanning attempt' => 'Security vulnerability scanning attempt',
+    'Regular browser request' => 'Regular browser request',
+    'Edit {item}' => 'Edit {item}',
+    'Create {item}' => 'Create {item}',
+    'Clear All' => 'Clear All',
+    'Clear' => 'Clear',
+    'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Are you sure you want to clear ALL analytics? This cannot be undone.',
 
-    'Backups' => 'Backups',
+    // Redirects: Index
+    'Creation Type' => 'Creation Type',
+    'Manual' => 'Manual',
+    'Auto-created' => 'Auto-created',
+    'Auto' => 'Auto',
+    'Search {pluginName}...' => 'Search {pluginName}...',
+    'No {items} found.' => 'No {items} found.',
+    'Source' => 'Source',
+    'Entry Changes' => 'Entry Changes',
+    'User' => 'User',
+
+    // Redirects: Edit
+    'Edit {singularName}' => 'Edit {singularName}',
+    'Source Match Mode' => 'Source Match Mode',
+    'Match by complete URL including domain (e.g., https://example.com/old-page).' => 'Match by complete URL including domain (e.g., https://example.com/old-page).',
+    'Match by path only (e.g., /old-page). Works across all domains.' => 'Match by path only (e.g., /old-page). Works across all domains.',
+    'Path Only' => 'Path Only',
+    'Full URL' => 'Full URL',
+    'Full URLs entered will be automatically converted to paths when saving.' => 'Full URLs entered will be automatically converted to paths when saving.',
+    'How the source URL should be matched' => 'How the source URL should be matched',
+    'Enter the full URL to match (e.g., https://example.com/old-page).' => 'Enter the full URL to match (e.g., https://example.com/old-page).',
+    'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.' => 'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.',
+    'Test your pattern at' => 'Test your pattern at',
+    'before saving.' => 'before saving.',
+    'Full URL (https://example.com) or path (/page)' => 'Full URL (https://example.com) or path (/page)',
+    'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.',
+    'Highest priority' => 'Highest priority',
+    'Lowest priority' => 'Lowest priority',
+    'The HTTP status code to use for the redirect' => 'The HTTP status code to use for the redirect',
+    'Most common: Use' => 'Most common: Use',
+    'for permanent moves.' => 'for permanent moves.',
+    'Learn more about HTTP status codes' => 'Learn more about HTTP status codes',
+    '301 - Moved Permanently' => '301 - Moved Permanently',
+    '302 - Found (Temporary)' => '302 - Found (Temporary)',
+    '303 - See Other' => '303 - See Other',
+    '307 - Temporary Redirect' => '307 - Temporary Redirect',
+    '308 - Permanent Redirect' => '308 - Permanent Redirect',
+    '410 - Gone' => '410 - Gone',
+    'Are you sure you want to delete this {item}?' => 'Are you sure you want to delete this {item}?',
+    'Live' => 'Live',
+    'Hit count' => 'Hit count',
+    'Last hit' => 'Last hit',
+    'Match by path pattern (regex). Works across all domains.' => 'Match by path pattern (regex). Works across all domains.',
+    'Match by full URL pattern (regex) including domain.' => 'Match by full URL pattern (regex) including domain.',
+    'Enter a regex pattern to match paths (e.g., ^/blog/.* or /category/[^/]+).' => 'Enter a regex pattern to match paths (e.g., ^/blog/.* or /category/[^/]+).',
+    'Enter a regex pattern to match full URLs (e.g., ^https://example.com/blog/.*).' => 'Enter a regex pattern to match full URLs (e.g., ^https://example.com/blog/.*).',
+    'Match by path pattern (wildcard). Works across all domains.' => 'Match by path pattern (wildcard). Works across all domains.',
+    'Match by full URL pattern (wildcard) including domain.' => 'Match by full URL pattern (wildcard) including domain.',
+    'Enter a wildcard pattern to match paths. Use * for any characters (e.g., /blog/* or /category/*/posts).' => 'Enter a wildcard pattern to match paths. Use * for any characters (e.g., /blog/* or /category/*/posts).',
+    'Enter a wildcard pattern to match full URLs. Use * for any characters (e.g., https://example.com/blog/*).' => 'Enter a wildcard pattern to match full URLs. Use * for any characters (e.g., https://example.com/blog/*).',
+    'Match any path starting with the pattern. Works across all domains.' => 'Match any path starting with the pattern. Works across all domains.',
+    'Match any URL starting with the pattern including domain.' => 'Match any URL starting with the pattern including domain.',
+    'Enter the starting path (e.g., /blog matches /blog, /blog/post, /blog/category).' => 'Enter the starting path (e.g., /blog matches /blog, /blog/post, /blog/category).',
+    'Enter the starting URL (e.g., https://example.com/blog matches all URLs starting with it).' => 'Enter the starting URL (e.g., https://example.com/blog matches all URLs starting with it).',
+    'Match any path containing the pattern. Works across all domains.' => 'Match any path containing the pattern. Works across all domains.',
+    'Match any URL containing the pattern including domain.' => 'Match any URL containing the pattern including domain.',
+    'Enter text to match anywhere in the path (e.g., old-post matches /blog/old-post/123).' => 'Enter text to match anywhere in the path (e.g., old-post matches /blog/old-post/123).',
+    'Enter text to match anywhere in the URL (e.g., old-post matches any URL containing it).' => 'Enter text to match anywhere in the URL (e.g., old-post matches any URL containing it).',
+
+    // Redirects: Analytics
+    'Total Hits' => 'Total Hits',
+    'Human Visits' => 'Human Visits',
+    'Bot Visits' => 'Bot Visits',
+    'Top Referrers' => 'Top Referrers',
+    'Devices' => 'Devices',
+    'Browsers' => 'Browsers',
+    'Countries' => 'Countries',
+    'Country' => 'Country',
+    'No analytics data for this redirect yet.' => 'No analytics data for this redirect yet.',
+    'Data will appear here once this redirect handles some requests.' => 'Data will appear here once this redirect handles some requests.',
+
+    // Analytics page
+    'Overview' => 'Overview',
+    'Traffic & Devices' => 'Traffic & Devices',
+    'Geographic' => 'Geographic',
+    'Total 404s' => 'Total 404s',
+    'Success Rate' => 'Success Rate',
+    '404 Trend' => '404 Trend',
+    'Most Common 404s (Top 15)' => 'Most Common 404s (Top 15)',
+    'No 404s recorded yet' => 'No 404s recorded yet',
+    'Recent Unhandled 404s' => 'Recent Unhandled 404s',
+    'Loading…' => 'Loading…',
+    'Traffic Analysis' => 'Traffic Analysis',
+    'Bot vs Human Traffic' => 'Bot vs Human Traffic',
+    'Top Bots' => 'Top Bots',
+    'Bot Name' => 'Bot Name',
+    '404s' => '404s',
+    'Device Analytics' => 'Device Analytics',
+    'Device Types' => 'Device Types',
+    'Browser Usage' => 'Browser Usage',
+    'Operating Systems' => 'Operating Systems',
+    'Geographic Analytics' => 'Geographic Analytics',
+    'Top Countries' => 'Top Countries',
+    'Percentage' => 'Percentage',
+    'Top Cities' => 'Top Cities',
+    'City' => 'City',
+    'Geographic detection is disabled.' => 'Geographic detection is disabled.',
+    'Enable in Settings' => 'Enable in Settings',
+    'No trend data available for the selected filters.' => 'No trend data available for the selected filters.',
+    'No bot data available for the selected filters.' => 'No bot data available for the selected filters.',
+    'No device data available for the selected filters.' => 'No device data available for the selected filters.',
+    'No browser data available for the selected filters.' => 'No browser data available for the selected filters.',
+    'No OS data available for the selected filters.' => 'No OS data available for the selected filters.',
+    'of traffic is from bots' => 'of traffic is from bots',
+    'No unhandled 404s! Great job!' => 'No unhandled 404s! Great job!',
+    'No bot data available' => 'No bot data available',
+    'No country data available' => 'No country data available',
+    'No city data available' => 'No city data available',
+    'Create redirect' => 'Create redirect',
+    'Site ID' => 'Site ID',
+
+    // Backups
     'Create Backup Now' => 'Create Backup Now',
     'Backups are automatically created when you import redirects (if enabled). You can restore or download any backup.' => 'Backups are automatically created when you import redirects (if enabled). You can restore or download any backup.',
     'No backup history yet. Backups are created automatically when you import redirects.' => 'No backup history yet. Backups are created automatically when you import redirects.',
@@ -506,9 +540,7 @@ return [
     'Created By' => 'Created By',
     'Redirect Count' => 'Redirect Count',
     'Size' => 'Size',
-    'Actions' => 'Actions',
     'Failed to load backups: ' => 'Failed to load backups: ',
-    'Backup created.' => 'Backup created.',
     'Failed to create backup.' => 'Failed to create backup.',
     'Are you sure you want to restore this backup? This will replace all current redirects. A backup of the current state will be created before restoring.' => 'Are you sure you want to restore this backup? This will replace all current redirects. A backup of the current state will be created before restoring.',
     'Backup contains' => 'Backup contains',
@@ -520,12 +552,15 @@ return [
     'Deleting backup...' => 'Deleting backup...',
     'Backup deleted.' => 'Backup deleted.',
     'Failed to delete backup.' => 'Failed to delete backup.',
+    'Before Restore' => 'Before Restore',
+    'Scheduled' => 'Scheduled',
+    'Before Import' => 'Before Import',
+    'Restore' => 'Restore',
+    'Download ZIP' => 'Download ZIP',
+    'Delete' => 'Delete',
+    'Backups are disabled in settings.' => 'Backups are disabled in settings.',
 
-    // =========================================================================
     // Import/Export
-    // =========================================================================
-
-    'Import/Export' => 'Import/Export',
     'Import History' => 'Import History',
     'Export Redirects' => 'Export Redirects',
     'Download all your current redirects as a CSV file for backup or migration to another site.' => 'Download all your current redirects as a CSV file for backup or migration to another site.',
@@ -565,7 +600,6 @@ return [
     'Pipe (|)' => 'Pipe (|)',
     'Create Backup Before Import' => 'Create Backup Before Import',
     'Automatically backup existing redirects before importing (recommended)' => 'Automatically backup existing redirects before importing (recommended)',
-    'Backups are disabled in settings.' => 'Backups are disabled in settings.',
     'The maximum file size is {size} and the import is limited to {rows} rows per file.' => 'The maximum file size is {size} and the import is limited to {rows} rows per file.',
     'Upload & Map Columns' => 'Upload & Map Columns',
     'You do not have permission to import redirects.' => 'You do not have permission to import redirects.',
@@ -574,12 +608,9 @@ return [
     'Filename' => 'Filename',
     'Imported' => 'Imported',
     'Failed' => 'Failed',
-    'View' => 'View',
     'No import history yet.' => 'No import history yet.',
     'Are you sure you want to clear all import logs? This action cannot be undone.' => 'Are you sure you want to clear all import logs? This action cannot be undone.',
     'Failed to clear history.' => 'Failed to clear history.',
-
-    // Import: Map columns
     'Map CSV Columns' => 'Map CSV Columns',
     'Map Columns' => 'Map Columns',
     'Your CSV has {count} rows. Map each CSV column to a redirect field.' => 'Your CSV has {count} rows. Map each CSV column to a redirect field.',
@@ -591,7 +622,6 @@ return [
     '-- Do not import --' => '-- Do not import --',
     'Source URL (required)' => 'Source URL (required)',
     'Destination URL (required)' => 'Destination URL (required)',
-    'Site ID' => 'Site ID',
     'Source Match Mode (pathonly/fullurl)' => 'Source Match Mode (pathonly/fullurl)',
     'Match Type (exact/regex/wildcard/prefix)' => 'Match Type (exact/regex/wildcard/prefix)',
     'Status Code (301/302/etc.)' => 'Status Code (301/302/etc.)',
@@ -605,8 +635,6 @@ return [
     'Maps to Field' => 'Maps to Field',
     'Sample Data' => 'Sample Data',
     'Preview Import' => 'Preview Import',
-
-    // Import: Preview
     'Import Preview' => 'Import Preview',
     'Preview' => 'Preview',
     'Total Rows' => 'Total Rows',
@@ -630,12 +658,8 @@ return [
     'No valid redirects found to import.' => 'No valid redirects found to import.',
     'Import {count} Redirects' => 'Import {count} Redirects',
     'No Valid Redirects to Import' => 'No Valid Redirects to Import',
-    'Successfully imported {imported} {pluginName}.' => 'Successfully imported {imported} {pluginName}.',
 
-    // =========================================================================
-    // Utilities Page
-    // =========================================================================
-
+    // Utilities
     'All Active' => 'All Active',
     'Good' => 'Good',
     'Check' => 'Check',
@@ -665,31 +689,37 @@ return [
     'Are you sure you want to permanently delete ALL analytics data? This action cannot be undone!' => 'Are you sure you want to permanently delete ALL analytics data? This action cannot be undone!',
     'This will delete all 404 tracking data. Are you absolutely sure?' => 'This will delete all 404 tracking data. Are you absolutely sure?',
 
-    // =========================================================================
-    // Widgets
-    // =========================================================================
+    // Logs viewer (logging-library)
+    'All Levels' => 'All Levels',
+    'Info' => 'Info',
+    'Debug' => 'Debug',
+    'Select File' => 'Select File',
+    'Select Date' => 'Select Date',
+    'All Sources' => 'All Sources',
+    'Search messages and context...' => 'Search messages and context...',
+    'System Logs' => 'System Logs',
+    'System' => 'System',
+    'Current log level' => 'Current log level',
+    'No log files found. Log files are created when plugin activities occur.' => 'No log files found. Log files are created when plugin activities occur.',
+    'No log entries found for the selected filters.' => 'No log entries found for the selected filters.',
+    'No context data available.' => 'No context data available.',
+    'Level' => 'Level',
+    'Message' => 'Message',
+    'entry' => 'entry',
+    'entries' => 'entries',
+    'Available Logs' => 'Available Logs',
+    'Current File' => 'Current File',
+    'Download File' => 'Download File',
+    'Log Location' => 'Log Location',
+    'Current Level' => 'Current Level',
+    'Retention' => 'Retention',
+    'days' => 'days',
+    'Context' => 'Context',
+    'Entries' => 'Entries',
+    'file' => 'file',
+    'files' => 'files',
 
-    // Stats Summary Widget
-    'View full analytics' => 'View full analytics',
-    'No 404s recorded' => 'No 404s recorded',
-    '404 errors will appear here when they occur.' => '404 errors will appear here when they occur.',
-    'Number of Days' => 'Number of Days',
-    'Show analytics for the last X days (1-365)' => 'Show analytics for the last X days (1-365)',
-
-    // Unhandled 404s Widget
-    'Last seen' => 'Last seen',
-    'View all 404s' => 'View all 404s',
-    'No unhandled 404s' => 'No unhandled 404s',
-    'Great! All 404s are being handled by {pluginName}.' => 'Great! All 404s are being handled by {pluginName}.',
-    'Number of 404s' => 'Number of 404s',
-    'How many unhandled 404s to display (5-50)' => 'How many unhandled 404s to display (5-50)',
-
-    // =========================================================================
-    // Messages (flash, notices, errors)
-    // =========================================================================
-
+    // Base partials
     'Scheduled initial analytics cleanup job' => 'Scheduled initial analytics cleanup job',
-    'Redirect saved successfully' => 'Redirect saved successfully',
-    'Redirect deleted successfully' => 'Redirect deleted successfully',
-    'Analytics cleared successfully' => 'Analytics cleared successfully',
+
 ];
