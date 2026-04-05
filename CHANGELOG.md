@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.29.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.28.2...v5.29.0) (2026-04-05)
+
+
+### Features
+
+* Add 10 new language translations (FR, NL, ES, AR, IT, PT, JA, SV, DA, NO) ([2532350](https://github.com/LindemannRock/craft-redirect-manager/commit/253235024e24901ab072c53964d74f0bd9552b17))
+
+
+### Bug Fixes
+
+* read-only settings and response handling ([cbee99b](https://github.com/LindemannRock/craft-redirect-manager/commit/cbee99be438aa5e565fb59f5f3eb7d6befa0b2b5))
+* translate install experience text to Craft CMS ([6d82eb6](https://github.com/LindemannRock/craft-redirect-manager/commit/6d82eb63bda1b75358c84f76ecaaa9de90f798d5))
+
 ## [5.28.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.28.1...v5.28.2) (2026-03-18)
 
 
