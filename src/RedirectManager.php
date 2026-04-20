@@ -365,16 +365,7 @@ class RedirectManager extends Plugin
         $settings = parent::getSettings();
 
         if ($settings) {
-            // Override with config file values using Craft's native multi-environment handling
-            // This properly merges '*' with environment-specific configs (e.g., 'production')
-            $config = Craft::$app->getConfig()->getConfigFromFile('redirect-manager');
-            if (!empty($config) && is_array($config)) {
-                foreach ($config as $key => $value) {
-                    if (property_exists($settings, $key)) {
-                        $settings->$key = $value;
-                    }
-                }
-            }
+            PluginHelper::applyConfigOverridesToSettings($settings, 'redirect-manager');
         }
 
         return $settings;
