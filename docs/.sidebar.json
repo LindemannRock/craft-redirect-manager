@@ -31,7 +31,8 @@
         "open": false,
         "children": [
             "resources/troubleshooting",
-            "resources/logging"
+            "resources/logging",
+            "resources/translations"
         ]
     },
     {

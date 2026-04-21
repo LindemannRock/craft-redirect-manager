@@ -134,3 +134,7 @@ return [
     ],
 ];
 ```
+
+## Translations
+
+Redirect Manager includes translations for 12 languages. See [Translations](../resources/translations.md) for the full list and override instructions.
