@@ -3,7 +3,7 @@
  * Redirect Manager plugin for Craft CMS 5.x
  *
  * @link      https://lindemannrock.com
- * @copyright Copyright (c) 2025 LindemannRock
+ * @copyright Copyright (c) 2026 LindemannRock
  * @since     5.0.0
  */
 
@@ -229,19 +229,6 @@ return [
     'Enable Geographic Detection' => 'Geografische Erkennung aktivieren',
     'Detect visitor location for analytics' => 'Besucherstandort für die Analytik erkennen',
     'This is being overridden by the <code>enableGeoDetection</code> setting in <code>config/redirect-manager.php</code>.' => 'Diese Einstellung wird durch <code>enableGeoDetection</code> in <code>config/redirect-manager.php</code> überschrieben.',
-    'Geo Provider' => 'Geo-Anbieter',
-    'Select the geo IP lookup provider. HTTPS providers recommended for privacy.' => 'Geo-IP-Suchanbieter auswählen. HTTPS-Anbieter werden aus Datenschutzgründen empfohlen.',
-    'ip-api.com (HTTP free, HTTPS paid)' => 'ip-api.com (HTTP kostenlos, HTTPS kostenpflichtig)',
-    'ipapi.co (HTTPS, 1k/day free)' => 'ipapi.co (HTTPS, 1k/Tag kostenlos)',
-    'ipinfo.io (HTTPS, 50k/month free)' => 'ipinfo.io (HTTPS, 50k/Monat kostenlos)',
-    'This is being overridden by the <code>geoProvider</code> setting in <code>config/redirect-manager.php</code>.' => 'Diese Einstellung wird durch <code>geoProvider</code> in <code>config/redirect-manager.php</code> überschrieben.',
-    'API Key' => 'API-Schlüssel',
-    'Optional. Required for paid tiers (enables HTTPS for ip-api.com Pro).' => 'Optional. Erforderlich für kostenpflichtige Tarife (aktiviert HTTPS für ip-api.com Pro).',
-    'This is being overridden by the <code>geoApiKey</code> setting in <code>config/redirect-manager.php</code>.' => 'Diese Einstellung wird durch <code>geoApiKey</code> in <code>config/redirect-manager.php</code> überschrieben.',
-    'ip-api.com free tier uses HTTP. IP addresses will be transmitted unencrypted. Add an API key for HTTPS (Pro tier) or switch to ipapi.co/ipinfo.io.' => 'ip-api.com Free-Tarif verwendet HTTP. IP-Adressen werden unverschlüsselt übertragen. Fügen Sie einen API-Schlüssel für HTTPS (Pro-Tarif) hinzu oder wechseln Sie zu ipapi.co/ipinfo.io.',
-    'ip-api.com: HTTP free tier (45 requests/min). Add API key for HTTPS (Pro tier, $13/month). IP addresses transmitted unencrypted without API key.' => 'ip-api.com: HTTP Free-Tarif (45 Anfragen/Min). API-Schlüssel für HTTPS hinzufügen (Pro-Tarif, 13 $/Monat). IP-Adressen werden ohne API-Schlüssel unverschlüsselt übertragen.',
-    'ipapi.co: HTTPS with 1,000 free requests/day. API key optional (increases rate limits).' => 'ipapi.co: HTTPS mit 1.000 kostenlosen Anfragen/Tag. API-Schlüssel optional (erhöht Ratenlimits).',
-    'ipinfo.io: HTTPS with 50,000 free requests/month. API key optional (increases rate limits).' => 'ipinfo.io: HTTPS mit 50.000 kostenlosen Anfragen/Monat. API-Schlüssel optional (erhöht Ratenlimits).',
     'error' => 'Fehler',
     'Configuration Required' => 'Konfiguration erforderlich',
     'IP hash salt is missing.' => 'IP-Hash-Salt fehlt.',
