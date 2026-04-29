@@ -23,7 +23,10 @@ composer require lindemannrock/craft-redirect-manager && php craft plugin/instal
 ddev composer require lindemannrock/craft-redirect-manager && ddev craft plugin/install redirect-manager
 ```
 
-3. **Optional** — Install [Logging Library](https://github.com/LindemannRock/craft-logging-library) for log viewing:
+3. **Optional** — Enable [Logging Library](https://github.com/LindemannRock/craft-logging-library) for log viewing:
+
+> [!NOTE]
+> Logging Library is included as a Composer dependency and downloaded automatically. Activate it in Craft to enable log viewing.
 
 ```bash title="PHP"
 php craft plugin/install logging-library
