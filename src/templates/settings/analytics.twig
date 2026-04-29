@@ -70,7 +70,7 @@
             <div id="geo-provider-settings" class="{{ not (settings.enableGeoDetection ?? false) ? 'hidden' }}" style="margin-top: 24px;">
                 {% include 'lindemannrock-base/_partials/geo-settings' with {
                     settings: settings,
-                    translationCategory: 'redirect-manager'
+                    pluginHandle: 'redirect-manager'
                 } %}
             </div>
 
