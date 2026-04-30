@@ -23,13 +23,11 @@
 
 {% block content %}
 
-	<form method="post" accept-charset="UTF-8">
-		{{ actionInput('redirect-manager/settings/save') }}
-		{{ csrfInput() }}
-		{{ redirectInput('redirect-manager/settings/interface') }}
-		{{ hiddenInput('section', 'interface') }}
+	{{ actionInput('redirect-manager/settings/save') }}
+	{{ redirectInput('redirect-manager/settings/interface') }}
+	{{ hiddenInput('section', 'interface') }}
 
-		<h2 style="margin-top: 0px;">{{ "Interface Settings"|t('redirect-manager') }}</h2>
+		<h2 class="first">{{ "Interface Settings"|t('redirect-manager') }}</h2>
 
 		{{ forms.textField({
             label: 'Items Per Page'|t('redirect-manager'),
@@ -66,8 +64,6 @@
             warning: settings.isOverriddenByConfig('refreshIntervalSecs') ?
                 "This is being overridden by the <code>refreshIntervalSecs</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
-
-	</form>
 
 	{% include 'lindemannrock-base/_components/plugin-credit' %}
 {% endblock %}

@@ -23,13 +23,11 @@
 
 {% block content %}
 
-	<form method="post" accept-charset="UTF-8">
-		{{ actionInput('redirect-manager/settings/save') }}
-		{{ csrfInput() }}
-		{{ redirectInput('redirect-manager/settings/cache') }}
-		{{ hiddenInput('section', 'cache') }}
+	{{ actionInput('redirect-manager/settings/save') }}
+	{{ redirectInput('redirect-manager/settings/cache') }}
+	{{ hiddenInput('section', 'cache') }}
 
-		<h2 style="margin-top: 0px;">{{ "Cache Storage Settings"|t('redirect-manager') }}</h2>
+		<h2 class="first">{{ "Cache Storage Settings"|t('redirect-manager') }}</h2>
 
 		{{ forms.selectField({
 			label: 'Cache Storage Method'|t('redirect-manager'),
@@ -160,8 +158,6 @@
 	                "This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
 	        }) }}
 		</div>
-
-	</form>
 
 	{% include 'lindemannrock-base/_components/plugin-credit' %}
 {% endblock %}

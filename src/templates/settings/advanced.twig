@@ -1,6 +1,5 @@
 {% extends "redirect-manager/_layouts/settings" %}
 {% set title = "Advanced Settings"|t('redirect-manager') %}
-{% set fullPageForm = true %}
 {% set selectedSettingsItem = 'advanced' %}
 
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
@@ -29,7 +28,7 @@
 		{{ redirectInput('redirect-manager/settings/advanced') }}
 		{{ hiddenInput('section', 'advanced') }}
 
-		<h2 style="margin-top: 0px;">{{ "API Settings"|t('redirect-manager') }}</h2>
+		<h2 class="first">{{ "API Settings"|t('redirect-manager') }}</h2>
 
 		{{ forms.lightswitchField({
             label: 'Enable API Endpoint'|t('redirect-manager'),
@@ -107,6 +106,10 @@
             warning: settings.isOverriddenByConfig('additionalHeaders') ?
                 "This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
+
+		<div class="buttons">
+			<button type="submit" class="btn submit">{{ "Save"|t('app') }}</button>
+		</div>
 
 	</form>
 
