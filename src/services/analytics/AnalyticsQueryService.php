@@ -23,7 +23,7 @@ use lindemannrock\redirectmanager\records\AnalyticsRecord;
  *
  * @author    LindemannRock
  * @package   RedirectManager
- * @since     5.7.0
+ * @since 5.25.0
  */
 class AnalyticsQueryService
 {

@@ -17,7 +17,7 @@ use lindemannrock\redirectmanager\RedirectManager;
 /**
  * Backup Service
  *
- * @since 5.23.0
+ * @since 5.24.0
  */
 class BackupService extends Component
 {

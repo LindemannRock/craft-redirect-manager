@@ -15,7 +15,7 @@ use craft\web\AssetBundle;
  *
  * Provides Redirect Manager analytics wiring for cp-analytics pages.
  *
- * @since 5.29.0
+ * @since 5.24.0
  */
 class AnalyticsAsset extends AssetBundle
 {

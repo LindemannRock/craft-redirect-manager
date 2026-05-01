@@ -18,7 +18,7 @@ use yii\console\ExitCode;
 /**
  * Backup management commands
  *
- * @since 5.23.0
+ * @since 5.24.0
  */
 class BackupController extends Controller
 {

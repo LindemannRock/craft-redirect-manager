@@ -17,7 +17,7 @@ use lindemannrock\base\helpers\PluginHelper;
  *
  * @author    LindemannRock
  * @package   RedirectManager
- * @since     5.0.0
+ * @since 5.1.0
  */
 trait RedirectHandlingTrait
 {

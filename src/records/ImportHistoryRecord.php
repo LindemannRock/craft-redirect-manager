@@ -26,7 +26,7 @@ use craft\db\ActiveRecord;
  *
  * @author    LindemannRock
  * @package   RedirectManager
- * @since     5.23.0
+ * @since 5.24.0
  */
 class ImportHistoryRecord extends ActiveRecord
 {

@@ -14,7 +14,7 @@ use craft\helpers\Db;
 /**
  * Shared date and site filtering for analytics queries
  *
- * @since 5.7.0
+ * @since 5.25.0
  */
 trait AnalyticsQueryTrait
 {

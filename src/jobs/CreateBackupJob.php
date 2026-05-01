@@ -20,7 +20,7 @@ use yii\queue\RetryableJobInterface;
 /**
  * Create Backup Job
  *
- * @since 5.23.0
+ * @since 5.24.0
  */
 class CreateBackupJob extends BaseJob implements RetryableJobInterface
 {
