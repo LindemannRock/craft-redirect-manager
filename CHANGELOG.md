@@ -1,5 +1,24 @@
 # Changelog
 
+## [5.30.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.29.0...v5.30.0) (2026-05-06)
+
+
+### Features
+
+* **translations:** remove geo provider options from multiple locales ([518100e](https://github.com/LindemannRock/craft-redirect-manager/commit/518100eac72efbea03b6ec4b6541ffd74e24506c))
+
+
+### Bug Fixes
+
+* apply config overrides through shared settings helper ([77e246c](https://github.com/LindemannRock/craft-redirect-manager/commit/77e246cd5e22f2e418fec3f6490e6f68d6fdf2a6))
+* drop PAT requirement for release-please — use built-in GITHUB_TOKEN ([78b54aa](https://github.com/LindemannRock/craft-redirect-manager/commit/78b54aa39796aa6af5f57a80ff25d6ca8987e073))
+* update geo-settings to use plugin handle instead of translation category ([613b164](https://github.com/LindemannRock/craft-redirect-manager/commit/613b164a12a3527b0760e5f48bafd942bb406695))
+
+
+### Miscellaneous Chores
+
+* update version annotations to 5.24.0 and 5.25.0 ([9e37253](https://github.com/LindemannRock/craft-redirect-manager/commit/9e372534b32d653c1568994240f8f9db012bea46))
+
 ## [5.29.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.28.2...v5.29.0) (2026-04-05)
 
 
