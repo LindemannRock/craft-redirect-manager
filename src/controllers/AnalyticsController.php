@@ -157,62 +157,66 @@ class AnalyticsController extends Controller
 
         $request = Craft::$app->getRequest();
 
-        // Get filter parameters
-        $search = $request->getQueryParam('search', '');
-        $handledFilter = $request->getQueryParam('handled', 'all');
-        $typeFilter = $request->getQueryParam('type', 'all');
-        $sort = $request->getQueryParam('sort', 'lastHit');
-        $dir = strtolower($request->getQueryParam('dir', 'desc'));
-        // Whitelist sort direction to prevent SQL injection
-        if (!in_array($dir, ['asc', 'desc'], true)) {
-            $dir = 'desc';
+        // ---- Param parsing + allowlist validation -------------------------
+
+        $handledFilter = (string) $request->getQueryParam('handled', 'all');
+        $validHandled = ['all', 'handled', 'unhandled'];
+        if (!in_array($handledFilter, $validHandled, true)) {
+            $handledFilter = 'all';
         }
-        $page = max(1, (int)$request->getQueryParam('page', 1));
-        $limit = $settings->itemsPerPage ?? 100;
+
+        $typeFilter = (string) $request->getQueryParam('type', 'all');
+        $validTypes = ['all', 'normal', 'bot', 'probe'];
+        if (!in_array($typeFilter, $validTypes, true)) {
+            $typeFilter = 'all';
+        }
+
+        $search = trim((string) $request->getQueryParam('search', ''));
+        if (mb_strlen($search) > 64) {
+            $search = mb_substr($search, 0, 64);
+        }
+
+        $validSortFields = ['url', 'count', 'lastHit', 'siteId', 'handled', 'deviceType', 'browser', 'requestType'];
+        $sort = (string) $request->getQueryParam('sort', 'lastHit');
+        if (!in_array($sort, $validSortFields, true)) {
+            $sort = 'lastHit';
+        }
+        $dir = strtolower((string) $request->getQueryParam('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        $page = max(1, (int) $request->getQueryParam('page', 1));
+        $limit = max(1, (int) $settings->itemsPerPage);
         $offset = ($page - 1) * $limit;
+
+        // ---- Build query --------------------------------------------------
 
         // Scope to user's editable sites
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
-        // Build query
         $query = (new \craft\db\Query())
             ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName())
             ->andWhere(['siteId' => $editableSiteIds]);
 
-        // Apply handled filter
         if ($handledFilter === 'handled') {
             $query->andWhere(['handled' => true]);
         } elseif ($handledFilter === 'unhandled') {
             $query->andWhere(['handled' => false]);
         }
 
-        // Apply type filter (bot only - probes are detected dynamically)
+        // Bot/normal map to DB columns; probe is pattern-based and filtered post-query.
         if ($typeFilter === 'bot') {
             $query->andWhere(['isRobot' => true]);
         } elseif ($typeFilter === 'normal') {
             $query->andWhere(['or', ['isRobot' => false], ['isRobot' => null]]);
         }
-        // Note: 'probe' filter is applied post-query since it's pattern-based
 
-        // Apply search
-        if (!empty($search)) {
+        if ($search !== '') {
             $query->andWhere(['like', 'url', $search]);
         }
 
-        // Apply sorting (array-based to prevent SQL injection)
+        // Sort: requestType has no DB column, so it maps to isRobot.
         $sortDirection = $dir === 'asc' ? SORT_ASC : SORT_DESC;
-        $orderBy = match ($sort) {
-            'url' => ['url' => $sortDirection],
-            'count' => ['count' => $sortDirection],
-            'lastHit' => ['lastHit' => $sortDirection],
-            'siteId' => ['siteId' => $sortDirection],
-            'handled' => ['handled' => $sortDirection],
-            'deviceType' => ['deviceType' => $sortDirection],
-            'browser' => ['browser' => $sortDirection],
-            'requestType' => ['isRobot' => $sortDirection], // requestType maps to isRobot in DB
-            default => ['lastHit' => $sortDirection],
-        };
-        $query->orderBy($orderBy);
+        $sortColumn = $sort === 'requestType' ? 'isRobot' : $sort;
+        $query->orderBy([$sortColumn => $sortDirection]);
 
         // For probe filter, we need to fetch all and filter in PHP
         // For other filters, use pagination
@@ -294,13 +298,21 @@ class AnalyticsController extends Controller
             'allCount' => $allCount,
             'handledCount' => $handledCount,
             'unhandledCount' => $unhandledCount,
+            'handledFilter' => $handledFilter,
             'typeFilter' => $typeFilter,
+            'search' => $search,
+            'sort' => $sort,
+            'dir' => $dir,
             'botCount' => $botCount,
             'probeCount' => $probeCount,
             'normalCount' => $normalCount,
             'page' => $page,
             'limit' => $limit,
             'offset' => $offset,
+            'canCreate' => $user->checkPermission('redirectManager:createRedirects'),
+            'canEdit' => $user->checkPermission('redirectManager:editRedirects'),
+            'canClearAnalytics' => $user->checkPermission('redirectManager:clearAnalytics'),
+            'canExportAnalytics' => $user->checkPermission('redirectManager:exportAnalytics'),
         ]);
     }
 
@@ -364,58 +376,63 @@ class AnalyticsController extends Controller
         // Scope to user's editable sites
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
-        // Get filter parameters
-        $search = $request->getQueryParam('search', '');
-        $handledFilter = $request->getQueryParam('handled', 'all');
-        $typeFilter = $request->getQueryParam('type', 'all');
-        $sort = $request->getQueryParam('sort', 'lastHit');
-        $dir = strtolower($request->getQueryParam('dir', 'desc'));
-        // Whitelist sort direction to prevent SQL injection
-        if (!in_array($dir, ['asc', 'desc'], true)) {
-            $dir = 'desc';
+        // ---- Param parsing + allowlist validation -------------------------
+
+        $handledFilter = (string) $request->getQueryParam('handled', 'all');
+        $validHandled = ['all', 'handled', 'unhandled'];
+        if (!in_array($handledFilter, $validHandled, true)) {
+            $handledFilter = 'all';
         }
-        $page = max(1, (int)$request->getQueryParam('page', 1));
-        $limit = $settings->itemsPerPage ?? 100;
+
+        $typeFilter = (string) $request->getQueryParam('type', 'all');
+        $validTypes = ['all', 'normal', 'bot', 'probe'];
+        if (!in_array($typeFilter, $validTypes, true)) {
+            $typeFilter = 'all';
+        }
+
+        $search = trim((string) $request->getQueryParam('search', ''));
+        if (mb_strlen($search) > 64) {
+            $search = mb_substr($search, 0, 64);
+        }
+
+        $validSortFields = ['url', 'count', 'lastHit', 'siteId', 'handled', 'deviceType', 'browser', 'requestType'];
+        $sort = (string) $request->getQueryParam('sort', 'lastHit');
+        if (!in_array($sort, $validSortFields, true)) {
+            $sort = 'lastHit';
+        }
+        $dir = strtolower((string) $request->getQueryParam('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        $page = max(1, (int) $request->getQueryParam('page', 1));
+        $limit = max(1, (int) $settings->itemsPerPage);
         $offset = ($page - 1) * $limit;
 
-        // Build query
+        // ---- Build query --------------------------------------------------
+
         $query = (new \craft\db\Query())
             ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName())
             ->andWhere(['siteId' => $editableSiteIds]);
 
-        // Apply handled filter
         if ($handledFilter === 'handled') {
             $query->andWhere(['handled' => true]);
         } elseif ($handledFilter === 'unhandled') {
             $query->andWhere(['handled' => false]);
         }
 
-        // Apply type filter (bot only - probes are detected dynamically)
+        // Bot/normal map to DB columns; probe is pattern-based and filtered post-query.
         if ($typeFilter === 'bot') {
             $query->andWhere(['isRobot' => true]);
         } elseif ($typeFilter === 'normal') {
             $query->andWhere(['or', ['isRobot' => false], ['isRobot' => null]]);
         }
 
-        // Apply search
-        if (!empty($search)) {
+        if ($search !== '') {
             $query->andWhere(['like', 'url', $search]);
         }
 
-        // Apply sorting (array-based to prevent SQL injection)
+        // Sort: requestType has no DB column, so it maps to isRobot.
         $sortDirection = $dir === 'asc' ? SORT_ASC : SORT_DESC;
-        $orderBy = match ($sort) {
-            'url' => ['url' => $sortDirection],
-            'count' => ['count' => $sortDirection],
-            'lastHit' => ['lastHit' => $sortDirection],
-            'siteId' => ['siteId' => $sortDirection],
-            'handled' => ['handled' => $sortDirection],
-            'deviceType' => ['deviceType' => $sortDirection],
-            'browser' => ['browser' => $sortDirection],
-            'requestType' => ['isRobot' => $sortDirection], // requestType maps to isRobot in DB
-            default => ['lastHit' => $sortDirection],
-        };
-        $query->orderBy($orderBy);
+        $sortColumn = $sort === 'requestType' ? 'isRobot' : $sort;
+        $query->orderBy([$sortColumn => $sortDirection]);
 
         // For probe filter, we need to fetch all and filter in PHP
         if ($typeFilter === 'probe') {

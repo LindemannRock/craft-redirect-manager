@@ -1,27 +1,15 @@
 {#
  # Redirects Listing Page
  #
- # Uses the base plugin's cp-table layout for consistent styling.
+ # Follows the canonical CP table index-page pattern (SQL-paginated variant) —
+ # see plugins/base/docs/template-guides/cp-table-index-pattern.md.
+ # RedirectsController::actionIndex() owns query-param parsing, allowlist
+ # validation, filter, sort, and pagination. This template stays presentational.
+ # Permission booleans (`canCreate`, `canEdit`, `canDelete`, `canImportExport`)
+ # likewise arrive from the controller.
  #}
 
 {% extends 'lindemannrock-base/_layouts/cp-table' %}
-
-{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
-{% set settings = plugin.settings %}
-
-{# Permission checks #}
-{% set canCreate = currentUser.can('redirectManager:createRedirects') %}
-{% set canEdit = currentUser.can('redirectManager:editRedirects') %}
-{% set canDelete = currentUser.can('redirectManager:deleteRedirects') %}
-{% set canImportExport = currentUser.can('redirectManager:manageImportExport') %}
-
-{# Get query parameters #}
-{% set search = craft.app.request.getParam('search', '') %}
-{% set statusFilter = craft.app.request.getParam('status', 'all') %}
-{% set matchTypeFilter = craft.app.request.getParam('matchType', 'all') %}
-{% set creationTypeFilter = craft.app.request.getParam('creationType', 'all') %}
-{% set sort = craft.app.request.getParam('sort', 'dateCreated') %}
-{% set dir = craft.app.request.getParam('dir', 'desc') %}
 
 {% set tableConfig = {
     plugin: {
@@ -113,7 +101,6 @@
     newButton: canCreate ? {
         url: url('redirect-manager/redirects/new'),
         label: 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}),
-        permission: 'redirectManager:createRedirects',
     } : null,
 } %}
 
@@ -203,35 +190,35 @@
 {% endblock %}
 
 {% block rowActions %}
-    {% set hasRowActions = canEdit or canDelete %}
-    {% if hasRowActions %}
-        <td class="thin" style="text-align: right;">
-            <button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}"></button>
-            <div class="menu">
-                <ul>
-                    {% if canEdit %}
-                        <li>
-                            <a href="{{ url('redirect-manager/redirects/' ~ item.id) }}">
-                                {{ 'Edit'|t('app') }}
-                            </a>
-                        </li>
-                    {% endif %}
-                    {% if canDelete %}
-                        {% if canEdit %}
-                            <li><hr class="padded"></li>
-                        {% endif %}
-                        <li>
-                            <a class="error row-delete-btn" data-id="{{ item.id }}">
-                                {{ 'Delete'|t('app') }}
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </td>
-    {% else %}
-        <td class="thin"></td>
+    {% set actionItems = [] %}
+
+    {% if canEdit %}
+        {% set actionItems = actionItems|merge([{
+            label: 'Edit'|t('app'),
+            url: url('redirect-manager/redirects/' ~ item.id),
+        }]) %}
     {% endif %}
+
+    {% if canDelete %}
+        {% if canEdit %}
+            {% set actionItems = actionItems|merge([{type: 'divider'}]) %}
+        {% endif %}
+        {% set actionItems = actionItems|merge([{
+            label: 'Delete'|t('app'),
+            class: 'error',
+            jsAction: 'delete',
+        }]) %}
+    {% endif %}
+
+    {% include 'lindemannrock-base/_components/row-actions' with {
+        item: {id: item.id},
+        actions: {
+            type: 'menu',
+            icon: 'settings',
+            title: 'Actions'|t('app'),
+            items: actionItems,
+        },
+    } only %}
 {% endblock %}
 
 {% block bulkActions %}
@@ -249,14 +236,9 @@
         </div>
     {% endif %}
     {% if canDelete %}
-        <div>
-            <button type="button" class="btn secondary menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}" id="lr-bulk-actions-btn"></button>
-            <div class="menu">
-                <ul>
-                    <li><a id="lr-bulk-delete-action" class="error">{{ 'Delete…'|t('app') }}</a></li>
-                </ul>
-            </div>
-        </div>
+        <button type="button" class="btn secondary" id="lr-bulk-delete-btn">
+            {{ 'Delete'|t('app') }} (<span id="lr-selected-count">0</span>)
+        </button>
     {% endif %}
 {% endblock %}
 
@@ -278,104 +260,111 @@
 {% block scripts %}
 <script>
 (function() {
-    const canEdit = {{ canEdit ? 'true' : 'false' }};
-    const canDelete = {{ canDelete ? 'true' : 'false' }};
+    if (typeof Craft === 'undefined') return;
 
-    // Selection state (managed by cp-table layout)
-    let selectedIds = new Set();
+    // Pre-translated strings — keep |t() in Twig (translatable) and emit as
+    // JSON-encoded JS literals via |json_encode|raw. Avoids the |e('js') trap.
+    const T = {
+        deleteConfirm: {{ 'Delete this redirect?'|t('redirect-manager')|json_encode|raw }},
+        redirectDeleted: {{ 'Redirect deleted'|t('redirect-manager')|json_encode|raw }},
+        deleteFailed: {{ 'Could not delete redirect'|t('redirect-manager')|json_encode|raw }},
+        bulkEnabledTemplate: {{ 'Enabled {count} redirects'|t('redirect-manager')|json_encode|raw }},
+        bulkEnableFailed: {{ 'Failed to enable redirects'|t('redirect-manager')|json_encode|raw }},
+        bulkDisabledTemplate: {{ 'Disabled {count} redirects'|t('redirect-manager')|json_encode|raw }},
+        bulkDisableFailed: {{ 'Failed to disable redirects'|t('redirect-manager')|json_encode|raw }},
+        bulkDeletedTemplate: {{ 'Deleted {count} redirects'|t('redirect-manager')|json_encode|raw }},
+        bulkDeleteFailed: {{ 'Failed to delete redirects'|t('redirect-manager')|json_encode|raw }},
+        bulkDeleteConfirmTemplate: {{ 'Delete {count} redirect(s)? This cannot be undone.'|t('redirect-manager')|json_encode|raw }},
+    };
 
-    // Listen for selection changes from cp-table
-    document.addEventListener('lr:selectionChanged', function(e) {
-        selectedIds = new Set(e.detail.selectedIds);
-    });
-
-    // Initialize bulk action menu buttons
+    // Initialise the "Set status" menubtn — without `new Craft.MenuBtn(...)`,
+    // the menu doesn't open so the Enable/Disable items inside are unreachable.
     const bulkStatusBtn = document.getElementById('lr-bulk-status-btn');
-    if (bulkStatusBtn && typeof Craft !== 'undefined' && Craft.MenuBtn) {
+    if (bulkStatusBtn && Craft.MenuBtn) {
         new Craft.MenuBtn(bulkStatusBtn);
     }
 
-    const bulkActionsBtn = document.getElementById('lr-bulk-actions-btn');
-    if (bulkActionsBtn && typeof Craft !== 'undefined' && Craft.MenuBtn) {
-        new Craft.MenuBtn(bulkActionsBtn);
+    document.addEventListener('lr:selectionChanged', function(e) {
+        const countSpan = document.getElementById('lr-selected-count');
+        if (countSpan) {
+            countSpan.textContent = e.detail && typeof e.detail.count === 'number' ? e.detail.count : 0;
+        }
+    });
+
+    function selectedIds() {
+        return window.lrTableSelection ? window.lrTableSelection.getSelectedIds() : [];
     }
 
-    // Bulk enable
+    // ---------------------------------------------------------------------
+    // Row-action handlers. Delegated listener on `document`, narrowed by
+    // `a[data-action]` + an explicit action-name allowlist. preventDefault
+    // only after the match — leaves unrelated `data-action` elements alone.
+    // ---------------------------------------------------------------------
+    document.addEventListener('click', function(e) {
+        const trigger = e.target.closest('a[data-action]');
+        if (!trigger) return;
+
+        const action = trigger.dataset.action;
+        if (action !== 'delete') return;
+
+        const redirectId = parseInt(trigger.dataset.id || '0', 10);
+        if (!redirectId) return;
+        e.preventDefault();
+
+        if (!confirm(T.deleteConfirm)) return;
+        Craft.sendActionRequest('POST', 'redirect-manager/redirects/delete', {
+            data: { redirectId: redirectId },
+        }).then(function(response) {
+            if (response.data.success) {
+                Craft.cp.displayNotice(T.redirectDeleted);
+                setTimeout(function() { window.location.reload(); }, 500);
+            } else {
+                Craft.cp.displayError(response.data.error || T.deleteFailed);
+            }
+        }).catch(function() {
+            Craft.cp.displayError(T.deleteFailed);
+        });
+    });
+
+    // ---------------------------------------------------------------------
+    // Bulk actions. Shared helper posts the selected IDs to the endpoint.
+    // ---------------------------------------------------------------------
+    function runBulkStatus(endpoint, successTemplate, errorFallback) {
+        const ids = selectedIds();
+        if (!ids.length) return;
+        Craft.sendActionRequest('POST', endpoint, {
+            data: { redirectIds: ids },
+        }).then(function(response) {
+            const count = response.data.updated ?? response.data.deleted ?? 0;
+            if (count > 0) {
+                Craft.cp.displayNotice(successTemplate.replace('{count}', count));
+                setTimeout(function() { window.location.reload(); }, 1000);
+            } else if (response.data.error) {
+                Craft.cp.displayError(response.data.error);
+            } else {
+                Craft.cp.displayError(errorFallback);
+            }
+        }).catch(function() {
+            Craft.cp.displayError(errorFallback);
+        });
+    }
+
     document.getElementById('lr-bulk-enable-action')?.addEventListener('click', function(e) {
         e.preventDefault();
-        const ids = Array.from(selectedIds);
-        if (ids.length === 0) return;
-
-        Craft.sendActionRequest('POST', 'redirect-manager/redirects/bulk-enable', {
-            data: { redirectIds: ids }
-        }).then(function(response) {
-            if (response.data.success) {
-                Craft.cp.displayNotice(`Enabled ${response.data.updated} redirect${response.data.updated > 1 ? 's' : ''}`);
-                setTimeout(() => window.location.reload(), 1000);
-            }
-        });
+        runBulkStatus('redirect-manager/redirects/bulk-enable', T.bulkEnabledTemplate, T.bulkEnableFailed);
     });
 
-    // Bulk disable
     document.getElementById('lr-bulk-disable-action')?.addEventListener('click', function(e) {
         e.preventDefault();
-        const ids = Array.from(selectedIds);
-        if (ids.length === 0) return;
-
-        Craft.sendActionRequest('POST', 'redirect-manager/redirects/bulk-disable', {
-            data: { redirectIds: ids }
-        }).then(function(response) {
-            if (response.data.success) {
-                Craft.cp.displayNotice(`Disabled ${response.data.updated} redirect${response.data.updated > 1 ? 's' : ''}`);
-                setTimeout(() => window.location.reload(), 1000);
-            }
-        });
+        runBulkStatus('redirect-manager/redirects/bulk-disable', T.bulkDisabledTemplate, T.bulkDisableFailed);
     });
 
-    // Bulk delete
-    document.getElementById('lr-bulk-delete-action')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        const ids = Array.from(selectedIds);
-        if (ids.length === 0) return;
-
-        if (!confirm(`Delete ${ids.length} redirect${ids.length > 1 ? 's' : ''}?`)) return;
-
-        Craft.sendActionRequest('POST', 'redirect-manager/redirects/bulk-delete', {
-            data: { redirectIds: ids }
-        }).then(function(response) {
-            if (response.data.success) {
-                Craft.cp.displayNotice(`Deleted ${response.data.deleted} redirects`);
-                setTimeout(() => window.location.reload(), 1000);
-            }
-        });
+    document.getElementById('lr-bulk-delete-btn')?.addEventListener('click', function() {
+        const ids = selectedIds();
+        if (!ids.length) return;
+        if (!confirm(T.bulkDeleteConfirmTemplate.replace('{count}', ids.length))) return;
+        runBulkStatus('redirect-manager/redirects/bulk-delete', T.bulkDeletedTemplate, T.bulkDeleteFailed);
     });
-
-    // Individual delete buttons
-    function attachDeleteListeners() {
-        document.querySelectorAll('.row-delete-btn').forEach(deleteBtn => {
-            if (deleteBtn._hasListener) return;
-            deleteBtn._hasListener = true;
-
-            deleteBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const row = this.closest('tr');
-                const id = this.dataset.id;
-
-                if (!confirm('Delete this redirect?')) return;
-
-                Craft.sendActionRequest('POST', 'redirect-manager/redirects/delete', {
-                    data: { redirectId: id }
-                }).then(function(response) {
-                    if (response.data.success) {
-                        row.remove();
-                        Craft.cp.displayNotice('Redirect deleted');
-                    }
-                });
-            });
-        });
-    }
-    attachDeleteListeners();
 })();
 </script>
 {% endblock %}

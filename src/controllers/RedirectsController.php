@@ -64,48 +64,69 @@ class RedirectsController extends Controller
         $request = Craft::$app->getRequest();
         $settings = RedirectManager::$plugin->getSettings();
 
-        // Get filter parameters
-        $search = $request->getQueryParam('search', '');
-        $statusFilter = $request->getQueryParam('status', 'all');
-        $matchTypeFilter = $request->getQueryParam('matchType', 'all');
-        $creationTypeFilter = $request->getQueryParam('creationType', 'all');
-        $sort = $request->getQueryParam('sort', 'dateCreated');
-        $dir = strtolower($request->getQueryParam('dir', 'desc'));
-        // Whitelist sort direction to prevent SQL injection
-        if (!in_array($dir, ['asc', 'desc'], true)) {
-            $dir = 'desc';
+        // ---- Param parsing + allowlist validation -------------------------
+
+        $statusFilter = (string) $request->getQueryParam('status', 'all');
+        $validStatuses = ['all', 'enabled', 'disabled'];
+        if (!in_array($statusFilter, $validStatuses, true)) {
+            $statusFilter = 'all';
         }
-        $page = max(1, (int)$request->getQueryParam('page', 1));
-        $limit = $settings->itemsPerPage ?? 100;
+
+        $matchTypeFilter = (string) $request->getQueryParam('matchType', 'all');
+        $validMatchTypes = ['all', 'exact', 'regex', 'wildcard', 'prefix'];
+        if (!in_array($matchTypeFilter, $validMatchTypes, true)) {
+            $matchTypeFilter = 'all';
+        }
+
+        $creationTypeFilter = (string) $request->getQueryParam('creationType', 'all');
+        $validCreationTypes = ['all', 'manual', 'entry-change'];
+        if (!in_array($creationTypeFilter, $validCreationTypes, true)) {
+            $creationTypeFilter = 'all';
+        }
+
+        $search = trim((string) $request->getQueryParam('search', ''));
+        if (mb_strlen($search) > 64) {
+            $search = mb_substr($search, 0, 64);
+        }
+
+        $validSortFields = [
+            'sourceUrl', 'matchType', 'creationType', 'siteId',
+            'statusCode', 'hitCount', 'enabled', 'sourcePlugin', 'dateCreated',
+        ];
+        $sort = (string) $request->getQueryParam('sort', 'dateCreated');
+        if (!in_array($sort, $validSortFields, true)) {
+            $sort = 'dateCreated';
+        }
+        $dir = strtolower((string) $request->getQueryParam('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        $page = max(1, (int) $request->getQueryParam('page', 1));
+        $limit = max(1, (int) $settings->itemsPerPage);
         $offset = ($page - 1) * $limit;
+
+        // ---- Build query --------------------------------------------------
 
         // Scope to user's editable sites (redirects with null siteId = all sites, always visible)
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
-        // Build query
         $query = (new \craft\db\Query())
             ->from(\lindemannrock\redirectmanager\records\RedirectRecord::tableName())
             ->andWhere(['or', ['siteId' => null], ['siteId' => $editableSiteIds]]);
 
-        // Apply status filter
         if ($statusFilter === 'enabled') {
             $query->andWhere(['enabled' => true]);
         } elseif ($statusFilter === 'disabled') {
             $query->andWhere(['enabled' => false]);
         }
 
-        // Apply match type filter
         if ($matchTypeFilter !== 'all') {
             $query->andWhere(['matchType' => $matchTypeFilter]);
         }
 
-        // Apply creation type filter
         if ($creationTypeFilter !== 'all') {
             $query->andWhere(['creationType' => $creationTypeFilter]);
         }
 
-        // Apply search
-        if (!empty($search)) {
+        if ($search !== '') {
             $query->andWhere([
                 'or',
                 ['like', 'sourceUrl', $search],
@@ -113,39 +134,33 @@ class RedirectsController extends Controller
             ]);
         }
 
-        // Apply sorting (array-based to prevent SQL injection)
+        // Sort (column allowlist enforced above; map to DB column array).
         $sortDirection = $dir === 'asc' ? SORT_ASC : SORT_DESC;
-        $orderBy = match ($sort) {
-            'sourceUrl' => ['sourceUrl' => $sortDirection],
-            'statusCode' => ['statusCode' => $sortDirection],
-            'hitCount' => ['hitCount' => $sortDirection],
-            'matchType' => ['matchType' => $sortDirection],
-            'creationType' => ['creationType' => $sortDirection],
-            'siteId' => ['siteId' => $sortDirection],
-            'enabled' => ['enabled' => $sortDirection],
-            'sourcePlugin' => ['sourcePlugin' => $sortDirection],
-            default => ['dateCreated' => $sortDirection],
-        };
-        $query->orderBy($orderBy);
+        $query->orderBy([$sort => $sortDirection]);
 
-        // Get total count for pagination
-        $totalCount = $query->count();
-        $totalPages = $totalCount > 0 ? (int)ceil($totalCount / $limit) : 1;
+        // Total count reflects the filtered subset so the pager matches the
+        // visible list. Computed before LIMIT/OFFSET.
+        $totalCount = (int) $query->count();
 
-        // Apply pagination
         $query->limit($limit)->offset($offset);
-
-        // Get redirects
         $redirects = $query->all();
 
         return $this->renderTemplate('redirect-manager/redirects/index', [
             'redirects' => $redirects,
             'settings' => $settings,
-            'totalCount' => $totalCount,
-            'totalPages' => $totalPages,
+            'statusFilter' => $statusFilter,
+            'matchTypeFilter' => $matchTypeFilter,
+            'creationTypeFilter' => $creationTypeFilter,
+            'search' => $search,
+            'sort' => $sort,
+            'dir' => $dir,
             'page' => $page,
             'limit' => $limit,
-            'offset' => $offset,
+            'totalCount' => $totalCount,
+            'canCreate' => Craft::$app->getUser()->checkPermission('redirectManager:createRedirects'),
+            'canEdit' => Craft::$app->getUser()->checkPermission('redirectManager:editRedirects'),
+            'canDelete' => Craft::$app->getUser()->checkPermission('redirectManager:deleteRedirects'),
+            'canImportExport' => Craft::$app->getUser()->checkPermission('redirectManager:manageImportExport'),
         ]);
     }
 

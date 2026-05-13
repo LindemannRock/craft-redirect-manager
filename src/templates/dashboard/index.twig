@@ -1,27 +1,17 @@
 {#
- # Dashboard Page
+ # Dashboard Page (404 list with filters)
  #
- # Uses the base plugin's cp-table layout for consistent styling.
+ # Follows the canonical CP table index-page pattern (SQL-paginated variant) —
+ # see plugins/base/docs/template-guides/cp-table-index-pattern.md.
+ # AnalyticsController::actionDashboard() owns query-param parsing, allowlist
+ # validation, filter, sort, and pagination. This template stays presentational.
+ # Permission booleans (`canCreate`, `canEdit`, `canClearAnalytics`,
+ # `canExportAnalytics`) arrive from the controller.
  #}
 
 {% extends 'lindemannrock-base/_layouts/cp-table' %}
 
-{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
-{% set settings = plugin.settings %}
-
-{# Permission checks #}
-{% set canCreate = currentUser.can('redirectManager:createRedirects') %}
-{% set canEdit = currentUser.can('redirectManager:editRedirects') %}
-{% set canClearAnalytics = currentUser.can('redirectManager:clearAnalytics') %}
 {% set hasAnyActions = canCreate or canEdit or canClearAnalytics %}
-
-{# Get query parameters #}
-{% set search = craft.app.request.getParam('search', '') %}
-{% set handledFilter = craft.app.request.getParam('handled', 'all') %}
-{% set typeFilter = typeFilter ?? craft.app.request.getParam('type', 'all') %}
-{% set sort = craft.app.request.getParam('sort', 'lastHit') %}
-{% set dir = craft.app.request.getParam('dir', 'desc') %}
-{% set page = craft.app.request.getParam('page', 1)|number_format(0, '', '') %}
 
 {% set tableConfig = {
     plugin: {
@@ -96,12 +86,11 @@
         totalCount: totalCount,
         itemLabel: {singular: '404', plural: '404s'},
     },
-    checkboxes: canClearAnalytics or currentUser.can('redirectManager:exportAnalytics'),
+    checkboxes: canClearAnalytics or canExportAnalytics,
     rowActions: hasAnyActions,
     newButton: canCreate ? {
         url: url('redirect-manager/redirects/new'),
         label: 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}),
-        permission: 'redirectManager:createRedirects',
     } : null,
     ajax: {
         enabled: settings.refreshIntervalSecs > 0,
@@ -185,41 +174,40 @@
 
 {% block rowActions %}
     {% set hasRedirectAction = (item.handled and item.redirectId and canEdit) or (not item.handled and canCreate) %}
-    {% set hasRowActions = hasRedirectAction or canClearAnalytics %}
-    {% if hasRowActions %}
-        <td class="thin" style="text-align: right;">
-            <button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('redirect-manager') }}"></button>
-            <div class="menu">
-                <ul>
-                    {% if item.handled and item.redirectId and canEdit %}
-                        <li>
-                            <a href="{{ url('redirect-manager/redirects/' ~ item.redirectId) }}">
-                                {{ 'Edit {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}
-                            </a>
-                        </li>
-                    {% elseif not item.handled and canCreate %}
-                        <li>
-                            <a href="{{ url('redirect-manager/redirects/new', { sourceUrl: item.url }) }}">
-                                {{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}) }}
-                            </a>
-                        </li>
-                    {% endif %}
-                    {% if canClearAnalytics %}
-                        {% if hasRedirectAction %}
-                            <li><hr class="padded"></li>
-                        {% endif %}
-                        <li>
-                            <a class="error row-delete-action" data-id="{{ item.id }}">
-                                {{ 'Delete'|t('app') }}
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </td>
-    {% else %}
-        <td class="thin"></td>
+    {% set actionItems = [] %}
+
+    {% if item.handled and item.redirectId and canEdit %}
+        {% set actionItems = actionItems|merge([{
+            label: 'Edit {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}),
+            url: url('redirect-manager/redirects/' ~ item.redirectId),
+        }]) %}
+    {% elseif not item.handled and canCreate %}
+        {% set actionItems = actionItems|merge([{
+            label: 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName}),
+            url: url('redirect-manager/redirects/new', { sourceUrl: item.url }),
+        }]) %}
     {% endif %}
+
+    {% if canClearAnalytics %}
+        {% if hasRedirectAction %}
+            {% set actionItems = actionItems|merge([{type: 'divider'}]) %}
+        {% endif %}
+        {% set actionItems = actionItems|merge([{
+            label: 'Delete'|t('app'),
+            class: 'error',
+            jsAction: 'delete',
+        }]) %}
+    {% endif %}
+
+    {% include 'lindemannrock-base/_components/row-actions' with {
+        item: {id: item.id},
+        actions: {
+            type: 'menu',
+            icon: 'settings',
+            title: 'Actions'|t('redirect-manager'),
+            items: actionItems,
+        },
+    } only %}
 {% endblock %}
 
 {% block bulkActions %}
@@ -227,12 +215,12 @@
 {% endblock %}
 
 {% block extraFooter %}
-    {% if currentUser.can('redirectManager:clearAnalytics') %}
+    {% if canClearAnalytics %}
         <button type="button" class="btn secondary" id="lr-clear-btn">
             <span id="lr-clear-label">{{ 'Clear All'|t('redirect-manager') }}</span>
         </button>
     {% endif %}
-    {% if currentUser.can('redirectManager:exportAnalytics') %}
+    {% if canExportAnalytics %}
         {% include 'lindemannrock-base/_components/export-menu' with {
             action: 'redirect-manager/analytics/export',
             permission: 'redirectManager:exportAnalytics',
@@ -247,19 +235,51 @@
 {% block scripts %}
 <script>
 (function() {
-    const handledFilter = '{{ handledFilter }}';
-    const typeFilter = '{{ typeFilter }}';
+    if (typeof Craft === 'undefined') return;
+
+    // Pre-translated strings — keep |t() in Twig (translatable) and emit as
+    // JSON-encoded JS literals via |json_encode|raw. Avoids the |e('js') trap.
+    const T = {
+        clearAll: {{ 'Clear All'|t('redirect-manager')|json_encode|raw }},
+        clearCountTemplate: {{ 'Clear ({count})'|t('redirect-manager')|json_encode|raw }},
+        deleteAnalyticConfirm: {{ 'Delete this analytics record?'|t('redirect-manager')|json_encode|raw }},
+        analyticDeleted: {{ 'Analytics record deleted'|t('redirect-manager')|json_encode|raw }},
+        deleteFailed: {{ 'Could not delete analytics record'|t('redirect-manager')|json_encode|raw }},
+        bulkDeleteConfirmTemplate: {{ 'Delete {count} analytics record(s)?'|t('redirect-manager')|json_encode|raw }},
+        bulkDeletedTemplate: {{ 'Deleted {count} analytics record(s)'|t('redirect-manager')|json_encode|raw }},
+        clearAllConfirm: {{ 'Are you sure you want to clear ALL analytics? This cannot be undone.'|t('redirect-manager')|json_encode|raw }},
+        clearedTemplate: {{ 'Cleared {count} analytics record(s)'|t('redirect-manager')|json_encode|raw }},
+        clearAllFailed: {{ 'Failed to clear analytics'|t('redirect-manager')|json_encode|raw }},
+        visitUrl: {{ 'Visit URL'|t('redirect-manager')|json_encode|raw }},
+        yes: {{ 'Yes'|t('redirect-manager')|json_encode|raw }},
+        no: {{ 'No'|t('redirect-manager')|json_encode|raw }},
+        editHandlingRedirect: {{ 'Edit handling redirect'|t('redirect-manager')|json_encode|raw }},
+        probe: {{ 'Probe'|t('redirect-manager')|json_encode|raw }},
+        bot: {{ 'Bot'|t('redirect-manager')|json_encode|raw }},
+        normal: {{ 'Normal'|t('redirect-manager')|json_encode|raw }},
+        probeTitle: {{ 'Security vulnerability scanning attempt'|t('redirect-manager')|json_encode|raw }},
+        normalTitle: {{ 'Regular browser request'|t('redirect-manager')|json_encode|raw }},
+        editItemTemplate: {{ 'Edit {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|json_encode|raw }},
+        createItemTemplate: {{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|json_encode|raw }},
+        delete: {{ 'Delete'|t('app')|json_encode|raw }},
+        actions: {{ 'Actions'|t('redirect-manager')|json_encode|raw }},
+        select: {{ 'Select'|t('app')|json_encode|raw }},
+        all: {{ 'All'|t('redirect-manager')|json_encode|raw }},
+        handled: {{ 'Handled'|t('redirect-manager')|json_encode|raw }},
+        unhandled: {{ 'Unhandled'|t('redirect-manager')|json_encode|raw }},
+        securityProbe: {{ 'Security Probe'|t('redirect-manager')|json_encode|raw }},
+        noAnalytics: {{ 'No analytics found.'|t('redirect-manager')|json_encode|raw }},
+    };
+
+    const handledFilter = {{ handledFilter|json_encode|raw }};
+    const typeFilter = {{ typeFilter|json_encode|raw }};
     const canEdit = {{ canEdit ? 'true' : 'false' }};
     const canCreate = {{ canCreate ? 'true' : 'false' }};
     const canClearAnalytics = {{ canClearAnalytics ? 'true' : 'false' }};
-    const redirectHelper = {
-        lowerDisplayName: '{{ redirectHelper.lowerDisplayName|e('js') }}'
-    };
+    const redirectsBaseUrl = {{ url('redirect-manager/redirects')|json_encode|raw }};
 
-    // Selection state
     let selectedIds = new Set();
 
-    // Listen for selection changes
     document.addEventListener('lr:selectionChanged', function(e) {
         selectedIds = new Set(e.detail.selectedIds);
         updateActionLabels();
@@ -267,120 +287,131 @@
 
     function updateActionLabels() {
         const clearLabel = document.getElementById('lr-clear-label');
-
+        if (!clearLabel) return;
         if (selectedIds.size > 0) {
-            // Show count in label
-            if (clearLabel) clearLabel.textContent = `{{ 'Clear'|t('redirect-manager') }} (${selectedIds.size})`;
+            clearLabel.textContent = T.clearCountTemplate.replace('{count}', selectedIds.size);
         } else {
-            // Show "Clear All"
-            if (clearLabel) clearLabel.textContent = `{{ 'Clear All'|t('redirect-manager') }}`;
+            clearLabel.textContent = T.clearAll;
         }
     }
 
-    // Clear button - handles both selected items and clear all
-    document.getElementById('lr-clear-btn')?.addEventListener('click', function() {
-        const ids = Array.from(selectedIds);
+    function selectedIdArray() {
+        return Array.from(selectedIds);
+    }
 
-        if (ids.length > 0) {
-            // Clear selected items
-            if (!confirm(`Delete ${ids.length} analytics record${ids.length > 1 ? 's' : ''}?`)) {
-                return;
+    // ---------------------------------------------------------------------
+    // Row-action handlers. Delegated listener on `document`, narrowed by
+    // `a[data-action]` + an explicit action-name allowlist. preventDefault
+    // only after the match — leaves unrelated `data-action` elements alone.
+    // ---------------------------------------------------------------------
+    document.addEventListener('click', function(e) {
+        const trigger = e.target.closest('a[data-action]');
+        if (!trigger) return;
+
+        const action = trigger.dataset.action;
+        if (action !== 'delete') return;
+
+        const analyticId = parseInt(trigger.dataset.id || '0', 10);
+        if (!analyticId) return;
+        e.preventDefault();
+
+        if (!confirm(T.deleteAnalyticConfirm)) return;
+        Craft.sendActionRequest('POST', 'redirect-manager/analytics/delete', {
+            data: { analyticId: analyticId },
+        }).then(function(response) {
+            if (response.data.success) {
+                Craft.cp.displayNotice(T.analyticDeleted);
+                setTimeout(function() { window.location.reload(); }, 500);
+            } else {
+                Craft.cp.displayError(response.data.error || T.deleteFailed);
             }
-
-            const deletePromises = ids.map(id =>
-                Craft.sendActionRequest('POST', 'redirect-manager/analytics/delete', {
-                    data: { analyticId: id }
-                })
-            );
-
-            Promise.all(deletePromises).then(() => {
-                Craft.cp.displayNotice(`Deleted ${ids.length} analytics`);
-                setTimeout(() => window.location.reload(), 1000);
-            });
-        } else {
-            // Clear all
-            if (!confirm('{{ "Are you sure you want to clear ALL analytics? This cannot be undone."|t("redirect-manager")|e("js") }}')) {
-                return;
-            }
-
-            Craft.sendActionRequest('POST', 'redirect-manager/analytics/clear-all', { data: {} }).then(function(response) {
-                if (response.data.success) {
-                    Craft.cp.displayNotice(`Cleared ${response.data.deleted} analytics`);
-                    setTimeout(() => window.location.reload(), 1000);
-                }
-            });
-        }
+        }).catch(function() {
+            Craft.cp.displayError(T.deleteFailed);
+        });
     });
 
-    // Individual delete via menu action
-    function attachDeleteListeners() {
-        document.querySelectorAll('.row-delete-action').forEach(deleteLink => {
-            if (deleteLink._hasListener) return;
-            deleteLink._hasListener = true;
+    // ---------------------------------------------------------------------
+    // Clear button: handles both selected items and "Clear All".
+    // ---------------------------------------------------------------------
+    document.getElementById('lr-clear-btn')?.addEventListener('click', function() {
+        const ids = selectedIdArray();
 
-            deleteLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                const row = this.closest('tr');
-                const id = this.dataset.id;
+        if (ids.length > 0) {
+            if (!confirm(T.bulkDeleteConfirmTemplate.replace('{count}', ids.length))) return;
 
-                if (!confirm('Delete this analytics record?')) return;
-
-                Craft.sendActionRequest('POST', 'redirect-manager/analytics/delete', {
-                    data: { analyticId: id }
-                }).then(function(response) {
-                    if (response.data.success) {
-                        row.remove();
-                        Craft.cp.displayNotice('Analytics record deleted');
-                    }
+            const deletePromises = ids.map(function(id) {
+                return Craft.sendActionRequest('POST', 'redirect-manager/analytics/delete', {
+                    data: { analyticId: id },
                 });
             });
-        });
-    }
-    attachDeleteListeners();
 
-    // Check if URL has a safe scheme
+            Promise.all(deletePromises).then(function() {
+                Craft.cp.displayNotice(T.bulkDeletedTemplate.replace('{count}', ids.length));
+                setTimeout(function() { window.location.reload(); }, 1000);
+            }).catch(function() {
+                Craft.cp.displayError(T.deleteFailed);
+            });
+            return;
+        }
+
+        if (!confirm(T.clearAllConfirm)) return;
+        Craft.sendActionRequest('POST', 'redirect-manager/analytics/clear-all', { data: {} })
+            .then(function(response) {
+                if (response.data.success) {
+                    Craft.cp.displayNotice(T.clearedTemplate.replace('{count}', response.data.deleted));
+                    setTimeout(function() { window.location.reload(); }, 1000);
+                } else {
+                    Craft.cp.displayError(T.clearAllFailed);
+                }
+            }).catch(function() {
+                Craft.cp.displayError(T.clearAllFailed);
+            });
+    });
+
+    // ---------------------------------------------------------------------
+    // AJAX refresh: rebuild table rows. Same anchor + data-action shape as
+    // server-rendered rows, so the delegated handler above keeps working.
+    // ---------------------------------------------------------------------
     function isSafeUrl(url) {
         if (!url || typeof url !== 'string') return false;
         return url.startsWith('/') || url.startsWith('http://') || url.startsWith('https://');
     }
 
-    // Render a table row from analytics data (for AJAX refresh)
     function renderRow(stat) {
         const handled = stat.handled == 1 || stat.handled === true;
         const requestType = stat.requestType || 'normal';
 
-        // Handled badge
-        let handledCell = '';
+        let handledCell;
         if (handled) {
-            if (stat.redirectId) {
-                handledCell = `<a href="{{ url('redirect-manager/redirects') }}/${stat.redirectId}" title="{{ 'Edit handling redirect'|t('redirect-manager')|e('js') }}" style="text-decoration: none;"><span class="status-label green"><span class="status green"></span><span class="status-label-text">{{ 'Yes'|t('redirect-manager')|e('js') }}</span></span></a>`;
-            } else {
-                handledCell = `<span class="status-label green"><span class="status green"></span><span class="status-label-text">{{ 'Yes'|t('redirect-manager')|e('js') }}</span></span>`;
-            }
+            const inner = `<span class="status-label green"><span class="status green"></span><span class="status-label-text">${T.yes}</span></span>`;
+            handledCell = stat.redirectId
+                ? `<a href="${redirectsBaseUrl}/${stat.redirectId}" title="${T.editHandlingRedirect}" style="text-decoration: none;">${inner}</a>`
+                : inner;
         } else {
-            handledCell = `<span class="status-label red"><span class="status red"></span><span class="status-label-text">{{ 'No'|t('redirect-manager')|e('js') }}</span></span>`;
+            handledCell = `<span class="status-label red"><span class="status red"></span><span class="status-label-text">${T.no}</span></span>`;
         }
 
-        // Type badge
-        let typeCell = '';
-        let typeTitle = '';
+        let typeCell, typeTitle, typeLabel, typeColor;
         if (requestType === 'probe') {
-            typeTitle = '{{ "Security vulnerability scanning attempt"|t("redirect-manager")|e("js") }}';
-            typeCell = `<span title="${typeTitle}"><span class="status-label red"><span class="status red"></span><span class="status-label-text">{{ 'Probe'|t('redirect-manager')|e('js') }}</span></span></span>`;
+            typeTitle = T.probeTitle;
+            typeLabel = T.probe;
+            typeColor = 'red';
         } else if (requestType === 'bot') {
-            typeTitle = Craft.escapeHtml(stat.botName || 'Bot');
-            typeCell = `<span title="${typeTitle}"><span class="status-label amber"><span class="status amber"></span><span class="status-label-text">{{ 'Bot'|t('redirect-manager')|e('js') }}</span></span></span>`;
+            typeTitle = Craft.escapeHtml(stat.botName || T.bot);
+            typeLabel = T.bot;
+            typeColor = 'amber';
         } else {
-            typeTitle = '{{ "Regular browser request"|t("redirect-manager")|e("js") }}';
-            typeCell = `<span title="${typeTitle}"><span class="status-label blue"><span class="status blue"></span><span class="status-label-text">{{ 'Normal'|t('redirect-manager')|e('js') }}</span></span></span>`;
+            typeTitle = T.normalTitle;
+            typeLabel = T.normal;
+            typeColor = 'blue';
         }
+        typeCell = `<span title="${typeTitle}"><span class="status-label ${typeColor}"><span class="status ${typeColor}"></span><span class="status-label-text">${typeLabel}</span></span></span>`;
 
-        // Build action menu item
         let actionMenuItem = '';
         if (canEdit && handled && stat.redirectId) {
-            actionMenuItem = `<li><a href="{{ url('redirect-manager/redirects') }}/${stat.redirectId}">{{ 'Edit {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|e('js') }}</a></li>`;
+            actionMenuItem = `<li><a href="${redirectsBaseUrl}/${stat.redirectId}">${T.editItemTemplate}</a></li>`;
         } else if (canCreate && !handled) {
-            actionMenuItem = `<li><a href="{{ url('redirect-manager/redirects/new') }}?sourceUrl=${encodeURIComponent(stat.url)}">{{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|e('js') }}</a></li>`;
+            actionMenuItem = `<li><a href="${redirectsBaseUrl}/new?sourceUrl=${encodeURIComponent(stat.url)}">${T.createItemTemplate}</a></li>`;
         }
 
         const hasRowActions = actionMenuItem !== '' || canClearAnalytics;
@@ -388,11 +419,11 @@
         return `
             <tr class="lr-data-row" data-id="${stat.id}" data-entry-id="${stat.id}">
                 <td class="lr-checkbox-cell">
-                    <div class="checkbox" title="{{ 'Select'|t('app')|e('js') }}" tabindex="0" aria-checked="false" role="checkbox"></div>
+                    <div class="checkbox" title="${T.select}" tabindex="0" aria-checked="false" role="checkbox"></div>
                 </td>
                 <td data-column="url" style="min-width: 200px; max-width: 50%; word-break: break-word;">
                     ${isSafeUrl(stat.url)
-                        ? `<a class="label-link" href="${encodeURI(stat.url)}" target="_blank" rel="noopener noreferrer" title="{{ 'Visit URL'|t('redirect-manager')|e('js') }}"><span><code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">${Craft.escapeHtml(stat.url)}</code></span></a>`
+                        ? `<a class="label-link" href="${encodeURI(stat.url)}" target="_blank" rel="noopener noreferrer" title="${T.visitUrl}"><span><code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">${Craft.escapeHtml(stat.url)}</code></span></a>`
                         : `<span><code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">${Craft.escapeHtml(stat.url)}</code></span>`
                     }
                 </td>
@@ -406,11 +437,11 @@
                 <td data-column="requestType" class="lr-hideable-column">${typeCell}</td>
                 ${hasRowActions ? `
                 <td class="thin" style="text-align: right;">
-                    <button type="button" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('redirect-manager')|e('js') }}"></button>
+                    <button type="button" class="btn menubtn" data-icon="settings" title="${T.actions}"></button>
                     <div class="menu">
                         <ul>
                             ${actionMenuItem}
-                            ${canClearAnalytics ? `${actionMenuItem ? '<li><hr class="padded"></li>' : ''}<li><a class="error row-delete-action" data-id="${stat.id}">{{ 'Delete'|t('app')|e('js') }}</a></li>` : ''}
+                            ${canClearAnalytics ? `${actionMenuItem ? '<li><hr class="padded"></li>' : ''}<li><a class="error" data-action="delete" data-id="${stat.id}">${T.delete}</a></li>` : ''}
                         </ul>
                     </div>
                 </td>
@@ -419,31 +450,21 @@
         `;
     }
 
-    // Listen for AJAX refresh events from cp-table layout
     document.addEventListener('lr:refresh', function(e) {
         const data = e.detail;
 
-        // Update table body
         const tbody = document.getElementById('lr-table-body');
         if (tbody && data.analytics) {
             if (data.analytics.length > 0) {
-                tbody.innerHTML = data.analytics.map(stat => renderRow(stat)).join('');
+                tbody.innerHTML = data.analytics.map(renderRow).join('');
 
-                // Re-initialize menu buttons
-                tbody.querySelectorAll('.menubtn').forEach(btn => {
-                    if (!btn._menuBtn) {
-                        if (typeof Craft !== 'undefined' && Craft.MenuBtn) {
-                            btn._menuBtn = new Craft.MenuBtn(btn);
-                        }
+                tbody.querySelectorAll('.menubtn').forEach(function(btn) {
+                    if (!btn._menuBtn && Craft.MenuBtn) {
+                        btn._menuBtn = new Craft.MenuBtn(btn);
                     }
                 });
-
-                // Re-attach delete listeners
-                attachDeleteListeners();
-
-                // Note: Checkbox listeners are re-bound by cp-table's lr:refresh handler
             } else {
-                tbody.innerHTML = `<tr class="lr-empty-row"><td colspan="11" style="text-align: center; padding: 2em;">{{ 'No analytics found.'|t('redirect-manager')|e('js') }}</td></tr>`;
+                tbody.innerHTML = `<tr class="lr-empty-row"><td colspan="11" style="text-align: center; padding: 2em;">${T.noAnalytics}</td></tr>`;
             }
         }
 
@@ -455,15 +476,14 @@
         const botCountEl = document.querySelector('.menu a[href*="type=bot"]');
         const probeCountEl = document.querySelector('.menu a[href*="type=probe"]');
 
-        if (allCountEl) allCountEl.innerHTML = `<span class="status all"></span>{{ 'All'|t('redirect-manager')|e('js') }} (${data.allCount})`;
-        if (handledCountEl) handledCountEl.innerHTML = `<span class="status" style="background: ${handledFilter == 'handled' ? '#10b981' : '#aab6c1'};"></span>{{ 'Handled'|t('redirect-manager')|e('js') }} (${data.handledCount})`;
-        if (unhandledCountEl) unhandledCountEl.innerHTML = `<span class="status" style="background: ${handledFilter == 'unhandled' ? '#ef4444' : '#aab6c1'};"></span>{{ 'Unhandled'|t('redirect-manager')|e('js') }} (${data.unhandledCount})`;
-        if (normalCountEl) normalCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'normal' ? '#3b82f6' : '#aab6c1'};"></span>{{ 'Normal'|t('redirect-manager')|e('js') }} (${data.normalCount})`;
-        if (botCountEl) botCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'bot' ? '#f59e0b' : '#aab6c1'};"></span>{{ 'Bot'|t('redirect-manager')|e('js') }} (${data.botCount})`;
-        if (probeCountEl) probeCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'probe' ? '#ef4444' : '#aab6c1'};"></span>{{ 'Security Probe'|t('redirect-manager')|e('js') }} (${data.probeCount})`;
+        if (allCountEl) allCountEl.innerHTML = `<span class="status all"></span>${T.all} (${data.allCount})`;
+        if (handledCountEl) handledCountEl.innerHTML = `<span class="status" style="background: ${handledFilter == 'handled' ? '#10b981' : '#aab6c1'};"></span>${T.handled} (${data.handledCount})`;
+        if (unhandledCountEl) unhandledCountEl.innerHTML = `<span class="status" style="background: ${handledFilter == 'unhandled' ? '#ef4444' : '#aab6c1'};"></span>${T.unhandled} (${data.unhandledCount})`;
+        if (normalCountEl) normalCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'normal' ? '#3b82f6' : '#aab6c1'};"></span>${T.normal} (${data.normalCount})`;
+        if (botCountEl) botCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'bot' ? '#f59e0b' : '#aab6c1'};"></span>${T.bot} (${data.botCount})`;
+        if (probeCountEl) probeCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'probe' ? '#ef4444' : '#aab6c1'};"></span>${T.securityProbe} (${data.probeCount})`;
     });
 
-    // Initialize action label state
     updateActionLabels();
 })();
 </script>
