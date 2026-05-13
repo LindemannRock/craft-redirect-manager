@@ -406,7 +406,15 @@ return [
     'Create {item}' => 'Créer {item}',
     'Clear All' => 'Tout effacer',
     'Clear' => 'Effacer',
+    'Clear ({count})' => 'Effacer ({count})',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Voulez-vous vraiment effacer TOUTES les analytiques ? Cette action est irréversible.',
+    'Delete this analytics record?' => 'Supprimer cet enregistrement analytique ?',
+    'Analytics record deleted' => 'Enregistrement analytique supprimé',
+    'Could not delete analytics record' => 'Impossible de supprimer l\'enregistrement analytique',
+    'Delete {count} analytics record(s)?' => 'Supprimer {count} enregistrements analytiques ?',
+    'Deleted {count} analytics record(s)' => '{count} enregistrements analytiques supprimés',
+    'Cleared {count} analytics record(s)' => '{count} enregistrements analytiques effacés',
+    'Failed to clear analytics' => 'Échec de l\'effacement des analytiques',
 
     // Redirects: Index
     'Creation Type' => 'Type de création',
@@ -418,6 +426,16 @@ return [
     'Source' => 'Source',
     'Entry Changes' => 'Modifications d\'entrée',
     'User' => 'Utilisateur',
+    'Delete this redirect?' => 'Supprimer cette redirection ?',
+    'Redirect deleted' => 'Redirection supprimée',
+    'Could not delete redirect' => 'Impossible de supprimer la redirection',
+    'Enabled {count} redirects' => '{count} redirections activées',
+    'Disabled {count} redirects' => '{count} redirections désactivées',
+    'Deleted {count} redirects' => '{count} redirections supprimées',
+    'Failed to enable redirects' => 'Échec de l\'activation des redirections',
+    'Failed to disable redirects' => 'Échec de la désactivation des redirections',
+    'Failed to delete redirects' => 'Échec de la suppression des redirections',
+    'Delete {count} redirect(s)? This cannot be undone.' => 'Supprimer {count} redirections ? Cette action est irréversible.',
 
     // Redirects: Edit
     'Edit {singularName}' => 'Modifier {singularName}',

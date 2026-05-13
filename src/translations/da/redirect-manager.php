@@ -406,7 +406,15 @@ return [
     'Create {item}' => 'Opret {item}',
     'Clear All' => 'Ryd alle',
     'Clear' => 'Ryd',
+    'Clear ({count})' => 'Ryd ({count})',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Er De sikker på, at De vil rydde ALLE analyser? Dette kan ikke fortrydes.',
+    'Delete this analytics record?' => 'Slet denne analysepost?',
+    'Analytics record deleted' => 'Analyseposten er slettet',
+    'Could not delete analytics record' => 'Kunne ikke slette analyseposten',
+    'Delete {count} analytics record(s)?' => 'Slet {count} analyseposter?',
+    'Deleted {count} analytics record(s)' => '{count} analyseposter slettet',
+    'Cleared {count} analytics record(s)' => '{count} analyseposter ryddet',
+    'Failed to clear analytics' => 'Kunne ikke rydde analyserne',
 
     // Redirects: Index
     'Creation Type' => 'Oprettelsestype',
@@ -418,6 +426,16 @@ return [
     'Source' => 'Kilde',
     'Entry Changes' => 'Post-ændringer',
     'User' => 'Bruger',
+    'Delete this redirect?' => 'Slet denne omdirigering?',
+    'Redirect deleted' => 'Omdirigeringen er slettet',
+    'Could not delete redirect' => 'Kunne ikke slette omdirigeringen',
+    'Enabled {count} redirects' => '{count} omdirigeringer aktiveret',
+    'Disabled {count} redirects' => '{count} omdirigeringer deaktiveret',
+    'Deleted {count} redirects' => '{count} omdirigeringer slettet',
+    'Failed to enable redirects' => 'Kunne ikke aktivere omdirigeringer',
+    'Failed to disable redirects' => 'Kunne ikke deaktivere omdirigeringer',
+    'Failed to delete redirects' => 'Kunne ikke slette omdirigeringer',
+    'Delete {count} redirect(s)? This cannot be undone.' => 'Slet {count} omdirigeringer? Dette kan ikke fortrydes.',
 
     // Redirects: Edit
     'Edit {singularName}' => 'Rediger {singularName}',

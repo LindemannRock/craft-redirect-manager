@@ -406,7 +406,15 @@ return [
     'Create {item}' => '{item} erstellen',
     'Clear All' => 'Alle löschen',
     'Clear' => 'Löschen',
+    'Clear ({count})' => 'Löschen ({count})',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Möchten Sie wirklich ALLE Analysedaten löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+    'Delete this analytics record?' => 'Diesen Analysedatensatz löschen?',
+    'Analytics record deleted' => 'Analysedatensatz gelöscht',
+    'Could not delete analytics record' => 'Analysedatensatz konnte nicht gelöscht werden',
+    'Delete {count} analytics record(s)?' => '{count} Analysedatensätze löschen?',
+    'Deleted {count} analytics record(s)' => '{count} Analysedatensätze gelöscht',
+    'Cleared {count} analytics record(s)' => '{count} Analysedatensätze geleert',
+    'Failed to clear analytics' => 'Analysedaten konnten nicht gelöscht werden',
 
     // Redirects: Index
     'Creation Type' => 'Erstellungstyp',
@@ -418,6 +426,16 @@ return [
     'Source' => 'Quelle',
     'Entry Changes' => 'Eintragsänderungen',
     'User' => 'Benutzer',
+    'Delete this redirect?' => 'Diese Weiterleitung löschen?',
+    'Redirect deleted' => 'Weiterleitung gelöscht',
+    'Could not delete redirect' => 'Weiterleitung konnte nicht gelöscht werden',
+    'Enabled {count} redirects' => '{count} Weiterleitungen aktiviert',
+    'Disabled {count} redirects' => '{count} Weiterleitungen deaktiviert',
+    'Deleted {count} redirects' => '{count} Weiterleitungen gelöscht',
+    'Failed to enable redirects' => 'Weiterleitungen konnten nicht aktiviert werden',
+    'Failed to disable redirects' => 'Weiterleitungen konnten nicht deaktiviert werden',
+    'Failed to delete redirects' => 'Weiterleitungen konnten nicht gelöscht werden',
+    'Delete {count} redirect(s)? This cannot be undone.' => '{count} Weiterleitungen löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
 
     // Redirects: Edit
     'Edit {singularName}' => '{singularName} bearbeiten',

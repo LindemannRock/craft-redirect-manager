@@ -406,7 +406,15 @@ return [
     'Create {item}' => '{item} aanmaken',
     'Clear All' => 'Alles wissen',
     'Clear' => 'Wissen',
+    'Clear ({count})' => 'Wissen ({count})',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Weet u zeker dat u ALLE analysegegevens wilt wissen? Dit kan niet ongedaan worden gemaakt.',
+    'Delete this analytics record?' => 'Deze analyserecord verwijderen?',
+    'Analytics record deleted' => 'Analyserecord verwijderd',
+    'Could not delete analytics record' => 'Analyserecord kon niet worden verwijderd',
+    'Delete {count} analytics record(s)?' => '{count} analyserecords verwijderen?',
+    'Deleted {count} analytics record(s)' => '{count} analyserecords verwijderd',
+    'Cleared {count} analytics record(s)' => '{count} analyserecords gewist',
+    'Failed to clear analytics' => 'Analysegegevens konden niet worden gewist',
 
     // Redirects: Index
     'Creation Type' => 'Aanmaaktype',
@@ -418,6 +426,16 @@ return [
     'Source' => 'Bron',
     'Entry Changes' => 'Invoerwijzigingen',
     'User' => 'Gebruiker',
+    'Delete this redirect?' => 'Deze redirect verwijderen?',
+    'Redirect deleted' => 'Redirect verwijderd',
+    'Could not delete redirect' => 'Redirect kon niet worden verwijderd',
+    'Enabled {count} redirects' => '{count} redirects ingeschakeld',
+    'Disabled {count} redirects' => '{count} redirects uitgeschakeld',
+    'Deleted {count} redirects' => '{count} redirects verwijderd',
+    'Failed to enable redirects' => 'Redirects konden niet worden ingeschakeld',
+    'Failed to disable redirects' => 'Redirects konden niet worden uitgeschakeld',
+    'Failed to delete redirects' => 'Redirects konden niet worden verwijderd',
+    'Delete {count} redirect(s)? This cannot be undone.' => '{count} redirects verwijderen? Dit kan niet ongedaan worden gemaakt.',
 
     // Redirects: Edit
     'Edit {singularName}' => '{singularName} bewerken',

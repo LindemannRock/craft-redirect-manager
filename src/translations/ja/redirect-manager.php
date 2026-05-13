@@ -406,7 +406,15 @@ return [
     'Create {item}' => '{item} を作成する',
     'Clear All' => 'すべて削除する',
     'Clear' => '削除する',
+    'Clear ({count})' => '削除する ({count})',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'すべてのアナリティクスを削除しますか？この操作は取り消せません。',
+    'Delete this analytics record?' => 'このアナリティクスレコードを削除しますか？',
+    'Analytics record deleted' => 'アナリティクスレコードを削除しました',
+    'Could not delete analytics record' => 'アナリティクスレコードを削除できませんでした',
+    'Delete {count} analytics record(s)?' => '{count} 件のアナリティクスレコードを削除しますか？',
+    'Deleted {count} analytics record(s)' => '{count} 件のアナリティクスレコードを削除しました',
+    'Cleared {count} analytics record(s)' => '{count} 件のアナリティクスレコードを削除しました',
+    'Failed to clear analytics' => 'アナリティクスの削除に失敗しました',
 
     // Redirects: Index
     'Creation Type' => '作成タイプ',
@@ -418,6 +426,16 @@ return [
     'Source' => 'ソース',
     'Entry Changes' => 'エントリーの変更',
     'User' => 'ユーザー',
+    'Delete this redirect?' => 'このリダイレクトを削除しますか？',
+    'Redirect deleted' => 'リダイレクトを削除しました',
+    'Could not delete redirect' => 'リダイレクトを削除できませんでした',
+    'Enabled {count} redirects' => '{count} 件のリダイレクトを有効にしました',
+    'Disabled {count} redirects' => '{count} 件のリダイレクトを無効にしました',
+    'Deleted {count} redirects' => '{count} 件のリダイレクトを削除しました',
+    'Failed to enable redirects' => 'リダイレクトの有効化に失敗しました',
+    'Failed to disable redirects' => 'リダイレクトの無効化に失敗しました',
+    'Failed to delete redirects' => 'リダイレクトの削除に失敗しました',
+    'Delete {count} redirect(s)? This cannot be undone.' => '{count} 件のリダイレクトを削除しますか？この操作は取り消せません。',
 
     // Redirects: Edit
     'Edit {singularName}' => '{singularName} を編集する',

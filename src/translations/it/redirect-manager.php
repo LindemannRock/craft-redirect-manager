@@ -406,7 +406,15 @@ return [
     'Create {item}' => 'Crea {item}',
     'Clear All' => 'Cancella tutto',
     'Clear' => 'Cancella',
+    'Clear ({count})' => 'Cancella ({count})',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Cancellare TUTTE le analisi? Questa azione non può essere annullata.',
+    'Delete this analytics record?' => 'Eliminare questo record di analisi?',
+    'Analytics record deleted' => 'Record di analisi eliminato',
+    'Could not delete analytics record' => 'Impossibile eliminare il record di analisi',
+    'Delete {count} analytics record(s)?' => 'Eliminare {count} record di analisi?',
+    'Deleted {count} analytics record(s)' => '{count} record di analisi eliminati',
+    'Cleared {count} analytics record(s)' => '{count} record di analisi cancellati',
+    'Failed to clear analytics' => 'Impossibile cancellare le analisi',
 
     // Redirects: Index
     'Creation Type' => 'Tipo di creazione',
@@ -418,6 +426,16 @@ return [
     'Source' => 'Sorgente',
     'Entry Changes' => 'Modifiche articolo',
     'User' => 'Utente',
+    'Delete this redirect?' => 'Eliminare questo redirect?',
+    'Redirect deleted' => 'Redirect eliminato',
+    'Could not delete redirect' => 'Impossibile eliminare il redirect',
+    'Enabled {count} redirects' => '{count} redirect abilitati',
+    'Disabled {count} redirects' => '{count} redirect disabilitati',
+    'Deleted {count} redirects' => '{count} redirect eliminati',
+    'Failed to enable redirects' => 'Impossibile abilitare i redirect',
+    'Failed to disable redirects' => 'Impossibile disabilitare i redirect',
+    'Failed to delete redirects' => 'Impossibile eliminare i redirect',
+    'Delete {count} redirect(s)? This cannot be undone.' => 'Eliminare {count} redirect? Questa azione non può essere annullata.',
 
     // Redirects: Edit
     'Edit {singularName}' => 'Modifica {singularName}',

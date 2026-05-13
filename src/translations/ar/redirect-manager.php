@@ -406,7 +406,15 @@ return [
     'Create {item}' => 'إنشاء {item}',
     'Clear All' => 'مسح الكل',
     'Clear' => 'مسح',
+    'Clear ({count})' => 'مسح ({count})',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'هل أنت متأكد أنك تريد مسح جميع التحليلات؟ لا يمكن التراجع عن هذا الإجراء.',
+    'Delete this analytics record?' => 'حذف هذا السجل التحليلي؟',
+    'Analytics record deleted' => 'تم حذف السجل التحليلي',
+    'Could not delete analytics record' => 'تعذر حذف السجل التحليلي',
+    'Delete {count} analytics record(s)?' => 'حذف {count} سجلات تحليلية؟',
+    'Deleted {count} analytics record(s)' => 'تم حذف {count} سجلات تحليلية',
+    'Cleared {count} analytics record(s)' => 'تم مسح {count} سجلات تحليلية',
+    'Failed to clear analytics' => 'فشل مسح التحليلات',
 
     // Redirects: Index
     'Creation Type' => 'نوع الإنشاء',
@@ -418,6 +426,16 @@ return [
     'Source' => 'المصدر',
     'Entry Changes' => 'تغييرات المقالات',
     'User' => 'المستخدم',
+    'Delete this redirect?' => 'حذف عملية إعادة التوجيه هذه؟',
+    'Redirect deleted' => 'تم حذف عملية إعادة التوجيه',
+    'Could not delete redirect' => 'تعذر حذف عملية إعادة التوجيه',
+    'Enabled {count} redirects' => 'تم تفعيل {count} عمليات إعادة توجيه',
+    'Disabled {count} redirects' => 'تم تعطيل {count} عمليات إعادة توجيه',
+    'Deleted {count} redirects' => 'تم حذف {count} عمليات إعادة توجيه',
+    'Failed to enable redirects' => 'فشل تفعيل عمليات إعادة التوجيه',
+    'Failed to disable redirects' => 'فشل تعطيل عمليات إعادة التوجيه',
+    'Failed to delete redirects' => 'فشل حذف عمليات إعادة التوجيه',
+    'Delete {count} redirect(s)? This cannot be undone.' => 'حذف {count} عمليات إعادة توجيه؟ لا يمكن التراجع عن هذا الإجراء.',
 
     // Redirects: Edit
     'Edit {singularName}' => 'تعديل {singularName}',

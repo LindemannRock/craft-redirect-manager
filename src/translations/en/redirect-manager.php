@@ -406,7 +406,15 @@ return [
     'Create {item}' => 'Create {item}',
     'Clear All' => 'Clear All',
     'Clear' => 'Clear',
+    'Clear ({count})' => 'Clear ({count})',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Are you sure you want to clear ALL analytics? This cannot be undone.',
+    'Delete this analytics record?' => 'Delete this analytics record?',
+    'Analytics record deleted' => 'Analytics record deleted',
+    'Could not delete analytics record' => 'Could not delete analytics record',
+    'Delete {count} analytics record(s)?' => 'Delete {count} analytics record(s)?',
+    'Deleted {count} analytics record(s)' => 'Deleted {count} analytics record(s)',
+    'Cleared {count} analytics record(s)' => 'Cleared {count} analytics record(s)',
+    'Failed to clear analytics' => 'Failed to clear analytics',
 
     // Redirects: Index
     'Creation Type' => 'Creation Type',
@@ -418,6 +426,16 @@ return [
     'Source' => 'Source',
     'Entry Changes' => 'Entry Changes',
     'User' => 'User',
+    'Delete this redirect?' => 'Delete this redirect?',
+    'Redirect deleted' => 'Redirect deleted',
+    'Could not delete redirect' => 'Could not delete redirect',
+    'Enabled {count} redirects' => 'Enabled {count} redirects',
+    'Disabled {count} redirects' => 'Disabled {count} redirects',
+    'Deleted {count} redirects' => 'Deleted {count} redirects',
+    'Failed to enable redirects' => 'Failed to enable redirects',
+    'Failed to disable redirects' => 'Failed to disable redirects',
+    'Failed to delete redirects' => 'Failed to delete redirects',
+    'Delete {count} redirect(s)? This cannot be undone.' => 'Delete {count} redirect(s)? This cannot be undone.',
 
     // Redirects: Edit
     'Edit {singularName}' => 'Edit {singularName}',

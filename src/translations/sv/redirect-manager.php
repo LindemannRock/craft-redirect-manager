@@ -406,7 +406,15 @@ return [
     'Create {item}' => 'Skapa {item}',
     'Clear All' => 'Rensa alla',
     'Clear' => 'Rensa',
+    'Clear ({count})' => 'Rensa ({count})',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Är ni säkra på att ni vill rensa ALL analys? Det här går inte att ångra.',
+    'Delete this analytics record?' => 'Ta bort den här analysposten?',
+    'Analytics record deleted' => 'Analysposten har tagits bort',
+    'Could not delete analytics record' => 'Det gick inte att ta bort analysposten',
+    'Delete {count} analytics record(s)?' => 'Ta bort {count} analysposter?',
+    'Deleted {count} analytics record(s)' => '{count} analysposter har tagits bort',
+    'Cleared {count} analytics record(s)' => '{count} analysposter har rensats',
+    'Failed to clear analytics' => 'Det gick inte att rensa analyserna',
 
     // Redirects: Index
     'Creation Type' => 'Skapandetyp',
@@ -418,6 +426,16 @@ return [
     'Source' => 'Källa',
     'Entry Changes' => 'Poständringar',
     'User' => 'Användare',
+    'Delete this redirect?' => 'Ta bort den här omdirigeringen?',
+    'Redirect deleted' => 'Omdirigeringen har tagits bort',
+    'Could not delete redirect' => 'Det gick inte att ta bort omdirigeringen',
+    'Enabled {count} redirects' => '{count} omdirigeringar har aktiverats',
+    'Disabled {count} redirects' => '{count} omdirigeringar har inaktiverats',
+    'Deleted {count} redirects' => '{count} omdirigeringar har tagits bort',
+    'Failed to enable redirects' => 'Det gick inte att aktivera omdirigeringar',
+    'Failed to disable redirects' => 'Det gick inte att inaktivera omdirigeringar',
+    'Failed to delete redirects' => 'Det gick inte att ta bort omdirigeringar',
+    'Delete {count} redirect(s)? This cannot be undone.' => 'Ta bort {count} omdirigeringar? Det här går inte att ångra.',
 
     // Redirects: Edit
     'Edit {singularName}' => 'Redigera {singularName}',
