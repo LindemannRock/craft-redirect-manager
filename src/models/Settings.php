@@ -15,6 +15,7 @@ use craft\validators\ArrayValidator;
 use lindemannrock\base\traits\DateFormatSettingsTrait;
 use lindemannrock\base\traits\DateRangeSettingsTrait;
 use lindemannrock\base\traits\ExportFormatSettingsTrait;
+use lindemannrock\base\traits\GeoSettingsTrait;
 use lindemannrock\base\traits\ItemsPerPageSettingsTrait;
 use lindemannrock\base\traits\LogLevelSettingsTrait;
 use lindemannrock\base\traits\PluginNameSettingsTrait;
@@ -36,6 +37,7 @@ class Settings extends Model
     use DateFormatSettingsTrait;
     use DateRangeSettingsTrait;
     use ExportFormatSettingsTrait;
+    use GeoSettingsTrait;
     use ItemsPerPageSettingsTrait;
     use LogLevelSettingsTrait;
     use LoggingTrait;
@@ -387,8 +389,6 @@ class Settings extends Model
             ['redirectCacheDuration', 'integer', 'min' => 60, 'max' => 86400],
             ['redirectCacheDuration', 'default', 'value' => 3600],
             [['cacheStorageMethod'], 'in', 'range' => ['file', 'redis']],
-            [['geoProvider'], 'in', 'range' => ['ip-api.com', 'ipapi.co', 'ipinfo.io']],
-            [['geoApiKey'], 'string', 'max' => 255, 'skipOnEmpty' => true],
             ['backupPath', 'required'],
             ['backupPath', 'string'],
             [
@@ -402,7 +402,7 @@ class Settings extends Model
             ['backupVolumeUid', 'string'],
             ['backupRetentionDays', 'integer', 'min' => 0, 'max' => 365],
             ['backupSchedule', 'in', 'range' => ['manual', 'daily', 'weekly', 'monthly']],
-        ], $this->pluginNameSettingsRules(), $this->logLevelSettingsRules(), $this->dateFormatSettingsRules(), $this->dateRangeSettingsRules(), $this->exportFormatSettingsRules(), $this->itemsPerPageSettingsRules());
+        ], $this->pluginNameSettingsRules(), $this->logLevelSettingsRules(), $this->dateFormatSettingsRules(), $this->dateRangeSettingsRules(), $this->exportFormatSettingsRules(), $this->geoSettingsRules(), $this->itemsPerPageSettingsRules());
     }
 
     /**
@@ -416,6 +416,7 @@ class Settings extends Model
             $this->dateFormatSettingsLabels(),
             $this->dateRangeSettingsLabel(),
             $this->exportFormatSettingsLabels(),
+            $this->geoSettingsLabel(),
             $this->itemsPerPageSettingsLabel(),
         );
     }
