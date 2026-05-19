@@ -181,9 +181,6 @@ return [
 
     // Settings: General
     'General Settings' => 'Allmänna inställningar',
-    'Plugin Name' => 'Plugin-namn',
-    'The name of the plugin as it appears in the Control Panel menu' => 'Namnet på plugin-programmet som det visas i kontrollpanelmenyn',
-    'This is being overridden by the <code>pluginName</code> setting in <code>config/redirect-manager.php</code>.' => 'Den här inställningen åsidosätts av <code>pluginName</code> i <code>config/redirect-manager.php</code>.',
     'Auto Create Redirects' => 'Skapa omdirigeringar automatiskt',
     'Automatically create redirects when entry URIs change' => 'Skapa omdirigeringar automatiskt när post-URI:er ändras',
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'Den här inställningen åsidosätts av <code>autoCreateRedirects</code> i <code>config/redirect-manager.php</code>.',
@@ -211,13 +208,6 @@ return [
     'To add additional custom headers, visit <a href="{url}">Advanced Settings</a>.' => 'Om du vill lägga till fler anpassade huvuden, gå till <a href="{url}">Avancerade inställningar</a>.',
     'This is being overridden by the <code>setNoCacheHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Den här inställningen åsidosätts av <code>setNoCacheHeaders</code> i <code>config/redirect-manager.php</code>.',
     'Logging Settings' => 'Logginställningar',
-    'Log Level' => 'Loggnivå',
-    'Choose what types of messages to log. Debug level requires devMode to be enabled.' => 'Välj vilka typer av meddelanden som ska loggas. Debug-nivå kräver att devMode är aktiverat.',
-    'Error (Critical errors only)' => 'Fel (endast kritiska fel)',
-    'Warning (Errors and warnings)' => 'Varning (fel och varningar)',
-    'Info (General information)' => 'Info (allmän information)',
-    'Debug (Detailed debugging)' => 'Debug (detaljerad felsökning)',
-    'This is being overridden by the <code>logLevel</code> setting in <code>config/redirect-manager.php</code>.' => 'Den här inställningen åsidosätts av <code>logLevel</code> i <code>config/redirect-manager.php</code>.',
 
     // Settings: Analytics
     'Analytics Settings' => 'Analysinställningar',
@@ -268,9 +258,6 @@ return [
 
     // Settings: Interface
     'Interface Settings' => 'Gränssnittsinställningar',
-    'Items Per Page' => 'Objekt per sida',
-    'Number of items to display per page in lists' => 'Antal objekt att visa per sida i listor',
-    'This is being overridden by the <code>itemsPerPage</code> setting in <code>config/redirect-manager.php</code>.' => 'Den här inställningen åsidosätts av <code>itemsPerPage</code> i <code>config/redirect-manager.php</code>.',
     'Dashboard Refresh Interval' => 'Uppdateringsintervall för instrumentpanel',
     'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'Hur ofta instrumentpaneldata ska uppdateras. Ange Av för att inaktivera automatisk uppdatering.',
     'Off' => 'Av',

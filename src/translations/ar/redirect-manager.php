@@ -181,9 +181,6 @@ return [
 
     // Settings: General
     'General Settings' => 'الإعدادات العامة',
-    'Plugin Name' => 'اسم الإضافة',
-    'The name of the plugin as it appears in the Control Panel menu' => 'اسم الإضافة كما يظهر في قائمة لوحة التحكم',
-    'This is being overridden by the <code>pluginName</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>pluginName</code> في <code>config/redirect-manager.php</code>.',
     'Auto Create Redirects' => 'إنشاء عمليات إعادة التوجيه تلقائياً',
     'Automatically create redirects when entry URIs change' => 'إنشاء عمليات إعادة توجيه تلقائياً عند تغيير URIs المقالات',
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>autoCreateRedirects</code> في <code>config/redirect-manager.php</code>.',
@@ -211,13 +208,6 @@ return [
     'To add additional custom headers, visit <a href="{url}">Advanced Settings</a>.' => 'لإضافة رؤوس مخصصة إضافية، قم بزيارة <a href="{url}">الإعدادات المتقدمة</a>.',
     'This is being overridden by the <code>setNoCacheHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>setNoCacheHeaders</code> في <code>config/redirect-manager.php</code>.',
     'Logging Settings' => 'إعدادات التسجيل',
-    'Log Level' => 'مستوى التسجيل',
-    'Choose what types of messages to log. Debug level requires devMode to be enabled.' => 'اختر أنواع الرسائل المراد تسجيلها. يتطلب مستوى Debug تفعيل devMode.',
-    'Error (Critical errors only)' => 'خطأ (الأخطاء الحرجة فقط)',
-    'Warning (Errors and warnings)' => 'تحذير (الأخطاء والتحذيرات)',
-    'Info (General information)' => 'معلومات (معلومات عامة)',
-    'Debug (Detailed debugging)' => 'Debug (تصحيح تفصيلي)',
-    'This is being overridden by the <code>logLevel</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>logLevel</code> في <code>config/redirect-manager.php</code>.',
 
     // Settings: Analytics
     'Analytics Settings' => 'إعدادات التحليلات',
@@ -268,9 +258,6 @@ return [
 
     // Settings: Interface
     'Interface Settings' => 'إعدادات الواجهة',
-    'Items Per Page' => 'العناصر في الصفحة',
-    'Number of items to display per page in lists' => 'عدد العناصر المراد عرضها في الصفحة في القوائم',
-    'This is being overridden by the <code>itemsPerPage</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>itemsPerPage</code> في <code>config/redirect-manager.php</code>.',
     'Dashboard Refresh Interval' => 'فترة تحديث لوحة المعلومات',
     'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'مدى تكرار تحديث بيانات لوحة المعلومات. اضبط على إيقاف لتعطيل التحديث التلقائي.',
     'Off' => 'إيقاف',

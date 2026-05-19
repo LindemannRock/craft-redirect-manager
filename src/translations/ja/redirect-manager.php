@@ -181,9 +181,6 @@ return [
 
     // Settings: General
     'General Settings' => '一般設定',
-    'Plugin Name' => 'プラグイン名',
-    'The name of the plugin as it appears in the Control Panel menu' => 'コントロールパネルのメニューに表示されるプラグインの名前',
-    'This is being overridden by the <code>pluginName</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>pluginName</code> 設定によって上書きされています。',
     'Auto Create Redirects' => 'リダイレクトを自動作成する',
     'Automatically create redirects when entry URIs change' => 'エントリーの URI が変更されたときにリダイレクトを自動作成する',
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>autoCreateRedirects</code> 設定によって上書きされています。',
@@ -211,13 +208,6 @@ return [
     'To add additional custom headers, visit <a href="{url}">Advanced Settings</a>.' => 'カスタムヘッダーを追加するには、<a href="{url}">詳細設定</a>をご覧ください。',
     'This is being overridden by the <code>setNoCacheHeaders</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>setNoCacheHeaders</code> 設定によって上書きされています。',
     'Logging Settings' => 'ログ設定',
-    'Log Level' => 'ログレベル',
-    'Choose what types of messages to log. Debug level requires devMode to be enabled.' => '記録するメッセージの種類を選択してください。Debug レベルには devMode の有効化が必要です。',
-    'Error (Critical errors only)' => 'エラー（重大なエラーのみ）',
-    'Warning (Errors and warnings)' => '警告（エラーと警告）',
-    'Info (General information)' => '情報（一般情報）',
-    'Debug (Detailed debugging)' => 'Debug（詳細なデバッグ）',
-    'This is being overridden by the <code>logLevel</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>logLevel</code> 設定によって上書きされています。',
 
     // Settings: Analytics
     'Analytics Settings' => 'アナリティクス設定',
@@ -268,9 +258,6 @@ return [
 
     // Settings: Interface
     'Interface Settings' => 'インターフェース設定',
-    'Items Per Page' => '1 ページあたりの件数',
-    'Number of items to display per page in lists' => 'リストで 1 ページに表示する件数',
-    'This is being overridden by the <code>itemsPerPage</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>itemsPerPage</code> 設定によって上書きされています。',
     'Dashboard Refresh Interval' => 'ダッシュボードの更新間隔',
     'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'ダッシュボードデータを更新する頻度です。自動更新を無効にするには「オフ」に設定してください。',
     'Off' => 'オフ',

@@ -181,9 +181,6 @@ return [
 
     // Settings: General
     'General Settings' => 'Generelle indstillinger',
-    'Plugin Name' => 'Plugin-navn',
-    'The name of the plugin as it appears in the Control Panel menu' => 'Navnet på plugin-programmet, som det vises i kontrolpanelmenuen',
-    'This is being overridden by the <code>pluginName</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne indstilling tilsidesættes af <code>pluginName</code> i <code>config/redirect-manager.php</code>.',
     'Auto Create Redirects' => 'Opret omdirigeringer automatisk',
     'Automatically create redirects when entry URIs change' => 'Opret automatisk omdirigeringer, når post-URI\'er ændres',
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne indstilling tilsidesættes af <code>autoCreateRedirects</code> i <code>config/redirect-manager.php</code>.',
@@ -211,13 +208,6 @@ return [
     'To add additional custom headers, visit <a href="{url}">Advanced Settings</a>.' => 'For at tilføje yderligere brugerdefinerede headere, besøg <a href="{url}">Avancerede indstillinger</a>.',
     'This is being overridden by the <code>setNoCacheHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne indstilling tilsidesættes af <code>setNoCacheHeaders</code> i <code>config/redirect-manager.php</code>.',
     'Logging Settings' => 'Logindstillinger',
-    'Log Level' => 'Logniveau',
-    'Choose what types of messages to log. Debug level requires devMode to be enabled.' => 'Vælg hvilke typer meddelelser der skal logges. Debug-niveauet kræver, at devMode er aktiveret.',
-    'Error (Critical errors only)' => 'Fejl (kun kritiske fejl)',
-    'Warning (Errors and warnings)' => 'Advarsel (fejl og advarsler)',
-    'Info (General information)' => 'Info (generel information)',
-    'Debug (Detailed debugging)' => 'Debug (detaljeret fejlfinding)',
-    'This is being overridden by the <code>logLevel</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne indstilling tilsidesættes af <code>logLevel</code> i <code>config/redirect-manager.php</code>.',
 
     // Settings: Analytics
     'Analytics Settings' => 'Analyseindstillinger',
@@ -268,9 +258,6 @@ return [
 
     // Settings: Interface
     'Interface Settings' => 'Brugerflade-indstillinger',
-    'Items Per Page' => 'Elementer pr. side',
-    'Number of items to display per page in lists' => 'Antal elementer der skal vises pr. side i lister',
-    'This is being overridden by the <code>itemsPerPage</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne indstilling tilsidesættes af <code>itemsPerPage</code> i <code>config/redirect-manager.php</code>.',
     'Dashboard Refresh Interval' => 'Opdateringsinterval for oversigt',
     'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'Hvor ofte oversigtsdata skal opdateres. Indstil til Fra for at deaktivere automatisk opdatering.',
     'Off' => 'Fra',

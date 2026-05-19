@@ -181,9 +181,6 @@ return [
 
     // Settings: General
     'General Settings' => 'Allgemeine Einstellungen',
-    'Plugin Name' => 'Plugin-Name',
-    'The name of the plugin as it appears in the Control Panel menu' => 'Der Name des Plugins, wie er im Control-Panel-Menü erscheint',
-    'This is being overridden by the <code>pluginName</code> setting in <code>config/redirect-manager.php</code>.' => 'Diese Einstellung wird durch <code>pluginName</code> in <code>config/redirect-manager.php</code> überschrieben.',
     'Auto Create Redirects' => 'Weiterleitungen automatisch erstellen',
     'Automatically create redirects when entry URIs change' => 'Weiterleitungen automatisch erstellen, wenn sich Eintrags-URIs ändern',
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'Diese Einstellung wird durch <code>autoCreateRedirects</code> in <code>config/redirect-manager.php</code> überschrieben.',
@@ -211,13 +208,6 @@ return [
     'To add additional custom headers, visit <a href="{url}">Advanced Settings</a>.' => 'Um weitere benutzerdefinierte Header hinzuzufügen, besuchen Sie die <a href="{url}">Erweiterten Einstellungen</a>.',
     'This is being overridden by the <code>setNoCacheHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Diese Einstellung wird durch <code>setNoCacheHeaders</code> in <code>config/redirect-manager.php</code> überschrieben.',
     'Logging Settings' => 'Protokollierungseinstellungen',
-    'Log Level' => 'Protokollierungsstufe',
-    'Choose what types of messages to log. Debug level requires devMode to be enabled.' => 'Wählen Sie, welche Arten von Meldungen protokolliert werden sollen. Die Debug-Stufe erfordert aktiviertes devMode.',
-    'Error (Critical errors only)' => 'Fehler (Nur kritische Fehler)',
-    'Warning (Errors and warnings)' => 'Warnung (Fehler und Warnungen)',
-    'Info (General information)' => 'Info (Allgemeine Informationen)',
-    'Debug (Detailed debugging)' => 'Debug (Detailliertes Debugging)',
-    'This is being overridden by the <code>logLevel</code> setting in <code>config/redirect-manager.php</code>.' => 'Diese Einstellung wird durch <code>logLevel</code> in <code>config/redirect-manager.php</code> überschrieben.',
 
     // Settings: Analytics
     'Analytics Settings' => 'Analytik-Einstellungen',
@@ -268,9 +258,6 @@ return [
 
     // Settings: Interface
     'Interface Settings' => 'Oberflächen-Einstellungen',
-    'Items Per Page' => 'Einträge pro Seite',
-    'Number of items to display per page in lists' => 'Anzahl der Einträge, die pro Seite in Listen angezeigt werden',
-    'This is being overridden by the <code>itemsPerPage</code> setting in <code>config/redirect-manager.php</code>.' => 'Diese Einstellung wird durch <code>itemsPerPage</code> in <code>config/redirect-manager.php</code> überschrieben.',
     'Dashboard Refresh Interval' => 'Dashboard-Aktualisierungsintervall',
     'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'Wie häufig Dashboard-Daten aktualisiert werden sollen. Auf "Aus" setzen, um die automatische Aktualisierung zu deaktivieren.',
     'Off' => 'Aus',

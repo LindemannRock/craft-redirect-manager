@@ -181,9 +181,6 @@ return [
 
     // Settings: General
     'General Settings' => 'General Settings',
-    'Plugin Name' => 'Plugin Name',
-    'The name of the plugin as it appears in the Control Panel menu' => 'The name of the plugin as it appears in the Control Panel menu',
-    'This is being overridden by the <code>pluginName</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>pluginName</code> setting in <code>config/redirect-manager.php</code>.',
     'Auto Create Redirects' => 'Auto Create Redirects',
     'Automatically create redirects when entry URIs change' => 'Automatically create redirects when entry URIs change',
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.',
@@ -211,13 +208,6 @@ return [
     'To add additional custom headers, visit <a href="{url}">Advanced Settings</a>.' => 'To add additional custom headers, visit <a href="{url}">Advanced Settings</a>.',
     'This is being overridden by the <code>setNoCacheHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>setNoCacheHeaders</code> setting in <code>config/redirect-manager.php</code>.',
     'Logging Settings' => 'Logging Settings',
-    'Log Level' => 'Log Level',
-    'Choose what types of messages to log. Debug level requires devMode to be enabled.' => 'Choose what types of messages to log. Debug level requires devMode to be enabled.',
-    'Error (Critical errors only)' => 'Error (Critical errors only)',
-    'Warning (Errors and warnings)' => 'Warning (Errors and warnings)',
-    'Info (General information)' => 'Info (General information)',
-    'Debug (Detailed debugging)' => 'Debug (Detailed debugging)',
-    'This is being overridden by the <code>logLevel</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>logLevel</code> setting in <code>config/redirect-manager.php</code>.',
 
     // Settings: Analytics
     'Analytics Settings' => 'Analytics Settings',
@@ -268,9 +258,6 @@ return [
 
     // Settings: Interface
     'Interface Settings' => 'Interface Settings',
-    'Items Per Page' => 'Items Per Page',
-    'Number of items to display per page in lists' => 'Number of items to display per page in lists',
-    'This is being overridden by the <code>itemsPerPage</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>itemsPerPage</code> setting in <code>config/redirect-manager.php</code>.',
     'Dashboard Refresh Interval' => 'Dashboard Refresh Interval',
     'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'How often to refresh dashboard data. Set to Off to disable auto-refresh.',
     'Off' => 'Off',
