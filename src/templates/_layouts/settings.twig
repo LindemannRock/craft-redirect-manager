@@ -5,7 +5,7 @@
 {% set selectedSubnavItem = 'settings' %}
 
 {% set errorSummary = include('lindemannrock-base/_partials/ip-salt-error', {
-    translationCategory: 'redirect-manager'
+    pluginHandle: 'redirect-manager'
 })|trim %}
 {% if settings is defined and settings.hasErrors() %}
     {% set validationSummary = include('lindemannrock-base/_partials/error-summary', {
