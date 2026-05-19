@@ -186,6 +186,15 @@ class SettingsController extends Controller
                     }
                 }
 
+                // Multi-state selects (e.g. "Use global default" = '') need '' → null
+                // so nullable properties hold null, not a coerced false / 0.
+                if ($value === '') {
+                    $type = (new \ReflectionProperty($settings, $key))->getType();
+                    if ($type instanceof \ReflectionNamedType && $type->allowsNull()) {
+                        $value = null;
+                    }
+                }
+
                 // Check for setter method first (handles array conversions, etc.)
                 $setterMethod = 'set' . ucfirst($key);
                 if (method_exists($settings, $setterMethod)) {
@@ -806,6 +815,15 @@ class SettingsController extends Controller
             'interface' => [
                 'itemsPerPage',
                 'refreshIntervalSecs',
+                'timeFormat',
+                'monthFormat',
+                'dateOrder',
+                'dateSeparator',
+                'showSeconds',
+                'defaultDateRange',
+                'exportsCsv',
+                'exportsJson',
+                'exportsExcel',
             ],
             'cache' => [
                 'cacheStorageMethod',
