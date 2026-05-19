@@ -29,18 +29,10 @@
 
 		<h2 class="first">{{ "General Settings"|t('redirect-manager') }}</h2>
 
-        {{ forms.textField({
-            label: "Plugin Name"|t('redirect-manager'),
-            instructions: "The name of the plugin as it appears in the Control Panel menu"|t('redirect-manager'),
-            id: 'pluginName',
-            name: 'settings[pluginName]',
-            value: settings.pluginName,
-            required: true,
-            errors: settings.getErrors('pluginName'),
-            disabled: settings.isOverriddenByConfig('pluginName'),
-            warning: settings.isOverriddenByConfig('pluginName') ?
-                "This is being overridden by the <code>pluginName</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
-        }) }}
+        {% include 'lindemannrock-base/_partials/field-plugin-name' with {
+            settings: settings,
+            pluginHandle: 'redirect-manager',
+        } only %}
 
 		<hr>
 
@@ -164,30 +156,10 @@
 
 		<h2>{{ "Logging Settings"|t('redirect-manager') }}</h2>
 
-		{% set logOptions = [
-            {value: 'error', label: 'Error (Critical errors only)'|t('redirect-manager')},
-            {value: 'warning', label: 'Warning (Errors and warnings)'|t('redirect-manager')},
-            {value: 'info', label: 'Info (General information)'|t('redirect-manager')},
-        ] %}
-
-		{% if craft.app.config.general.devMode %}
-			{% set logOptions = logOptions|merge([
-                {value: 'debug', label: 'Debug (Detailed debugging)'|t('redirect-manager')}
-            ]) %}
-		{% endif %}
-
-		{{ forms.selectField({
-            label: 'Log Level'|t('redirect-manager'),
-            instructions: 'Choose what types of messages to log. Debug level requires devMode to be enabled.'|t('redirect-manager'),
-            id: 'logLevel',
-            name: 'settings[logLevel]',
-            value: settings.logLevel,
-            options: logOptions,
-            errors: settings.getErrors('logLevel'),
-            disabled: settings.isOverriddenByConfig('logLevel'),
-            warning: settings.isOverriddenByConfig('logLevel') ?
-                "This is being overridden by the <code>logLevel</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
-        }) }}
+		{% include 'lindemannrock-base/_partials/field-log-level' with {
+            settings: settings,
+            pluginHandle: 'redirect-manager',
+        } only %}
 
 	{% include 'lindemannrock-base/_components/plugin-credit' %}
 {% endblock %}
