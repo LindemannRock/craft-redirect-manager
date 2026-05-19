@@ -12,6 +12,12 @@ use Craft;
 use craft\base\Model;
 use craft\helpers\App;
 use craft\validators\ArrayValidator;
+use lindemannrock\base\traits\DateFormatSettingsTrait;
+use lindemannrock\base\traits\DateRangeSettingsTrait;
+use lindemannrock\base\traits\ExportFormatSettingsTrait;
+use lindemannrock\base\traits\ItemsPerPageSettingsTrait;
+use lindemannrock\base\traits\LogLevelSettingsTrait;
+use lindemannrock\base\traits\PluginNameSettingsTrait;
 use lindemannrock\base\traits\SettingsConfigTrait;
 use lindemannrock\base\traits\SettingsDisplayNameTrait;
 use lindemannrock\base\traits\SettingsPersistenceTrait;
@@ -27,10 +33,16 @@ use lindemannrock\logginglibrary\traits\LoggingTrait;
  */
 class Settings extends Model
 {
+    use DateFormatSettingsTrait;
+    use DateRangeSettingsTrait;
+    use ExportFormatSettingsTrait;
+    use ItemsPerPageSettingsTrait;
+    use LogLevelSettingsTrait;
     use LoggingTrait;
+    use PluginNameSettingsTrait;
+    use SettingsConfigTrait;
     use SettingsDisplayNameTrait;
     use SettingsPersistenceTrait;
-    use SettingsConfigTrait;
 
     /**
      * @var string The name of the plugin as it appears in the Control Panel menu
@@ -143,11 +155,6 @@ class Settings extends Model
     public ?int $refreshIntervalSecs = null;
 
     /**
-     * @var int Items per page in list views
-     */
-    public int $itemsPerPage = 100;
-
-    /**
      * @var bool Whether to enable GraphQL endpoint
      */
     public bool $enableApiEndpoint = false;
@@ -161,11 +168,6 @@ class Settings extends Model
      * @var array Additional HTTP headers to add to redirect responses
      */
     public array $additionalHeaders = [];
-
-    /**
-     * @var string Log level for the logging library
-     */
-    public string $logLevel = 'error';
 
     /**
      * @var bool Enable redirect caching
@@ -278,6 +280,10 @@ class Settings extends Model
             'cacheDeviceDetection',
             'backupEnabled',
             'backupOnImport',
+            'showSeconds',
+            'exportsCsv',
+            'exportsJson',
+            'exportsExcel',
         ];
     }
 
@@ -338,9 +344,7 @@ class Settings extends Model
      */
     public function rules(): array
     {
-        return [
-            ['pluginName', 'string'],
-            ['pluginName', 'default', 'value' => 'Redirect Manager'],
+        return array_merge([
             [
                 [
                     'autoCreateRedirects',
@@ -369,8 +373,6 @@ class Settings extends Model
             ['analyticsRetention', 'default', 'value' => 30],
             ['refreshIntervalSecs', 'integer', 'min' => 0, 'skipOnEmpty' => true],
             ['refreshIntervalSecs', 'default', 'value' => null],
-            ['itemsPerPage', 'integer', 'min' => 10, 'max' => 500],
-            ['itemsPerPage', 'default', 'value' => 100],
             ['undoWindowMinutes', 'integer'],
             ['undoWindowMinutes', 'in', 'range' => [0, 30, 60, 120, 240]], // 0 = unlimited window (always undo, no time limit)
             ['undoWindowMinutes', 'default', 'value' => 60],
@@ -380,8 +382,6 @@ class Settings extends Model
                 ['excludePatterns', 'additionalHeaders'],
                 ArrayValidator::class,
             ],
-            [['logLevel'], 'in', 'range' => ['debug', 'info', 'warning', 'error']],
-            [['logLevel'], 'validateLogLevel'],
             ['enableRedirectCache', 'boolean'],
             ['enableRedirectCache', 'default', 'value' => true],
             ['redirectCacheDuration', 'integer', 'min' => 60, 'max' => 86400],
@@ -402,47 +402,22 @@ class Settings extends Model
             ['backupVolumeUid', 'string'],
             ['backupRetentionDays', 'integer', 'min' => 0, 'max' => 365],
             ['backupSchedule', 'in', 'range' => ['manual', 'daily', 'weekly', 'monthly']],
-        ];
+        ], $this->pluginNameSettingsRules(), $this->logLevelSettingsRules(), $this->dateFormatSettingsRules(), $this->dateRangeSettingsRules(), $this->exportFormatSettingsRules(), $this->itemsPerPageSettingsRules());
     }
 
     /**
-     * Validate log level - debug requires devMode
-     *
-     * @param string $attribute
-     * @param array|null $params
-     * @param \yii\validators\Validator|null $validator
+     * @inheritdoc
      */
-    public function validateLogLevel($attribute, $params, $validator)
+    public function attributeLabels(): array
     {
-        $logLevel = $this->$attribute;
-
-        // Reset session warning when devMode is true - allows warning to show again if devMode changes
-        if (Craft::$app->getConfig()->getGeneral()->devMode && !Craft::$app->getRequest()->getIsConsoleRequest()) {
-            Craft::$app->getSession()->remove('rm_debug_config_warning');
-        }
-
-        // Debug level is only allowed when devMode is enabled
-        if ($logLevel === 'debug' && !Craft::$app->getConfig()->getGeneral()->devMode) {
-            $this->$attribute = 'info';
-
-            if ($this->isOverriddenByConfig('logLevel')) {
-                if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
-                    if (Craft::$app->getSession()->get('rm_debug_config_warning') === null) {
-                        $this->logWarning('Log level "debug" from config file changed to "info" because devMode is disabled', [
-                            'configFile' => 'config/redirect-manager.php',
-                        ]);
-                        Craft::$app->getSession()->set('rm_debug_config_warning', true);
-                    }
-                } else {
-                    $this->logWarning('Log level "debug" from config file changed to "info" because devMode is disabled', [
-                        'configFile' => 'config/redirect-manager.php',
-                    ]);
-                }
-            } else {
-                $this->logWarning('Log level automatically changed from "debug" to "info" because devMode is disabled');
-                $this->saveToDatabase();
-            }
-        }
+        return array_merge(
+            $this->pluginNameSettingsLabel(),
+            $this->logLevelSettingsLabel(),
+            $this->dateFormatSettingsLabels(),
+            $this->dateRangeSettingsLabel(),
+            $this->exportFormatSettingsLabels(),
+            $this->itemsPerPageSettingsLabel(),
+        );
     }
 
     /**
