@@ -1,25 +1,25 @@
 {# Overview Tab - Stats, Trend, Most Common, Recent Unhandled #}
 
 <div class="lr-unified-cards">
-    {% include 'lindemannrock-base/_components/cards/unified-card' with {
+    {% include 'lindemannrock-base/_components/unified-card' with {
         value: totalCount ?? 0,
         description: 'Total 404s'|t('redirect-manager'),
         align: 'center',
     } only %}
 
-    {% include 'lindemannrock-base/_components/cards/unified-card' with {
+    {% include 'lindemannrock-base/_components/unified-card' with {
         value: handledCount ?? 0,
         description: 'Handled'|t('redirect-manager'),
         align: 'center',
     } only %}
 
-    {% include 'lindemannrock-base/_components/cards/unified-card' with {
+    {% include 'lindemannrock-base/_components/unified-card' with {
         value: unhandledCount ?? 0,
         description: 'Unhandled'|t('redirect-manager'),
         align: 'center',
     } only %}
 
-    {% include 'lindemannrock-base/_components/cards/unified-card' with {
+    {% include 'lindemannrock-base/_components/unified-card' with {
         value: (totalCount > 0 ? ((handledCount / totalCount * 100)|round) : 0) ~ '%',
         description: 'Success Rate'|t('redirect-manager'),
         align: 'center',

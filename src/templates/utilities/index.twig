@@ -31,7 +31,7 @@
 
 {% block overview %}
     {# Redirects Status Card #}
-    {% include 'lindemannrock-base/_components/cards/unified-card' with {
+    {% include 'lindemannrock-base/_components/unified-card' with {
         title: 'Redirects Status'|t('redirect-manager'),
         color: coverageColor,
         value: coverage ~ '%',
@@ -46,7 +46,7 @@
     } only %}
 
     {# 404 Handling Card #}
-    {% include 'lindemannrock-base/_components/cards/unified-card' with {
+    {% include 'lindemannrock-base/_components/unified-card' with {
         title: '404 Handling'|t('redirect-manager'),
         color: successColor,
         value: successRate ~ '%',
@@ -68,14 +68,14 @@
             {% set cacheSubBoxes = cacheSubBoxes|merge([{value: '✓', label: 'Devices'|t('redirect-manager')}]) %}
         {% endif %}
 
-        {% include 'lindemannrock-base/_components/cards/unified-card' with {
+        {% include 'lindemannrock-base/_components/unified-card' with {
             title: 'Cache Status'|t('redirect-manager') ~ ' (Redis)',
             color: lrPaletteColor('emerald').color,
             value: 'Active'|t('redirect-manager'),
             subBoxes: cacheSubBoxes,
         } only %}
     {% else %}
-        {% include 'lindemannrock-base/_components/cards/unified-card' with {
+        {% include 'lindemannrock-base/_components/unified-card' with {
             title: 'Cache Status'|t('redirect-manager') ~ ' (File)',
             color: lrPaletteColor('emerald').color,
             value: deviceCacheFiles + redirectCacheFiles,
