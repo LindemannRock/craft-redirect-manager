@@ -410,7 +410,41 @@ class Settings extends Model
      */
     public function attributeLabels(): array
     {
-        return array_merge(
+        return array_merge([
+            // Redirect behavior
+            'autoCreateRedirects' => Craft::t('redirect-manager', 'Auto Create Redirects'),
+            'undoWindowMinutes' => Craft::t('redirect-manager', 'Undo Window'),
+            'redirectSrcMatch' => Craft::t('redirect-manager', 'Default Source Match Mode'),
+            'stripQueryString' => Craft::t('redirect-manager', 'Strip Query String'),
+            'preserveQueryString' => Craft::t('redirect-manager', 'Preserve Query String'),
+            'setNoCacheHeaders' => Craft::t('redirect-manager', 'Set No-Cache Headers'),
+            // Analytics + Geo (geoProvider/geoApiKey live on GeoSettingsTrait)
+            'enableAnalytics' => Craft::t('redirect-manager', 'Enable Analytics'),
+            'anonymizeIpAddress' => Craft::t('redirect-manager', 'Anonymize IP Addresses'),
+            'enableGeoDetection' => Craft::t('redirect-manager', 'Enable Geographic Detection'),
+            'cacheDeviceDetection' => Craft::t('redirect-manager', 'Cache Device Detection'),
+            'deviceDetectionCacheDuration' => Craft::t('redirect-manager', 'Device Detection Cache Duration'),
+            'stripQueryStringFromStats' => Craft::t('redirect-manager', 'Strip Query String From Stats'),
+            'analyticsLimit' => Craft::t('redirect-manager', 'Analytics Limit'),
+            'analyticsRetention' => Craft::t('redirect-manager', 'Analytics Retention (Days)'),
+            'autoTrimAnalytics' => Craft::t('redirect-manager', 'Auto Trim Analytics'),
+            'refreshIntervalSecs' => Craft::t('redirect-manager', 'Dashboard Refresh Interval'),
+            // API endpoint
+            'enableApiEndpoint' => Craft::t('redirect-manager', 'Enable API Endpoint'),
+            'excludePatterns' => Craft::t('redirect-manager', 'Exclude Patterns'),
+            'additionalHeaders' => Craft::t('redirect-manager', 'Additional Headers'),
+            // Redirect cache
+            'enableRedirectCache' => Craft::t('redirect-manager', 'Enable Redirect Cache'),
+            'redirectCacheDuration' => Craft::t('redirect-manager', 'Redirect Cache Duration'),
+            'cacheStorageMethod' => Craft::t('redirect-manager', 'Cache Storage Method'),
+            // Backups
+            'backupPath' => Craft::t('redirect-manager', 'Custom Backup Path'),
+            'backupVolumeUid' => Craft::t('redirect-manager', 'Backup Storage Volume'),
+            'backupEnabled' => Craft::t('redirect-manager', 'Enable Backups'),
+            'backupOnImport' => Craft::t('redirect-manager', 'Backup Before Import'),
+            'backupSchedule' => Craft::t('redirect-manager', 'Backup Schedule'),
+            'backupRetentionDays' => Craft::t('redirect-manager', 'Retention Period'),
+        ],
             $this->pluginNameSettingsLabel(),
             $this->logLevelSettingsLabel(),
             $this->dateFormatSettingsLabels(),
