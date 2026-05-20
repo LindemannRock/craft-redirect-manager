@@ -227,7 +227,7 @@ return [
     'Strip Query String From Stats' => '統計からクエリ文字列を削除する',
     'Strip query strings from analytics URLs to consolidate similar requests' => 'アナリティクス URL からクエリ文字列を削除して類似リクエストを統合する',
     'This is being overridden by the <code>stripQueryStringFromStats</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>stripQueryStringFromStats</code> 設定によって上書きされています。',
-    'Data Retention' => 'データ保持',
+    'Data Retention' => 'データ保持期間',
     'Analytics Retention (Days)' => 'アナリティクスの保持期間（日）',
     'Number of days to retain analytics (0 = keep forever)' => 'アナリティクスを保持する日数（0 = 永久に保持）',
     'This is being overridden by the <code>analyticsRetention</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>analyticsRetention</code> 設定によって上書きされています。',

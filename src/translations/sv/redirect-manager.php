@@ -101,7 +101,7 @@ return [
     '{pluginName} - Unhandled 404s' => '{pluginName} – Ohanterade 404',
     'Last {days} days' => 'Senaste {days} dagarna',
     'Showing {limit} most common' => 'Visar {limit} vanligaste',
-    'You don\'t have permission to view analytics.' => 'Ni har inte behörighet att visa analys.',
+    'You don\'t have permission to view analytics.' => 'Du har inte behörighet att visa analys.',
     'Analytics are disabled in plugin settings.' => 'Analys är inaktiverat i plugin-inställningarna.',
     'View full analytics' => 'Visa fullständig analys',
     'No 404s recorded' => 'Inga 404 registrerade',
@@ -586,7 +586,7 @@ return [
     'Imported' => 'Importerade',
     'Failed' => 'Misslyckade',
     'No import history yet.' => 'Ingen importhistorik ännu.',
-    'Are you sure you want to clear all import logs? This action cannot be undone.' => 'Är ni säkra på att ni vill rensa alla importloggar? Det här går inte att ångra.',
+    'Are you sure you want to clear all import logs? This action cannot be undone.' => 'Är du säker på att du vill rensa alla importloggar? Den här åtgärden kan inte ångras.',
     'Failed to clear history.' => 'Det gick inte att rensa historiken.',
     'Map CSV Columns' => 'Mappa CSV-kolumner',
     'Map Columns' => 'Mappa kolumner',
@@ -663,7 +663,7 @@ return [
     'Permanently delete all analytics tracking data. This action cannot be undone!' => 'Ta bort alla analysspårningsdata permanent. Det här går inte att ångra!',
     'Clear All Analytics' => 'Rensa all analys',
     'Clear all caches?' => 'Rensa alla cacher?',
-    'Are you sure you want to permanently delete ALL analytics data? This action cannot be undone!' => 'Är ni säkra på att ni vill ta bort ALL analysdata permanent? Det här går inte att ångra!',
+    'Are you sure you want to permanently delete ALL analytics data? This action cannot be undone!' => 'Är du säker på att du vill ta bort ALL analysdata permanent? Det här går inte att ångra!',
     'This will delete all 404 tracking data. Are you absolutely sure?' => 'Det här tar bort all 404-spårningsdata. Är ni helt säkra?',
 
     // Base partials

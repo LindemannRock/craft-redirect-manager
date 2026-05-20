@@ -101,7 +101,7 @@ return [
     '{pluginName} - Unhandled 404s' => '{pluginName} – Uhåndterede 404',
     'Last {days} days' => 'Seneste {days} dage',
     'Showing {limit} most common' => 'Viser {limit} mest almindelige',
-    'You don\'t have permission to view analytics.' => 'De har ikke tilladelse til at se analyser.',
+    'You don\'t have permission to view analytics.' => 'Du har ikke tilladelse til at se analyser.',
     'Analytics are disabled in plugin settings.' => 'Analyser er deaktiveret i plugin-indstillingerne.',
     'View full analytics' => 'Vis fulde analyser',
     'No 404s recorded' => 'Ingen 404 registreret',
@@ -470,7 +470,7 @@ return [
     'Data will appear here once this redirect handles some requests.' => 'Data vises her, når denne omdirigering har håndteret nogle anmodninger.',
 
     // Analytics page
-    'Overview' => 'Overblik',
+    'Overview' => 'Oversigt',
     'Traffic & Devices' => 'Trafik og enheder',
     'Geographic' => 'Geografisk',
     'Total 404s' => 'Samlede 404',
@@ -586,7 +586,7 @@ return [
     'Imported' => 'Importerede',
     'Failed' => 'Mislykkedes',
     'No import history yet.' => 'Ingen importhistorik endnu.',
-    'Are you sure you want to clear all import logs? This action cannot be undone.' => 'Er De sikker på, at De vil rydde alle importlogfiler? Denne handling kan ikke fortrydes.',
+    'Are you sure you want to clear all import logs? This action cannot be undone.' => 'Er du sikker på, at du vil rydde alle importlogfiler? Denne handling kan ikke fortrydes.',
     'Failed to clear history.' => 'Kunne ikke rydde historikken.',
     'Map CSV Columns' => 'Tilknyt CSV-kolonner',
     'Map Columns' => 'Tilknyt kolonner',
@@ -663,7 +663,7 @@ return [
     'Permanently delete all analytics tracking data. This action cannot be undone!' => 'Slet alle analysesporingsdata permanent. Denne handling kan ikke fortrydes!',
     'Clear All Analytics' => 'Ryd alle analyser',
     'Clear all caches?' => 'Ryd alle caches?',
-    'Are you sure you want to permanently delete ALL analytics data? This action cannot be undone!' => 'Er De sikker på, at De vil slette ALLE analysedata permanent? Denne handling kan ikke fortrydes!',
+    'Are you sure you want to permanently delete ALL analytics data? This action cannot be undone!' => 'Er du sikker på, at du vil slette ALLE analysedata permanent? Denne handling kan ikke fortrydes!',
     'This will delete all 404 tracking data. Are you absolutely sure?' => 'Dette vil slette alle 404-sporingsdata. Er De helt sikker?',
 
     // Base partials
