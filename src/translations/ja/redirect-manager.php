@@ -304,7 +304,7 @@ return [
     'Device detection parses user-agent strings to identify devices, browsers, and operating systems' => 'デバイス検出は user-agent 文字列を解析して、デバイス、ブラウザ、オペレーティングシステムを識別します',
     'Results are cached to avoid re-parsing the same user-agent repeatedly' => '同じ user-agent を繰り返し解析しないように結果がキャッシュされます',
     'Recommended to keep enabled for production sites' => '本番サイトでは有効にしておくことを推奨します',
-    'Device detection caching is only available when Analytics is enabled. Go to' => 'デバイス検出のキャッシュはアナリティクスが有効な場合のみ利用できます。',
+    'Device detection caching is only available when Analytics is enabled. Go to' => 'デバイス検出のキャッシュはアナリティクスが有効な場合のみ利用できます',
     'to enable analytics.' => 'でアナリティクスを有効にしてください。',
     'Redirect Caching' => 'リダイレクトのキャッシュ',
     'Enable Redirect Cache' => 'リダイレクトキャッシュを有効にする',
