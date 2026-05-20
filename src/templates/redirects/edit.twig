@@ -9,7 +9,7 @@
 {% set crumbs = [
     { label: redirectHelper.fullName, url: url('redirect-manager') },
     { label: 'Redirects'|t('redirect-manager'), url: url('redirect-manager/redirects') },
-    { label: isNew ? 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}) : (redirect.sourceUrl|length > 50 ? redirect.sourceUrl|slice(0, 50) ~ '…' : redirect.sourceUrl) }
+    { label: isNew ? 'New {singularName}'|t('redirect-manager', {singularName: redirectHelper.displayName}) : (redirect.sourceUrl|length > 50 ? redirect.sourceUrl|slice(0, 50) ~ '...' : redirect.sourceUrl) }
 ] %}
 
 {% set fullPageForm = true %}
