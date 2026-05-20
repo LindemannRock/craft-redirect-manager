@@ -479,7 +479,7 @@ return [
     'Most Common 404s (Top 15)' => '最も多い 404（上位 15 件）',
     'No 404s recorded yet' => 'まだ 404 は記録されていません',
     'Recent Unhandled 404s' => '最近の未処理 404',
-    'Loading…' => '読み込み中…',
+    'Loading...' => '読み込み中...',
     'Traffic Analysis' => 'トラフィック分析',
     'Bot vs Human Traffic' => 'ボット対人間のトラフィック',
     'Top Bots' => '主要なボット',

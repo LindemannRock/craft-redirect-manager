@@ -479,7 +479,7 @@ return [
     'Most Common 404s (Top 15)' => 'Mest almindelige 404\'er (top 15)',
     'No 404s recorded yet' => 'Ingen 404\'er registreret endnu',
     'Recent Unhandled 404s' => 'Seneste uhåndterede 404\'er',
-    'Loading…' => 'Indlæser…',
+    'Loading...' => 'Indlæser...',
     'Traffic Analysis' => 'Trafikanalyse',
     'Bot vs Human Traffic' => 'Bot- vs. menneskelig trafik',
     'Top Bots' => 'Mest almindelige bots',

@@ -479,7 +479,7 @@ return [
     'Most Common 404s (Top 15)' => '404 più comuni (Top 15)',
     'No 404s recorded yet' => 'Nessun 404 registrato',
     'Recent Unhandled 404s' => '404 non gestiti recenti',
-    'Loading…' => 'Caricamento…',
+    'Loading...' => 'Caricamento...',
     'Traffic Analysis' => 'Analisi del traffico',
     'Bot vs Human Traffic' => 'Traffico bot vs umano',
     'Top Bots' => 'Principali bot',

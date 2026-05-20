@@ -479,7 +479,7 @@ return [
     'Most Common 404s (Top 15)' => 'Most Common 404s (Top 15)',
     'No 404s recorded yet' => 'No 404s recorded yet',
     'Recent Unhandled 404s' => 'Recent Unhandled 404s',
-    'Loading…' => 'Loading…',
+    'Loading...' => 'Loading...',
     'Traffic Analysis' => 'Traffic Analysis',
     'Bot vs Human Traffic' => 'Bot vs Human Traffic',
     'Top Bots' => 'Top Bots',
