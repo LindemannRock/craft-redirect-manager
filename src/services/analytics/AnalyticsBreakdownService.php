@@ -293,6 +293,7 @@ class AnalyticsBreakdownService
         return [
             'provider' => $settings->geoProvider ?? 'ip-api.com',
             'apiKey' => $settings->geoApiKey ?? null,
+            'logCategory' => RedirectManager::$plugin->id,
         ];
     }
 
