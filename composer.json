@@ -2,7 +2,7 @@
     "name": "lindemannrock/craft-redirect-manager",
     "description": "Intelligent redirect management and 404 handling for Craft CMS",
     "type": "craft-plugin",
-    "version": "5.30.0",
+    "version": "5.31.0",
     "keywords": [
         "craft",
         "cms",
