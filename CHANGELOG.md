@@ -1,5 +1,33 @@
 # Changelog
 
+## [5.31.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.30.0...v5.31.0) (2026-05-21)
+
+
+### Added
+
+* add pre-commit hook for ECS and PHPStan code quality checks ([5534955](https://github.com/LindemannRock/craft-redirect-manager/commit/55349552585b837ab551ce410d088f0e3f9603ab))
+* **analytics:** add log category to geo configuration ([e44b978](https://github.com/LindemannRock/craft-redirect-manager/commit/e44b9787397b3fe695ce020887616ffbfd42ac56))
+* **dashboard:** enhance 404 analytics dashboard with improved action handling and user permissions ([6b52b6a](https://github.com/LindemannRock/craft-redirect-manager/commit/6b52b6a0b2b876db5996db3811674dd708fde6ba))
+* **geo:** integrate GeoSettingsTrait into Settings model ([ddabfe5](https://github.com/LindemannRock/craft-redirect-manager/commit/ddabfe51269d5efc1f56d769f7e4edc2eae7591e))
+* **i18n:** add new analytics and redirect messages in multiple languages ([fc75239](https://github.com/LindemannRock/craft-redirect-manager/commit/fc75239f3f322c03d786aca6c9a8300edeaeff43))
+* **i18n:** add translation issue template for reporting language problems ([c1bbb4f](https://github.com/LindemannRock/craft-redirect-manager/commit/c1bbb4fa25cfcb6a476242a1a1e0831d35b58a9c))
+* **i18n:** remove deprecated error messages from translation files ([c353738](https://github.com/LindemannRock/craft-redirect-manager/commit/c353738aa4de608e470524809822570f12af56f9))
+* **i18n:** remove plugin name translations from multiple locales ([cd10888](https://github.com/LindemannRock/craft-redirect-manager/commit/cd108881a7cada5951f4c61013c20b9d3b91e2ae))
+* **redirects:** improve redirects listing with enhanced action handling and bulk operations ([6b52b6a](https://github.com/LindemannRock/craft-redirect-manager/commit/6b52b6a0b2b876db5996db3811674dd708fde6ba))
+* **settings:** add attribute labels for redirect and analytics settings ([a71db1c](https://github.com/LindemannRock/craft-redirect-manager/commit/a71db1cbb78da7b96cf5d7b7a180fe81089c0bdd))
+* **settings:** add new configuration options for date and export formats ([d98061c](https://github.com/LindemannRock/craft-redirect-manager/commit/d98061c455b180e389cf64246bf379761074256c))
+* **settings:** handle multi-state selects and add new interface options ([0e1f329](https://github.com/LindemannRock/craft-redirect-manager/commit/0e1f3296e8b8d6d2a22d2b909d46d8bcc8cdf09c))
+* **tests:** add integration tests for analytics and redirects functionality ([3e10a9c](https://github.com/LindemannRock/craft-redirect-manager/commit/3e10a9cce37ea3c22e55a288ac60b01ed51f0b19))
+
+
+### Fixed
+
+* correct ellipsis in redirect source URL display ([37942b0](https://github.com/LindemannRock/craft-redirect-manager/commit/37942b05d97e854cc648e96c9e0a042cf5a25337))
+* correct phpstan configuration path for Craft CMS integration ([2f6316d](https://github.com/LindemannRock/craft-redirect-manager/commit/2f6316d1eeb8d609e69b0cd7058ecf5bab328da7))
+* **i18n:** align 54 cross-plugin shared translations across 12 languages ([978f972](https://github.com/LindemannRock/craft-redirect-manager/commit/978f9720c0460d240226cf533577b169978f6ecb))
+* **i18n:** correct loading message translations in multiple languages ([4a6f41b](https://github.com/LindemannRock/craft-redirect-manager/commit/4a6f41b53de4f4bfda7dd360840b0631fe631216))
+* **i18n:** correct punctuation in device detection caching message ([34cb202](https://github.com/LindemannRock/craft-redirect-manager/commit/34cb2027a3270d91a0874af727e6e9348ddc1ba2))
+
 ## [5.30.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.29.0...v5.30.0) (2026-05-06)
 
 
