@@ -1,6 +1,6 @@
 # Changelog
 
-## [5.31.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.30.0...v5.31.0) (2026-05-21)
+## [5.31.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.30.0...v5.31.0) - 2026-05-21
 
 
 ### Added
@@ -28,7 +28,7 @@
 * **i18n:** correct loading message translations in multiple languages ([4a6f41b](https://github.com/LindemannRock/craft-redirect-manager/commit/4a6f41b53de4f4bfda7dd360840b0631fe631216))
 * **i18n:** correct punctuation in device detection caching message ([34cb202](https://github.com/LindemannRock/craft-redirect-manager/commit/34cb2027a3270d91a0874af727e6e9348ddc1ba2))
 
-## [5.30.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.29.0...v5.30.0) (2026-05-06)
+## [5.30.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.29.0...v5.30.0) - 2026-05-06
 
 
 ### Features
@@ -47,7 +47,7 @@
 
 * update version annotations to 5.24.0 and 5.25.0 ([9e37253](https://github.com/LindemannRock/craft-redirect-manager/commit/9e372534b32d653c1568994240f8f9db012bea46))
 
-## [5.29.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.28.2...v5.29.0) (2026-04-05)
+## [5.29.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.28.2...v5.29.0) - 2026-04-05
 
 
 ### Features
@@ -60,28 +60,28 @@
 * read-only settings and response handling ([cbee99b](https://github.com/LindemannRock/craft-redirect-manager/commit/cbee99be438aa5e565fb59f5f3eb7d6befa0b2b5))
 * translate install experience text to Craft CMS ([6d82eb6](https://github.com/LindemannRock/craft-redirect-manager/commit/6d82eb63bda1b75358c84f76ecaaa9de90f798d5))
 
-## [5.28.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.28.1...v5.28.2) (2026-03-18)
+## [5.28.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.28.1...v5.28.2) - 2026-03-18
 
 
 ### Bug Fixes
 
 * **config:** clarify log level options comment ([4e7d405](https://github.com/LindemannRock/craft-redirect-manager/commit/4e7d405848085aeef1191269ab47e4427ac0b487))
 
-## [5.28.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.28.0...v5.28.1) (2026-03-17)
+## [5.28.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.28.0...v5.28.1) - 2026-03-17
 
 
 ### Miscellaneous Chores
 
 * **workflow:** update release-please.yml permissions and settings ([33bd4f4](https://github.com/LindemannRock/craft-redirect-manager/commit/33bd4f434d46f57517bfb1d67e0cf7c53fc6483c))
 
-## [5.28.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.27.0...v5.28.0) (2026-03-17)
+## [5.28.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.27.0...v5.28.0) - 2026-03-17
 
 
 ### Features
 
 * **analytics:** streamline IP processing and remove redundancy ([88ba22c](https://github.com/LindemannRock/craft-redirect-manager/commit/88ba22c94b7978e011519caa455a8c423bdd78ad))
 
-## [5.27.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.26.0...v5.27.0) (2026-03-17)
+## [5.27.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.26.0...v5.27.0) - 2026-03-17
 
 
 ### Features
@@ -95,7 +95,7 @@
 * **import-export:** remove unused menu button initialization code ([382c9a0](https://github.com/LindemannRock/craft-redirect-manager/commit/382c9a00c06c40640cb870729d5a652baa81624a))
 * **settings:** remove redundant submit button from settings forms ([9dd2ff2](https://github.com/LindemannRock/craft-redirect-manager/commit/9dd2ff2c44680b613b6d748931c1d15e1e83ae95))
 
-## [5.26.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.25.0...v5.26.0) (2026-03-04)
+## [5.26.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.25.0...v5.26.0) - 2026-03-04
 
 
 ### Features
@@ -108,7 +108,7 @@
 * **jobs:** implement RetryableJobInterface in job classes ([1f348a5](https://github.com/LindemannRock/craft-redirect-manager/commit/1f348a534d74cb5f4d1fef11886ed14ebafd2538))
 * **settings:** validate integer settings and improve error handling ([495c806](https://github.com/LindemannRock/craft-redirect-manager/commit/495c806d7b107bea451af7195f44b9d4c8228aec))
 
-## [5.25.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.24.1...v5.25.0) (2026-02-24)
+## [5.25.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.24.1...v5.25.0) - 2026-02-24
 
 
 ### Features
@@ -130,14 +130,14 @@
 * add .gitattributes with export-ignore for Packagist distribution ([cd904e3](https://github.com/LindemannRock/craft-redirect-manager/commit/cd904e36dd7cb5c7d899c0495ac7e5f983fb65a5))
 * switch to Craft License for commercial release ([80816b0](https://github.com/LindemannRock/craft-redirect-manager/commit/80816b0ba91113752bd3f8b283764636a78ee039))
 
-## [5.24.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.24.0...v5.24.1) (2026-02-07)
+## [5.24.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.24.0...v5.24.1) - 2026-02-07
 
 
 ### Bug Fixes
 
 * **ImportExportController, AnalyticsService:** replace DateTimeHelper with DateFormatHelper for date formatting ([a4a78fa](https://github.com/LindemannRock/craft-redirect-manager/commit/a4a78fac4ef9cfb3f348537bf45c1ee37b8419af))
 
-## [5.24.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.23.0...v5.24.0) (2026-02-05)
+## [5.24.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.23.0...v5.24.0) - 2026-02-05
 
 
 ### Features
@@ -159,14 +159,14 @@
 * remove unused dependency from composer.json ([7a3ba83](https://github.com/LindemannRock/craft-redirect-manager/commit/7a3ba839a29fe8d3c2138cfc91b047ccf3a71f0a))
 * update package.json with author and company details ([3d58f43](https://github.com/LindemannRock/craft-redirect-manager/commit/3d58f4338019a71f7022eb6264313203b474e521))
 
-## [5.23.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.22.0...v5.23.0) (2026-01-28)
+## [5.23.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.22.0...v5.23.0) - 2026-01-28
 
 
 ### Features
 
 * enhance redirects listing page and improve dashboard settings ([51d56f1](https://github.com/LindemannRock/craft-redirect-manager/commit/51d56f1b2b051de6464b9c2e80b5247d08d38034))
 
-## [5.22.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.21.0...v5.22.0) (2026-01-26)
+## [5.22.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.21.0...v5.22.0) - 2026-01-26
 
 
 ### Features
@@ -180,7 +180,7 @@
 * **security:** address XSS, permissions, cache, and CSV injection vulnerabilities ([1d42686](https://github.com/LindemannRock/craft-redirect-manager/commit/1d426868fb1b34a0173651cbd61b84e2dd7fb40d))
 * **security:** validate URL schemes to prevent unsafe links in dashboard ([25a897f](https://github.com/LindemannRock/craft-redirect-manager/commit/25a897fe7645afd05045cfe67a3b7e8e5be189e6))
 
-## [5.21.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.20.0...v5.21.0) (2026-01-21)
+## [5.21.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.20.0...v5.21.0) - 2026-01-21
 
 
 ### Features
@@ -195,7 +195,7 @@
 * **security:** address multiple security vulnerabilities ([2d97c82](https://github.com/LindemannRock/craft-redirect-manager/commit/2d97c82e41a28f9496d07bb79ee6b97b1a0bf380))
 * swap cache and backup settings links in the sidebar ([bb1b036](https://github.com/LindemannRock/craft-redirect-manager/commit/bb1b0362e40f6c77640a079ff9c4fac1286c79a6))
 
-## [5.20.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.19.0...v5.20.0) (2026-01-16)
+## [5.20.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.19.0...v5.20.0) - 2026-01-16
 
 
 ### Features
@@ -212,7 +212,7 @@
 * update hardcoded cache paths with PluginHelper for consistency ([36cb9e0](https://github.com/LindemannRock/craft-redirect-manager/commit/36cb9e0ba9af30f81b6cbab91174620709af304d))
 * update PluginHelper bootstrap to include download permissions for logging ([e6fa6b0](https://github.com/LindemannRock/craft-redirect-manager/commit/e6fa6b0eef0def38849ab7a11f01d92a5602fdda))
 
-## [5.19.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.18.2...v5.19.0) (2026-01-12)
+## [5.19.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.18.2...v5.19.0) - 2026-01-12
 
 
 ### Features
@@ -225,35 +225,35 @@
 * format cache file counts and update analytics button style ([4b4fd9b](https://github.com/LindemannRock/craft-redirect-manager/commit/4b4fd9b8edf0c3c1e02cb8b7b1f8be89bbb36301))
 * update icon path for Unhandled404sWidget ([ab06edd](https://github.com/LindemannRock/craft-redirect-manager/commit/ab06edddaa63062addb169ab49b8630475d3378a))
 
-## [5.18.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.18.1...v5.18.2) (2026-01-12)
+## [5.18.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.18.1...v5.18.2) - 2026-01-12
 
 
 ### Bug Fixes
 
 * remove redundant redirects and analytics display limits from settings and config ([48f13d9](https://github.com/LindemannRock/craft-redirect-manager/commit/48f13d9015a53cdc5dc56ae1ff15b948ecaf6c8a))
 
-## [5.18.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.18.0...v5.18.1) (2026-01-11)
+## [5.18.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.18.0...v5.18.1) - 2026-01-11
 
 
 ### Bug Fixes
 
 * plugin name retrieval to use getFullName method for consistency ([d410744](https://github.com/LindemannRock/craft-redirect-manager/commit/d41074406dffb930faec9331666c9ba87f2ee8e1))
 
-## [5.18.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.17.0...v5.18.0) (2026-01-10)
+## [5.18.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.17.0...v5.18.0) - 2026-01-10
 
 
 ### Features
 
 * Add redirect analytics functionality with new template and service methods ([303faad](https://github.com/LindemannRock/craft-redirect-manager/commit/303faade49718b84d5c2c7221ef6aef527584bac))
 
-## [5.17.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.16.0...v5.17.0) (2026-01-09)
+## [5.17.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.16.0...v5.17.0) - 2026-01-09
 
 
 ### Features
 
 * Update backup path structure to include 'imports' subdirectory for better organization ([42e7604](https://github.com/LindemannRock/craft-redirect-manager/commit/42e7604cab2f40d6f36ed155a09fb3bbf9cb402f))
 
-## [5.16.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.15.0...v5.16.0) (2026-01-09)
+## [5.16.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.15.0...v5.16.0) - 2026-01-09
 
 
 ### Features
@@ -261,7 +261,7 @@
 * Enhance import/export functionality with improved URL parsing and auto-detection of creation type ([c5f8b20](https://github.com/LindemannRock/craft-redirect-manager/commit/c5f8b202ec5928353c04f51c0c5e0767034d326b))
 * Update redirect creation to return new ID on success and enhance edit template with save options ([7c91fe3](https://github.com/LindemannRock/craft-redirect-manager/commit/7c91fe3abff9fb963e70055baa9a52b065cda18e))
 
-## [5.15.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.4...v5.15.0) (2026-01-09)
+## [5.15.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.4...v5.15.0) - 2026-01-09
 
 
 ### Features
@@ -273,35 +273,35 @@
 
 * Update filename generation to use 'alltime' instead of 'all' for clarity ([b2aa0ab](https://github.com/LindemannRock/craft-redirect-manager/commit/b2aa0ab93cbb566bf394c9f115acde71e0f0b7d4))
 
-## [5.14.4](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.3...v5.14.4) (2026-01-08)
+## [5.14.4](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.3...v5.14.4) - 2026-01-08
 
 
 ### Bug Fixes
 
 * Update search clear button selector in dashboard and redirects templates ([ce01cf1](https://github.com/LindemannRock/craft-redirect-manager/commit/ce01cf1c9a49561f28bf815489624764a51f2e48))
 
-## [5.14.3](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.2...v5.14.3) (2026-01-08)
+## [5.14.3](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.2...v5.14.3) - 2026-01-08
 
 
 ### Bug Fixes
 
 * Improve AJAX request handling in dashboard refresh function ([5ae6a55](https://github.com/LindemannRock/craft-redirect-manager/commit/5ae6a5554e506da8dfe912cb2f2530c1df64a0b8))
 
-## [5.14.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.1...v5.14.2) (2026-01-08)
+## [5.14.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.1...v5.14.2) - 2026-01-08
 
 
 ### Bug Fixes
 
 * Preserve user input in search parameter for URL params ([d61e117](https://github.com/LindemannRock/craft-redirect-manager/commit/d61e1175b17aa94b4a1a61bb94cfeb01301a2162))
 
-## [5.14.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.0...v5.14.1) (2026-01-08)
+## [5.14.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.14.0...v5.14.1) - 2026-01-08
 
 
 ### Bug Fixes
 
 * Update form action URL in dashboard template ([3c94242](https://github.com/LindemannRock/craft-redirect-manager/commit/3c942428e7583595d6c4b771e31851453dd88602))
 
-## [5.14.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.13.0...v5.14.0) (2026-01-08)
+## [5.14.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.13.0...v5.14.0) - 2026-01-08
 
 
 ### Features
@@ -315,14 +315,14 @@
 
 * update success message for settings save action ([7d3dc52](https://github.com/LindemannRock/craft-redirect-manager/commit/7d3dc529531b939d50f27537433f438c7ccd964d))
 
-## [5.13.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.12.0...v5.13.0) (2026-01-05)
+## [5.13.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.12.0...v5.13.0) - 2026-01-05
 
 
 ### Features
 
 * migrate to lindemannrock/craft-plugin-base ([cf63978](https://github.com/LindemannRock/craft-redirect-manager/commit/cf6397815862f5c48746dc6fa6dbfb22ce9d2bbd))
 
-## [5.12.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.11.0...v5.12.0) (2026-01-05)
+## [5.12.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.11.0...v5.12.0) - 2026-01-05
 
 
 ### Features
@@ -330,7 +330,7 @@
 * enhance analytics and redirects controllers with additional fields and improve dashboard UI ([90bad19](https://github.com/LindemannRock/craft-redirect-manager/commit/90bad19252f43b83b65a0147a43772a1b573d9ec))
 * enhance dashboard and redirects UI with additional color coding for request and match types ([9c5bf9e](https://github.com/LindemannRock/craft-redirect-manager/commit/9c5bf9e224351eeda533d725811b26359aec05e8))
 
-## [5.11.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.10.0...v5.11.0) (2026-01-05)
+## [5.11.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.10.0...v5.11.0) - 2026-01-05
 
 
 ### Features
@@ -338,14 +338,14 @@
 * implement AJAX-based dashboard data retrieval and auto-refresh functionality ([a64a83f](https://github.com/LindemannRock/craft-redirect-manager/commit/a64a83fae422fb6661aa630910494e6d0e64622a))
 * **redirect-manager:** dashboard UI improvements and bug fixes ([dec1968](https://github.com/LindemannRock/craft-redirect-manager/commit/dec196864b9152c68873030a20f1e6cb9b56d8bc))
 
-## [5.10.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.9.0...v5.10.0) (2026-01-04)
+## [5.10.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.9.0...v5.10.0) - 2026-01-04
 
 
 ### Features
 
 * add regex capture group support ($1, $2, etc.) for redirect destinations ([56743b8](https://github.com/LindemannRock/craft-redirect-manager/commit/56743b890bd4608d9e1badf1094719343503197a))
 
-## [5.9.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.8.2...v5.9.0) (2025-12-19)
+## [5.9.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.8.2...v5.9.0) - 2025-12-19
 
 
 ### Features
@@ -359,21 +359,21 @@
 * improve display name handling and trim whitespace in settings ([c6aee51](https://github.com/LindemannRock/craft-redirect-manager/commit/c6aee5148434e819d77f7c7a73f90a54e2ae91d1))
 * update cache duration fields and improve instructions ([25be9a6](https://github.com/LindemannRock/craft-redirect-manager/commit/25be9a6e1b0dec7b9a7b634ed9661dac4d5f138f))
 
-## [5.8.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.8.1...v5.8.2) (2025-12-16)
+## [5.8.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.8.1...v5.8.2) - 2025-12-16
 
 
 ### Bug Fixes
 
 * update icon for Redirect Manager Utility ([ba08098](https://github.com/LindemannRock/craft-redirect-manager/commit/ba08098a203d411f629a103442261976728e3380))
 
-## [5.8.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.8.0...v5.8.1) (2025-12-16)
+## [5.8.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.8.0...v5.8.1) - 2025-12-16
 
 
 ### Bug Fixes
 
 * update time formatting in analytics dashboard to use locale settings ([3e79ff4](https://github.com/LindemannRock/craft-redirect-manager/commit/3e79ff417e0cf526ca210c246d262c88d0de80a3))
 
-## [5.8.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.7.0...v5.8.0) (2025-12-16)
+## [5.8.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.7.0...v5.8.0) - 2025-12-16
 
 
 ### Features
@@ -386,7 +386,7 @@
 * implement cache storage method configuration and handling for Redis and file systems ([6b6058d](https://github.com/LindemannRock/craft-redirect-manager/commit/6b6058d5bd0f5f6fd37b978ebf77e8559bcdfd3c))
 * update smart caching description and add cache storage method configuration ([461b806](https://github.com/LindemannRock/craft-redirect-manager/commit/461b806440c26eaa83c6c9932f22785632ed7f0d))
 
-## [5.7.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.6.0...v5.7.0) (2025-12-03)
+## [5.7.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.6.0...v5.7.0) - 2025-12-03
 
 
 ### Features
@@ -406,7 +406,7 @@
 
 * update version annotations to reflect new versioning scheme across multiple files ([891ebe8](https://github.com/LindemannRock/craft-redirect-manager/commit/891ebe84a4deb5c35619532686413fa5edb25b29))
 
-## [5.6.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.5.0...v5.6.0) (2025-11-15)
+## [5.6.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.5.0...v5.6.0) - 2025-11-15
 
 
 ### Features
@@ -418,7 +418,7 @@
 
 * **backup:** adjust margin style for backup settings header ([30c58fa](https://github.com/LindemannRock/craft-redirect-manager/commit/30c58fadbaa15831582593106e716fc88db9db27))
 
-## [5.5.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.4.0...v5.5.0) (2025-11-14)
+## [5.5.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.4.0...v5.5.0) - 2025-11-14
 
 
 ### Features
@@ -426,7 +426,7 @@
 * **plugin:** enhance plugin name handling and introduce Twig extension for name variations ([a73917f](https://github.com/LindemannRock/craft-redirect-manager/commit/a73917f31972adc31f34546338ce8049e3492c98))
 * **settings:** allow disabling undo window and improve site handling in redirects ([53903de](https://github.com/LindemannRock/craft-redirect-manager/commit/53903de93e8c8a7d2007a0e960024104b1b4a40d))
 
-## [5.4.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.3.2...v5.4.0) (2025-11-11)
+## [5.4.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.3.2...v5.4.0) - 2025-11-11
 
 
 ### Features
@@ -438,21 +438,21 @@
 
 * **advanced-settings:** improve descriptions for quick setup and WordPress migration filters ([3f002c0](https://github.com/LindemannRock/craft-redirect-manager/commit/3f002c087474d2f5cfe83978dcd6d194a83db501))
 
-## [5.3.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.3.1...v5.3.2) (2025-11-11)
+## [5.3.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.3.1...v5.3.2) - 2025-11-11
 
 
 ### Bug Fixes
 
 * **ip-salt-error:** enhance error message with copyable commands for generating IP hash salt ([1822b66](https://github.com/LindemannRock/craft-redirect-manager/commit/1822b66d5037a4f19ffc39ce18e560439c147414))
 
-## [5.3.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.3.0...v5.3.1) (2025-11-07)
+## [5.3.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.3.0...v5.3.1) - 2025-11-07
 
 
 ### Bug Fixes
 
 * CleanupAnalyticsJob with next run time calculation and display ([1d489ce](https://github.com/LindemannRock/craft-redirect-manager/commit/1d489ce4308f784f4ba268583361dc102575cf4e))
 
-## [5.3.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.2.0...v5.3.0) (2025-11-07)
+## [5.3.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.2.0...v5.3.0) - 2025-11-07
 
 
 ### Features
@@ -468,7 +468,7 @@
 * improve backup notification logic in import preview template ([5908836](https://github.com/LindemannRock/craft-redirect-manager/commit/5908836bc4052d19b8ba30ea76bc12ed50e71f3d))
 * remove unused getBackupHistory method from RedirectManagerVariable ([3abaebc](https://github.com/LindemannRock/craft-redirect-manager/commit/3abaebca36eee520ff700ba08f447d90db0b6be0))
 
-## [5.2.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.1.3...v5.2.0) (2025-11-03)
+## [5.2.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.1.3...v5.2.0) - 2025-11-03
 
 
 ### Features
@@ -482,28 +482,28 @@
 * logging documentation and update analytics handling in Redirect Manager ([f89928e](https://github.com/LindemannRock/craft-redirect-manager/commit/f89928eea793f033c636506f108e1c8d326ed42a))
 * remove unnecessary blank line in import/export template ([485f8d2](https://github.com/LindemannRock/craft-redirect-manager/commit/485f8d21d4887ba488c5c6fee0a9efba46cb1a92))
 
-## [5.1.3](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.1.2...v5.1.3) (2025-10-26)
+## [5.1.3](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.1.2...v5.1.3) - 2025-10-26
 
 
 ### Bug Fixes
 
 * enhance log level validation to ensure 'debug' is only allowed in devMode ([fc96a36](https://github.com/LindemannRock/craft-redirect-manager/commit/fc96a3683e5bee86937ffafa3da94f4e44847ce3))
 
-## [5.1.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.1.1...v5.1.2) (2025-10-26)
+## [5.1.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.1.1...v5.1.2) - 2025-10-26
 
 
 ### Bug Fixes
 
 * reorganize config settings for clarity and add new logging and caching options ([1a2bf44](https://github.com/LindemannRock/craft-redirect-manager/commit/1a2bf4451188bfb710f285970e6bc2075574e880))
 
-## [5.1.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.1.0...v5.1.1) (2025-10-26)
+## [5.1.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.1.0...v5.1.1) - 2025-10-26
 
 
 ### Bug Fixes
 
 * add version to composer.json to fix release-please ([1d290d1](https://github.com/LindemannRock/craft-redirect-manager/commit/1d290d147b61aac04dff1cc2112111f215757b3d))
 
-## [5.1.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.0.0...v5.1.0) (2025-10-26)
+## [5.1.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.0.0...v5.1.0) - 2025-10-26
 
 
 ### Features
@@ -519,7 +519,7 @@
 
 * analytics handling in RedirectManager ([699185a](https://github.com/LindemannRock/craft-redirect-manager/commit/699185acdb70bb6fd2d7ec863b5bb9f7fd395afe))
 
-## 5.0.0 (2025-10-21)
+## 5.0.0 - 2025-10-21
 
 
 ### Features
