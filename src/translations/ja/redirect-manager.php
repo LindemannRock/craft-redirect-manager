@@ -78,8 +78,7 @@ return [
     'Priority' => '優先度',
     'Hit Count' => 'ヒット数',
     'Last Hit' => '最終ヒット',
-    'Created' => '作成日',
-    'Updated' => '更新日',
+
     'Learn more' => '詳細を確認する',
     'Enable' => '有効にする',
     'Disable' => '無効にする',

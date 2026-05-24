@@ -78,8 +78,7 @@ return [
     'Priority' => 'Prioriteit',
     'Hit Count' => 'Aantal hits',
     'Last Hit' => 'Laatste hit',
-    'Created' => 'Aangemaakt',
-    'Updated' => 'Bijgewerkt',
+
     'Learn more' => 'Meer informatie',
     'Enable' => 'Inschakelen',
     'Disable' => 'Uitschakelen',

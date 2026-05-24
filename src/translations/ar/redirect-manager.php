@@ -78,8 +78,7 @@ return [
     'Priority' => 'الأولوية',
     'Hit Count' => 'عدد الزيارات',
     'Last Hit' => 'آخر زيارة',
-    'Created' => 'تاريخ الإنشاء',
-    'Updated' => 'تاريخ التحديث',
+
     'Learn more' => 'اعرف المزيد',
     'Enable' => 'تفعيل',
     'Disable' => 'تعطيل',

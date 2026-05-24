@@ -78,8 +78,7 @@ return [
     'Priority' => 'Priority',
     'Hit Count' => 'Hit Count',
     'Last Hit' => 'Last Hit',
-    'Created' => 'Created',
-    'Updated' => 'Updated',
+
     'Learn more' => 'Learn more',
     'Enable' => 'Enable',
     'Disable' => 'Disable',

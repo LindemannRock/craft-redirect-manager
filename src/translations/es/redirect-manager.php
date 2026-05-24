@@ -78,8 +78,7 @@ return [
     'Priority' => 'Prioridad',
     'Hit Count' => 'Número de visitas',
     'Last Hit' => 'Última visita',
-    'Created' => 'Creado',
-    'Updated' => 'Actualizado',
+
     'Learn more' => 'Más información',
     'Enable' => 'Activar',
     'Disable' => 'Desactivar',
