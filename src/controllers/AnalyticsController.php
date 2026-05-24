@@ -464,11 +464,11 @@ class AnalyticsController extends Controller
         // Process analytics data
         // Use key-based iteration to ensure modifications persist
         foreach ($analytics as $key => $stat) {
-            // Convert lastHit from UTC to user's timezone
+            // Convert lastHit from UTC to user's timezone (keep as DateTime so |lrDatetime receives a local-tz object)
             if (!empty($stat['lastHit'])) {
                 $utcDate = new \DateTime($stat['lastHit'], new \DateTimeZone('UTC'));
                 $utcDate->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
-                $analytics[$key]['lastHit'] = $utcDate->format('Y-m-d H:i:s');
+                $analytics[$key]['lastHit'] = $utcDate;
             }
 
             // Detect request type
