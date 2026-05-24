@@ -871,10 +871,10 @@ class AnalyticsController extends Controller
                 'siteId' => $stat['siteId'] ?? null,
                 'siteName' => $siteName ?? '—',
                 'date' => $date instanceof \DateTime
-                    ? DateFormatHelper::formatDate($date, 'short', true, false)
+                    ? DateFormatHelper::formatDate($date, 'cascade', true, false)
                     : null,
                 'time' => $date instanceof \DateTime
-                    ? DateFormatHelper::formatTime($date, 'short', null, false)
+                    ? DateFormatHelper::formatTime($date, 'cascade', null, false)
                     : null,
             ];
         }
