@@ -293,13 +293,12 @@ class AnalyticsQueryService
 
         $results = $query->all();
 
-        // Convert lastHit dates from UTC to user's timezone
+        // Convert lastHit dates from UTC to user's timezone (keep as DateTime for cascade-aware Twig filters)
         foreach ($results as &$result) {
             if (!empty($result['lastHit'])) {
                 $utcDate = new \DateTime($result['lastHit'], new \DateTimeZone('UTC'));
                 $utcDate->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
                 $result['lastHit'] = $utcDate;
-                $result['lastHitFormatted'] = Craft::$app->getFormatter()->asDatetime($utcDate, 'short');
             }
         }
 
@@ -347,13 +346,12 @@ class AnalyticsQueryService
 
         $results = $query->all();
 
-        // Convert lastHit dates from UTC to user's timezone
+        // Convert lastHit dates from UTC to user's timezone (keep as DateTime for cascade-aware Twig filters)
         foreach ($results as &$result) {
             if (!empty($result['lastHit'])) {
                 $utcDate = new \DateTime($result['lastHit'], new \DateTimeZone('UTC'));
                 $utcDate->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
                 $result['lastHit'] = $utcDate;
-                $result['lastHitFormatted'] = Craft::$app->getFormatter()->asDatetime($utcDate, 'short');
             }
         }
 
