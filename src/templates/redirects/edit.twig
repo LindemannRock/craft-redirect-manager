@@ -275,7 +275,7 @@
 					<dt class="heading">{{ 'Status'|t('redirect-manager') }}</dt>
 					<dd class="value">
 						<span class="status {{ redirect.enabled ? 'live' : 'disabled' }}"></span>
-						<span>{{ redirect.enabled ? 'Live'|t('redirect-manager') : 'Disabled'|t('redirect-manager') }}</span>
+						<span>{{ redirect.enabled ? 'Enabled'|t('redirect-manager') : 'Disabled'|t('redirect-manager') }}</span>
 					</dd>
 				</div>
 				<div class="data">
@@ -289,11 +289,11 @@
 					</div>
 				{% endif %}
 				<div class="data">
-					<dt class="heading">{{ 'Created'|t('redirect-manager') }}</dt>
+					<dt class="heading">{{ 'Created at'|t('app') }}</dt>
 					<dd class="value">{{ redirect.dateCreated|lrDatetime }}</dd>
 				</div>
 				<div class="data">
-					<dt class="heading">{{ 'Updated'|t('redirect-manager') }}</dt>
+					<dt class="heading">{{ 'Updated at'|t('app') }}</dt>
 					<dd class="value">{{ redirect.dateUpdated|lrDatetime }}</dd>
 				</div>
 			</dl>

@@ -172,7 +172,7 @@
 				<tbody>
 					{% for item in importHistory %}
 						<tr>
-							<td>{{ item.formattedDate ?? (item.date|datetime('short')) }}</td>
+							<td>{{ item.formattedDate ?? (item.date|lrDatetime) }}</td>
 							<td>{{ item.user }}</td>
 							<td>{{ item.filename ?? '-' }}</td>
 							<td><code style="font-size: 11px;">{{ item.formattedSize }}</code></td>
