@@ -436,7 +436,6 @@ return [
     '308 - Permanent Redirect' => '308 - Permanent Redirect',
     '410 - Gone' => '410 - Gone',
     'Are you sure you want to delete this {item}?' => 'Are you sure you want to delete this {item}?',
-    'Live' => 'Live',
     'Hit count' => 'Hit count',
     'Last hit' => 'Last hit',
     'Match by path pattern (regex). Works across all domains.' => 'Match by path pattern (regex). Works across all domains.',

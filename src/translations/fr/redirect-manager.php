@@ -436,7 +436,6 @@ return [
     '308 - Permanent Redirect' => '308 – Redirection permanente',
     '410 - Gone' => '410 – Supprimé',
     'Are you sure you want to delete this {item}?' => 'Voulez-vous vraiment supprimer {item} ?',
-    'Live' => 'En ligne',
     'Hit count' => 'Nombre d\'accès',
     'Last hit' => 'Dernier accès',
     'Match by path pattern (regex). Works across all domains.' => 'Correspondance par modèle de chemin (regex). Fonctionne sur tous les domaines.',

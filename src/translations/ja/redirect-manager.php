@@ -436,7 +436,6 @@ return [
     '308 - Permanent Redirect' => '308 – 恒久的なリダイレクト',
     '410 - Gone' => '410 – 削除済み',
     'Are you sure you want to delete this {item}?' => 'この {item} を削除しますか？',
-    'Live' => 'ライブ',
     'Hit count' => 'ヒット数',
     'Last hit' => '最終ヒット',
     'Match by path pattern (regex). Works across all domains.' => 'パスパターン（regex）で一致させます。すべてのドメインで機能します。',

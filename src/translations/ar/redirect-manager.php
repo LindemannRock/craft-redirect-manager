@@ -436,7 +436,6 @@ return [
     '308 - Permanent Redirect' => '308 – إعادة توجيه دائمة',
     '410 - Gone' => '410 – غير موجود',
     'Are you sure you want to delete this {item}?' => 'هل أنت متأكد أنك تريد حذف {item}؟',
-    'Live' => 'مباشر',
     'Hit count' => 'عدد الزيارات',
     'Last hit' => 'آخر زيارة',
     'Match by path pattern (regex). Works across all domains.' => 'المطابقة بنمط مسار (regex). يعمل على جميع النطاقات.',

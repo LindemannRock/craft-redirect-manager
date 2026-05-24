@@ -436,7 +436,6 @@ return [
     '308 - Permanent Redirect' => '308 – Permanent omdirigering',
     '410 - Gone' => '410 – Slettet',
     'Are you sure you want to delete this {item}?' => 'Er du sikker på at du vil slette denne {item}?',
-    'Live' => 'Live',
     'Hit count' => 'Antall treff',
     'Last hit' => 'Siste treff',
     'Match by path pattern (regex). Works across all domains.' => 'Match med stimønster (regex). Fungerer på tvers av alle domener.',
