@@ -193,7 +193,7 @@
             {% set actionItems = actionItems|merge([{type: 'divider'}]) %}
         {% endif %}
         {% set actionItems = actionItems|merge([{
-            label: 'Delete'|t('app'),
+            label: 'Delete'|t('redirect-manager'),
             class: 'error',
             jsAction: 'delete',
         }]) %}
@@ -261,9 +261,9 @@
         normalTitle: {{ 'Regular browser request'|t('redirect-manager')|json_encode|raw }},
         editItemTemplate: {{ 'Edit {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|json_encode|raw }},
         createItemTemplate: {{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|json_encode|raw }},
-        delete: {{ 'Delete'|t('app')|json_encode|raw }},
+        delete: {{ 'Delete'|t('redirect-manager')|json_encode|raw }},
         actions: {{ 'Actions'|t('redirect-manager')|json_encode|raw }},
-        select: {{ 'Select'|t('app')|json_encode|raw }},
+        select: {{ 'Select'|t('redirect-manager')|json_encode|raw }},
         all: {{ 'All'|t('redirect-manager')|json_encode|raw }},
         handled: {{ 'Handled'|t('redirect-manager')|json_encode|raw }},
         unhandled: {{ 'Unhandled'|t('redirect-manager')|json_encode|raw }},

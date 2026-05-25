@@ -194,7 +194,7 @@
 
     {% if canEdit %}
         {% set actionItems = actionItems|merge([{
-            label: 'Edit'|t('app'),
+            label: 'Edit'|t('redirect-manager'),
             url: url('redirect-manager/redirects/' ~ item.id),
         }]) %}
     {% endif %}
@@ -204,7 +204,7 @@
             {% set actionItems = actionItems|merge([{type: 'divider'}]) %}
         {% endif %}
         {% set actionItems = actionItems|merge([{
-            label: 'Delete'|t('app'),
+            label: 'Delete'|t('redirect-manager'),
             class: 'error',
             jsAction: 'delete',
         }]) %}
@@ -215,7 +215,7 @@
         actions: {
             type: 'menu',
             icon: 'settings',
-            title: 'Actions'|t('app'),
+            title: 'Actions'|t('redirect-manager'),
             items: actionItems,
         },
     } only %}
@@ -224,8 +224,8 @@
 {% block bulkActions %}
     {% if canEdit %}
         <div>
-            <button type="button" class="btn menubtn secondary" id="lr-bulk-status-btn" aria-label="{{ 'Set status'|t('app') }}">
-                {{ 'Set status'|t('app') }}
+            <button type="button" class="btn menubtn secondary" id="lr-bulk-status-btn" aria-label="{{ 'Set status'|t('redirect-manager') }}">
+                {{ 'Set status'|t('redirect-manager') }}
             </button>
             <div class="menu">
                 <ul>
@@ -237,7 +237,7 @@
     {% endif %}
     {% if canDelete %}
         <button type="button" class="btn secondary" id="lr-bulk-delete-btn">
-            {{ 'Delete'|t('app') }} (<span id="lr-selected-count">0</span>)
+            {{ 'Delete'|t('redirect-manager') }} (<span id="lr-selected-count">0</span>)
         </button>
     {% endif %}
 {% endblock %}
