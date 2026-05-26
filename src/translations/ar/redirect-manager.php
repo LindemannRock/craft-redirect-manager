@@ -672,6 +672,5 @@ return [
     'This will delete all 404 tracking data. Are you absolutely sure?' => 'سيؤدي هذا إلى حذف جميع بيانات تتبع 404. هل أنت متأكد تماماً؟',
 
     // Base partials
-    'Scheduled initial analytics cleanup job' => 'تمت جدولة مهمة التنظيف الأولي للتحليلات',
 
 ];
