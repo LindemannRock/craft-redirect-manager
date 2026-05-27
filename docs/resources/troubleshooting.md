@@ -42,6 +42,8 @@ A redirect exists in the CP but visiting the URL does not redirect.
    ddev craft clear-caches/all
    ```
 
+   If `cacheStorageMethod` is set to `redis`, also check the logs for a cache-component warning. Redirect Manager logs a warning and skips Redis-specific cache operations when Redis storage is selected but Craft's `cache` component is not Redis-backed.
+
 6. **Check the logs.** Go to **Redirect Manager > Logs** or enable debug logging temporarily:
 
    ```php
