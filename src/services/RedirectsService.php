@@ -1008,8 +1008,9 @@ class RedirectsService extends Component
             $cache->set($cacheKey, $redirect, $duration);
 
             // Track key in set for selective deletion
-            if ($cache instanceof \yii\redis\Cache) {
-                $redis = $cache->redis;
+            $redisCache = PluginHelper::getRedisCacheOrLog(RedirectManager::$plugin->id);
+            if ($redisCache !== null) {
+                $redis = $redisCache->redis;
                 $redis->executeCommand('SADD', [PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'redirect'), $cacheKey]);
             }
 
@@ -1050,8 +1051,8 @@ class RedirectsService extends Component
 
         if ($settings->cacheStorageMethod === 'redis') {
             // Clear Redis cache
-            $cache = Craft::$app->cache;
-            if ($cache instanceof \yii\redis\Cache) {
+            $cache = PluginHelper::getRedisCacheOrLog(RedirectManager::$plugin->id);
+            if ($cache !== null) {
                 $redis = $cache->redis;
 
                 // Get all redirect cache keys from tracking set
