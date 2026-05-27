@@ -12,6 +12,8 @@ namespace lindemannrock\redirectmanager\console\controllers;
 
 use craft\console\Controller;
 use craft\helpers\Console;
+use lindemannrock\base\helpers\DateFormatHelper;
+use lindemannrock\base\helpers\ScheduleHelper;
 use lindemannrock\redirectmanager\RedirectManager;
 use yii\console\ExitCode;
 
@@ -110,22 +112,19 @@ class BackupController extends Controller
             return ExitCode::OK;
         }
 
-        if ($settings->backupSchedule === 'manual') {
-            $this->stdout("Backup schedule is set to manual\n");
+        $schedule = $settings->getEffectiveBackupSchedule();
+
+        if ($schedule === 'disabled') {
+            $this->stdout("Backup schedule is disabled\n");
             return ExitCode::OK;
         }
 
         $this->stdout("Checking backup schedule...\n", Console::FG_YELLOW);
 
         $lastBackupTime = $this->getLastScheduledBackupTime();
-        $currentTime = time();
-
-        $shouldBackup = match ($settings->backupSchedule) {
-            'daily' => ($currentTime - $lastBackupTime) >= 86400,
-            'weekly' => ($currentTime - $lastBackupTime) >= 604800,
-            'monthly' => ($currentTime - $lastBackupTime) >= 2592000,
-            default => false,
-        };
+        $from = (new \DateTime('@' . $lastBackupTime))->setTimezone(DateFormatHelper::now()->getTimezone());
+        $nextRun = ScheduleHelper::calculateNext($schedule, $from);
+        $shouldBackup = $nextRun !== null && DateFormatHelper::now() >= $nextRun;
 
         if ($shouldBackup) {
             $this->stdout("Running scheduled backup...\n", Console::FG_GREEN);
