@@ -12,6 +12,8 @@ namespace lindemannrock\redirectmanager\jobs;
 
 use Craft;
 use craft\queue\BaseJob;
+use lindemannrock\base\helpers\DateFormatHelper;
+use lindemannrock\base\helpers\ScheduleHelper;
 use lindemannrock\base\traits\QueueTtrTrait;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
@@ -34,7 +36,6 @@ class CreateBackupJob extends BaseJob implements RetryableJobInterface
 
     /**
      * @var bool Whether to reschedule after completion
-     * @deprecated Use cron for scheduling instead
      */
     public bool $reschedule = false;
 
@@ -61,10 +62,16 @@ class CreateBackupJob extends BaseJob implements RetryableJobInterface
 
         if ($this->reschedule && !$this->nextRunTime) {
             $settings = RedirectManager::getInstance()->getSettings();
-            if ($settings->backupEnabled && $settings->backupSchedule !== 'manual') {
-                $delay = $this->calculateNextRunDelay($settings->backupSchedule);
-                if ($delay > 0) {
-                    $this->nextRunTime = date('M j, g:ia', time() + $delay);
+            $schedule = $settings->getEffectiveBackupSchedule();
+            if ($settings->backupEnabled && $schedule !== 'disabled') {
+                $nextRun = ScheduleHelper::calculateNext($schedule);
+                if ($nextRun !== null) {
+                    $this->nextRunTime = DateFormatHelper::formatCompactDatetimeFromSettings(
+                        $nextRun,
+                        $settings,
+                        false,
+                        false,
+                    );
                 }
             }
         }
@@ -120,26 +127,22 @@ class CreateBackupJob extends BaseJob implements RetryableJobInterface
     private function scheduleNextBackup(): void
     {
         $settings = RedirectManager::getInstance()->getSettings();
+        $schedule = $settings->getEffectiveBackupSchedule();
 
-        if (!$settings->backupEnabled || $settings->backupSchedule === 'manual') {
+        if (!$settings->backupEnabled || $schedule === 'disabled') {
             return;
         }
 
-        $existingJob = (new \craft\db\Query())
-            ->from('{{%queue}}')
-            ->where(['like', 'job', 'redirectmanager'])
-            ->andWhere(['like', 'job', 'CreateBackupJob'])
-            ->exists();
+        $nextRun = ScheduleHelper::calculateNext($schedule);
 
-        if ($existingJob) {
-            $this->logDebug('Skipping reschedule - backup job already exists');
-            return;
-        }
-
-        $delay = $this->calculateNextRunDelay($settings->backupSchedule);
-
-        if ($delay > 0) {
-            $nextRunTime = date('M j, g:ia', time() + $delay);
+        if ($nextRun !== null) {
+            $delay = max(0, $nextRun->getTimestamp() - DateFormatHelper::now()->getTimestamp());
+            $nextRunTime = DateFormatHelper::formatCompactDatetimeFromSettings(
+                $nextRun,
+                $settings,
+                false,
+                false,
+            );
 
             $job = new self([
                 'reason' => 'scheduled',
@@ -154,18 +157,5 @@ class CreateBackupJob extends BaseJob implements RetryableJobInterface
                 'next_run' => $nextRunTime,
             ]);
         }
-    }
-
-    /**
-     * Calculate the delay in seconds for the next backup
-     */
-    private function calculateNextRunDelay(string $schedule): int
-    {
-        return match ($schedule) {
-            'daily' => 86400,
-            'weekly' => 604800,
-            'monthly' => 2592000,
-            default => 0,
-        };
     }
 }
