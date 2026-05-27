@@ -50,7 +50,7 @@ class ImportExportController extends Controller
      */
     public function actionIndex(): Response
     {
-        $this->requireAnyImportExportPermission();
+        $this->requirePermission('redirectManager:manageImportExport');
 
         $settings = RedirectManager::$plugin->getSettings();
         $importLimits = [
@@ -59,29 +59,26 @@ class ImportExportController extends Controller
         ];
         $canImport = $this->canImport();
         $canExport = $this->canExport();
-        $canViewHistory = $this->canViewHistory();
         $history = ImportHistoryRecord::find()
             ->orderBy(['dateCreated' => SORT_DESC])
             ->limit(20)
             ->all();
 
         $formattedHistory = [];
-        if ($canViewHistory) {
-            /** @var ImportHistoryRecord $record */
-            foreach ($history as $record) {
-                $user = Craft::$app->getUsers()->getUserById($record->userId);
-                $formattedHistory[] = [
-                    'date' => $record->dateCreated,
-                    'formattedDate' => DateFormatHelper::formatDatetime($record->dateCreated),
-                    'user' => $user?->username ?? Craft::t('redirect-manager', 'Unknown'),
-                    'filename' => $record->filename,
-                    'filesize' => $record->filesize,
-                    'formattedSize' => $record->filesize ? Craft::$app->getFormatter()->asShortSize($record->filesize, 2) : '-',
-                    'imported' => $record->imported,
-                    'failed' => $record->failed,
-                    'backupPath' => $record->backupPath,
-                ];
-            }
+        /** @var ImportHistoryRecord $record */
+        foreach ($history as $record) {
+            $user = Craft::$app->getUsers()->getUserById($record->userId);
+            $formattedHistory[] = [
+                'date' => $record->dateCreated,
+                'formattedDate' => DateFormatHelper::formatDatetime($record->dateCreated),
+                'user' => $user?->username ?? Craft::t('redirect-manager', 'Unknown'),
+                'filename' => $record->filename,
+                'filesize' => $record->filesize,
+                'formattedSize' => $record->filesize ? Craft::$app->getFormatter()->asShortSize($record->filesize, 2) : '-',
+                'imported' => $record->imported,
+                'failed' => $record->failed,
+                'backupPath' => $record->backupPath,
+            ];
         }
 
         return $this->renderTemplate('redirect-manager/import-export/index', [
@@ -89,7 +86,7 @@ class ImportExportController extends Controller
             'importHistory' => $formattedHistory,
             'canImport' => $canImport,
             'canExport' => $canExport,
-            'canViewHistory' => $canViewHistory,
+            'canViewHistory' => true,
             'importLimits' => $importLimits,
         ]);
     }
@@ -1206,16 +1203,6 @@ class ImportExportController extends Controller
     }
 
     /**
-     * Check if user can view import history
-     *
-     * @return bool
-     */
-    private function canViewHistory(): bool
-    {
-        return Craft::$app->getUser()->checkPermission('redirectManager:viewImportHistory');
-    }
-
-    /**
      * Require import permission
      *
      * @return void
@@ -1248,19 +1235,6 @@ class ImportExportController extends Controller
     {
         if (!$this->canExport()) {
             throw new ForbiddenHttpException('User does not have permission to export redirects');
-        }
-    }
-
-    /**
-     * Require any import/export permission for the main page
-     *
-     * @return void
-     */
-    private function requireAnyImportExportPermission(): void
-    {
-        if (!Craft::$app->getUser()->checkPermission('redirectManager:manageImportExport') &&
-            !$this->canImport() && !$this->canExport() && !$this->canViewHistory()) {
-            throw new ForbiddenHttpException('User does not have permission to manage import/export');
         }
     }
 }
