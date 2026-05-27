@@ -536,6 +536,8 @@ return [
     'Before Restore' => 'Innan återställning',
     'Scheduled' => 'Schemalagd',
     'Before Import' => 'Innan import',
+    'Maintenance' => 'Underhåll',
+    'Other' => 'Övrigt',
     'Restore' => 'Återställ',
     'Download ZIP' => 'Ladda ner ZIP',
     'Delete' => 'Ta bort',

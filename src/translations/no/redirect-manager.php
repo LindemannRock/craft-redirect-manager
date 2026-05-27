@@ -536,6 +536,8 @@ return [
     'Before Restore' => 'Før gjenoppretting',
     'Scheduled' => 'Planlagt',
     'Before Import' => 'Før import',
+    'Maintenance' => 'Vedlikehold',
+    'Other' => 'Annet',
     'Restore' => 'Gjenopprett',
     'Download ZIP' => 'Last ned ZIP',
     'Delete' => 'Slett',

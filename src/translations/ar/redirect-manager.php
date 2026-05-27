@@ -536,6 +536,8 @@ return [
     'Before Restore' => 'قبل الاستعادة',
     'Scheduled' => 'مجدوَل',
     'Before Import' => 'قبل الاستيراد',
+    'Maintenance' => 'الصيانة',
+    'Other' => 'أخرى',
     'Restore' => 'استعادة',
     'Download ZIP' => 'تنزيل ZIP',
     'Delete' => 'حذف',

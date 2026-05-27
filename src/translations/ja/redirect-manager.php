@@ -536,6 +536,8 @@ return [
     'Before Restore' => '復元前',
     'Scheduled' => 'スケジュール済み',
     'Before Import' => 'インポート前',
+    'Maintenance' => 'メンテナンス',
+    'Other' => 'その他',
     'Restore' => '復元する',
     'Download ZIP' => 'ZIP をダウンロードする',
     'Delete' => '削除する',

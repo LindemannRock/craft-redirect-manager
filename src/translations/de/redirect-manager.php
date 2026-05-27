@@ -536,6 +536,8 @@ return [
     'Before Restore' => 'Vor Wiederherstellung',
     'Scheduled' => 'Geplant',
     'Before Import' => 'Vor Import',
+    'Maintenance' => 'Wartung',
+    'Other' => 'Sonstige',
     'Restore' => 'Wiederherstellen',
     'Download ZIP' => 'ZIP herunterladen',
     'Delete' => 'Löschen',
