@@ -924,16 +924,19 @@ class ImportExportController extends Controller
     {
         $reason = strtolower($reason);
 
-        $label = match ($reason) {
-            'restore' => Craft::t('redirect-manager', 'Before Restore'),
-            'manual' => Craft::t('redirect-manager', 'Manual'),
-            'scheduled' => Craft::t('redirect-manager', 'Scheduled'),
-            default => Craft::t('redirect-manager', 'Before Import'),
+        [$label, $value] = match ($reason) {
+            'import', 'before_import' => [Craft::t('redirect-manager', 'Before Import'), 'import'],
+            'restore', 'before_restore' => [Craft::t('redirect-manager', 'Before Restore'), 'restore'],
+            'manual', 'console' => [Craft::t('redirect-manager', 'Manual'), 'manual'],
+            'scheduled' => [Craft::t('redirect-manager', 'Scheduled'), 'scheduled'],
+            'maintenance' => [Craft::t('redirect-manager', 'Maintenance'), 'maintenance'],
+            'other' => [Craft::t('redirect-manager', 'Other'), 'other'],
+            default => [Craft::t('redirect-manager', 'Other'), 'other'],
         };
 
         return [
             'reasonLabel' => $label,
-            'reasonValue' => $reason ?: 'import',
+            'reasonValue' => $value,
         ];
     }
 
