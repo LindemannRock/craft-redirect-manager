@@ -59,13 +59,8 @@
                 instructions: "How often to create automatic backups. Uses Craft's queue if running, or set up a cron job:"|t('redirect-manager') ~ '<br><code style="display: inline-block; margin-top: 4px;">craft redirect-manager/backup/scheduled</code>',
                 id: 'backupSchedule',
                 name: 'settings[backupSchedule]',
-                value: settings.backupSchedule,
-                options: [
-                    { label: 'Manual Only'|t('redirect-manager'), value: 'manual' },
-                    { label: 'Daily'|t('redirect-manager'), value: 'daily' },
-                    { label: 'Weekly'|t('redirect-manager'), value: 'weekly' },
-                    { label: 'Monthly'|t('redirect-manager'), value: 'monthly' },
-                ],
+                value: settings.getEffectiveBackupSchedule(),
+                options: settings.getBackupScheduleOptions(),
                 errors: settings.getErrors('backupSchedule'),
                 disabled: settings.isOverriddenByConfig('backupSchedule'),
                 warning: settings.isOverriddenByConfig('backupSchedule') ?
