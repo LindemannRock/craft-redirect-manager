@@ -86,7 +86,7 @@ class ImportExportController extends Controller
             'importHistory' => $formattedHistory,
             'canImport' => $canImport,
             'canExport' => $canExport,
-            'canViewHistory' => true,
+            'canShowHistory' => true,
             'importLimits' => $importLimits,
         ]);
     }
