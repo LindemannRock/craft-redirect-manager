@@ -60,7 +60,7 @@ Every import is logged in the Import History tab. Each entry shows:
 
 This log is useful for auditing changes and understanding the state of your redirect library over time.
 
-The `redirectManager:viewImportHistory` permission is required to access the history tab. The `redirectManager:clearImportHistory` permission is required to delete history logs.
+The `redirectManager:manageImportExport` permission is required to access the history tab. The `redirectManager:clearImportHistory` permission is required to delete history logs.
 
 ### Clearing Import History
 
@@ -84,7 +84,6 @@ The `redirectManager:exportRedirects` permission is required.
 | Access Import/Export section | `redirectManager:manageImportExport` |
 | Import redirects from CSV | `redirectManager:importRedirects` |
 | Export redirects to CSV | `redirectManager:exportRedirects` |
-| View import history | `redirectManager:viewImportHistory` |
 | Clear import history | `redirectManager:clearImportHistory` |
 
 See [Permissions](../developers/permissions.md) for the full permission hierarchy.

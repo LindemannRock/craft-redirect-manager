@@ -20,7 +20,6 @@ Redirect Manager registers granular permissions that can be assigned to user gro
 | **`redirectManager:manageImportExport`** | Access the import/export section (view and access) |
 | └─ `redirectManager:importRedirects` | Import redirects |
 | └─ `redirectManager:exportRedirects` | Export redirects |
-| └─ `redirectManager:viewImportHistory` | View import history |
 | └─ `redirectManager:clearImportHistory` | Clear import history |
 
 ### Backups
