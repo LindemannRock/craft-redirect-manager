@@ -159,10 +159,10 @@ return [
         'backupOnImport' => true,
 
         // Backup Schedule
-        // Options: 'manual', 'daily', 'weekly', 'monthly'
+        // Options: 'disabled', 'daily', 'weekly', 'monthly'
         // Uses Craft's queue if running, or set up a cron job:
         // craft redirect-manager/backup/scheduled
-        'backupSchedule' => 'manual',
+        'backupSchedule' => 'disabled',
 
         // Backup Retention Days
         // Number of days to keep automatic backups (0 = keep forever)
