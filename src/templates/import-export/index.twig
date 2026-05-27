@@ -145,54 +145,26 @@
 	</div>
 
 	{% if canViewHistory %}
-	<div id="import-history" class="hidden">
-		<h2>{{ "Import History"|t('redirect-manager') }}</h2>
-		<p>{{ "Recent CSV imports and their results."|t('redirect-manager') }}</p>
-		{% if importHistory|length and currentUser.can('redirectManager:clearImportHistory') %}
-			<div style="margin: 0 0 1rem auto;">
-				<button type="button" class="btn" id="clear-logs-btn">
-					{{ "Clear history"|t('redirect-manager') }}
-				</button>
-			</div>
-		{% endif %}
+		{% embed 'lindemannrock-base/_partials/import-history' with {
+			sectionId: 'import-history',
+			importHistory: importHistory,
+			canClearHistory: currentUser.can('redirectManager:clearImportHistory'),
+			clearButtonId: 'clear-logs-btn',
+		} only %}
+			{% block extraColumnsHead %}
+				<th class="rightalign">{{ "Backup"|t('redirect-manager') }}</th>
+			{% endblock %}
 
-		{% if importHistory|length > 0 %}
-			<table class="data fullwidth">
-				<thead>
-					<tr>
-						<th>{{ "Date"|t('redirect-manager') }}</th>
-						<th>{{ "Created By"|t('redirect-manager') }}</th>
-						<th>{{ "Filename"|t('redirect-manager') }}</th>
-						<th>{{ "Size"|t('redirect-manager') }}</th>
-						<th>{{ "Imported"|t('redirect-manager') }}</th>
-						<th>{{ "Failed"|t('redirect-manager') }}</th>
-						<th class="rightalign">{{ "Backup"|t('redirect-manager') }}</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for item in importHistory %}
-						<tr>
-							<td>{{ item.formattedDate ?? (item.date|lrDatetime) }}</td>
-							<td>{{ item.user }}</td>
-							<td>{{ item.filename ?? '-' }}</td>
-							<td><code style="font-size: 11px;">{{ item.formattedSize }}</code></td>
-							<td><strong>{{ item.imported|number_format }}</strong></td>
-							<td>{{ item.failed|number_format }}</td>
-							<td class="rightalign">
-								{% if item.backupPath %}
-									<a href="{{ url('redirect-manager/backups') }}" class="go">{{ "View"|t('redirect-manager') }}</a>
-								{% else %}
-									-
-								{% endif %}
-							</td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-	{% else %}
-			<p class="light" style="text-align: center; padding: 40px;">{{ "No import history yet."|t('redirect-manager') }}</p>
-	{% endif %}
-	</div>
+			{% block extraColumnsCell %}
+				<td class="rightalign">
+					{% if item.backupPath %}
+						<a href="{{ url('redirect-manager/backups') }}" class="go">{{ "View"|t('redirect-manager') }}</a>
+					{% else %}
+						-
+					{% endif %}
+				</td>
+			{% endblock %}
+		{% endembed %}
 	{% endif %}
 
 	{% include 'lindemannrock-base/_components/plugin-credit' %}
