@@ -89,6 +89,19 @@ A redirect exists in the CP but visiting the URL does not redirect.
 
 ---
 
+## Scheduled Cleanup or Backups Do Not Reappear
+
+Redirect Manager schedules recurring queue jobs for analytics cleanup and automatic backups. If the queue is empty after one of those jobs runs:
+
+- Confirm the queue worker is running.
+- Visit any CP page to let Redirect Manager bootstrap initial jobs.
+- Check that `enableAnalytics` is on and `analyticsRetention` is greater than `0` for analytics cleanup.
+- Check that `backupEnabled` is on and `backupSchedule` is not `disabled` for scheduled backups.
+
+The queued job description shows when that specific queued row is due to run.
+
+---
+
 ## Auto-Redirects Not Being Created
 
 Entry URIs change but no redirects appear in the redirect list.

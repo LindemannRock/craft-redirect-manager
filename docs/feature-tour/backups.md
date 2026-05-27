@@ -7,7 +7,7 @@ Redirect Manager can automatically back up your redirect library before imports 
 A backup is a snapshot of your redirect library at a point in time, saved as a file in a configured storage location. Backups are created:
 
 - **Automatically before CSV imports** (when `backupOnImport` is `true`)
-- **On a schedule** (daily, weekly, or monthly, when `backupSchedule` is not `manual`)
+- **On a schedule** (daily, weekly, or monthly, when `backupSchedule` is not `disabled`)
 - **Manually** from the Backups CP section or via console command
 
 ## Configuration
@@ -16,7 +16,7 @@ A backup is a snapshot of your redirect library at a point in time, saved as a f
 // config/redirect-manager.php
 'backupEnabled'       => true,
 'backupOnImport'      => true,
-'backupSchedule'      => 'manual', // 'manual', 'daily', 'weekly', 'monthly'
+'backupSchedule'      => 'disabled', // 'disabled', 'daily', 'weekly', 'monthly'
 'backupRetentionDays' => 30,       // 0 = keep forever, max 365
 'backupPath'          => '@storage/redirect-manager/backups',
 'backupVolumeUid'     => null,     // Asset volume UID (optional)
@@ -34,7 +34,7 @@ When both `backupPath` and `backupVolumeUid` are set, the volume takes precedenc
 
 | Value | Behavior |
 |-------|----------|
-| `manual` | No automatic schedule; backups only run on demand or before imports |
+| `disabled` | No automatic schedule; backups only run on demand or before imports |
 | `daily` | Backup runs once per day (via `redirect-manager/backup/scheduled` console command) |
 | `weekly` | Backup runs once per week |
 | `monthly` | Backup runs once per month |
