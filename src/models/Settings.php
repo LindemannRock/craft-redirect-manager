@@ -12,6 +12,7 @@ use Craft;
 use craft\base\Model;
 use craft\helpers\App;
 use craft\validators\ArrayValidator;
+use lindemannrock\base\helpers\ScheduleHelper;
 use lindemannrock\base\traits\DateFormatSettingsTrait;
 use lindemannrock\base\traits\DateRangeSettingsTrait;
 use lindemannrock\base\traits\ExportFormatSettingsTrait;
@@ -45,6 +46,16 @@ class Settings extends Model
     use SettingsConfigTrait;
     use SettingsDisplayNameTrait;
     use SettingsPersistenceTrait;
+
+    /**
+     * Backup schedule options exposed by Redirect Manager.
+     */
+    private const BACKUP_SCHEDULE_OPTIONS = [
+        'disabled',
+        'daily',
+        'weekly',
+        'monthly',
+    ];
 
     /**
      * @var string The name of the plugin as it appears in the Control Panel menu
@@ -209,10 +220,10 @@ class Settings extends Model
     public bool $backupOnImport = true;
 
     /**
-     * @var string Backup schedule (manual, daily, weekly, monthly)
+     * @var string Backup schedule (disabled, daily, weekly, monthly)
      * @since 5.23.0
      */
-    public string $backupSchedule = 'manual';
+    public string $backupSchedule = 'disabled';
 
     /**
      * @var int Number of days to keep automatic backups (0 = keep forever)
@@ -240,6 +251,36 @@ class Settings extends Model
         if ($this->defaultCity === null) {
             $this->defaultCity = App::env('REDIRECT_MANAGER_DEFAULT_CITY');
         }
+    }
+
+    /**
+     * Return the effective backup schedule, normalizing old pre-release
+     * `manual` values to the canonical disabled schedule.
+     *
+     * @since 5.32.0
+     */
+    public function getEffectiveBackupSchedule(): string
+    {
+        if ($this->backupSchedule === 'manual') {
+            return 'disabled';
+        }
+
+        if (!in_array($this->backupSchedule, self::BACKUP_SCHEDULE_OPTIONS, true)) {
+            return 'disabled';
+        }
+
+        return $this->backupSchedule;
+    }
+
+    /**
+     * Get backup schedule options for settings dropdowns.
+     *
+     * @return array<array{value: string, label: string}>
+     * @since 5.32.0
+     */
+    public function getBackupScheduleOptions(): array
+    {
+        return ScheduleHelper::getOptions(self::BACKUP_SCHEDULE_OPTIONS);
     }
 
     // =========================================================================
@@ -401,7 +442,7 @@ class Settings extends Model
             ],
             ['backupVolumeUid', 'string'],
             ['backupRetentionDays', 'integer', 'min' => 0, 'max' => 365],
-            ['backupSchedule', 'in', 'range' => ['manual', 'daily', 'weekly', 'monthly']],
+            ['backupSchedule', 'in', 'range' => array_merge(ScheduleHelper::getValidValues(self::BACKUP_SCHEDULE_OPTIONS), ['manual'])],
         ], $this->pluginNameSettingsRules(), $this->logLevelSettingsRules(), $this->dateFormatSettingsRules(), $this->dateRangeSettingsRules(), $this->exportFormatSettingsRules(), $this->geoSettingsRules(), $this->itemsPerPageSettingsRules());
     }
 
