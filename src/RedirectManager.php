@@ -301,12 +301,7 @@ class RedirectManager extends Plugin
             'key' => 'import-export',
             'label' => Craft::t('redirect-manager', 'Import/Export'),
             'url' => 'redirect-manager/import-export',
-            'permissionsAny' => [
-                'redirectManager:manageImportExport',
-                'redirectManager:importRedirects',
-                'redirectManager:exportRedirects',
-                'redirectManager:viewImportHistory',
-            ],
+            'permissionsAll' => ['redirectManager:manageImportExport'],
         ];
 
         $sections[] = [
@@ -454,9 +449,6 @@ class RedirectManager extends Plugin
                     ],
                     'redirectManager:exportRedirects' => [
                         'label' => Craft::t('redirect-manager', 'Export {plural}', ['plural' => $plural]),
-                    ],
-                    'redirectManager:viewImportHistory' => [
-                        'label' => Craft::t('redirect-manager', 'View import history'),
                     ],
                     'redirectManager:clearImportHistory' => [
                         'label' => Craft::t('redirect-manager', 'Clear import history'),
