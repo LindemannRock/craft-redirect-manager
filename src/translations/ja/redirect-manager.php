@@ -654,7 +654,6 @@ return [
     'Total cached entries' => 'キャッシュされたエントリーの合計',
     'Manage Redirects' => 'リダイレクトを管理する',
     'View Analytics' => 'アナリティクスを表示する',
-    'View Settings' => '設定を表示する',
     'Navigation' => 'ナビゲーション',
     'Access main plugin sections' => 'プラグインのメインセクションにアクセスする',
     'Clear Redirect Cache' => 'リダイレクトキャッシュを削除する',

@@ -654,7 +654,6 @@ return [
     'Total cached entries' => 'Total de entradas en caché',
     'Manage Redirects' => 'Gestionar redirecciones',
     'View Analytics' => 'Ver analíticas',
-    'View Settings' => 'Ver configuración',
     'Navigation' => 'Navegación',
     'Access main plugin sections' => 'Acceder a las secciones principales del plugin',
     'Clear Redirect Cache' => 'Vaciar caché de redirecciones',

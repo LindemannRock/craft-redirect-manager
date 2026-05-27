@@ -654,7 +654,6 @@ return [
     'Total cached entries' => 'إجمالي الإدخالات المخزنة مؤقتاً',
     'Manage Redirects' => 'إدارة عمليات إعادة التوجيه',
     'View Analytics' => 'عرض التحليلات',
-    'View Settings' => 'عرض الإعدادات',
     'Navigation' => 'التنقل',
     'Access main plugin sections' => 'الوصول إلى الأقسام الرئيسية للإضافة',
     'Clear Redirect Cache' => 'مسح Cache إعادة التوجيه',

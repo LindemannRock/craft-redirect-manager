@@ -654,7 +654,6 @@ return [
     'Total cached entries' => 'Voci totali nella cache',
     'Manage Redirects' => 'Gestisci redirect',
     'View Analytics' => 'Visualizza analisi',
-    'View Settings' => 'Visualizza impostazioni',
     'Navigation' => 'Navigazione',
     'Access main plugin sections' => 'Accedi alle sezioni principali del plugin',
     'Clear Redirect Cache' => 'Svuota cache redirect',

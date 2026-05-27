@@ -654,7 +654,6 @@ return [
     'Total cached entries' => 'Totaal gecachte vermeldingen',
     'Manage Redirects' => 'Redirects beheren',
     'View Analytics' => 'Analyses bekijken',
-    'View Settings' => 'Instellingen bekijken',
     'Navigation' => 'Navigatie',
     'Access main plugin sections' => 'Toegang tot de belangrijkste pluginsecties',
     'Clear Redirect Cache' => 'Redirectcache wissen',

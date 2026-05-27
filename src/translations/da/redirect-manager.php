@@ -654,7 +654,6 @@ return [
     'Total cached entries' => 'Samlede cachede poster',
     'Manage Redirects' => 'Administrer omdirigeringer',
     'View Analytics' => 'Vis analyser',
-    'View Settings' => 'Vis indstillinger',
     'Navigation' => 'Navigation',
     'Access main plugin sections' => 'Adgang til plugin-programmets hovedafsnit',
     'Clear Redirect Cache' => 'Ryd omdirigeringscache',

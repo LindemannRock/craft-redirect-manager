@@ -654,7 +654,6 @@ return [
     'Total cached entries' => 'Gecachte Einträge gesamt',
     'Manage Redirects' => 'Weiterleitungen verwalten',
     'View Analytics' => 'Analytik anzeigen',
-    'View Settings' => 'Einstellungen anzeigen',
     'Navigation' => 'Navigation',
     'Access main plugin sections' => 'Auf die Hauptbereiche des Plugins zugreifen',
     'Clear Redirect Cache' => 'Weiterleitungs-Cache leeren',
