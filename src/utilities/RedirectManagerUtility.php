@@ -51,34 +51,44 @@ class RedirectManagerUtility extends Utility
     {
         $settings = RedirectManager::$plugin->getSettings();
         $pluginName = $settings->getFullName();
+        $user = Craft::$app->getUser();
 
-        // Get redirect stats
-        $totalRedirects = (new \craft\db\Query())
-            ->from('{{%redirectmanager_redirects}}')
-            ->count();
+        $totalRedirects = 0;
+        $activeRedirects = 0;
+        if ($user->getIdentity() && $user->checkPermission('redirectManager:manageRedirects')) {
+            $totalRedirects = (new \craft\db\Query())
+                ->from('{{%redirectmanager_redirects}}')
+                ->count();
 
-        $activeRedirects = (new \craft\db\Query())
-            ->from('{{%redirectmanager_redirects}}')
-            ->where(['enabled' => true])
-            ->count();
+            $activeRedirects = (new \craft\db\Query())
+                ->from('{{%redirectmanager_redirects}}')
+                ->where(['enabled' => true])
+                ->count();
+        }
 
-        // Get 404 stats (core functionality - always show)
-        $chartData = RedirectManager::$plugin->analytics->getChartData(null, 7);
-        $total404s = array_sum(array_column($chartData, 'handled')) + array_sum(array_column($chartData, 'unhandled'));
-        $handled = array_sum(array_column($chartData, 'handled'));
-        $unhandled = array_sum(array_column($chartData, 'unhandled'));
+        $total404s = 0;
+        $handled = 0;
+        $unhandled = 0;
+        if ($settings->enableAnalytics && $user->getIdentity() && $user->checkPermission('redirectManager:viewAnalytics')) {
+            $chartData = RedirectManager::$plugin->analytics->getChartData(null, 7);
+            $total404s = array_sum(array_column($chartData, 'handled')) + array_sum(array_column($chartData, 'unhandled'));
+            $handled = array_sum(array_column($chartData, 'handled'));
+            $unhandled = array_sum(array_column($chartData, 'unhandled'));
+        }
 
-        // Get analytics count
-        $analyticsCount = (new \craft\db\Query())
-            ->from('{{%redirectmanager_analytics}}')
-            ->count();
+        $analyticsCount = 0;
+        if ($settings->enableAnalytics && $user->getIdentity() && $user->checkPermission('redirectManager:clearAnalytics')) {
+            $analyticsCount = (new \craft\db\Query())
+                ->from('{{%redirectmanager_analytics}}')
+                ->count();
+        }
 
         // Get cache counts (only for file storage)
         $deviceCacheFiles = 0;
         $redirectCacheFiles = 0;
 
         // Only count files when using file storage (Redis counts are not displayed)
-        if ($settings->cacheStorageMethod === 'file') {
+        if ($user->getIdentity() && $user->checkPermission('redirectManager:clearCache') && $settings->cacheStorageMethod === 'file') {
             if ($settings->cacheDeviceDetection) {
                 $devicePath = PluginHelper::getCachePath(RedirectManager::$plugin, 'device');
                 if (is_dir($devicePath)) {
