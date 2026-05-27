@@ -581,8 +581,8 @@ class SettingsController extends Controller
             $settings = RedirectManager::$plugin->getSettings();
 
             if ($settings->cacheStorageMethod === 'redis') {
-                $cache = Craft::$app->cache;
-                if ($cache instanceof \yii\redis\Cache) {
+                $cache = PluginHelper::getRedisCacheOrLog(RedirectManager::$plugin->id);
+                if ($cache !== null) {
                     $redis = $cache->redis;
 
                     // Get all redirect cache keys from tracking set
@@ -631,8 +631,8 @@ class SettingsController extends Controller
             $cleared = 0;
 
             if ($settings->cacheStorageMethod === 'redis') {
-                $cache = Craft::$app->cache;
-                if ($cache instanceof \yii\redis\Cache) {
+                $cache = PluginHelper::getRedisCacheOrLog(RedirectManager::$plugin->id);
+                if ($cache !== null) {
                     $redis = $cache->redis;
 
                     // Get all device cache keys from tracking set
@@ -689,8 +689,8 @@ class SettingsController extends Controller
             $cleared = 0;
 
             if ($settings->cacheStorageMethod === 'redis') {
-                $cache = Craft::$app->cache;
-                if ($cache instanceof \yii\redis\Cache) {
+                $cache = PluginHelper::getRedisCacheOrLog(RedirectManager::$plugin->id);
+                if ($cache !== null) {
                     $redis = $cache->redis;
 
                     // Get all cache keys from tracking sets
