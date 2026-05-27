@@ -20,7 +20,7 @@
         },
     }) %}
 {% endif %}
-{% if canViewHistory %}
+{% if canShowHistory %}
     {% set tabs = tabs|merge({
         importHistory: {
             label: 'Import History'|t('redirect-manager'),
@@ -29,13 +29,13 @@
     }) %}
 {% endif %}
 
-{% if not canImportExport and canViewHistory %}
+{% if not canImportExport and canShowHistory %}
     {% set selectedTab = 'importHistory' %}
 {% endif %}
 
 {% import "_includes/forms" as forms %}
 
-{% set canCreateBackup = currentUser.can('redirectManager:manageBackups') or currentUser.can('redirectManager:createBackups') %}
+{% set canUseImportBackup = currentUser.can('redirectManager:manageBackups') or currentUser.can('redirectManager:createBackups') %}
 
 {% set maxRows = importLimits.maxRows ?? 4000 %}
 {% set maxBytes = importLimits.maxBytes ?? 5242880 %}
@@ -127,7 +127,7 @@
 				"\t": 'Tab'|t('redirect-manager'),
 				'|': 'Pipe (|)'|t('redirect-manager'),
 			},
-			showBackupToggle: canCreateBackup,
+			showBackupToggle: canUseImportBackup,
 			backupLabel: 'Create Backup Before Import'|t('redirect-manager'),
 			backupInstructions: 'Automatically backup existing redirects before importing (recommended)'|t('redirect-manager'),
 			backupEnabled: settings.backupEnabled,
@@ -144,7 +144,7 @@
 		{% endif %}
 	</div>
 
-	{% if canViewHistory %}
+	{% if canShowHistory %}
 		{% embed 'lindemannrock-base/_partials/import-history' with {
 			sectionId: 'import-history',
 			importHistory: importHistory,
