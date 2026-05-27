@@ -29,7 +29,9 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use lindemannrock\base\helpers\ColorHelper;
 use lindemannrock\base\helpers\CpNavHelper;
+use lindemannrock\base\helpers\DateFormatHelper;
 use lindemannrock\base\helpers\PluginHelper;
+use lindemannrock\base\helpers\ScheduleHelper;
 use lindemannrock\logginglibrary\LoggingLibrary;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\jobs\CleanupAnalyticsJob;
@@ -528,13 +530,19 @@ class RedirectManager extends Plugin
                 ->exists();
 
             if (!$existingJob) {
+                $initialDelay = 5 * 60;
+                $initialRun = (clone DateFormatHelper::now())->modify("+{$initialDelay} seconds");
                 $job = new CleanupAnalyticsJob([
                     'reschedule' => true,
+                    'nextRunTime' => DateFormatHelper::formatCompactDatetimeFromSettings(
+                        $initialRun,
+                        $settings,
+                        false,
+                        false,
+                    ),
                 ]);
 
-                // Add to queue with a small initial delay
-                // The job will re-queue itself to run every 24 hours
-                Craft::$app->queue->delay(5 * 60)->push($job);
+                Craft::$app->queue->delay($initialDelay)->push($job);
 
                 $this->logInfo('Scheduled initial analytics cleanup job', ['interval' => '24 hours']);
             }
@@ -548,8 +556,9 @@ class RedirectManager extends Plugin
     private function scheduleBackupJob(): void
     {
         $settings = $this->getSettings();
+        $schedule = $settings->getEffectiveBackupSchedule();
 
-        if (!$settings->backupEnabled || $settings->backupSchedule === 'manual') {
+        if (!$settings->backupEnabled || $schedule === 'disabled') {
             return;
         }
 
@@ -560,23 +569,29 @@ class RedirectManager extends Plugin
             ->exists();
 
         if (!$existingJob) {
-            $delay = match ($settings->backupSchedule) {
-                'daily' => 86400,
-                'weekly' => 604800,
-                'monthly' => 2592000,
-                default => 86400,
-            };
+            $nextRun = ScheduleHelper::calculateNext($schedule);
+            if ($nextRun === null) {
+                return;
+            }
+
+            $delay = max(0, $nextRun->getTimestamp() - DateFormatHelper::now()->getTimestamp());
 
             $job = new CreateBackupJob([
                 'reason' => 'scheduled',
                 'reschedule' => true,
+                'nextRunTime' => DateFormatHelper::formatCompactDatetimeFromSettings(
+                    $nextRun,
+                    $settings,
+                    false,
+                    false,
+                ),
             ]);
 
             Craft::$app->getQueue()->delay($delay)->push($job);
 
             $this->logInfo('Scheduled initial backup job', [
                 'delay_seconds' => $delay,
-                'schedule' => $settings->backupSchedule,
+                'schedule' => $schedule,
             ]);
         }
     }
@@ -588,7 +603,9 @@ class RedirectManager extends Plugin
      */
     public function handleBackupScheduleChange(Settings $settings): void
     {
-        if (!$settings->backupEnabled || $settings->backupSchedule === 'manual') {
+        $schedule = $settings->getEffectiveBackupSchedule();
+
+        if (!$settings->backupEnabled || $schedule === 'disabled') {
             $this->cancelScheduledBackupJobs();
             $this->logInfo('Backup scheduling disabled');
             return;
@@ -607,21 +624,27 @@ class RedirectManager extends Plugin
             return;
         }
 
-        $delay = match ($settings->backupSchedule) {
-            'daily' => 86400,
-            'weekly' => 604800,
-            'monthly' => 2592000,
-            default => 86400,
-        };
+        $nextRun = ScheduleHelper::calculateNext($schedule);
+        if ($nextRun === null) {
+            return;
+        }
+
+        $delay = max(0, $nextRun->getTimestamp() - DateFormatHelper::now()->getTimestamp());
 
         $job = new CreateBackupJob([
             'reason' => 'scheduled',
             'reschedule' => true,
+            'nextRunTime' => DateFormatHelper::formatCompactDatetimeFromSettings(
+                $nextRun,
+                $settings,
+                false,
+                false,
+            ),
         ]);
 
         Craft::$app->getQueue()->delay($delay)->push($job);
 
-        $this->logInfo('Scheduled backup job queued', ['schedule' => $settings->backupSchedule]);
+        $this->logInfo('Scheduled backup job queued', ['schedule' => $schedule]);
     }
 
     /**
