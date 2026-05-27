@@ -31,6 +31,7 @@
 
 {% block overview %}
     {# Redirects Status Card #}
+    {% if hasRedirectsAccess %}
     {% include 'lindemannrock-base/_components/unified-card' with {
         title: 'Redirects Status'|t('redirect-manager'),
         color: coverageColor,
@@ -44,8 +45,10 @@
             {value: activeRedirects, label: 'Active'|t('redirect-manager')},
         ],
     } only %}
+    {% endif %}
 
     {# 404 Handling Card #}
+    {% if hasAnalyticsAccess %}
     {% include 'lindemannrock-base/_components/unified-card' with {
         title: '404 Handling'|t('redirect-manager'),
         color: successColor,
@@ -57,8 +60,10 @@
             {value: unhandled, label: 'Unhandled'|t('redirect-manager'), color: lrPaletteColor('red').color},
         ],
     } only %}
+    {% endif %}
 
     {# Cache Status Card #}
+    {% if canClearCache %}
     {% if storageMethod == 'redis' %}
         {% set cacheSubBoxes = [] %}
         {% if settings.enableRedirectCache %}
@@ -85,6 +90,7 @@
                 {value: deviceCacheFiles, label: 'Devices'|t('redirect-manager')},
             ],
         } only %}
+    {% endif %}
     {% endif %}
 {% endblock %}
 
@@ -160,7 +166,7 @@
 
 {% block scripts %}
 {% js %}
-{% if settings.enableRedirectCache %}
+{% if canClearCache and settings.enableRedirectCache %}
 {% include 'lindemannrock-base/_layouts/cp-utilities/_ajax-button' with {
     id: 'clear-redirect-cache',
     action: actionUrl('redirect-manager/settings/clear-redirect-cache'),
@@ -168,7 +174,7 @@
 } only %}
 {% endif %}
 
-{% if settings.cacheDeviceDetection %}
+{% if canClearCache and settings.cacheDeviceDetection %}
 {% include 'lindemannrock-base/_layouts/cp-utilities/_ajax-button' with {
     id: 'clear-device-cache',
     action: actionUrl('redirect-manager/settings/clear-device-cache'),
@@ -176,14 +182,16 @@
 } only %}
 {% endif %}
 
+{% if canClearCache %}
 {% include 'lindemannrock-base/_layouts/cp-utilities/_ajax-button' with {
     id: 'clear-all-caches',
     action: actionUrl('redirect-manager/settings/clear-all-caches'),
     confirm: 'Clear all caches?'|t('redirect-manager'),
     errorMessage: 'Failed'|t('redirect-manager'),
 } only %}
+{% endif %}
 
-{% if settings.enableAnalytics %}
+{% if canClearAnalytics %}
 {% include 'lindemannrock-base/_layouts/cp-utilities/_ajax-button' with {
     id: 'clear-all-analytics',
     action: actionUrl('redirect-manager/settings/clear-all-analytics'),
