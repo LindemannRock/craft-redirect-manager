@@ -519,6 +519,10 @@ class Settings extends Model
             }
         }
 
+        if (!$this->validate(['backupPath'])) {
+            return Craft::getAlias('@storage/redirect-manager/backups');
+        }
+
         // Fall back to local storage with safety checks
         try {
             $path = StoragePathHelper::resolve($this->backupPath);
