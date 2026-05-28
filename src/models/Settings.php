@@ -13,6 +13,7 @@ use craft\base\Model;
 use craft\helpers\App;
 use craft\validators\ArrayValidator;
 use lindemannrock\base\helpers\ScheduleHelper;
+use lindemannrock\base\helpers\StoragePathHelper;
 use lindemannrock\base\traits\DateFormatSettingsTrait;
 use lindemannrock\base\traits\DateRangeSettingsTrait;
 use lindemannrock\base\traits\ExportFormatSettingsTrait;
@@ -440,6 +441,7 @@ class Settings extends Model
                 'preventWebroot' => true,
                 'requireAlias' => true,
             ],
+            ['backupPath', 'validateBackupPathRootSubfolder'],
             ['backupVolumeUid', 'string'],
             ['backupRetentionDays', 'integer', 'min' => 0, 'max' => 365],
             ['backupSchedule', 'in', 'range' => array_merge(ScheduleHelper::getValidValues(self::BACKUP_SCHEDULE_OPTIONS), ['manual'])],
@@ -518,7 +520,16 @@ class Settings extends Model
         }
 
         // Fall back to local storage with safety checks
-        $path = Craft::getAlias($this->backupPath);
+        try {
+            $path = StoragePathHelper::resolve($this->backupPath);
+        } catch (\Throwable $e) {
+            $this->logWarning('Backup path could not be resolved. Using safe default.', [
+                'path' => $this->backupPath,
+                'error' => $e->getMessage(),
+            ]);
+
+            return Craft::getAlias('@storage/redirect-manager/backups');
+        }
 
         // Additional safety check: prevent exact root directory match
         $rootPath = Craft::getAlias('@root');
@@ -529,5 +540,24 @@ class Settings extends Model
         }
 
         return $path;
+    }
+
+    /**
+     * Require a subfolder when using @root for backupPath.
+     */
+    public function validateBackupPathRootSubfolder(string $attribute): void
+    {
+        $value = trim((string)$this->$attribute);
+        if ($value === '') {
+            return;
+        }
+
+        $normalized = rtrim($value, '/\\');
+        if (strcasecmp($normalized, '@root') === 0) {
+            $this->addError(
+                $attribute,
+                Craft::t('redirect-manager', 'When using @root, include a subfolder (for example: @root/backups/redirect-manager).')
+            );
+        }
     }
 }
