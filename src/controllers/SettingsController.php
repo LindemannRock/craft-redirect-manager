@@ -139,6 +139,7 @@ class SettingsController extends Controller
         $this->requirePermission('redirectManager:manageSettings');
 
         $settings = RedirectManager::$plugin->getSettings();
+        $settings->validate(['backupPath']);
 
         return $this->renderTemplate('redirect-manager/settings/backup', [
             'settings' => $settings,
