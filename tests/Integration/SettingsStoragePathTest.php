@@ -70,6 +70,7 @@ final class SettingsStoragePathTest extends TestCase
 
         self::assertFalse($settings->validate(['backupPath']));
         self::assertArrayHasKey('backupPath', $settings->getErrors());
+        self::assertSame(Craft::getAlias('@storage/redirect-manager/backups'), $settings->getBackupPath());
     }
 
     public function testInvalidAliasFailsValidationWithoutBreakingResolvedPathFallback(): void
