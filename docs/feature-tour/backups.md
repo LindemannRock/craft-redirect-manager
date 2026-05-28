@@ -24,7 +24,7 @@ A backup is a snapshot of your redirect library at a point in time, saved as a f
 
 ### Storage Location
 
-By default, backups are stored on the local filesystem at `@storage/redirect-manager/backups`. This path supports Craft's `@storage` alias and `$VARIABLE` environment variable substitution.
+By default, backups are stored on the local filesystem at `@storage/redirect-manager/backups`. This path supports Craft's `@storage` and `@root` aliases plus `$VARIABLE` environment variable substitution. Environment variables must resolve inside Craft's storage directory or a project-root subfolder.
 
 To store backups in a Craft asset volume instead, set `backupVolumeUid` to the UID of the target volume. You can find volume UIDs in **Settings > Assets**.
 
