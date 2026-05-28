@@ -122,10 +122,12 @@
             </div>
         </div>
 
-    {% set backupPath = settings.getBackupPath() %}
-    {% include 'lindemannrock-base/_components/info-box' with {
-        message: '<strong>' ~ "Backup Location:"|t('redirect-manager') ~ '</strong> <code>' ~ backupPath ~ '</code>'
-    } %}
+    {% if not settings.getErrors('backupPath') %}
+        {% set backupPath = settings.getBackupPath() %}
+        {% include 'lindemannrock-base/_components/info-box' with {
+            message: '<strong>' ~ "Backup Location:"|t('redirect-manager') ~ '</strong> <code>' ~ backupPath ~ '</code>'
+        } %}
+    {% endif %}
 
     {% include 'lindemannrock-base/_components/plugin-credit' %}
 {% endblock %}
