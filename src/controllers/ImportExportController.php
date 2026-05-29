@@ -367,7 +367,7 @@ class ImportExportController extends Controller
         $settings = RedirectManager::$plugin->getSettings();
         $filename = ExportHelper::filename($settings, ['export'], 'csv');
 
-        return ExportHelper::toCsv($rows, $headers, $filename, ['lastHit']);
+        return ExportHelper::dispatchTable($rows, $headers, 'csv', $filename, ['lastHit']);
     }
 
     /**
