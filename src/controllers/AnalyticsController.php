@@ -691,16 +691,19 @@ class AnalyticsController extends Controller
         $dateColumns = ['lastHit'];
 
         // Export based on format
-        $extension = $format === 'excel' ? 'xlsx' : $format;
+        $extension = ExportHelper::extensionForFormat($format);
         $filename = ExportHelper::filename($settings, $filenameParts, $extension);
 
-        return match ($format) {
-            'json' => ExportHelper::toJson($analyticsData, $filename, $dateColumns),
-            'excel' => ExportHelper::toExcel($analyticsData, $headers, $filename, $dateColumns, [
+        return ExportHelper::dispatchTable(
+            rows: $analyticsData,
+            headers: $headers,
+            format: $format,
+            filename: $filename,
+            dateColumns: $dateColumns,
+            excelOptions: [
                 'sheetTitle' => Craft::t('redirect-manager', 'Analytics'),
-            ]),
-            default => ExportHelper::toCsv($analyticsData, $headers, $filename, $dateColumns),
-        };
+            ],
+        );
     }
 
     /**
