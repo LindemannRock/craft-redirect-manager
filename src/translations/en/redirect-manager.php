@@ -8,7 +8,6 @@
  */
 
 return [
-
     // Plugin meta
     'Redirect Manager' => 'Redirect Manager',
     'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.' => 'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.',
@@ -232,16 +231,6 @@ return [
     'Configure device detection and redirect caching for better performance.' => 'Configure device detection and redirect caching for better performance.',
     'Go to Cache Settings' => 'Go to Cache Settings',
 
-    // Settings: Interface
-    'Interface Settings' => 'Interface Settings',
-    'Dashboard Refresh Interval' => 'Dashboard Refresh Interval',
-    'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'How often to refresh dashboard data. Set to Off to disable auto-refresh.',
-    'Off' => 'Off',
-    '15 seconds' => '15 seconds',
-    '30 seconds' => '30 seconds',
-    '60 seconds (1 minute)' => '60 seconds (1 minute)',
-    '120 seconds (2 minutes)' => '120 seconds (2 minutes)',
-
     // Settings: Backup
     'Backup Settings' => 'Backup Settings',
     'Enable Backups' => 'Enable Backups',
@@ -334,6 +323,16 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.',
     'Test URL' => 'Test URL',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)',
+
+    // Settings: Interface
+    'Interface Settings' => 'Interface Settings',
+    'Dashboard Refresh Interval' => 'Dashboard Refresh Interval',
+    'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'How often to refresh dashboard data. Set to Off to disable auto-refresh.',
+    'Off' => 'Off',
+    '15 seconds' => '15 seconds',
+    '30 seconds' => '30 seconds',
+    '60 seconds (1 minute)' => '60 seconds (1 minute)',
+    '120 seconds (2 minutes)' => '120 seconds (2 minutes)',
 
     // Redirects: Index
     'Creation Type' => 'Creation Type',
@@ -669,5 +668,4 @@ return [
     'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.',
-
 ];

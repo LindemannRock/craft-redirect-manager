@@ -8,7 +8,6 @@
  */
 
 return [
-
     // Plugin meta
     'Redirect Manager' => 'Redirect Manager',
     'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.' => 'Maak redirects aan, monitor 404\'s en houd het verkeer soepel vanuit één bedieningspaneel-werkruimte.',
@@ -232,16 +231,6 @@ return [
     'Configure device detection and redirect caching for better performance.' => 'Apparaatdetectie en redirectcaching configureren voor betere prestaties.',
     'Go to Cache Settings' => 'Naar cache-instellingen',
 
-    // Settings: Interface
-    'Interface Settings' => 'Interface-instellingen',
-    'Dashboard Refresh Interval' => 'Verversingsinterval dashboard',
-    'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'Hoe vaak dashboardgegevens worden ververst. Stel in op Uit om automatisch verversen uit te schakelen.',
-    'Off' => 'Uit',
-    '15 seconds' => '15 seconden',
-    '30 seconds' => '30 seconden',
-    '60 seconds (1 minute)' => '60 seconden (1 minuut)',
-    '120 seconds (2 minutes)' => '120 seconden (2 minuten)',
-
     // Settings: Backup
     'Backup Settings' => 'Back-upinstellingen',
     'Enable Backups' => 'Back-ups inschakelen',
@@ -334,6 +323,16 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Test of een URL overeenkomt met een van uw geconfigureerde redirects zonder deze daadwerkelijk te bezoeken. Nuttig voor het valideren van de Bronovereenkomstmodus (pad vs. volledige URL) en de Overeenkomsttype-logica.',
     'Test URL' => 'Test-URL',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'Voer een te testen URL in (kan een volledige URL zijn zoals https://example.com/oude-pagina of een pad zoals /oude-pagina)',
+
+    // Settings: Interface
+    'Interface Settings' => 'Interface-instellingen',
+    'Dashboard Refresh Interval' => 'Verversingsinterval dashboard',
+    'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'Hoe vaak dashboardgegevens worden ververst. Stel in op Uit om automatisch verversen uit te schakelen.',
+    'Off' => 'Uit',
+    '15 seconds' => '15 seconden',
+    '30 seconds' => '30 seconden',
+    '60 seconds (1 minute)' => '60 seconden (1 minuut)',
+    '120 seconds (2 minutes)' => '120 seconden (2 minuten)',
 
     // Redirects: Index
     'Creation Type' => 'Aanmaaktype',
@@ -669,5 +668,4 @@ return [
     'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => 'Deze instelling wordt overschreven door de instelling <code>enableApiEndpoint</code> in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Deze instelling wordt overschreven door de instelling <code>excludePatterns</code> in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Deze instelling wordt overschreven door de instelling <code>additionalHeaders</code> in <code>config/redirect-manager.php</code>.',
-
 ];

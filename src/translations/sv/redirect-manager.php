@@ -8,7 +8,6 @@
  */
 
 return [
-
     // Plugin meta
     'Redirect Manager' => 'Redirect Manager',
     'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.' => 'Skapa omdirigeringar, övervaka 404-fel och håll trafiken flödande från en och samma kontrollpanelarbetsyta.',
@@ -232,16 +231,6 @@ return [
     'Configure device detection and redirect caching for better performance.' => 'Konfigurera enhetsidentifiering och omdirigeringscaching för bättre prestanda.',
     'Go to Cache Settings' => 'Gå till cacheinställningar',
 
-    // Settings: Interface
-    'Interface Settings' => 'Gränssnittsinställningar',
-    'Dashboard Refresh Interval' => 'Uppdateringsintervall för instrumentpanel',
-    'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'Hur ofta instrumentpaneldata ska uppdateras. Ange Av för att inaktivera automatisk uppdatering.',
-    'Off' => 'Av',
-    '15 seconds' => '15 sekunder',
-    '30 seconds' => '30 sekunder',
-    '60 seconds (1 minute)' => '60 sekunder (1 minut)',
-    '120 seconds (2 minutes)' => '120 sekunder (2 minuter)',
-
     // Settings: Backup
     'Backup Settings' => 'Inställningar för säkerhetskopia',
     'Enable Backups' => 'Aktivera säkerhetskopior',
@@ -334,6 +323,16 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Testa om en URL matchar någon av dina konfigurerade omdirigeringar utan att faktiskt besöka den. Användbart för att validera källmatchningsläge (sökväg kontra fullständig URL) och matchningstyplogik.',
     'Test URL' => 'Test-URL',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'Ange en URL att testa (kan vara en fullständig URL som https://example.com/old-page eller en sökväg som /old-page)',
+
+    // Settings: Interface
+    'Interface Settings' => 'Gränssnittsinställningar',
+    'Dashboard Refresh Interval' => 'Uppdateringsintervall för instrumentpanel',
+    'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'Hur ofta instrumentpaneldata ska uppdateras. Ange Av för att inaktivera automatisk uppdatering.',
+    'Off' => 'Av',
+    '15 seconds' => '15 sekunder',
+    '30 seconds' => '30 sekunder',
+    '60 seconds (1 minute)' => '60 sekunder (1 minut)',
+    '120 seconds (2 minutes)' => '120 sekunder (2 minuter)',
 
     // Redirects: Index
     'Creation Type' => 'Skapandetyp',
@@ -669,5 +668,4 @@ return [
     'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => 'Den här inställningen åsidosätts av <code>enableApiEndpoint</code> i <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Den här inställningen åsidosätts av <code>excludePatterns</code> i <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Den här inställningen åsidosätts av <code>additionalHeaders</code> i <code>config/redirect-manager.php</code>.',
-
 ];

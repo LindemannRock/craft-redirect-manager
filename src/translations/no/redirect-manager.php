@@ -8,7 +8,6 @@
  */
 
 return [
-
     // Plugin meta
     'Redirect Manager' => 'Redirect Manager',
     'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.' => 'Opprett omdirigeringer, overvåk 404-feil og hold trafikken flytende fra ett kontrollpanel-arbeidsområde.',
@@ -232,16 +231,6 @@ return [
     'Configure device detection and redirect caching for better performance.' => 'Konfigurer enhetsregistrering og omdirigeringscaching for bedre ytelse.',
     'Go to Cache Settings' => 'Gå til cache-innstillinger',
 
-    // Settings: Interface
-    'Interface Settings' => 'Grensesnittinnstillinger',
-    'Dashboard Refresh Interval' => 'Oppdateringsintervall for oversikt',
-    'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'Hvor ofte oversiktsdata skal oppdateres. Sett til Av for å deaktivere automatisk oppdatering.',
-    'Off' => 'Av',
-    '15 seconds' => '15 sekunder',
-    '30 seconds' => '30 sekunder',
-    '60 seconds (1 minute)' => '60 sekunder (1 minutt)',
-    '120 seconds (2 minutes)' => '120 sekunder (2 minutter)',
-
     // Settings: Backup
     'Backup Settings' => 'Innstillinger for sikkerhetskopi',
     'Enable Backups' => 'Aktiver sikkerhetskopier',
@@ -334,6 +323,16 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Test om en URL matcher noen av dine konfigurerte omdirigeringer uten å faktisk besøke den. Nyttig for å validere kildematchmodus (sti vs. full URL) og matchetypelogikk.',
     'Test URL' => 'Test-URL',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'Angi en URL å teste (kan være en full URL som https://example.com/old-page eller en sti som /old-page)',
+
+    // Settings: Interface
+    'Interface Settings' => 'Grensesnittinnstillinger',
+    'Dashboard Refresh Interval' => 'Oppdateringsintervall for oversikt',
+    'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'Hvor ofte oversiktsdata skal oppdateres. Sett til Av for å deaktivere automatisk oppdatering.',
+    'Off' => 'Av',
+    '15 seconds' => '15 sekunder',
+    '30 seconds' => '30 sekunder',
+    '60 seconds (1 minute)' => '60 sekunder (1 minutt)',
+    '120 seconds (2 minutes)' => '120 sekunder (2 minutter)',
 
     // Redirects: Index
     'Creation Type' => 'Opprettelsestype',
@@ -669,5 +668,4 @@ return [
     'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne innstillingen overstyres av <code>enableApiEndpoint</code> i <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne innstillingen overstyres av <code>excludePatterns</code> i <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne innstillingen overstyres av <code>additionalHeaders</code> i <code>config/redirect-manager.php</code>.',
-
 ];

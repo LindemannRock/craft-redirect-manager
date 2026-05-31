@@ -8,7 +8,6 @@
  */
 
 return [
-
     // Plugin meta
     'Redirect Manager' => 'Redirect Manager',
     'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.' => 'Create redirect, monitorate i 404 e mantenete il traffico fluente da un\'unica area di lavoro del pannello di controllo.',
@@ -232,16 +231,6 @@ return [
     'Configure device detection and redirect caching for better performance.' => 'Configurare il rilevamento dispositivi e il caching dei redirect per migliorare le prestazioni.',
     'Go to Cache Settings' => 'Vai alle impostazioni cache',
 
-    // Settings: Interface
-    'Interface Settings' => 'Impostazioni interfaccia',
-    'Dashboard Refresh Interval' => 'Intervallo di aggiornamento pannello',
-    'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'Con quale frequenza aggiornare i dati del pannello. Impostare su Disattivato per disabilitare l\'aggiornamento automatico.',
-    'Off' => 'Disattivato',
-    '15 seconds' => '15 secondi',
-    '30 seconds' => '30 secondi',
-    '60 seconds (1 minute)' => '60 secondi (1 minuto)',
-    '120 seconds (2 minutes)' => '120 secondi (2 minuti)',
-
     // Settings: Backup
     'Backup Settings' => 'Impostazioni backup',
     'Enable Backups' => 'Abilita backup',
@@ -334,6 +323,16 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Verifica se un URL corrisponde a uno dei redirect configurati senza visitarlo effettivamente. Utile per convalidare la Modalità di corrispondenza sorgente (percorso vs URL completo) e la logica del Tipo di corrispondenza.',
     'Test URL' => 'URL di test',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'Inserire un URL da testare (può essere un URL completo come https://example.com/old-page o un percorso come /old-page)',
+
+    // Settings: Interface
+    'Interface Settings' => 'Impostazioni interfaccia',
+    'Dashboard Refresh Interval' => 'Intervallo di aggiornamento pannello',
+    'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'Con quale frequenza aggiornare i dati del pannello. Impostare su Disattivato per disabilitare l\'aggiornamento automatico.',
+    'Off' => 'Disattivato',
+    '15 seconds' => '15 secondi',
+    '30 seconds' => '30 secondi',
+    '60 seconds (1 minute)' => '60 secondi (1 minuto)',
+    '120 seconds (2 minutes)' => '120 secondi (2 minuti)',
 
     // Redirects: Index
     'Creation Type' => 'Tipo di creazione',
@@ -669,5 +668,4 @@ return [
     'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => 'Questa impostazione viene sovrascritta da <code>enableApiEndpoint</code> in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Questa impostazione viene sovrascritta da <code>excludePatterns</code> in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Questa impostazione viene sovrascritta da <code>additionalHeaders</code> in <code>config/redirect-manager.php</code>.',
-
 ];

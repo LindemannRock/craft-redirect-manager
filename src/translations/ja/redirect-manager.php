@@ -8,7 +8,6 @@
  */
 
 return [
-
     // Plugin meta
     'Redirect Manager' => 'Redirect Manager',
     'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.' => 'リダイレクトを作成し、404 エラーを監視して、1 つのコントロールパネルのワークスペースからトラフィックをスムーズに保つことができます。',
@@ -232,16 +231,6 @@ return [
     'Configure device detection and redirect caching for better performance.' => 'パフォーマンス向上のためにデバイス検出とリダイレクトキャッシュを設定してください。',
     'Go to Cache Settings' => 'キャッシュ設定へ',
 
-    // Settings: Interface
-    'Interface Settings' => 'インターフェース設定',
-    'Dashboard Refresh Interval' => 'ダッシュボードの更新間隔',
-    'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'ダッシュボードデータを更新する頻度です。自動更新を無効にするには「オフ」に設定してください。',
-    'Off' => 'オフ',
-    '15 seconds' => '15 秒',
-    '30 seconds' => '30 秒',
-    '60 seconds (1 minute)' => '60 秒（1 分）',
-    '120 seconds (2 minutes)' => '120 秒（2 分）',
-
     // Settings: Backup
     'Backup Settings' => 'バックアップ設定',
     'Enable Backups' => 'バックアップを有効にする',
@@ -334,6 +323,16 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => '実際にアクセスせずに URL が設定済みのリダイレクトに一致するかテストします。ソース一致モード（パスと完全 URL）と一致タイプのロジックの検証に便利です。',
     'Test URL' => 'テスト URL',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'テストする URL を入力してください（https://example.com/old-page のような完全な URL または /old-page のようなパス）',
+
+    // Settings: Interface
+    'Interface Settings' => 'インターフェース設定',
+    'Dashboard Refresh Interval' => 'ダッシュボードの更新間隔',
+    'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'ダッシュボードデータを更新する頻度です。自動更新を無効にするには「オフ」に設定してください。',
+    'Off' => 'オフ',
+    '15 seconds' => '15 秒',
+    '30 seconds' => '30 秒',
+    '60 seconds (1 minute)' => '60 秒（1 分）',
+    '120 seconds (2 minutes)' => '120 秒（2 分）',
 
     // Redirects: Index
     'Creation Type' => '作成タイプ',
@@ -669,5 +668,4 @@ return [
     'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>enableApiEndpoint</code> 設定によって上書きされています。',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>excludePatterns</code> 設定によって上書きされています。',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>additionalHeaders</code> 設定によって上書きされています。',
-
 ];

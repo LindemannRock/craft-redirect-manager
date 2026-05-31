@@ -8,7 +8,6 @@
  */
 
 return [
-
     // Plugin meta
     'Redirect Manager' => 'Redirect Manager',
     'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.' => 'أنشئ عمليات إعادة التوجيه، وراقب أخطاء 404، وحافظ على تدفق الزيارات بسلاسة من مساحة عمل واحدة في لوحة التحكم.',
@@ -232,16 +231,6 @@ return [
     'Configure device detection and redirect caching for better performance.' => 'تكوين الكشف عن الأجهزة وتخزين عمليات إعادة التوجيه مؤقتاً لتحسين الأداء.',
     'Go to Cache Settings' => 'الانتقال إلى إعدادات Cache',
 
-    // Settings: Interface
-    'Interface Settings' => 'إعدادات الواجهة',
-    'Dashboard Refresh Interval' => 'فترة تحديث لوحة المعلومات',
-    'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'مدى تكرار تحديث بيانات لوحة المعلومات. اضبط على إيقاف لتعطيل التحديث التلقائي.',
-    'Off' => 'إيقاف',
-    '15 seconds' => '15 ثانية',
-    '30 seconds' => '30 ثانية',
-    '60 seconds (1 minute)' => '60 ثانية (دقيقة واحدة)',
-    '120 seconds (2 minutes)' => '120 ثانية (دقيقتان)',
-
     // Settings: Backup
     'Backup Settings' => 'إعدادات النسخ الاحتياطي',
     'Enable Backups' => 'تفعيل النسخ الاحتياطية',
@@ -334,6 +323,16 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'اختبر ما إذا كان URL يطابق أياً من عمليات إعادة التوجيه المُعدَّة لديك دون زيارته فعلياً. مفيد للتحقق من صحة وضع مطابقة المصدر (المسار مقابل URL الكامل) ومنطق نوع المطابقة.',
     'Test URL' => 'URL الاختبار',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'أدخل URL للاختبار (يمكن أن يكون URL كاملاً مثل https://example.com/old-page أو مساراً مثل /old-page)',
+
+    // Settings: Interface
+    'Interface Settings' => 'إعدادات الواجهة',
+    'Dashboard Refresh Interval' => 'فترة تحديث لوحة المعلومات',
+    'How often to refresh dashboard data. Set to Off to disable auto-refresh.' => 'مدى تكرار تحديث بيانات لوحة المعلومات. اضبط على إيقاف لتعطيل التحديث التلقائي.',
+    'Off' => 'إيقاف',
+    '15 seconds' => '15 ثانية',
+    '30 seconds' => '30 ثانية',
+    '60 seconds (1 minute)' => '60 ثانية (دقيقة واحدة)',
+    '120 seconds (2 minutes)' => '120 ثانية (دقيقتان)',
 
     // Redirects: Index
     'Creation Type' => 'نوع الإنشاء',
@@ -669,5 +668,4 @@ return [
     'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>enableApiEndpoint</code> في <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>excludePatterns</code> في <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>additionalHeaders</code> في <code>config/redirect-manager.php</code>.',
-
 ];
