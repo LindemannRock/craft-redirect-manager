@@ -238,7 +238,7 @@ return [
     'Auto Trim Analytics' => 'Recortar analíticas automáticamente',
     'Automatically trim analytics to respect the limit' => 'Recortar analíticas automáticamente para respetar el límite',
     'Performance & Caching' => 'Rendimiento y caché',
-    'Configure device detection and redirect caching for better performance.' => 'Configure la detección de dispositivos y el caché de redirecciones para mejor rendimiento.',
+    'Configure device detection and redirect caching for better performance.' => 'Configure la detección de dispositivos y la caché de redirecciones para mejor rendimiento.',
     'Go to Cache Settings' => 'Ir a la configuración de caché',
 
     // Settings: Backup
