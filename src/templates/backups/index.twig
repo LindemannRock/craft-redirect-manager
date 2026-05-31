@@ -156,7 +156,7 @@ document.getElementById('create-backup-btn')?.addEventListener('click', function
             window.location.reload();
         })
         .catch(function(error) {
-            Craft.cp.displayError(error.response?.data?.message || '{{ "Failed to create backup."|t('redirect-manager') }}');
+            Craft.cp.displayError(error.response?.data?.message || '{{ "Failed to create backup"|t('redirect-manager') }}');
         })
         .finally(function() {
             btn.classList.remove('loading');
