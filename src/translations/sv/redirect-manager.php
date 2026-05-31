@@ -168,6 +168,16 @@ return [
     'Cleared {count} device caches.' => '{count} enhetscacher har rensats.',
     'All caches cleared successfully.' => 'Alla cacher har rensats.',
     'Cleared redirect cache and {count} device caches.' => 'Omdirigeringscachen och {count} enhetscacher har rensats.',
+    'Redirect not found' => 'Omdirigeringen hittades inte',
+    'Failed to create scheduled backup' => 'Det gick inte att skapa schemalagd säkerhetskopia',
+    'User does not have permission to modify redirects for this site.' => 'Användaren har inte behörighet att ändra omdirigeringar för den här webbplatsen.',
+    'User does not have permission to edit redirects for this site.' => 'Användaren har inte behörighet att redigera omdirigeringar för den här webbplatsen.',
+    'User does not have permission to create redirects for this site.' => 'Användaren har inte behörighet att skapa omdirigeringar för den här webbplatsen.',
+    'User does not have permission to manage backups.' => 'Användaren har inte behörighet att hantera säkerhetskopior.',
+    'User does not have permission to import redirects.' => 'Användaren har inte behörighet att importera omdirigeringar.',
+    'User does not have permission to export redirects.' => 'Användaren har inte behörighet att exportera omdirigeringar.',
+    'User does not have permission to clear import history.' => 'Användaren har inte behörighet att rensa importhistoriken.',
+    'User does not have permission to view analytics for this site.' => 'Användaren har inte behörighet att visa analys för den här webbplatsen.',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{fel} other{fel}} hittades',

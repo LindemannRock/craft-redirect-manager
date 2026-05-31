@@ -101,7 +101,7 @@ class AnalyticsController extends Controller
 
         if ($siteId !== null) {
             if (!in_array($siteId, $editableSiteIds, true)) {
-                throw new ForbiddenHttpException('You do not have permission to view analytics for this site.');
+                throw new ForbiddenHttpException(Craft::t('redirect-manager', 'User does not have permission to view analytics for this site.'));
             }
             return $siteId;
         }

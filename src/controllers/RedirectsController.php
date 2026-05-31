@@ -47,7 +47,7 @@ class RedirectsController extends Controller
         if ($redirect->siteId !== null) {
             $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
             if (!in_array((int)$redirect->siteId, $editableSiteIds, true)) {
-                throw new ForbiddenHttpException('You do not have permission to modify redirects for this site.');
+                throw new ForbiddenHttpException(Craft::t('redirect-manager', 'User does not have permission to modify redirects for this site.'));
             }
         }
     }
@@ -180,7 +180,7 @@ class RedirectsController extends Controller
             $redirect = RedirectRecord::findOne($redirectId);
 
             if (!$redirect) {
-                throw new \yii\web\NotFoundHttpException('Redirect not found');
+                throw new \yii\web\NotFoundHttpException(Craft::t('redirect-manager', 'Redirect not found'));
             }
         }
 
@@ -209,7 +209,7 @@ class RedirectsController extends Controller
         if ($redirect && $redirect->siteId !== null) {
             $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
             if (!in_array((int)$redirect->siteId, $editableSiteIds, true)) {
-                throw new ForbiddenHttpException('You do not have permission to edit redirects for this site.');
+                throw new ForbiddenHttpException(Craft::t('redirect-manager', 'User does not have permission to edit redirects for this site.'));
             }
         }
 
@@ -243,7 +243,7 @@ class RedirectsController extends Controller
         if ($submittedSiteId !== null) {
             $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
             if (!in_array($submittedSiteId, $editableSiteIds, true)) {
-                throw new ForbiddenHttpException('You do not have permission to create redirects for this site.');
+                throw new ForbiddenHttpException(Craft::t('redirect-manager', 'User does not have permission to create redirects for this site.'));
             }
         }
 

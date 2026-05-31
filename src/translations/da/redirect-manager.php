@@ -168,6 +168,16 @@ return [
     'Cleared {count} device caches.' => '{count} enhedscaches ryddet.',
     'All caches cleared successfully.' => 'Alle caches er ryddet.',
     'Cleared redirect cache and {count} device caches.' => 'Omdirigeringscache og {count} enhedscaches ryddet.',
+    'Redirect not found' => 'Omdirigering ikke fundet',
+    'Failed to create scheduled backup' => 'Kunne ikke oprette planlagt sikkerhedskopi',
+    'User does not have permission to modify redirects for this site.' => 'Brugeren har ikke tilladelse til at ændre omdirigeringer for dette websted.',
+    'User does not have permission to edit redirects for this site.' => 'Brugeren har ikke tilladelse til at redigere omdirigeringer for dette websted.',
+    'User does not have permission to create redirects for this site.' => 'Brugeren har ikke tilladelse til at oprette omdirigeringer for dette websted.',
+    'User does not have permission to manage backups.' => 'Brugeren har ikke tilladelse til at administrere sikkerhedskopier.',
+    'User does not have permission to import redirects.' => 'Brugeren har ikke tilladelse til at importere omdirigeringer.',
+    'User does not have permission to export redirects.' => 'Brugeren har ikke tilladelse til at eksportere omdirigeringer.',
+    'User does not have permission to clear import history.' => 'Brugeren har ikke tilladelse til at rydde importhistorikken.',
+    'User does not have permission to view analytics for this site.' => 'Brugeren har ikke tilladelse til at se analyser for dette websted.',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{fejl} other{fejl}} fundet',

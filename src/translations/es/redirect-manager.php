@@ -168,6 +168,16 @@ return [
     'Cleared {count} device caches.' => '{count} caché(s) de dispositivos vaciadas.',
     'All caches cleared successfully.' => 'Todas las cachés vaciadas correctamente.',
     'Cleared redirect cache and {count} device caches.' => 'Caché de redirecciones y {count} caché(s) de dispositivos vaciadas.',
+    'Redirect not found' => 'Redirección no encontrada',
+    'Failed to create scheduled backup' => 'No se pudo crear la copia de seguridad programada',
+    'User does not have permission to modify redirects for this site.' => 'El usuario no tiene permiso para modificar las redirecciones de este sitio.',
+    'User does not have permission to edit redirects for this site.' => 'El usuario no tiene permiso para editar las redirecciones de este sitio.',
+    'User does not have permission to create redirects for this site.' => 'El usuario no tiene permiso para crear las redirecciones de este sitio.',
+    'User does not have permission to manage backups.' => 'El usuario no tiene permiso para gestionar las copias de seguridad.',
+    'User does not have permission to import redirects.' => 'El usuario no tiene permiso para importar redirecciones.',
+    'User does not have permission to export redirects.' => 'El usuario no tiene permiso para exportar redirecciones.',
+    'User does not have permission to clear import history.' => 'El usuario no tiene permiso para borrar el historial de importaciones.',
+    'User does not have permission to view analytics for this site.' => 'El usuario no tiene permiso para ver las analíticas de este sitio.',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{error encontrado} other{errores encontrados}}',

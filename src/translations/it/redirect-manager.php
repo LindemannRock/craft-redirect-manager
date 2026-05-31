@@ -168,6 +168,16 @@ return [
     'Cleared {count} device caches.' => '{count} cache dei dispositivi svuotate.',
     'All caches cleared successfully.' => 'Tutte le cache svuotate.',
     'Cleared redirect cache and {count} device caches.' => 'Cache dei redirect e {count} cache dei dispositivi svuotate.',
+    'Redirect not found' => 'Redirect non trovato',
+    'Failed to create scheduled backup' => 'Impossibile creare il backup pianificato',
+    'User does not have permission to modify redirects for this site.' => 'L\'utente non dispone dell\'autorizzazione per modificare i redirect di questo sito.',
+    'User does not have permission to edit redirects for this site.' => 'L\'utente non dispone dell\'autorizzazione per modificare i redirect di questo sito.',
+    'User does not have permission to create redirects for this site.' => 'L\'utente non dispone dell\'autorizzazione per creare i redirect di questo sito.',
+    'User does not have permission to manage backups.' => 'L\'utente non dispone dell\'autorizzazione per gestire i backup.',
+    'User does not have permission to import redirects.' => 'L\'utente non dispone dell\'autorizzazione per importare i redirect.',
+    'User does not have permission to export redirects.' => 'L\'utente non dispone dell\'autorizzazione per esportare i redirect.',
+    'User does not have permission to clear import history.' => 'L\'utente non dispone dell\'autorizzazione per cancellare la cronologia importazioni.',
+    'User does not have permission to view analytics for this site.' => 'L\'utente non dispone dell\'autorizzazione per visualizzare le analisi di questo sito.',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{errore trovato} other{errori trovati}}',

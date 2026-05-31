@@ -168,6 +168,16 @@ return [
     'Cleared {count} device caches.' => 'Cleared {count} device caches.',
     'All caches cleared successfully.' => 'All caches cleared successfully.',
     'Cleared redirect cache and {count} device caches.' => 'Cleared redirect cache and {count} device caches.',
+    'Redirect not found' => 'Redirect not found',
+    'Failed to create scheduled backup' => 'Failed to create scheduled backup',
+    'User does not have permission to modify redirects for this site.' => 'User does not have permission to modify redirects for this site.',
+    'User does not have permission to edit redirects for this site.' => 'User does not have permission to edit redirects for this site.',
+    'User does not have permission to create redirects for this site.' => 'User does not have permission to create redirects for this site.',
+    'User does not have permission to manage backups.' => 'User does not have permission to manage backups.',
+    'User does not have permission to import redirects.' => 'User does not have permission to import redirects.',
+    'User does not have permission to export redirects.' => 'User does not have permission to export redirects.',
+    'User does not have permission to clear import history.' => 'User does not have permission to clear import history.',
+    'User does not have permission to view analytics for this site.' => 'User does not have permission to view analytics for this site.',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => 'Found {count, number} {count, plural, =1{error} other{errors}}',

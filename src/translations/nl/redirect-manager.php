@@ -168,6 +168,16 @@ return [
     'Cleared {count} device caches.' => '{count} apparaatcache(s) gewist.',
     'All caches cleared successfully.' => 'Alle caches succesvol gewist.',
     'Cleared redirect cache and {count} device caches.' => 'Redirect-cache en {count} apparaatcache(s) gewist.',
+    'Redirect not found' => 'Redirect niet gevonden',
+    'Failed to create scheduled backup' => 'Geplande back-up kon niet worden aangemaakt',
+    'User does not have permission to modify redirects for this site.' => 'De gebruiker heeft geen toestemming om redirects voor deze site te wijzigen.',
+    'User does not have permission to edit redirects for this site.' => 'De gebruiker heeft geen toestemming om redirects voor deze site te bewerken.',
+    'User does not have permission to create redirects for this site.' => 'De gebruiker heeft geen toestemming om redirects voor deze site aan te maken.',
+    'User does not have permission to manage backups.' => 'De gebruiker heeft geen toestemming om back-ups te beheren.',
+    'User does not have permission to import redirects.' => 'De gebruiker heeft geen toestemming om redirects te importeren.',
+    'User does not have permission to export redirects.' => 'De gebruiker heeft geen toestemming om redirects te exporteren.',
+    'User does not have permission to clear import history.' => 'De gebruiker heeft geen toestemming om de importgeschiedenis te wissen.',
+    'User does not have permission to view analytics for this site.' => 'De gebruiker heeft geen toestemming om analyses voor deze site te bekijken.',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{fout} other{fouten}} gevonden',

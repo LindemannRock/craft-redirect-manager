@@ -168,6 +168,16 @@ return [
     'Cleared {count} device caches.' => '{count} 件のデバイスキャッシュを削除しました。',
     'All caches cleared successfully.' => 'すべてのキャッシュを削除しました。',
     'Cleared redirect cache and {count} device caches.' => 'リダイレクトのキャッシュと {count} 件のデバイスキャッシュを削除しました。',
+    'Redirect not found' => 'リダイレクトが見つかりません',
+    'Failed to create scheduled backup' => 'スケジュールされたバックアップの作成に失敗しました',
+    'User does not have permission to modify redirects for this site.' => 'ユーザーにこのサイトのリダイレクトを変更する権限がありません。',
+    'User does not have permission to edit redirects for this site.' => 'ユーザーにこのサイトのリダイレクトを編集する権限がありません。',
+    'User does not have permission to create redirects for this site.' => 'ユーザーにこのサイトのリダイレクトを作成する権限がありません。',
+    'User does not have permission to manage backups.' => 'ユーザーにバックアップを管理する権限がありません。',
+    'User does not have permission to import redirects.' => 'ユーザーにリダイレクトをインポートする権限がありません。',
+    'User does not have permission to export redirects.' => 'ユーザーにリダイレクトをエクスポートする権限がありません。',
+    'User does not have permission to clear import history.' => 'ユーザーにインポート履歴を削除する権限がありません。',
+    'User does not have permission to view analytics for this site.' => 'ユーザーにこのサイトのアナリティクスを表示する権限がありません。',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} 件の{count, plural, =1{エラー} other{エラー}}が見つかりました',

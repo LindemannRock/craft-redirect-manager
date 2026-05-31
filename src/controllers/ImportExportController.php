@@ -1167,7 +1167,7 @@ class ImportExportController extends Controller
             $user->checkPermission('redirectManager:deleteBackups');
 
         if (!$hasAccess) {
-            throw new ForbiddenHttpException('User does not have permission to manage backups');
+            throw new ForbiddenHttpException(Craft::t('redirect-manager', 'User does not have permission to manage backups.'));
         }
     }
 
@@ -1181,7 +1181,7 @@ class ImportExportController extends Controller
     {
         $user = Craft::$app->getUser();
         if (!$user->checkPermission('redirectManager:manageBackups') && !$user->checkPermission($permission)) {
-            throw new ForbiddenHttpException('User does not have permission to manage backups');
+            throw new ForbiddenHttpException(Craft::t('redirect-manager', 'User does not have permission to manage backups.'));
         }
     }
 
@@ -1213,7 +1213,7 @@ class ImportExportController extends Controller
     private function requireImportPermission(): void
     {
         if (!$this->canImport()) {
-            throw new ForbiddenHttpException('User does not have permission to import redirects');
+            throw new ForbiddenHttpException(Craft::t('redirect-manager', 'User does not have permission to import redirects.'));
         }
     }
 
@@ -1225,7 +1225,7 @@ class ImportExportController extends Controller
     private function requireClearImportHistoryPermission(): void
     {
         if (!Craft::$app->getUser()->checkPermission('redirectManager:clearImportHistory')) {
-            throw new ForbiddenHttpException('User does not have permission to clear import history');
+            throw new ForbiddenHttpException(Craft::t('redirect-manager', 'User does not have permission to clear import history.'));
         }
     }
 
@@ -1237,7 +1237,7 @@ class ImportExportController extends Controller
     private function requireExportPermission(): void
     {
         if (!$this->canExport()) {
-            throw new ForbiddenHttpException('User does not have permission to export redirects');
+            throw new ForbiddenHttpException(Craft::t('redirect-manager', 'User does not have permission to export redirects.'));
         }
     }
 }

@@ -168,6 +168,16 @@ return [
     'Cleared {count} device caches.' => 'تم مسح {count} Cache للأجهزة.',
     'All caches cleared successfully.' => 'تم مسح جميع Caches بنجاح.',
     'Cleared redirect cache and {count} device caches.' => 'تم مسح Cache إعادة التوجيه و {count} Cache للأجهزة.',
+    'Redirect not found' => 'لم يتم العثور على إعادة التوجيه',
+    'Failed to create scheduled backup' => 'فشل إنشاء النسخة الاحتياطية المجدولة',
+    'User does not have permission to modify redirects for this site.' => 'ليس لدى المستخدم صلاحية لتعديل عمليات إعادة التوجيه لهذا الموقع.',
+    'User does not have permission to edit redirects for this site.' => 'ليس لدى المستخدم صلاحية لتحرير عمليات إعادة التوجيه لهذا الموقع.',
+    'User does not have permission to create redirects for this site.' => 'ليس لدى المستخدم صلاحية لإنشاء عمليات إعادة التوجيه لهذا الموقع.',
+    'User does not have permission to manage backups.' => 'ليس لدى المستخدم صلاحية لإدارة النسخ الاحتياطية.',
+    'User does not have permission to import redirects.' => 'ليس لدى المستخدم صلاحية لاستيراد عمليات إعادة التوجيه.',
+    'User does not have permission to export redirects.' => 'ليس لدى المستخدم صلاحية لتصدير عمليات إعادة التوجيه.',
+    'User does not have permission to clear import history.' => 'ليس لدى المستخدم صلاحية لمسح سجل الاستيراد.',
+    'User does not have permission to view analytics for this site.' => 'ليس لدى المستخدم صلاحية لعرض تحليلات هذا الموقع.',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => 'تم العثور على {count, number} {count, plural, =1{خطأ} other{أخطاء}}',

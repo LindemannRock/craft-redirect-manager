@@ -168,6 +168,16 @@ return [
     'Cleared {count} device caches.' => '{count} cache(s) d\'appareils vidé(s).',
     'All caches cleared successfully.' => 'Tous les caches vidés avec succès.',
     'Cleared redirect cache and {count} device caches.' => 'Cache de redirections et {count} cache(s) d\'appareils vidés.',
+    'Redirect not found' => 'Redirection introuvable',
+    'Failed to create scheduled backup' => 'Échec de la création de la sauvegarde planifiée',
+    'User does not have permission to modify redirects for this site.' => 'L\'utilisateur n\'a pas la permission de modifier les redirections de ce site.',
+    'User does not have permission to edit redirects for this site.' => 'L\'utilisateur n\'a pas la permission de modifier les redirections de ce site.',
+    'User does not have permission to create redirects for this site.' => 'L\'utilisateur n\'a pas la permission de créer les redirections de ce site.',
+    'User does not have permission to manage backups.' => 'L\'utilisateur n\'a pas la permission de gérer les sauvegardes.',
+    'User does not have permission to import redirects.' => 'L\'utilisateur n\'a pas la permission d\'importer des redirections.',
+    'User does not have permission to export redirects.' => 'L\'utilisateur n\'a pas la permission d\'exporter des redirections.',
+    'User does not have permission to clear import history.' => 'L\'utilisateur n\'a pas la permission d\'effacer l\'historique des imports.',
+    'User does not have permission to view analytics for this site.' => 'L\'utilisateur n\'a pas la permission de consulter les analytiques de ce site.',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{erreur trouvée} other{erreurs trouvées}}',

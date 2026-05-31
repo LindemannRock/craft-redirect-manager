@@ -168,6 +168,16 @@ return [
     'Cleared {count} device caches.' => '{count} Geräte-Caches geleert.',
     'All caches cleared successfully.' => 'Alle Caches erfolgreich geleert.',
     'Cleared redirect cache and {count} device caches.' => 'Weiterleitungs-Cache und {count} Geräte-Caches geleert.',
+    'Redirect not found' => 'Weiterleitung nicht gefunden',
+    'Failed to create scheduled backup' => 'Geplantes Backup konnte nicht erstellt werden',
+    'User does not have permission to modify redirects for this site.' => 'Der Benutzer hat keine Berechtigung, Weiterleitungen für diese Website zu ändern.',
+    'User does not have permission to edit redirects for this site.' => 'Der Benutzer hat keine Berechtigung, Weiterleitungen für diese Website zu bearbeiten.',
+    'User does not have permission to create redirects for this site.' => 'Der Benutzer hat keine Berechtigung, Weiterleitungen für diese Website zu erstellen.',
+    'User does not have permission to manage backups.' => 'Der Benutzer hat keine Berechtigung, Backups zu verwalten.',
+    'User does not have permission to import redirects.' => 'Der Benutzer hat keine Berechtigung, Weiterleitungen zu importieren.',
+    'User does not have permission to export redirects.' => 'Der Benutzer hat keine Berechtigung, Weiterleitungen zu exportieren.',
+    'User does not have permission to clear import history.' => 'Der Benutzer hat keine Berechtigung, den Import-Verlauf zu leeren.',
+    'User does not have permission to view analytics for this site.' => 'Der Benutzer hat keine Berechtigung, Analytics für diese Website anzuzeigen.',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => 'Es wurde {count, number} {count, plural, =1{Fehler} other{Fehler}} gefunden',
