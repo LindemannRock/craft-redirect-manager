@@ -664,7 +664,7 @@ return [
     'Clear All Analytics' => 'Limpar todas as análises',
     'Clear all caches?' => 'Limpar todas as caches?',
     'Are you sure you want to permanently delete ALL analytics data? This action cannot be undone!' => 'Eliminar permanentemente TODOS os dados de análise? Esta ação não pode ser anulada!',
-    'This will delete all 404 tracking data. Are you absolutely sure?' => 'Todos os dados de rastreamento 404 serão eliminados. Tem a certeza?',
+    'This will delete all 404 tracking data. Are you absolutely sure?' => 'Todos os dados de rastreamento 404 serão eliminados. Tem a certeza absoluta?',
 
     // Base partials
 
