@@ -243,7 +243,7 @@ class SettingsController extends Controller
 
             Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'Settings saved.'));
         } else {
-            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Could not save settings'));
+            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Could not save settings.'));
             return null;
         }
 
