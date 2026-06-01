@@ -271,13 +271,16 @@
 	{% if not isNew %}
 		<fieldset>
 			<dl class="meta read-only">
-				<div class="data">
-					<dt class="heading">{{ 'Status'|t('redirect-manager') }}</dt>
-					<dd class="value">
-						<span class="status {{ redirect.enabled ? 'live' : 'disabled' }}"></span>
-						<span>{{ redirect.enabled ? 'Enabled'|t('redirect-manager') : 'Disabled'|t('redirect-manager') }}</span>
-					</dd>
-				</div>
+					<div class="data">
+						<dt class="heading">{{ 'Status'|t('redirect-manager') }}</dt>
+						<dd class="value">
+							{% include 'lindemannrock-base/_components/status-dot' with {
+								value: redirect.enabled ? 'enabled' : 'disabled',
+								colorSet: 'status',
+							} only %}
+							<span>{{ redirect.enabled ? 'Enabled'|t('redirect-manager') : 'Disabled'|t('redirect-manager') }}</span>
+						</dd>
+					</div>
 				<div class="data">
 					<dt class="heading">{{ 'Hit count'|t('redirect-manager') }}</dt>
 					<dd class="value">{{ redirect.hitCount }}</dd>
