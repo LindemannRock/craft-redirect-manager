@@ -271,16 +271,42 @@
 	{% if not isNew %}
 		<fieldset>
 			<dl class="meta read-only">
+				{% if redirect.id %}
 					<div class="data">
-						<dt class="heading">{{ 'Status'|t('redirect-manager') }}</dt>
-						<dd class="value">
-							{% include 'lindemannrock-base/_components/status-dot' with {
-								value: redirect.enabled ? 'enabled' : 'disabled',
-								colorSet: 'status',
-							} only %}
-							<span>{{ redirect.enabled ? 'Enabled'|t('redirect-manager') : 'Disabled'|t('redirect-manager') }}</span>
-						</dd>
+						<dt class="heading">{{ 'ID'|t('redirect-manager') }}</dt>
+						<dd class="value">{{ redirect.id }}</dd>
 					</div>
+				{% endif %}
+				<div class="data">
+					<dt class="heading">{{ 'Status'|t('redirect-manager') }}</dt>
+					<dd class="value">
+						{% include 'lindemannrock-base/_components/status-dot' with {
+							value: redirect.enabled ? 'enabled' : 'disabled',
+							colorSet: 'status',
+						} only %}
+						<span>{{ redirect.enabled ? 'Enabled'|t('redirect-manager') : 'Disabled'|t('redirect-manager') }}</span>
+					</dd>
+				</div>
+				<div class="data">
+					<dt class="heading">{{ 'Match'|t('redirect-manager') }}</dt>
+					<dd class="value">
+						{% include 'lindemannrock-base/_components/status-dot' with {
+							value: redirect.matchType,
+							colorSet: 'matchType',
+						} only %}
+						<span>{{ redirect.matchType|capitalize }}</span>
+					</dd>
+				</div>
+				<div class="data">
+					<dt class="heading">{{ 'Type'|t('redirect-manager') }}</dt>
+					<dd class="value">
+						{% include 'lindemannrock-base/_components/status-dot' with {
+							value: redirect.creationType,
+							colorSet: 'creationType',
+						} only %}
+						<span>{{ (redirect.creationType == 'manual' ? 'Manual' : 'Auto')|t('redirect-manager') }}</span>
+					</dd>
+				</div>
 				<div class="data">
 					<dt class="heading">{{ 'Hit count'|t('redirect-manager') }}</dt>
 					<dd class="value">{{ redirect.hitCount }}</dd>
