@@ -60,6 +60,7 @@ return [
     'No' => 'Nei',
     'Site' => 'Nettsted',
     'URL' => 'URL',
+    'ID' => 'ID',
     'Hits' => 'Treff',
     'Status' => 'Status',
     'Type' => 'Type',
@@ -646,9 +647,6 @@ return [
     'Deleted {count} analytics record(s)' => '{count} analyseposter slettet',
     'Cleared {count} analytics record(s)' => '{count} analyseposter fjernet',
     'Failed to clear analytics' => 'Kunne ikke fjerne analysene',
-
-    // Base partials
-
     // Config overrides
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne innstillingen overstyres av <code>autoCreateRedirects</code> i <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>undoWindowMinutes</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne innstillingen overstyres av <code>undoWindowMinutes</code> i <code>config/redirect-manager.php</code>.',

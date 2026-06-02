@@ -60,6 +60,7 @@ return [
     'No' => 'いいえ',
     'Site' => 'サイト',
     'URL' => 'URL',
+    'ID' => 'ID',
     'Hits' => 'ヒット数',
     'Status' => 'ステータス',
     'Type' => 'タイプ',
@@ -646,9 +647,6 @@ return [
     'Deleted {count} analytics record(s)' => '{count} 件のアナリティクスレコードを削除しました',
     'Cleared {count} analytics record(s)' => '{count} 件のアナリティクスレコードを削除しました',
     'Failed to clear analytics' => 'アナリティクスの削除に失敗しました',
-
-    // Base partials
-
     // Config overrides
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>autoCreateRedirects</code> 設定によって上書きされています。',
     'This is being overridden by the <code>undoWindowMinutes</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>undoWindowMinutes</code> 設定によって上書きされています。',

@@ -60,6 +60,7 @@ return [
     'No' => 'لا',
     'Site' => 'الموقع',
     'URL' => 'URL',
+    'ID' => 'ID',
     'Hits' => 'الزيارات',
     'Status' => 'الحالة',
     'Type' => 'النوع',
@@ -646,9 +647,6 @@ return [
     'Deleted {count} analytics record(s)' => 'تم حذف {count} سجلات تحليلية',
     'Cleared {count} analytics record(s)' => 'تم مسح {count} سجلات تحليلية',
     'Failed to clear analytics' => 'فشل مسح التحليلات',
-
-    // Base partials
-
     // Config overrides
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>autoCreateRedirects</code> في <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>undoWindowMinutes</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>undoWindowMinutes</code> في <code>config/redirect-manager.php</code>.',

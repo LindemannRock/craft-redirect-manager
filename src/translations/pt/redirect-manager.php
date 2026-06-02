@@ -60,6 +60,7 @@ return [
     'No' => 'Não',
     'Site' => 'Site',
     'URL' => 'URL',
+    'ID' => 'ID',
     'Hits' => 'Acessos',
     'Status' => 'Estado',
     'Type' => 'Tipo',
@@ -646,9 +647,6 @@ return [
     'Deleted {count} analytics record(s)' => '{count} registos de análise eliminados',
     'Cleared {count} analytics record(s)' => '{count} registos de análise limpos',
     'Failed to clear analytics' => 'Não foi possível limpar as análises',
-
-    // Base partials
-
     // Config overrides
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta definição está a ser substituída por <code>autoCreateRedirects</code> em <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>undoWindowMinutes</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta definição está a ser substituída por <code>undoWindowMinutes</code> em <code>config/redirect-manager.php</code>.',
