@@ -17,6 +17,7 @@ use craft\web\UploadedFile;
 use lindemannrock\base\helpers\CsvImportHelper;
 use lindemannrock\base\helpers\DateFormatHelper;
 use lindemannrock\base\helpers\ExportHelper;
+use lindemannrock\base\helpers\SafeSegmentHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\records\ImportHistoryRecord;
 use lindemannrock\redirectmanager\RedirectManager;
@@ -965,7 +966,7 @@ class ImportExportController extends Controller
         }
 
         // Create temporary ZIP file
-        $safeDirname = basename($backupDir);
+        $safeDirname = SafeSegmentHelper::filenamePart(basename($backupDir), 'backup');
         $zipPath = Craft::$app->getPath()->getTempPath() . '/redirect-backup-' . $safeDirname . '.zip';
         $zip = new \ZipArchive();
 

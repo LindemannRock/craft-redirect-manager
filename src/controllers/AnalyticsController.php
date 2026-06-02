@@ -650,12 +650,7 @@ class AnalyticsController extends Controller
         if ($redirectId) {
             $redirect = RedirectRecord::findOne($redirectId);
             if ($redirect) {
-                // Clean the source URL for filename (remove special chars, limit length)
-                $cleanSource = preg_replace('/[^a-zA-Z0-9-_]/', '-', $redirect->sourceUrl);
-                $cleanSource = preg_replace('/-+/', '-', $cleanSource); // Remove multiple dashes
-                $cleanSource = trim($cleanSource, '-');
-                $cleanSource = substr($cleanSource, 0, 50); // Limit length
-                $filenameParts[] = $cleanSource;
+                $filenameParts[] = $redirect->sourceUrl;
             }
         }
 
@@ -663,7 +658,7 @@ class AnalyticsController extends Controller
         if ($siteId) {
             $site = Craft::$app->getSites()->getSiteById($siteId);
             if ($site) {
-                $filenameParts[] = strtolower(preg_replace('/[^a-zA-Z0-9-_]/', '', str_replace(' ', '-', $site->name)));
+                $filenameParts[] = $site->name;
             }
         }
 
