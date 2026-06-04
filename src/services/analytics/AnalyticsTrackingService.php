@@ -192,7 +192,7 @@ class AnalyticsTrackingService
     {
         $url = trim($url);
         $url = str_replace(["\r", "\n", "\t"], '', $url);
-        $url = preg_replace('#/+#', '/', $url);
+        $url = preg_replace('#(?<!:)//+#', '/', $url);
         return $url;
     }
 
