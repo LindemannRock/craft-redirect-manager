@@ -165,11 +165,19 @@ class SettingsController extends Controller
 
         // Get only the posted settings (fields from the current page)
         $settingsData = Craft::$app->getRequest()->getBodyParam('settings', []);
+        $section = $this->_validSettingsSection(
+            $this->request->getBodyParam('section', 'general'),
+        );
+        $sectionAttributes = $this->_validationAttributesForSection($section);
         $integerAssignmentErrors = [];
 
         // Only update fields that were posted and are not overridden by config
         foreach ($settingsData as $key => $value) {
-            if (!$settings->isOverriddenByConfig($key) && property_exists($settings, $key)) {
+            if (
+                in_array($key, $sectionAttributes, true) &&
+                !$settings->isOverriddenByConfig($key) &&
+                property_exists($settings, $key)
+            ) {
                 if (in_array($key, $this->_integerSettingKeys(), true)) {
                     if (
                         in_array($key, $this->_nullableIntegerSettingKeys(), true) &&
@@ -206,10 +214,7 @@ class SettingsController extends Controller
             }
         }
 
-        $section = $this->_validSettingsSection(
-            $this->request->getBodyParam('section', 'general'),
-        );
-        $attributesToValidate = $this->_validationAttributesForSection($section);
+        $attributesToValidate = $sectionAttributes;
         $attributesToValidate = array_values(array_filter(
             $attributesToValidate,
             fn(string $attribute): bool => !$settings->isOverriddenByConfig($attribute),
