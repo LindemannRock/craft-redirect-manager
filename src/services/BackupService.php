@@ -13,6 +13,7 @@ use craft\base\Component;
 use craft\base\FsInterface;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use craft\models\FsListing;
 use lindemannrock\base\helpers\StorageVolumeHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
@@ -32,6 +33,8 @@ class BackupService extends Component
     private const BACKUP_FOLDERS = ['scheduled', 'imports', 'maintenance', 'manual', 'other'];
 
     private const VOLUME_BACKUP_ROOT = 'redirect-manager/backups';
+
+    private const CHECKSUM_ALGORITHM = 'sha256';
 
     /**
      * @inheritdoc
@@ -423,8 +426,11 @@ class BackupService extends Component
         $backupDir = $this->getBackupRoot() . '/' . $backupName;
         FileHelper::createDirectory($backupDir);
 
+        $redirectsContent = Json::encode($redirects, JSON_PRETTY_PRINT);
+        $metadata = $this->withChecksumMetadata($metadata, $redirectsContent);
+
         file_put_contents($backupDir . '/metadata.json', Json::encode($metadata, JSON_PRETTY_PRINT));
-        file_put_contents($backupDir . '/redirects.json', Json::encode($redirects, JSON_PRETTY_PRINT));
+        file_put_contents($backupDir . '/redirects.json', $redirectsContent);
 
         return $backupDir;
     }
@@ -445,10 +451,53 @@ class BackupService extends Component
         $backupPath = self::VOLUME_BACKUP_ROOT . '/' . $backupName;
         $this->createVolumeDirectory($backupPath);
 
+        $redirectsContent = Json::encode($redirects, JSON_PRETTY_PRINT);
+        $metadata = $this->withChecksumMetadata($metadata, $redirectsContent);
+
         $fs->write($backupPath . '/metadata.json', Json::encode($metadata, JSON_PRETTY_PRINT));
-        $fs->write($backupPath . '/redirects.json', Json::encode($redirects, JSON_PRETTY_PRINT));
+        $fs->write($backupPath . '/redirects.json', $redirectsContent);
 
         return $backupName;
+    }
+
+    /**
+     * @param array<string, mixed> $metadata
+     * @return array<string, mixed>
+     */
+    private function withChecksumMetadata(array $metadata, string $redirectsContent): array
+    {
+        $metadata['checksum'] = hash(self::CHECKSUM_ALGORITHM, $redirectsContent);
+        $metadata['checksumAlgorithm'] = self::CHECKSUM_ALGORITHM;
+
+        return $metadata;
+    }
+
+    public function validateBackupIntegrity(string $metadataContent, string $redirectsContent, string $backupName): bool
+    {
+        $metadata = Json::decode($metadataContent);
+
+        if (!is_array($metadata) || !isset($metadata['checksum'])) {
+            $this->logError('Backup checksum is missing', [
+                'backup' => $backupName,
+            ]);
+
+            return false;
+        }
+
+        $expectedChecksum = $metadata['checksum'];
+        $actualChecksum = hash(self::CHECKSUM_ALGORITHM, $redirectsContent);
+
+        if ($expectedChecksum !== $actualChecksum) {
+            $this->logError('Backup checksum validation failed', [
+                'backup' => $backupName,
+                'expected' => substr((string)$expectedChecksum, 0, 16) . '...',
+                'actual' => substr($actualChecksum, 0, 16) . '...',
+            ]);
+
+            return false;
+        }
+
+        return true;
     }
 
     private function getVolumeFs(): ?FsInterface
@@ -510,8 +559,12 @@ class BackupService extends Component
                 continue;
             }
 
-            foreach ($fs->getFileList($folderPath, false) as $name) {
-                $backupName = $folder . '/' . basename((string)$name);
+            foreach ($fs->getFileList($folderPath, false) as $listing) {
+                if (!$listing instanceof FsListing || !$listing->getIsDir()) {
+                    continue;
+                }
+
+                $backupName = $folder . '/' . $listing->getBasename();
                 $this->addVolumeBackup($backups, $backupName);
             }
         }

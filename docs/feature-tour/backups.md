@@ -61,6 +61,8 @@ Navigate to **Redirect Manager > Backups** to:
 - Restore redirects from a backup
 - Delete individual backups
 
+Downloaded ZIP files are portable archives. To use one on another install without an upload flow, extract the ZIP and place its files in the expected backup folder structure under that install's configured backup storage.
+
 ## Restoring from a Backup
 
 To restore your redirect library to a previous state:
@@ -72,6 +74,8 @@ To restore your redirect library to a previous state:
 
 > [!WARNING]
 > Restoring a backup replaces your current redirect library. If you want to keep your current redirects, create a manual backup first.
+
+Restore requires an intact backup folder with `metadata.json`, `redirects.json`, and a valid SHA-256 checksum in the metadata. Backups with missing metadata, missing checksum data, or modified JSON contents are rejected before redirects are replaced.
 
 ## Console Commands
 

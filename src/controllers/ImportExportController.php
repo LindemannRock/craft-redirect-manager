@@ -1032,7 +1032,7 @@ class ImportExportController extends Controller
 
         if (
             ($usesVolume && $volumeBackupName === null)
-            || (!$usesVolume && ($backupDir === null || !file_exists($backupDir . '/redirects.json')))
+            || (!$usesVolume && ($backupDir === null || !file_exists($backupDir . '/metadata.json') || !file_exists($backupDir . '/redirects.json')))
         ) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backup not found'));
             if ($request->getAcceptsJson()) {
@@ -1045,19 +1045,31 @@ class ImportExportController extends Controller
         }
 
         try {
-            // Create backup BEFORE restoring (in case restore fails)
-            $preRestoreBackup = $backupService->createBackup('restore');
-            if (!$preRestoreBackup) {
-                $this->logWarning('No backup created before restore (no existing redirects to backup)');
-            }
-
+            $metadataContent = $usesVolume && $volumeBackupName !== null
+                ? $backupService->readVolumeBackupFile($volumeBackupName, 'metadata.json')
+                : file_get_contents($backupDir . '/metadata.json');
             $redirectContent = $usesVolume && $volumeBackupName !== null
                 ? $backupService->readVolumeBackupFile($volumeBackupName, 'redirects.json')
                 : file_get_contents($backupDir . '/redirects.json');
+
+            if (
+                !is_string($metadataContent)
+                || !is_string($redirectContent)
+                || !$backupService->validateBackupIntegrity($metadataContent, $redirectContent, is_string($dirname) ? $dirname : basename((string)$backupDir))
+            ) {
+                throw new \Exception(Craft::t('redirect-manager', 'Backup integrity check failed. The backup files may have been modified or corrupted.'));
+            }
+
             $redirects = json_decode((string)$redirectContent, true);
 
             if (!$redirects || !is_array($redirects)) {
                 throw new \Exception('Invalid backup file format');
+            }
+
+            // Create backup after validating the selected backup, before replacing current redirects.
+            $preRestoreBackup = $backupService->createBackup('restore');
+            if (!$preRestoreBackup) {
+                $this->logWarning('No backup created before restore (no existing redirects to backup)');
             }
 
             $db = Craft::$app->getDb();
