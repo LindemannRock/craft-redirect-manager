@@ -565,7 +565,7 @@ class BackupService extends Component
                 }
 
                 $backupName = $folder . '/' . $listing->getBasename();
-                $this->addVolumeBackup($backups, $backupName);
+                $this->addVolumeBackup($backups, $backupName, $fs);
             }
         }
 
@@ -579,13 +579,8 @@ class BackupService extends Component
     /**
      * @param array<int, array<string, mixed>> $backups
      */
-    private function addVolumeBackup(array &$backups, string $backupName): void
+    private function addVolumeBackup(array &$backups, string $backupName, FsInterface $fs): void
     {
-        $fs = $this->getVolumeFs();
-        if (!$fs instanceof FsInterface) {
-            return;
-        }
-
         $metadataPath = self::VOLUME_BACKUP_ROOT . '/' . $backupName . '/metadata.json';
         if (!$fs->fileExists($metadataPath)) {
             return;
@@ -599,7 +594,7 @@ class BackupService extends Component
 
             $metadata['path'] = self::VOLUME_BACKUP_ROOT . '/' . $backupName;
             $metadata['dirname'] = $backupName;
-            $metadata['size'] = $this->calculateVolumeBackupSize($backupName);
+            $metadata['size'] = $this->calculateVolumeBackupSize($backupName, $fs);
             $metadata['formattedSize'] = Craft::$app->getFormatter()->asShortSize((int)$metadata['size'], 2);
 
             $backups[] = $metadata;
@@ -611,13 +606,8 @@ class BackupService extends Component
         }
     }
 
-    private function calculateVolumeBackupSize(string $backupName): int
+    private function calculateVolumeBackupSize(string $backupName, FsInterface $fs): int
     {
-        $fs = $this->getVolumeFs();
-        if (!$fs instanceof FsInterface) {
-            return 0;
-        }
-
         $size = 0;
         foreach (['metadata.json', 'redirects.json'] as $filename) {
             $path = self::VOLUME_BACKUP_ROOT . '/' . $backupName . '/' . $filename;
