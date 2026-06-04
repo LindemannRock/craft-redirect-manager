@@ -164,16 +164,21 @@
 
 {% js %}
 // Toggle cache location info boxes based on storage method selection
-$('#cacheStorageMethod').on('change', function() {
-	const value = $(this).val();
-	if (value === 'redis') {
-		$('#cache-location-file').addClass('hidden');
-		$('#cache-location-redis').removeClass('hidden');
-	} else {
-		$('#cache-location-redis').addClass('hidden');
-		$('#cache-location-file').removeClass('hidden');
-	}
-});
+const cacheStorageMethod = document.getElementById('cacheStorageMethod');
+const cacheLocationFile = document.getElementById('cache-location-file');
+const cacheLocationRedis = document.getElementById('cache-location-redis');
+if (cacheStorageMethod && cacheLocationFile && cacheLocationRedis) {
+	cacheStorageMethod.addEventListener('change', function() {
+		const value = this.value;
+		if (value === 'redis') {
+			cacheLocationFile.classList.add('hidden');
+			cacheLocationRedis.classList.remove('hidden');
+		} else {
+			cacheLocationRedis.classList.add('hidden');
+			cacheLocationFile.classList.remove('hidden');
+		}
+	});
+}
 
 // Convert seconds to human-readable duration
 var _timeUnits = {
@@ -203,15 +208,21 @@ function secondsToHuman(seconds) {
 }
 
 // Update human-readable duration on input change
-$('#deviceDetectionCacheDuration').on('input', function() {
-	$('#deviceDetectionCacheDuration-human').text(secondsToHuman($(this).val()));
-});
+function bindDurationPreview(inputId, previewId) {
+	const input = document.getElementById(inputId);
+	const preview = document.getElementById(previewId);
+	if (!input || !preview) {
+		return;
+	}
 
-$('#redirectCacheDuration').on('input', function() {
-	$('#redirectCacheDuration-human').text(secondsToHuman($(this).val()));
-});
+	const updatePreview = function() {
+		preview.textContent = secondsToHuman(input.value);
+	};
 
-// Initialize on page load
-$('#deviceDetectionCacheDuration-human').text(secondsToHuman($('#deviceDetectionCacheDuration').val()));
-$('#redirectCacheDuration-human').text(secondsToHuman($('#redirectCacheDuration').val()));
+	input.addEventListener('input', updatePreview);
+	updatePreview();
+}
+
+bindDurationPreview('deviceDetectionCacheDuration', 'deviceDetectionCacheDuration-human');
+bindDurationPreview('redirectCacheDuration', 'redirectCacheDuration-human');
 {% endjs %}
