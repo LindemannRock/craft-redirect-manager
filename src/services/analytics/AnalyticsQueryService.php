@@ -34,10 +34,10 @@ class AnalyticsQueryService
      *
      * @param int|array<int>|null $siteId
      * @param int|null $limit
-     * @param string $orderBy
+     * @param array<string, int> $orderBy
      * @return array
      */
-    public function getAllAnalytics(int|array|null $siteId = null, ?int $limit = null, string $orderBy = 'lastHit DESC'): array
+    public function getAllAnalytics(int|array|null $siteId = null, ?int $limit = null, array $orderBy = ['lastHit' => SORT_DESC]): array
     {
         $query = (new Query())
             ->from(AnalyticsRecord::tableName());
