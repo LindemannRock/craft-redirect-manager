@@ -473,31 +473,51 @@ if (saveShortcut) {
     }
 
     // Update status code tip
+    const statusCodeTips = {
+        301: {
+            label: {{ '301 - Moved Permanently'|t('redirect-manager')|json_encode|raw }},
+            text: {{ 'Use when content has permanently moved. Search engines will update their index.'|t('redirect-manager')|json_encode|raw }},
+            url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301',
+        },
+        302: {
+            label: {{ '302 - Found (Temporary)'|t('redirect-manager')|json_encode|raw }},
+            text: {{ 'Use for temporary redirects. Search engines keep the original URL.'|t('redirect-manager')|json_encode|raw }},
+            url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302',
+        },
+        303: {
+            label: {{ '303 - See Other'|t('redirect-manager')|json_encode|raw }},
+            text: {{ 'Redirect to a different resource, typically after a form submission.'|t('redirect-manager')|json_encode|raw }},
+            url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303',
+        },
+        307: {
+            label: {{ '307 - Temporary Redirect'|t('redirect-manager')|json_encode|raw }},
+            text: {{ "Like 302 but guarantees the request method won't change (POST stays POST)."|t('redirect-manager')|json_encode|raw }},
+            url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307',
+        },
+        308: {
+            label: {{ '308 - Permanent Redirect'|t('redirect-manager')|json_encode|raw }},
+            text: {{ "Like 301 but guarantees the request method won't change (POST stays POST)."|t('redirect-manager')|json_encode|raw }},
+            url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308',
+        },
+        410: {
+            label: {{ '410 - Gone'|t('redirect-manager')|json_encode|raw }},
+            text: {{ "Content permanently deleted and won't come back. Search engines remove it from index."|t('redirect-manager')|json_encode|raw }},
+            url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/410',
+        },
+    };
+    const learnMoreLabel = {{ 'Learn more'|t('redirect-manager')|json_encode|raw }};
+
     function updateStatusCodeTip() {
         if (!statusCodeSelect || !statusCodeTipText) return;
         const code = parseInt(statusCodeSelect.value);
-        let tip = '';
-
-        switch(code) {
-            case 301:
-                tip = '<strong>301 - Moved Permanently:</strong> Use when content has permanently moved. Search engines will update their index. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301" target="_blank" rel="noopener">Learn more</a>';
-                break;
-            case 302:
-                tip = '<strong>302 - Found (Temporary):</strong> Use for temporary redirects. Search engines keep the original URL. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302" target="_blank" rel="noopener">Learn more</a>';
-                break;
-            case 303:
-                tip = '<strong>303 - See Other:</strong> Redirect to a different resource, typically after a form submission. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303" target="_blank" rel="noopener">Learn more</a>';
-                break;
-            case 307:
-                tip = '<strong>307 - Temporary Redirect:</strong> Like 302 but guarantees the request method won\'t change (POST stays POST). <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307" target="_blank" rel="noopener">Learn more</a>';
-                break;
-            case 308:
-                tip = '<strong>308 - Permanent Redirect:</strong> Like 301 but guarantees the request method won\'t change (POST stays POST). <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308" target="_blank" rel="noopener">Learn more</a>';
-                break;
-            case 410:
-                tip = '<strong>410 - Gone:</strong> Content permanently deleted and won\'t come back. Search engines remove it from index. <a class="go" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/410" target="_blank" rel="noopener">Learn more</a>';
-                break;
-        }
+        const tipConfig = statusCodeTips[code];
+        const tip = tipConfig
+            ? '<strong>' + Craft.escapeHtml(tipConfig.label) + ':</strong> '
+                + Craft.escapeHtml(tipConfig.text)
+                + ' <a class="go" href="' + tipConfig.url + '" target="_blank" rel="noopener">'
+                + Craft.escapeHtml(learnMoreLabel)
+                + '</a>'
+            : '';
 
         statusCodeTipText.innerHTML = tip;
     }
