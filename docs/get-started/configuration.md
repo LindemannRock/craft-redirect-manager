@@ -73,7 +73,7 @@ Configure Redirect Manager by creating a config file at `config/redirect-manager
 | `backupSchedule` | `string` | `'disabled'` | Schedule (`disabled`, `daily`, `weekly`, `monthly`) |
 | `backupRetentionDays` | `int` | `30` | Days to keep backups (`0` = keep forever, max 365) |
 | `backupPath` @since(5.0.0) | `string` | `'@storage/redirect-manager/backups'` | Local filesystem path for backups. Supports `@storage`, `@root` subfolders, or `$VARIABLE` env vars that resolve inside those roots. |
-| `backupVolumeUid` @since(5.0.0) | `?string` | `null` | Optional asset volume UID for storing backups. |
+| `backupVolumeUid` @since(5.0.0) | `?string` | `null` | Optional asset volume UID for storing backups. Local volumes inside `@webroot` are rejected; remote volume access must be restricted in the storage provider. |
 
 ## Advanced
 
