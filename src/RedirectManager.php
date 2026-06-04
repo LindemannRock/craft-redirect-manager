@@ -496,12 +496,12 @@ class RedirectManager extends Plugin
                                 'label' => Craft::t('redirect-manager', 'Download system logs'),
                             ],
                         ],
-                        ],
                     ],
                 ],
-                'redirectManager:manageSettings' => [
-                    'label' => Craft::t('redirect-manager', 'Manage settings'),
-                ],
+            ],
+            'redirectManager:manageSettings' => [
+                'label' => Craft::t('redirect-manager', 'Manage settings'),
+            ],
         ];
     }
 
