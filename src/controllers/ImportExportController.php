@@ -517,6 +517,7 @@ class ImportExportController extends Controller
         $duplicateRows = [];
         $errorRows = [];
         $rowNumber = 1;
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
         // Get existing redirects for duplicate detection
         $existingRedirects = (new \craft\db\Query())
@@ -616,6 +617,16 @@ class ImportExportController extends Controller
                     'sourceUrl' => $redirect['sourceUrl'] ?? '-',
                     'destinationUrl' => $redirect['destinationUrl'] ?? '-',
                     'error' => 'Missing required field(s): Source URL or Destination URL',
+                ];
+                continue;
+            }
+
+            if ($redirect['siteId'] !== null && !in_array($redirect['siteId'], $editableSiteIds, true)) {
+                $errorRows[] = [
+                    'rowNumber' => $rowNumber,
+                    'sourceUrl' => $redirect['sourceUrl'],
+                    'destinationUrl' => $redirect['destinationUrl'],
+                    'error' => Craft::t('redirect-manager', 'User does not have permission to create redirects for this site.'),
                 ];
                 continue;
             }
