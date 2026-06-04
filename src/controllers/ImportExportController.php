@@ -781,14 +781,6 @@ class ImportExportController extends Controller
             'createBackup' => $importData['createBackup'],
         ]);
 
-        // Store validated data for the import action
-        Craft::$app->getSession()->set('redirect-import-validated', [
-            'validRows' => $validRows,
-            'duplicateRows' => $duplicateRows,
-            'errorRows' => $errorRows,
-            'createBackup' => $importData['createBackup'],
-        ]);
-
         // Redirect to preview page
         return $this->redirect('redirect-manager/import-export/preview');
     }
