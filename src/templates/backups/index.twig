@@ -11,7 +11,7 @@
 
 {% block actionButton %}
     {% if currentUser.can('redirectManager:createBackups') %}
-        <button type="button" class="btn submit" id="create-backup-btn" style="background-color: #dc2626; border-color: #dc2626;">
+        <button type="button" class="btn submit" id="create-backup-btn">
             {{ "Create Backup Now"|t('redirect-manager') }}
         </button>
     {% endif %}
