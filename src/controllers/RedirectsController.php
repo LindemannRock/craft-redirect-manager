@@ -360,7 +360,7 @@ class RedirectsController extends Controller
             $this->_requireEditableRedirect($redirect);
         }
 
-        if (RedirectManager::$plugin->redirects->deleteRedirect($redirectId)) {
+        if (RedirectManager::$plugin->redirects->deleteRedirect((int)$redirectId, $redirect)) {
             return $this->asJson(['success' => true]);
         }
 
@@ -378,16 +378,19 @@ class RedirectsController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:deleteRedirects');
 
-        $redirectIds = Craft::$app->getRequest()->getRequiredBodyParam('redirectIds');
+        $redirectIds = array_map('intval', (array)Craft::$app->getRequest()->getRequiredBodyParam('redirectIds'));
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        /** @var array<int, RedirectRecord> $redirects */
+        $redirects = RedirectRecord::find()
+            ->where(['id' => $redirectIds])
+            ->all();
 
         $deleted = 0;
-        foreach ($redirectIds as $redirectId) {
-            $redirect = RedirectRecord::findOne($redirectId);
-            if ($redirect && $redirect->siteId !== null && !in_array((int)$redirect->siteId, $editableSiteIds, true)) {
+        foreach ($redirects as $redirect) {
+            if ($redirect->siteId !== null && !in_array((int)$redirect->siteId, $editableSiteIds, true)) {
                 continue; // Skip redirects for sites user can't access
             }
-            if (RedirectManager::$plugin->redirects->deleteRedirect($redirectId)) {
+            if (RedirectManager::$plugin->redirects->deleteRedirect((int)$redirect->id, $redirect)) {
                 $deleted++;
             }
         }
@@ -417,7 +420,7 @@ class RedirectsController extends Controller
             $this->_requireEditableRedirect($redirect);
         }
 
-        if (RedirectManager::$plugin->redirects->updateRedirect($redirectId, ['enabled' => $enabled])) {
+        if (RedirectManager::$plugin->redirects->updateRedirect((int)$redirectId, ['enabled' => $enabled], $redirect)) {
             return $this->asJson(['success' => true]);
         }
 
@@ -435,16 +438,19 @@ class RedirectsController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:editRedirects');
 
-        $redirectIds = Craft::$app->getRequest()->getRequiredBodyParam('redirectIds');
+        $redirectIds = array_map('intval', (array)Craft::$app->getRequest()->getRequiredBodyParam('redirectIds'));
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        /** @var array<int, RedirectRecord> $redirects */
+        $redirects = RedirectRecord::find()
+            ->where(['id' => $redirectIds])
+            ->all();
 
         $updated = 0;
-        foreach ($redirectIds as $redirectId) {
-            $redirect = RedirectRecord::findOne($redirectId);
-            if ($redirect && $redirect->siteId !== null && !in_array((int)$redirect->siteId, $editableSiteIds, true)) {
+        foreach ($redirects as $redirect) {
+            if ($redirect->siteId !== null && !in_array((int)$redirect->siteId, $editableSiteIds, true)) {
                 continue;
             }
-            if (RedirectManager::$plugin->redirects->updateRedirect($redirectId, ['enabled' => true])) {
+            if (RedirectManager::$plugin->redirects->updateRedirect((int)$redirect->id, ['enabled' => true], $redirect)) {
                 $updated++;
             }
         }
@@ -466,16 +472,19 @@ class RedirectsController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:editRedirects');
 
-        $redirectIds = Craft::$app->getRequest()->getRequiredBodyParam('redirectIds');
+        $redirectIds = array_map('intval', (array)Craft::$app->getRequest()->getRequiredBodyParam('redirectIds'));
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        /** @var array<int, RedirectRecord> $redirects */
+        $redirects = RedirectRecord::find()
+            ->where(['id' => $redirectIds])
+            ->all();
 
         $updated = 0;
-        foreach ($redirectIds as $redirectId) {
-            $redirect = RedirectRecord::findOne($redirectId);
-            if ($redirect && $redirect->siteId !== null && !in_array((int)$redirect->siteId, $editableSiteIds, true)) {
+        foreach ($redirects as $redirect) {
+            if ($redirect->siteId !== null && !in_array((int)$redirect->siteId, $editableSiteIds, true)) {
                 continue;
             }
-            if (RedirectManager::$plugin->redirects->updateRedirect($redirectId, ['enabled' => false])) {
+            if (RedirectManager::$plugin->redirects->updateRedirect((int)$redirect->id, ['enabled' => false], $redirect)) {
                 $updated++;
             }
         }

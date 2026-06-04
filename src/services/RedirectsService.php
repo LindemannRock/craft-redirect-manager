@@ -796,11 +796,12 @@ class RedirectsService extends Component
      *
      * @param int $id
      * @param array $attributes
+     * @param RedirectRecord|null $record Already-loaded redirect record
      * @return bool
      */
-    public function updateRedirect(int $id, array $attributes): bool
+    public function updateRedirect(int $id, array $attributes, ?RedirectRecord $record = null): bool
     {
-        $record = RedirectRecord::findOne($id);
+        $record ??= RedirectRecord::findOne($id);
 
         if (!$record) {
             $this->logError('Redirect not found', ['id' => $id]);
@@ -863,11 +864,12 @@ class RedirectsService extends Component
      * Delete a redirect
      *
      * @param int $id
+     * @param RedirectRecord|null $record Already-loaded redirect record
      * @return bool
      */
-    public function deleteRedirect(int $id): bool
+    public function deleteRedirect(int $id, ?RedirectRecord $record = null): bool
     {
-        $record = RedirectRecord::findOne($id);
+        $record ??= RedirectRecord::findOne($id);
 
         if (!$record) {
             $this->logError('Redirect not found', ['id' => $id]);
