@@ -9,6 +9,7 @@
 namespace lindemannrock\redirectmanager\controllers;
 
 use Craft;
+use craft\db\Query;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
@@ -20,6 +21,7 @@ use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\base\helpers\SafeSegmentHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\records\ImportHistoryRecord;
+use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\RedirectManager;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -312,15 +314,8 @@ class ImportExportController extends Controller
         $redirectIdsJson = $request->getBodyParam('redirectIds');
         $redirectIds = $redirectIdsJson ? json_decode($redirectIdsJson, true) : null;
 
-        // Build query
-        $query = (new \craft\db\Query())
-            ->from('{{%redirectmanager_redirects}}')
-            ->orderBy(['priority' => SORT_ASC, 'dateCreated' => SORT_DESC]);
-
-        // Filter by selected IDs if provided
-        if (!empty($redirectIds)) {
-            $query->where(['in', 'id', $redirectIds]);
-        }
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $query = $this->buildRedirectExportQuery($redirectIds, $editableSiteIds);
 
         // Get redirects
         $redirects = $query->all();
@@ -370,6 +365,26 @@ class ImportExportController extends Controller
         $filename = ExportHelper::filename($settings, ['export'], 'csv');
 
         return ExportHelper::dispatchTable($rows, $headers, 'csv', $filename, ['lastHit']);
+    }
+
+    /**
+     * Build the redirect export query scoped to the current user's editable sites.
+     *
+     * @param array<int|string>|null $redirectIds
+     * @param array<int> $editableSiteIds
+     */
+    private function buildRedirectExportQuery(?array $redirectIds, array $editableSiteIds): Query
+    {
+        $query = (new Query())
+            ->from(RedirectRecord::tableName())
+            ->andWhere(['or', ['siteId' => null], ['siteId' => $editableSiteIds]])
+            ->orderBy(['priority' => SORT_ASC, 'dateCreated' => SORT_DESC]);
+
+        if (!empty($redirectIds)) {
+            $query->andWhere(['in', 'id', array_map('intval', $redirectIds)]);
+        }
+
+        return $query;
     }
 
     /**
