@@ -50,7 +50,7 @@ Redirect Manager registers granular permissions that can be assigned to user gro
 
 | Permission | Description |
 |------------|-------------|
-| **`redirectManager:viewLogs`** | Access the logs section (view and access) |
+| **`redirectManager:viewLogs`** | Parent — view plugin logs |
 | └─ `redirectManager:viewSystemLogs` | View system-level logs |
 |     └─ `redirectManager:downloadSystemLogs` | Download system log files |
 
