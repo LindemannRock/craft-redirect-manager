@@ -39,7 +39,10 @@ function initRedirectStatsChart() {
     new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['{{ "Handled"|t('redirect-manager') }}', '{{ "Unhandled"|t('redirect-manager') }}'],
+            labels: [
+                {{ 'Handled'|t('redirect-manager')|json_encode|raw }},
+                {{ 'Unhandled'|t('redirect-manager')|json_encode|raw }}
+            ],
             datasets: [{
                 data: [{{ totalHandled }}, {{ totalUnhandled }}],
                 backgroundColor: ['#10b981', '#ef4444'],
