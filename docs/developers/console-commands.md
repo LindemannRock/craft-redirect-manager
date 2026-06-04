@@ -2,6 +2,23 @@
 
 Redirect Manager provides the following console commands.
 
+## Console Help
+
+Use the plugin-level help command to see the available Redirect Manager commands and focused guidance for each workflow:
+
+```bash title="DDEV"
+ddev craft redirect-manager/help
+ddev craft redirect-manager/help backup/create
+ddev craft redirect-manager/help security/generate-salt
+```
+
+Craft's native command help is still available when you need the exact Yii option signature:
+
+```bash title="DDEV"
+ddev craft help redirect-manager/backup/create
+ddev craft help redirect-manager/security/generate-salt
+```
+
 ## Security
 
 ### `redirect-manager/security/generate-salt` @since(5.1.0)
@@ -20,7 +37,7 @@ ddev craft redirect-manager/security/generate-salt
 
 ### `redirect-manager/backup/create` @since(5.23.0)
 
-Creates a manual backup of all redirects.
+Creates a manual backup of all redirects. By default, the command also cleans old backups when backup retention is enabled.
 
 ```bash title="PHP"
 php craft redirect-manager/backup/create
