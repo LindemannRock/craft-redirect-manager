@@ -34,6 +34,37 @@ class AnalyticsExportService
     {
         $this->setLoggingHandle(RedirectManager::$plugin->id);
     }
+    
+    /**
+     * Build a site-name lookup for analytics rows.
+     *
+     * @param array<int, array<string, mixed>> $analytics
+     * @return array<int, string>
+     */
+    private function _getSiteNameMap(array $analytics): array
+    {
+        $siteIds = [];
+        foreach ($analytics as $stat) {
+            if (!empty($stat['siteId'])) {
+                $siteIds[] = (int)$stat['siteId'];
+            }
+        }
+    
+        $siteIds = array_values(array_unique($siteIds));
+        if ($siteIds === []) {
+            return [];
+        }
+    
+        $sites = Craft::$app->getSites()->getAllSites();
+        $map = [];
+        foreach ($sites as $site) {
+            if (in_array($site->id, $siteIds, true)) {
+                $map[$site->id] = $site->name;
+            }
+        }
+    
+        return $map;
+    }
 
     /**
      * Get analytics data formatted for export
@@ -83,16 +114,13 @@ class AnalyticsExportService
 
         // Format data for export
         $exportData = [];
+        $siteNameMap = $this->_getSiteNameMap($analytics);
         foreach ($analytics as $stat) {
-            // Get site name
-            $site = Craft::$app->sites->getSiteById($stat['siteId']);
-            $siteName = $site ? $site->name : '-';
-
             $exportData[] = [
-                'url' => $stat['url'],
-                'siteId' => $stat['siteId'],
-                'siteName' => $siteName,
-                'count' => (int)$stat['count'],
+                    'url' => $stat['url'],
+                    'siteId' => $stat['siteId'],
+                    'siteName' => $siteNameMap[(int)$stat['siteId']] ?? '-',
+                    'count' => (int)$stat['count'],
                 'handled' => $stat['handled'] ? 'Yes' : 'No',
                 'referrer' => $stat['referrer'] ?? '',
                 'deviceType' => $stat['deviceType'] ?? '',
@@ -171,11 +199,10 @@ class AnalyticsExportService
         }
 
         $csv = "URL,Referrer,Hits,Last Hit,Site,Handled,Device Type,Device Brand,Device Model,Browser,Browser Version,Browser Engine,OS Name,OS Version,Bot,Bot Name,Country,City,IP Hash,User Agent,Date Created\n";
-
+        $siteNameMap = $this->_getSiteNameMap($analytics);
+    
         foreach ($analytics as $stat) {
-            // Get site name
-            $site = Craft::$app->sites->getSiteById($stat['siteId']);
-            $siteName = $site ? $site->name : '-';
+            $siteName = $siteNameMap[(int)$stat['siteId']] ?? '-';
 
             $csv .= sprintf(
                 '"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s"' . "\n",
@@ -332,19 +359,16 @@ class AnalyticsExportService
     private function _exportAsJson(array $analytics): string
     {
         $data = [];
-
+        $siteNameMap = $this->_getSiteNameMap($analytics);
+    
         foreach ($analytics as $stat) {
-            // Get site name
-            $site = Craft::$app->sites->getSiteById($stat['siteId']);
-            $siteName = $site ? $site->name : null;
-
             $item = [
                 'url' => $stat['url'],
                 'referrer' => $stat['referrer'] ?? null,
                 'hits' => (int)$stat['count'],
                 'lastHit' => $stat['lastHit'],
                 'siteId' => $stat['siteId'] ? (int)$stat['siteId'] : null,
-                'siteName' => $siteName,
+                    'siteName' => $siteNameMap[(int)$stat['siteId']] ?? null,
                 'handled' => (bool)$stat['handled'],
                 'device' => [
                     'type' => $stat['deviceType'] ?? null,
