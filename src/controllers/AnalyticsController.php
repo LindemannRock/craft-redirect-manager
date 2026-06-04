@@ -593,7 +593,7 @@ class AnalyticsController extends Controller
             return $this->asJson(['success' => true]);
         }
 
-        return $this->asJson(['success' => false, 'error' => 'Could not delete analytic']);
+        return $this->asJson(['success' => false, 'error' => Craft::t('redirect-manager', 'Could not delete analytics record')]);
     }
 
     /**
