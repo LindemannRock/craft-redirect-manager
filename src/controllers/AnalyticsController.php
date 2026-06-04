@@ -16,6 +16,7 @@ use lindemannrock\base\helpers\DateFormatHelper;
 use lindemannrock\base\helpers\DateRangeHelper;
 use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
+use lindemannrock\redirectmanager\records\AnalyticsRecord;
 use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\RedirectManager;
 use yii\web\ForbiddenHttpException;
@@ -169,6 +170,33 @@ class AnalyticsController extends Controller
     
         return $map;
     }
+    
+    /**
+     * Count request types while loading only the columns required by the classifier.
+     *
+     * @param int|array<int> $siteIds
+     * @return array{bot: int, probe: int, normal: int}
+     */
+    private function _getRequestTypeCounts(int|array $siteIds): array
+    {
+        $counts = [
+                'bot' => 0,
+                'probe' => 0,
+                'normal' => 0,
+            ];
+    
+        $query = (new Query())
+                ->select(['url', 'isRobot'])
+                ->from(AnalyticsRecord::tableName())
+                ->andWhere(['siteId' => $siteIds]);
+    
+        foreach ($query->each() as $stat) {
+            $type = $this->_detectRequestType($stat);
+            $counts[$type]++;
+        }
+    
+        return $counts;
+    }
 
     /**
      * Dashboard - 404 list with filters
@@ -278,11 +306,6 @@ class AnalyticsController extends Controller
             $analytics = $query->all();
         }
 
-        // Counters for type filter
-        $botCount = 0;
-        $probeCount = 0;
-        $normalCount = 0;
-
         $redirectIdMap = $this->_getRedirectIdMap($analytics);
     
         // Add redirect ID, detect type, and convert timezone
@@ -309,21 +332,10 @@ class AnalyticsController extends Controller
         $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds, false);
 
         // Get type counts (for filter display, scoped to editable sites)
-        $allAnalyticsForCounts = (new \craft\db\Query())
-            ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName())
-            ->andWhere(['siteId' => $editableSiteIds])
-            ->all();
-
-        foreach ($allAnalyticsForCounts as $stat) {
-            $type = $this->_detectRequestType($stat);
-            if ($type === 'probe') {
-                $probeCount++;
-            } elseif ($type === 'bot') {
-                $botCount++;
-            } else {
-                $normalCount++;
-            }
-        }
+        $typeCounts = $this->_getRequestTypeCounts($editableSiteIds);
+        $botCount = $typeCounts['bot'];
+        $probeCount = $typeCounts['probe'];
+        $normalCount = $typeCounts['normal'];
 
         return $this->renderTemplate('redirect-manager/dashboard/index', [
             'analytics' => $analytics,
@@ -490,11 +502,6 @@ class AnalyticsController extends Controller
             $analytics = $query->all();
         }
 
-        // Counters for type filter
-        $botCount = 0;
-        $probeCount = 0;
-        $normalCount = 0;
-
         $redirectIdMap = $this->_getRedirectIdMap($analytics);
     
         // Process analytics data
@@ -525,21 +532,10 @@ class AnalyticsController extends Controller
         $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds, false);
 
         // Get type counts (for filter display, scoped to editable sites)
-        $allAnalyticsForCounts = (new \craft\db\Query())
-            ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName())
-            ->andWhere(['siteId' => $editableSiteIds])
-            ->all();
-
-        foreach ($allAnalyticsForCounts as $stat) {
-            $type = $this->_detectRequestType($stat);
-            if ($type === 'probe') {
-                $probeCount++;
-            } elseif ($type === 'bot') {
-                $botCount++;
-            } else {
-                $normalCount++;
-            }
-        }
+        $typeCounts = $this->_getRequestTypeCounts($editableSiteIds);
+        $botCount = $typeCounts['bot'];
+        $probeCount = $typeCounts['probe'];
+        $normalCount = $typeCounts['normal'];
 
         return $this->asJson([
             'success' => true,
