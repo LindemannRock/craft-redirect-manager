@@ -594,6 +594,8 @@ return [
     'No valid redirects found to import.' => 'لم يتم العثور على عمليات إعادة توجيه صالحة للاستيراد.',
     'Import {count} Redirects' => 'استيراد {count} عملية إعادة توجيه',
     'No Valid Redirects to Import' => 'لا توجد عمليات إعادة توجيه صالحة للاستيراد',
+    'Required fields not mapped: {fields}' => 'الحقول المطلوبة غير معيّنة: {fields}',
+    'You cannot map multiple CSV columns to the same field' => 'لا يمكنك تعيين عدة أعمدة CSV إلى الحقل نفسه',
     'Missing required field(s): Source URL or Destination URL' => 'الحقول المطلوبة مفقودة: URL المصدر أو URL الوجهة',
     'Invalid source URL format - must start with / or be a full URL (http/https)' => 'تنسيق URL المصدر غير صالح: يجب أن يبدأ بـ / أو يكون URL كاملاً (http/https)',
     'Source URL appears to be an email address' => 'يبدو أن URL المصدر عنوان بريد إلكتروني',

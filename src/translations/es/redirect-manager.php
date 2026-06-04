@@ -594,6 +594,8 @@ return [
     'No valid redirects found to import.' => 'No se encontraron redirecciones válidas para importar.',
     'Import {count} Redirects' => 'Importar {count} redirecciones',
     'No Valid Redirects to Import' => 'No hay redirecciones válidas para importar',
+    'Required fields not mapped: {fields}' => 'Campos obligatorios no mapeados: {fields}',
+    'You cannot map multiple CSV columns to the same field' => 'No puede mapear varias columnas CSV al mismo campo',
     'Missing required field(s): Source URL or Destination URL' => 'Faltan campos obligatorios: URL de origen o URL de destino',
     'Invalid source URL format - must start with / or be a full URL (http/https)' => 'Formato de URL de origen no válido: debe empezar por / o ser una URL completa (http/https)',
     'Source URL appears to be an email address' => 'La URL de origen parece ser una dirección de correo electrónico',

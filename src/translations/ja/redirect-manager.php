@@ -594,6 +594,8 @@ return [
     'No valid redirects found to import.' => 'インポートする有効なリダイレクトが見つかりません。',
     'Import {count} Redirects' => '{count} 件のリダイレクトをインポートする',
     'No Valid Redirects to Import' => 'インポートする有効なリダイレクトがありません',
+    'Required fields not mapped: {fields}' => '必須フィールドがマッピングされていません: {fields}',
+    'You cannot map multiple CSV columns to the same field' => '複数の CSV 列を同じフィールドにマッピングすることはできません',
     'Missing required field(s): Source URL or Destination URL' => '必須フィールドがありません: ソース URL または転送先 URL',
     'Invalid source URL format - must start with / or be a full URL (http/https)' => 'ソース URL の形式が無効です: / で始まるか、完全な URL（http/https）である必要があります',
     'Source URL appears to be an email address' => 'ソース URL はメールアドレスのようです',

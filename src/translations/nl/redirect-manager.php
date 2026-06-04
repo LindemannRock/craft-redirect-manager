@@ -594,6 +594,8 @@ return [
     'No valid redirects found to import.' => 'Geen geldige redirects gevonden om te importeren.',
     'Import {count} Redirects' => '{count} redirects importeren',
     'No Valid Redirects to Import' => 'Geen geldige redirects om te importeren',
+    'Required fields not mapped: {fields}' => 'Vereiste velden niet toegewezen: {fields}',
+    'You cannot map multiple CSV columns to the same field' => 'U kunt niet meerdere CSV-kolommen aan hetzelfde veld toewijzen',
     'Missing required field(s): Source URL or Destination URL' => 'Vereiste velden ontbreken: bron-URL of doel-URL',
     'Invalid source URL format - must start with / or be a full URL (http/https)' => 'Ongeldig bron-URL-formaat: moet beginnen met / of een volledige URL zijn (http/https)',
     'Source URL appears to be an email address' => 'Bron-URL lijkt een e-mailadres te zijn',

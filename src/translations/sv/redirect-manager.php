@@ -594,6 +594,8 @@ return [
     'No valid redirects found to import.' => 'Inga giltiga omdirigeringar hittades att importera.',
     'Import {count} Redirects' => 'Importera {count} omdirigeringar',
     'No Valid Redirects to Import' => 'Inga giltiga omdirigeringar att importera',
+    'Required fields not mapped: {fields}' => 'Obligatoriska fält är inte mappade: {fields}',
+    'You cannot map multiple CSV columns to the same field' => 'Du kan inte mappa flera CSV-kolumner till samma fält',
     'Missing required field(s): Source URL or Destination URL' => 'Obligatoriska fält saknas: käll-URL eller mål-URL',
     'Invalid source URL format - must start with / or be a full URL (http/https)' => 'Ogiltigt käll-URL-format: måste börja med / eller vara en fullständig URL (http/https)',
     'Source URL appears to be an email address' => 'Käll-URL verkar vara en e-postadress',

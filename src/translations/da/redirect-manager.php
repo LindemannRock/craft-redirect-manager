@@ -594,6 +594,8 @@ return [
     'No valid redirects found to import.' => 'Ingen gyldige omdirigeringer fundet til import.',
     'Import {count} Redirects' => 'Importer {count} omdirigeringer',
     'No Valid Redirects to Import' => 'Ingen gyldige omdirigeringer til import',
+    'Required fields not mapped: {fields}' => 'Påkrævede felter er ikke tilknyttet: {fields}',
+    'You cannot map multiple CSV columns to the same field' => 'Du kan ikke tilknytte flere CSV-kolonner til det samme felt',
     'Missing required field(s): Source URL or Destination URL' => 'Påkrævede felter mangler: kilde-URL eller destinations-URL',
     'Invalid source URL format - must start with / or be a full URL (http/https)' => 'Ugyldigt kilde-URL-format: skal starte med / eller være en fuld URL (http/https)',
     'Source URL appears to be an email address' => 'Kilde-URL ser ud til at være en e-mailadresse',

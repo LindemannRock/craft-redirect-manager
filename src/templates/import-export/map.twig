@@ -176,6 +176,14 @@
     const mappingErrorDiv = document.getElementById('mappingErrors');
     const mappingErrorText = document.getElementById('mappingErrorText');
     const form = document.querySelector('form');
+    const fieldLabels = {
+        sourceUrl: {{ 'Source URL'|t('redirect-manager')|json_encode|raw }},
+        destinationUrl: {{ 'Destination URL'|t('redirect-manager')|json_encode|raw }},
+    };
+    const mappingMessages = {
+        requiredFields: {{ 'Required fields not mapped: {fields}'|t('redirect-manager')|json_encode|raw }},
+        duplicateFields: {{ 'You cannot map multiple CSV columns to the same field'|t('redirect-manager')|json_encode|raw }},
+    };
 
     form.addEventListener('submit', function(e) {
         const mappings = document.querySelectorAll('.column-mapping');
@@ -190,10 +198,10 @@
 
             mappingErrorDiv.style.display = 'block';
             let errors = [];
-            if (!hasSourceUrl) errors.push('Source URL');
-            if (!hasDestinationUrl) errors.push('Destination URL');
+            if (!hasSourceUrl) errors.push(fieldLabels.sourceUrl);
+            if (!hasDestinationUrl) errors.push(fieldLabels.destinationUrl);
 
-            mappingErrorText.innerHTML = '<strong>Required fields not mapped: ' + errors.join(', ') + '</strong>';
+            mappingErrorText.textContent = mappingMessages.requiredFields.replace('{fields}', errors.join(', '));
             mappingErrorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return false;
         }
@@ -205,7 +213,7 @@
         if (nonEmptyMappings.length !== uniqueMappings.size) {
             e.preventDefault();
             mappingErrorDiv.style.display = 'block';
-            mappingErrorText.innerHTML = '<strong>Error: You cannot map multiple CSV columns to the same field</strong>';
+            mappingErrorText.textContent = mappingMessages.duplicateFields;
             mappingErrorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return false;
         }
