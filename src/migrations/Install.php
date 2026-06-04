@@ -164,6 +164,7 @@ class Install extends Migration
                 'isRobot' => $this->boolean()->defaultValue(false),
                 'isMobileApp' => $this->boolean()->defaultValue(false),
                 'botName' => $this->string(100)->null(),
+                'requestType' => $this->string(20)->notNull()->defaultValue('normal'),
                 // Geographic data
                 'country' => $this->string(2)->null(),
                 'city' => $this->string(100)->null(),
@@ -187,6 +188,7 @@ class Install extends Migration
             $this->createIndex(null, '{{%redirectmanager_analytics}}', ['sourcePlugin'], false);
             // Device detection indexes
             $this->createIndex(null, '{{%redirectmanager_analytics}}', ['isRobot'], false);
+            $this->createIndex(null, '{{%redirectmanager_analytics}}', ['requestType'], false);
             $this->createIndex(null, '{{%redirectmanager_analytics}}', ['deviceType'], false);
             $this->createIndex(null, '{{%redirectmanager_analytics}}', ['browser'], false);
             $this->createIndex(null, '{{%redirectmanager_analytics}}', ['osName'], false);

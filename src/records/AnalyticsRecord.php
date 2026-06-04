@@ -38,6 +38,7 @@ use yii\db\ActiveQueryInterface;
  * @property bool|null $isRobot
  * @property bool|null $isMobileApp
  * @property string|null $botName
+ * @property string $requestType
  * @property string|null $country
  * @property string|null $city
  * @property string|null $region

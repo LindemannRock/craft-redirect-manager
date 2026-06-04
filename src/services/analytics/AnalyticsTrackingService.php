@@ -13,6 +13,7 @@ use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use lindemannrock\base\helpers\AnalyticsIpHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
+use lindemannrock\redirectmanager\helpers\AnalyticsRequestTypeHelper;
 use lindemannrock\redirectmanager\records\AnalyticsRecord;
 use lindemannrock\redirectmanager\RedirectManager;
 use yii\db\Expression;
@@ -79,6 +80,7 @@ class AnalyticsTrackingService
 
         // Detect device information using Matomo DeviceDetector
         $deviceInfo = RedirectManager::$plugin->deviceDetection->detectDevice($userAgent);
+        $requestType = AnalyticsRequestTypeHelper::detect($url, (bool)$deviceInfo['isRobot']);
 
         $ipState = AnalyticsIpHelper::prepare(
             $request->getUserIP(),
@@ -121,6 +123,7 @@ class AnalyticsTrackingService
                 'isRobot' => $deviceInfo['isRobot'],
                 'isMobileApp' => $deviceInfo['isMobileApp'],
                 'botName' => $deviceInfo['botName'],
+                'requestType' => $requestType,
                 // Geographic data
                 'country' => $geoData['countryCode'] ?? null,
                 'city' => $geoData['city'] ?? null,
@@ -159,6 +162,7 @@ class AnalyticsTrackingService
                         'isRobot' => $deviceInfo['isRobot'],
                         'isMobileApp' => $deviceInfo['isMobileApp'],
                         'botName' => $deviceInfo['botName'],
+                        'requestType' => $requestType,
                         // Geographic data
                         'country' => $geoData['countryCode'] ?? null,
                         'city' => $geoData['city'] ?? null,

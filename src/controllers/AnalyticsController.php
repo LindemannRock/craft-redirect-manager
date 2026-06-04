@@ -16,6 +16,7 @@ use lindemannrock\base\helpers\DateFormatHelper;
 use lindemannrock\base\helpers\DateRangeHelper;
 use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
+use lindemannrock\redirectmanager\helpers\AnalyticsRequestTypeHelper;
 use lindemannrock\redirectmanager\records\AnalyticsRecord;
 use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\RedirectManager;
@@ -32,54 +33,6 @@ use yii\web\Response;
 class AnalyticsController extends Controller
 {
     use LoggingTrait;
-
-    /**
-     * Security probe URL patterns (vulnerability scanning attempts)
-     * These patterns are used for DETECTION in the dashboard, not exclusion.
-     * They can be slightly broader than exclude patterns since they just flag, not hide.
-     */
-    private const SECURITY_PROBE_PATTERNS = [
-        // Database dumps
-        '/\.sql($|\.)/i',
-        '/\/(dump|backup|database|db)\.(sql|zip|tar|gz|rar|7z)/i',
-
-        // Config/sensitive files
-        '/\/\.env($|\.)/i',
-        '/\/\.git($|\/)/i',
-        '/\/\.htaccess$/i',
-        '/\/\.htpasswd$/i',
-        '/\/\.aws($|\/)/i',
-        '/\/\.ssh($|\/)/i',
-        '/\/\.DS_Store$/i',
-        '/^\/composer\.(json|lock)$/i',
-        '/^\/package(-lock)?\.json$/i',
-        '/\/wp-config\.php/i',
-
-        // Admin panels / tools
-        '/\/phpmyadmin/i',
-        '/\/adminer\.php/i',
-        '/^\/pma($|\/)/i',
-        '/^\/mysql($|\/)/i',
-        '/^\/myadmin($|\/)/i',
-
-        // Shell/exploit attempts
-        '/\/shell\.php/i',
-        '/\/cmd\.php/i',
-        '/\/c99\.php/i',
-        '/\/r57\.php/i',
-        '/\/webshell/i',
-        '/\/cgi-bin\//i',
-        '/\/eval-stdin/i',
-
-        // Common scanner paths
-        '/\/sftp(-config)?\.json/i',
-        '/^\/debug($|\/)/i',
-        '/\/phpinfo\.php/i',
-        '/^\/server-status($|\/)/i',
-        '/\.axd$/i',
-        '/\/web\.config$/i',
-        '/\/xmlrpc\.php$/i',
-    ];
 
     /**
      * @inheritdoc
@@ -119,20 +72,12 @@ class AnalyticsController extends Controller
      */
     private function _detectRequestType(array $stat): string
     {
-        // Check if it's a security probe based on URL patterns
-        $url = $stat['url'] ?? '';
-        foreach (self::SECURITY_PROBE_PATTERNS as $pattern) {
-            if (preg_match($pattern, $url)) {
-                return 'probe';
-            }
-        }
-
-        // Check if it's a bot
-        if (!empty($stat['isRobot'])) {
-            return 'bot';
+        $requestType = $stat['requestType'] ?? null;
+        if (in_array($requestType, ['probe', 'bot', 'normal'], true)) {
+            return $requestType;
         }
     
-        return 'normal';
+        return AnalyticsRequestTypeHelper::detect((string)($stat['url'] ?? ''), (bool)($stat['isRobot'] ?? false));
     }
     
     /**
@@ -185,14 +130,18 @@ class AnalyticsController extends Controller
                 'normal' => 0,
             ];
     
-        $query = (new Query())
-                ->select(['url', 'isRobot'])
-                ->from(AnalyticsRecord::tableName())
-                ->andWhere(['siteId' => $siteIds]);
-    
-        foreach ($query->each() as $stat) {
-            $type = $this->_detectRequestType($stat);
-            $counts[$type]++;
+        $rows = (new Query())
+            ->select(['requestType', 'count' => 'COUNT(*)'])
+            ->from(AnalyticsRecord::tableName())
+            ->andWhere(['siteId' => $siteIds])
+            ->groupBy(['requestType'])
+            ->all();
+
+        foreach ($rows as $row) {
+            $type = $row['requestType'] ?? 'normal';
+            if (isset($counts[$type])) {
+                $counts[$type] = (int)$row['count'];
+            }
         }
     
         return $counts;
@@ -263,33 +212,21 @@ class AnalyticsController extends Controller
             $query->andWhere(['handled' => false]);
         }
 
-        // Bot/normal map to DB columns; probe is pattern-based and filtered post-query.
+        // Request type is stored at write time so dashboard filters stay SQL-backed.
         if ($params['typeFilter'] === 'bot') {
-            $query->andWhere(['isRobot' => true]);
+            $query->andWhere(['requestType' => 'bot']);
         } elseif ($params['typeFilter'] === 'normal') {
-            $query->andWhere(['or', ['isRobot' => false], ['isRobot' => null]]);
+            $query->andWhere(['requestType' => 'normal']);
+        } elseif ($params['typeFilter'] === 'probe') {
+            $query->andWhere(['requestType' => 'probe']);
         }
 
         if ($params['search'] !== '') {
             $query->andWhere(['like', 'url', $params['search']]);
         }
 
-        // Sort: requestType has no DB column, so it maps to isRobot.
         $sortDirection = $params['dir'] === 'asc' ? SORT_ASC : SORT_DESC;
-        $sortColumn = $params['sort'] === 'requestType' ? 'isRobot' : $params['sort'];
-        $query->orderBy([$sortColumn => $sortDirection]);
-
-        if ($params['typeFilter'] === 'probe') {
-            $probeAnalytics = array_filter(
-                $query->all(),
-                fn(array $stat): bool => $this->_detectRequestType($stat) === 'probe'
-            );
-
-            return [
-                'analytics' => array_slice(array_values($probeAnalytics), $params['offset'], $params['limit']),
-                'totalCount' => count($probeAnalytics),
-            ];
-        }
+        $query->orderBy([$params['sort'] => $sortDirection]);
 
         $totalCount = (int)$query->count();
         $analytics = $query
