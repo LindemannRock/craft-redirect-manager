@@ -207,6 +207,7 @@ class Settings extends Model
 
     /**
      * @var string|null Optional asset volume UID for storing backups
+     * @since 5.32.0
      */
     public ?string $backupVolumeUid = null;
 
