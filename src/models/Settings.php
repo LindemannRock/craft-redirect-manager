@@ -580,6 +580,8 @@ class Settings extends Model
 
     /**
      * Require a subfolder when using @root for backupPath.
+     *
+     * @since 5.32.0
      */
     public function validateBackupPathRootSubfolder(string $attribute): void
     {
