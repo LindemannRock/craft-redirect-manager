@@ -210,7 +210,7 @@ class AnalyticsTrackingService
         if (!$salt || $salt === '$REDIRECT_MANAGER_IP_SALT' || trim($salt) === '') {
             $this->logWarning('IP hash salt not configured - IP tracking disabled', [
                 'ip' => 'hidden',
-                'saltValue' => $salt ?? 'NULL',
+                'saltConfigured' => false,
             ]);
             throw new \Exception('IP hash salt not configured. Run: php craft redirect-manager/security/generate-salt');
         }
