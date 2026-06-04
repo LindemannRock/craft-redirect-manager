@@ -1074,18 +1074,20 @@ class ImportExportController extends Controller
 
             $db = Craft::$app->getDb();
 
-            // Delete all current redirects
-            $db->createCommand()->delete('{{%redirectmanager_redirects}}')->execute();
-
-            // Restore redirects from backup
             $restored = 0;
-            foreach ($redirects as $redirect) {
-                // Remove id to let database auto-generate new IDs
-                unset($redirect['id']);
-
-                $db->createCommand()->insert('{{%redirectmanager_redirects}}', $redirect)->execute();
-                $restored++;
-            }
+            $db->transaction(function() use ($db, $redirects, &$restored): void {
+                // Delete all current redirects
+                $db->createCommand()->delete('{{%redirectmanager_redirects}}')->execute();
+    
+                // Restore redirects from backup
+                foreach ($redirects as $redirect) {
+                    // Remove id to let database auto-generate new IDs
+                    unset($redirect['id']);
+    
+                    $db->createCommand()->insert('{{%redirectmanager_redirects}}', $redirect)->execute();
+                    $restored++;
+                }
+            });
 
             // Clear redirect cache
             RedirectManager::$plugin->redirects->invalidateCaches();
