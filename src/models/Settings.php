@@ -14,6 +14,7 @@ use craft\helpers\App;
 use craft\validators\ArrayValidator;
 use lindemannrock\base\helpers\ScheduleHelper;
 use lindemannrock\base\helpers\StoragePathHelper;
+use lindemannrock\base\helpers\StorageVolumeHelper;
 use lindemannrock\base\traits\DateFormatSettingsTrait;
 use lindemannrock\base\traits\DateRangeSettingsTrait;
 use lindemannrock\base\traits\ExportFormatSettingsTrait;
@@ -25,6 +26,7 @@ use lindemannrock\base\traits\SettingsConfigTrait;
 use lindemannrock\base\traits\SettingsDisplayNameTrait;
 use lindemannrock\base\traits\SettingsPersistenceTrait;
 use lindemannrock\base\validators\StoragePathValidator;
+use lindemannrock\base\validators\StorageVolumeValidator;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 
 /**
@@ -442,7 +444,10 @@ class Settings extends Model
                 'requireAlias' => true,
             ],
             ['backupPath', 'validateBackupPathRootSubfolder'],
-            ['backupVolumeUid', 'string'],
+            [
+                'backupVolumeUid',
+                StorageVolumeValidator::class,
+            ],
             ['backupRetentionDays', 'integer', 'min' => 0, 'max' => 365],
             ['backupSchedule', 'in', 'range' => array_merge(ScheduleHelper::getValidValues(self::BACKUP_SCHEDULE_OPTIONS), ['manual'])],
         ], $this->pluginNameSettingsRules(), $this->logLevelSettingsRules(), $this->dateFormatSettingsRules(), $this->dateRangeSettingsRules(), $this->exportFormatSettingsRules(), $this->geoSettingsRules(), $this->itemsPerPageSettingsRules());
@@ -508,15 +513,27 @@ class Settings extends Model
     {
         // If a volume is selected, use its path
         if ($this->backupVolumeUid) {
-            $volume = Craft::$app->getVolumes()->getVolumeByUid($this->backupVolumeUid);
-            if ($volume) {
-                $fs = $volume->getFs();
-                if (property_exists($fs, 'path')) {
-                    $path = App::env($fs->path);
-                    return rtrim($path, '/') . '/redirect-manager/backups';
-                }
-                return "Volume: {$volume->name} / redirect-manager/backups";
+            $volumeErrors = StorageVolumeHelper::validateVolume($this->backupVolumeUid, [
+            ]);
+            if ($volumeErrors !== []) {
+                $this->logWarning('Backup volume failed validation. Using safe default.', [
+                    'backupVolumeUid' => $this->backupVolumeUid,
+                    'errors' => $volumeErrors,
+                ]);
+
+                return Craft::getAlias('@storage/redirect-manager/backups');
             }
+
+            $localRootPath = StorageVolumeHelper::localRootPath($this->backupVolumeUid);
+            if ($localRootPath !== null) {
+                return rtrim($localRootPath, '/') . '/redirect-manager/backups';
+            }
+
+            $this->logWarning('Backup volume could not be resolved to a local path. Using safe default.', [
+                'backupVolumeUid' => $this->backupVolumeUid,
+            ]);
+
+            return Craft::getAlias('@storage/redirect-manager/backups');
         }
 
         if (!$this->validate(['backupPath'])) {
@@ -544,6 +561,21 @@ class Settings extends Model
         }
 
         return $path;
+    }
+
+    /**
+     * Get the backup location label for Control Panel display.
+     *
+     * @since 5.32.0
+     */
+    public function getBackupLocationLabel(): string
+    {
+        if ($this->backupVolumeUid) {
+            return StorageVolumeHelper::displayPath($this->backupVolumeUid, 'redirect-manager/backups')
+                ?? Craft::t('redirect-manager', 'Backup Storage Volume');
+        }
+
+        return $this->getBackupPath();
     }
 
     /**

@@ -123,7 +123,7 @@
         </div>
 
     {% if not settings.getErrors('backupPath') %}
-        {% set backupPath = settings.getBackupPath() %}
+        {% set backupPath = settings.getBackupLocationLabel() %}
         {% include 'lindemannrock-base/_components/info-box' with {
             message: '<strong>' ~ "Backup Location:"|t('redirect-manager') ~ '</strong> <code>' ~ backupPath ~ '</code>'
         } %}
