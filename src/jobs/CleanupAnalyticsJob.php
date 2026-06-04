@@ -88,7 +88,7 @@ class CleanupAnalyticsJob extends BaseJob implements RetryableJobInterface
 
         // Also trim if auto-trim is enabled
         if ($settings->autoTrimAnalytics) {
-            $trimmed = RedirectManager::$plugin->analytics->trimAnalytics();
+            RedirectManager::$plugin->analytics->trimAnalytics();
         }
 
         $this->logInfo('Analytics cleanup completed', ['deleted' => $deleted]);
