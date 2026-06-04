@@ -754,15 +754,10 @@ class SettingsController extends Controller
         $this->requirePermission('redirectManager:clearAnalytics');
 
         try {
-            // Get count before deleting
-            $count = (new \craft\db\Query())
-                ->from('{{%redirectmanager_analytics}}')
-                ->count();
-
-            // Delete all analytics records
-            Craft::$app->db->createCommand()
-                ->delete('{{%redirectmanager_analytics}}')
-                ->execute();
+            $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+            $count = $editableSiteIds === []
+                ? 0
+                : RedirectManager::$plugin->analytics->clearAnalytics($editableSiteIds);
 
             return $this->asJson([
                 'success' => true,
