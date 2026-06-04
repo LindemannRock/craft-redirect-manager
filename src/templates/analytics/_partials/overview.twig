@@ -50,13 +50,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for stat in mostCommon %}
-                        <tr>
-                            <td>
-                                <a class="label-link" href="{{ stat.url }}" target="_blank">
-                                    <span><code>{{ stat.url|slice(0, 80) }}</code></span>
-                                </a>
-                            </td>
+	                    {% for stat in mostCommon %}
+	                        <tr>
+	                            <td>
+	                                {% set isSafeUrl = stat.url starts with '/' or stat.url starts with 'http://' or stat.url starts with 'https://' %}
+	                                {% if isSafeUrl %}
+	                                    <a class="label-link" href="{{ stat.url }}" target="_blank" rel="noopener noreferrer">
+	                                        <span><code>{{ stat.url|slice(0, 80) }}</code></span>
+	                                    </a>
+	                                {% else %}
+	                                    <span><code>{{ stat.url|slice(0, 80) }}</code></span>
+	                                {% endif %}
+	                            </td>
                             <td>
                                 {% if stat.siteId %}
                                     {% set site = craft.app.sites.getSiteById(stat.siteId) %}
