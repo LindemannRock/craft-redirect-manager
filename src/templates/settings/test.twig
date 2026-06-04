@@ -48,22 +48,28 @@
 {% endblock %}
 
 {% js %}
-const testButton = document.getElementById('testButton');
-    const testUrlInput = document.getElementById('testUrl');
-    const testResults = document.getElementById('testResults');
-    const resultsTitle = document.getElementById('resultsTitle');
-    const resultsContent = document.getElementById('resultsContent');
+	const testButton = document.getElementById('testButton');
+	    const testUrlInput = document.getElementById('testUrl');
+	    const testResults = document.getElementById('testResults');
+	    const resultsTitle = document.getElementById('resultsTitle');
+	    const resultsContent = document.getElementById('resultsContent');
+	    const escapeHtml = function(value) {
+	        return Craft.escapeHtml(String(value ?? ''));
+	    };
+	    const redirectEditUrl = function(id) {
+	        return Craft.getUrl('redirect-manager/redirects/' + encodeURIComponent(String(parseInt(id, 10) || '')));
+	    };
 
     testButton.addEventListener('click', function() {
         let testUrl = testUrlInput.value.trim();
 
-        if (!testUrl) {
-            testResults.style.display = 'block';
-            resultsTitle.innerHTML = '⚠️ Validation Error';
-            resultsTitle.style.color = '#dc3545';
-            resultsContent.innerHTML = '<p style="color: #dc3545;">Please enter a URL to test</p>';
-		            return;
-		        }
+	        if (!testUrl) {
+	            testResults.style.display = 'block';
+	            resultsTitle.textContent = '⚠️ Validation Error';
+	            resultsTitle.style.color = '#dc3545';
+	            resultsContent.innerHTML = '<p style="color: #dc3545;">Please enter a URL to test</p>';
+			            return;
+			        }
 	
 		        // Auto-fix ambiguous URLs
 		        const isFullUrl = testUrl.startsWith('http://') || testUrl.startsWith('https://');
@@ -102,65 +108,67 @@ const testButton = document.getElementById('testButton');
 		            testButton.textContent = 'Test URL';
 	
 		            testResults.style.display = 'block';
+
+			            if (data.matched) {
+			                // Match found
+			                resultsTitle.textContent = '✅ Match Found!';
+			                resultsTitle.style.color = '#28a745';
+		
+			                const r = data.redirect;
+			                const resolvedDestinationUrl = escapeHtml(r.resolvedDestinationUrl);
+			                const destinationUrl = escapeHtml(r.destinationUrl);
+			                resultsContent.innerHTML = `
+	<p style="padding: 15px; background: #e8f5e9; border-left: 4px solid #28a745; margin: 15px 0;">
+		<strong>This URL would redirect:</strong><br>
+		<code>${escapeHtml(testUrl)}</code>
+		→
+		<code>${resolvedDestinationUrl}</code>
+	</p>
+	<dl style="display: grid; grid-template-columns: 200px 1fr; gap: 10px; margin: 20px 0;">
+		<dt>
+			<strong>Redirect ID:</strong>
+		</dt>
+		<dd>
+			<a href="${redirectEditUrl(r.id)}">#${escapeHtml(r.id)}</a>
+		</dd>
 	
-		            if (data.matched) {
-		                // Match found
-		                resultsTitle.innerHTML = '✅ Match Found!';
-		                resultsTitle.style.color = '#28a745';
+		<dt>
+			<strong>Source URL:</strong>
+		</dt>
+		<dd>
+			<code>${escapeHtml(r.sourceUrl)}</code>
+		</dd>
 	
-		                const r = data.redirect;
-		                resultsContent.innerHTML = `
-<p style="padding: 15px; background: #e8f5e9; border-left: 4px solid #28a745; margin: 15px 0;">
-	<strong>This URL would redirect:</strong><br>
-	<code>${testUrl}</code>
-	→
-	<code>${r.resolvedDestinationUrl}</code>
-</p>
-<dl style="display: grid; grid-template-columns: 200px 1fr; gap: 10px; margin: 20px 0;">
-	<dt>
-		<strong>Redirect ID:</strong>
-	</dt>
-	<dd>
-		<a href="${Craft.getUrl('redirect-manager/redirects/' + r.id)}">#${r.id}</a>
-	</dd>
-
-	<dt>
-		<strong>Source URL:</strong>
-	</dt>
-	<dd>
-		<code>${r.sourceUrl}</code>
-	</dd>
-
-	<dt>
-		<strong>Destination URL:</strong>
-	</dt>
-	<dd>
-		<code>${r.destinationUrl}</code>
-		${r.destinationUrl !== r.resolvedDestinationUrl ? `<br><span style="color: #28a745;">→ Resolves to: <code>${r.resolvedDestinationUrl}</code></span>` : ''}
-	</dd>
-
-	<dt>
-		<strong>Match Type:</strong>
-	</dt>
-	<dd>${r.matchType}</dd>
-
-	<dt>
-		<strong>Source Match Mode:</strong>
-	</dt>
+		<dt>
+			<strong>Destination URL:</strong>
+		</dt>
+		<dd>
+			<code>${destinationUrl}</code>
+			${r.destinationUrl !== r.resolvedDestinationUrl ? `<br><span style="color: #28a745;">→ Resolves to: <code>${resolvedDestinationUrl}</code></span>` : ''}
+		</dd>
+	
+		<dt>
+			<strong>Match Type:</strong>
+		</dt>
+		<dd>${escapeHtml(r.matchType)}</dd>
+	
+		<dt>
+			<strong>Source Match Mode:</strong>
+		</dt>
 	<dd>${r.redirectSrcMatch === 'pathonly' ? 'Path Only' : 'Full URL'}</dd>
-
-	<dt>
-		<strong>Status Code:</strong>
-	</dt>
-	<dd>${r.statusCode}</dd>
-
-	<dt>
-		<strong>Priority:</strong>
-	</dt>
-	<dd>${r.priority}</dd>
-</dl>
-${data.alsoMatches && data.alsoMatches.length > 0 ? `
-<div style="margin-top: 25px;">
+	
+		<dt>
+			<strong>Status Code:</strong>
+		</dt>
+		<dd>${escapeHtml(r.statusCode)}</dd>
+	
+		<dt>
+			<strong>Priority:</strong>
+		</dt>
+		<dd>${escapeHtml(r.priority)}</dd>
+	</dl>
+	${data.alsoMatches && data.alsoMatches.length > 0 ? `
+	<div style="margin-top: 25px;">
 	<p><strong>${data.alsoMatches.length} other redirect${data.alsoMatches.length > 1 ? 's' : ''} also match${data.alsoMatches.length === 1 ? 'es' : ''} this URL</strong></p>
 	<p class="light" style="margin: 0 0 12px 0;">Skipped due to lower priority (higher number = lower priority)</p>
 	<div class="tableview">
@@ -173,25 +181,25 @@ ${data.alsoMatches && data.alsoMatches.length > 0 ? `
 					<th style="width: 80px;">Priority</th>
 				</tr>
 			</thead>
-			<tbody>
-				${data.alsoMatches.map(m => `
-					<tr>
-						<td><a href="${Craft.getUrl('redirect-manager/redirects/' + m.id)}">#${m.id}</a></td>
-						<td><code>${m.sourceUrl}</code></td>
-						<td><code>${m.resolvedDestinationUrl}</code></td>
-						<td>${m.priority}</td>
-					</tr>
-				`).join('')}
-			</tbody>
+				<tbody>
+					${data.alsoMatches.map(m => `
+						<tr>
+							<td><a href="${redirectEditUrl(m.id)}">#${escapeHtml(m.id)}</a></td>
+							<td><code>${escapeHtml(m.sourceUrl)}</code></td>
+							<td><code>${escapeHtml(m.resolvedDestinationUrl)}</code></td>
+							<td>${escapeHtml(m.priority)}</td>
+						</tr>
+					`).join('')}
+				</tbody>
 		</table>
 	</div>
 </div>
 ` : ''}
 `;
-            } else {
-                // No match
-                resultsTitle.innerHTML = '❌ No Match Found';
-                resultsTitle.style.color = '#dc3545';
+	            } else {
+	                // No match
+	                resultsTitle.textContent = '❌ No Match Found';
+	                resultsTitle.style.color = '#dc3545';
 
                 // Detect if tested URL is a full URL or path
                 const isFullUrl = testUrl.startsWith('http://') || testUrl.startsWith('https://');
@@ -205,12 +213,12 @@ ${data.alsoMatches && data.alsoMatches.length > 0 ? `
                 }
 
                 resultsContent.innerHTML = `
-<p style="padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; margin: 15px 0;">
-	<strong>No redirect configured for this URL.</strong><br>
-	Visiting
-	<code>${testUrl}</code>
-	would result in a 404 error and be logged in analytics.
-</p>
+	<p style="padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; margin: 15px 0;">
+		<strong>No redirect configured for this URL.</strong><br>
+		Visiting
+		<code>${escapeHtml(testUrl)}</code>
+		would result in a 404 error and be logged in analytics.
+	</p>
 <p style="margin-top: 15px;">
 	<a href="${Craft.getUrl('redirect-manager/redirects/new', createParams)}" class="btn">Create Redirect for This URL</a>
 </p>
@@ -220,12 +228,12 @@ ${data.alsoMatches && data.alsoMatches.length > 0 ? `
         .catch(error => {
             testButton.disabled = false;
             testButton.textContent = 'Test URL';
-
-            testResults.style.display = 'block';
-            resultsTitle.innerHTML = '⚠️ Error';
-            resultsTitle.style.color = '#dc3545';
-            resultsContent.innerHTML = `<p style="color: #dc3545;">${error.message}</p>`;
-		        });
+	
+	            testResults.style.display = 'block';
+	            resultsTitle.textContent = '⚠️ Error';
+	            resultsTitle.style.color = '#dc3545';
+	            resultsContent.innerHTML = `<p style="color: #dc3545;">${escapeHtml(error.message)}</p>`;
+			        });
 		    });
 	
 		    // Allow Enter key to trigger test
