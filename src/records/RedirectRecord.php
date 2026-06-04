@@ -122,9 +122,9 @@ class RedirectRecord extends ActiveRecord
         if (strpos($url, '*') !== false) {
             if ($this->matchType === 'wildcard') {
                 // Wildcards are expected and allowed
-            } elseif ($this->matchType === 'prefix' || $this->matchType === 'begins_with') {
+            } elseif ($this->matchType === 'prefix') {
                 $this->addError($attribute, \Craft::t('redirect-manager', 'Wildcard character (*) is not allowed in Prefix Match. Use Wildcard Match instead, or remove the *.'));
-            } elseif ($this->matchType === 'exact' || $this->matchType === 'contains') {
+            } elseif ($this->matchType === 'exact') {
                 $this->addError($attribute, \Craft::t('redirect-manager', 'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.', ['matchType' => ucfirst($this->matchType)]));
             }
         } elseif ($this->matchType === 'wildcard') {

@@ -419,8 +419,8 @@ if (saveShortcut) {
             if (sourceUrlInput) {
                 sourceUrlInput.placeholder = mode === 'pathonly' ? '/blog/*' : 'https://example.com/blog/*';
             }
-        } else if (matchType === 'begins_with' || matchType === 'prefix') {
-            // Prefix/Begins With mode
+        } else if (matchType === 'prefix') {
+            // Prefix mode
             if (srcMatchInstructions) {
                 if (mode === 'pathonly') {
                     srcMatchInstructions.textContent = '{{ 'Match any path starting with the pattern. Works across all domains.'|t('redirect-manager') }}';
@@ -437,25 +437,6 @@ if (saveShortcut) {
             }
             if (sourceUrlInput) {
                 sourceUrlInput.placeholder = mode === 'pathonly' ? '/blog' : 'https://example.com/blog';
-            }
-        } else if (matchType === 'contains') {
-            // Contains mode
-            if (srcMatchInstructions) {
-                if (mode === 'pathonly') {
-                    srcMatchInstructions.textContent = '{{ 'Match any path containing the pattern. Works across all domains.'|t('redirect-manager') }}';
-                } else {
-                    srcMatchInstructions.textContent = '{{ 'Match any URL containing the pattern including domain.'|t('redirect-manager') }}';
-                }
-            }
-            if (sourceUrlInstructions) {
-                if (mode === 'pathonly') {
-                    sourceUrlInstructions.textContent = '{{ 'Enter text to match anywhere in the path (e.g., old-post matches /blog/old-post/123).'|t('redirect-manager') }}';
-                } else {
-                    sourceUrlInstructions.textContent = '{{ 'Enter text to match anywhere in the URL (e.g., old-post matches any URL containing it).'|t('redirect-manager') }}';
-                }
-            }
-            if (sourceUrlInput) {
-                sourceUrlInput.placeholder = mode === 'pathonly' ? 'old-post' : 'old-post';
             }
         } else {
             // Exact match mode (default)
