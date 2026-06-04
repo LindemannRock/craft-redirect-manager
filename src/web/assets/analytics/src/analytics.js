@@ -166,6 +166,14 @@
 
         // ── Recent Unhandled 404s (Overview tab, AJAX-loaded) ──
 
+        function isSafeUrl(url) {
+            return typeof url === 'string' && (
+                url.indexOf('/') === 0 ||
+                url.indexOf('http://') === 0 ||
+                url.indexOf('https://') === 0
+            );
+        }
+
         function loadRecentUnhandled(dateRange, siteId) {
             if (recentUnhandledLoaded) return;
             requestData('recent-unhandled', { dateRange: dateRange, siteId: siteId }, function(data) {
@@ -204,8 +212,12 @@
                     createUrl += (createUrl.indexOf('?') !== -1 ? '&' : '?') + 'sourceUrl=' + encodeURIComponent(stat.url);
                 }
 
+                var urlCell = isSafeUrl(stat.url)
+                    ? '<a class="label-link" href="' + Craft.escapeHtml(encodeURI(stat.url)) + '" target="_blank" rel="noopener noreferrer"><span><code>' + Craft.escapeHtml(urlDisplay) + '</code></span></a>'
+                    : '<span><code>' + Craft.escapeHtml(urlDisplay) + '</code></span>';
+
                 html += '<tr>' +
-                    '<td><a class="label-link" href="' + Craft.escapeHtml(stat.url) + '" target="_blank"><span><code>' + Craft.escapeHtml(urlDisplay) + '</code></span></a></td>' +
+                    '<td>' + urlCell + '</td>' +
                     '<td>' + Craft.escapeHtml(stat.siteName || '\u2014') + '</td>' +
                     '<td>' + Number(stat.count).toLocaleString() + '</td>' +
                     '<td>' + Craft.escapeHtml(referrerDisplay) + '</td>' +
