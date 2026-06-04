@@ -1119,18 +1119,56 @@ class RedirectsService extends Component
 
         foreach ($settings->excludePatterns as $pattern) {
             if (isset($pattern['pattern']) && !empty($pattern['pattern'])) {
-                $regex = '`' . $pattern['pattern'] . '`i';
-                try {
-                    if (preg_match($regex, $url)) {
-                        return true;
-                    }
-                } catch (\Exception $e) {
-                    $this->logError('Invalid exclude pattern regex', ['pattern' => $pattern['pattern']]);
+                if ($this->matchesExcludePattern((string)$pattern['pattern'], $url)) {
+                    return true;
                 }
             }
         }
 
         return false;
+    }
+
+    /**
+     * Match a configured exclude regex with hot-path safety guards.
+     *
+     * @param string $pattern
+     * @param string $url
+     * @return bool
+     */
+    private function matchesExcludePattern(string $pattern, string $url): bool
+    {
+        if (strlen($pattern) > 500) {
+            $this->logWarning('Rejected exclude pattern: exceeds length limit', ['pattern' => substr($pattern, 0, 100) . '...']);
+            return false;
+        }
+
+        if (preg_match('/(\.\*|\.\+|\[.+\])[*+]\)?[*+]/', $pattern) === 1) {
+            $this->logWarning('Rejected unsafe exclude pattern: nested quantifiers detected', ['pattern' => $pattern]);
+            return false;
+        }
+
+        if (preg_match('/\([^)]*\|[^)]*\)[*+]/', $pattern) === 1) {
+            $this->logWarning('Rejected unsafe exclude pattern: alternation with quantifier', ['pattern' => $pattern]);
+            return false;
+        }
+
+        $regex = '`' . $pattern . '`i';
+        if (@preg_match($regex, '') === false) {
+            $this->logWarning('Rejected invalid exclude pattern: compilation failed', ['pattern' => $pattern]);
+            return false;
+        }
+
+        $oldBacktrack = ini_get('pcre.backtrack_limit');
+        $oldRecursion = ini_get('pcre.recursion_limit');
+        ini_set('pcre.backtrack_limit', '10000');
+        ini_set('pcre.recursion_limit', '1000');
+
+        try {
+            return @preg_match($regex, $url) === 1;
+        } finally {
+            ini_set('pcre.backtrack_limit', (string)$oldBacktrack);
+            ini_set('pcre.recursion_limit', (string)$oldRecursion);
+        }
     }
 
     /**
