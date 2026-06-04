@@ -958,21 +958,39 @@ class ImportExportController extends Controller
         }
 
         $dirname = Craft::$app->getRequest()->getQueryParam('dirname');
-        $backupDir = RedirectManager::$plugin->backup->validateBackupDirname($dirname);
+        $backupService = RedirectManager::$plugin->backup;
+        $usesVolume = $backupService->isUsingVolumeStorage();
+        $backupDir = $usesVolume ? null : $backupService->validateBackupDirname(is_string($dirname) ? $dirname : null);
+        $volumeBackupName = $usesVolume ? $backupService->validateVolumeBackupName(is_string($dirname) ? $dirname : null) : null;
 
-        if ($backupDir === null || !file_exists($backupDir . '/metadata.json')) {
+        if (
+            ($usesVolume && $volumeBackupName === null)
+            || (!$usesVolume && ($backupDir === null || !file_exists($backupDir . '/metadata.json')))
+        ) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backup not found'));
             return $this->redirect('redirect-manager/backups');
         }
 
         // Create temporary ZIP file
-        $safeDirname = SafeSegmentHelper::filenamePart(basename($backupDir), 'backup');
+        $safeDirname = SafeSegmentHelper::filenamePart($usesVolume ? $volumeBackupName : basename((string)$backupDir), 'backup');
         $zipPath = Craft::$app->getPath()->getTempPath() . '/redirect-backup-' . $safeDirname . '.zip';
         $zip = new \ZipArchive();
 
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
-            $zip->addFile($backupDir . '/metadata.json', 'metadata.json');
-            $zip->addFile($backupDir . '/redirects.json', 'redirects.json');
+            if ($usesVolume && $volumeBackupName !== null) {
+                $metadata = $backupService->readVolumeBackupFile($volumeBackupName, 'metadata.json');
+                $redirects = $backupService->readVolumeBackupFile($volumeBackupName, 'redirects.json');
+                if ($metadata === null || $redirects === null) {
+                    Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backup not found'));
+                    return $this->redirect('redirect-manager/backups');
+                }
+
+                $zip->addFromString('metadata.json', $metadata);
+                $zip->addFromString('redirects.json', $redirects);
+            } else {
+                $zip->addFile($backupDir . '/metadata.json', 'metadata.json');
+                $zip->addFile($backupDir . '/redirects.json', 'redirects.json');
+            }
             $zip->close();
 
             return Craft::$app->getResponse()->sendFile($zipPath, 'redirect-backup-' . $safeDirname . '.zip', [
@@ -1007,9 +1025,15 @@ class ImportExportController extends Controller
         }
 
         $dirname = $request->getBodyParam('dirname');
-        $backupDir = RedirectManager::$plugin->backup->validateBackupDirname($dirname);
+        $backupService = RedirectManager::$plugin->backup;
+        $usesVolume = $backupService->isUsingVolumeStorage();
+        $backupDir = $usesVolume ? null : $backupService->validateBackupDirname(is_string($dirname) ? $dirname : null);
+        $volumeBackupName = $usesVolume ? $backupService->validateVolumeBackupName(is_string($dirname) ? $dirname : null) : null;
 
-        if ($backupDir === null || !file_exists($backupDir . '/redirects.json')) {
+        if (
+            ($usesVolume && $volumeBackupName === null)
+            || (!$usesVolume && ($backupDir === null || !file_exists($backupDir . '/redirects.json')))
+        ) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backup not found'));
             if ($request->getAcceptsJson()) {
                 return $this->asJson([
@@ -1022,13 +1046,15 @@ class ImportExportController extends Controller
 
         try {
             // Create backup BEFORE restoring (in case restore fails)
-            $preRestoreBackup = RedirectManager::$plugin->backup->createBackup('restore');
+            $preRestoreBackup = $backupService->createBackup('restore');
             if (!$preRestoreBackup) {
                 $this->logWarning('No backup created before restore (no existing redirects to backup)');
             }
 
-            // Read redirects.json
-            $redirects = json_decode(file_get_contents($backupDir . '/redirects.json'), true);
+            $redirectContent = $usesVolume && $volumeBackupName !== null
+                ? $backupService->readVolumeBackupFile($volumeBackupName, 'redirects.json')
+                : file_get_contents($backupDir . '/redirects.json');
+            $redirects = json_decode((string)$redirectContent, true);
 
             if (!$redirects || !is_array($redirects)) {
                 throw new \Exception('Invalid backup file format');
@@ -1052,7 +1078,7 @@ class ImportExportController extends Controller
             // Clear redirect cache
             RedirectManager::$plugin->redirects->invalidateCaches();
 
-            $this->logInfo('Backup restored', ['dirname' => basename($backupDir), 'count' => $restored]);
+            $this->logInfo('Backup restored', ['dirname' => is_string($dirname) ? $dirname : basename((string)$backupDir), 'count' => $restored]);
 
             $successMessage = Craft::t('redirect-manager', 'Successfully restored {count} redirect(s) from backup', ['count' => $restored]);
             Craft::$app->getSession()->setNotice($successMessage);
@@ -1105,9 +1131,15 @@ class ImportExportController extends Controller
         }
 
         $dirname = $request->getBodyParam('dirname');
-        $backupDir = RedirectManager::$plugin->backup->validateBackupDirname($dirname);
+        $backupService = RedirectManager::$plugin->backup;
+        $usesVolume = $backupService->isUsingVolumeStorage();
+        $backupDir = $usesVolume ? null : $backupService->validateBackupDirname(is_string($dirname) ? $dirname : null);
+        $volumeBackupName = $usesVolume ? $backupService->validateVolumeBackupName(is_string($dirname) ? $dirname : null) : null;
 
-        if ($backupDir === null) {
+        if (
+            ($usesVolume && $volumeBackupName === null)
+            || (!$usesVolume && $backupDir === null)
+        ) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Backup not found'));
             if ($request->getAcceptsJson()) {
                 return $this->asJson([
@@ -1119,10 +1151,13 @@ class ImportExportController extends Controller
         }
 
         try {
-            // Delete entire backup directory
-            FileHelper::removeDirectory($backupDir);
+            if ($usesVolume && $volumeBackupName !== null) {
+                $backupService->deleteVolumeBackup($volumeBackupName);
+            } else {
+                FileHelper::removeDirectory($backupDir);
+            }
 
-            $this->logInfo('Backup deleted', ['dirname' => basename($backupDir)]);
+            $this->logInfo('Backup deleted', ['dirname' => is_string($dirname) ? $dirname : basename((string)$backupDir)]);
 
             $successMessage = Craft::t('redirect-manager', 'Backup deleted successfully');
             Craft::$app->getSession()->setNotice($successMessage);
