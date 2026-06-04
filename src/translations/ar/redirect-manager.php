@@ -335,6 +335,7 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'اختبر ما إذا كان URL يطابق أياً من عمليات إعادة التوجيه المُعدَّة لديك دون زيارته فعلياً. مفيد للتحقق من صحة وضع مطابقة المصدر (المسار مقابل URL الكامل) ومنطق نوع المطابقة.',
     'Test URL' => 'URL الاختبار',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'أدخل URL للاختبار (يمكن أن يكون URL كاملاً مثل https://example.com/old-page أو مساراً مثل /old-page)',
+    'Please enter a URL to test' => 'يرجى إدخال URL لاختباره',
 
     // Settings: Interface
     'Interface Settings' => 'إعدادات الواجهة',
@@ -359,6 +360,7 @@ return [
     'Delete this redirect?' => 'حذف عملية إعادة التوجيه هذه؟',
     'Redirect deleted' => 'تم حذف عملية إعادة التوجيه',
     'Could not delete redirect' => 'تعذر حذف عملية إعادة التوجيه',
+    'Could not update redirect' => 'تعذر تحديث عملية إعادة التوجيه',
     'Enabled {count} redirects' => 'تم تفعيل {count} عمليات إعادة توجيه',
     'Disabled {count} redirects' => 'تم تعطيل {count} عمليات إعادة توجيه',
     'Deleted {count} redirects' => 'تم حذف {count} عمليات إعادة توجيه',
@@ -586,6 +588,15 @@ return [
     'No valid redirects found to import.' => 'لم يتم العثور على عمليات إعادة توجيه صالحة للاستيراد.',
     'Import {count} Redirects' => 'استيراد {count} عملية إعادة توجيه',
     'No Valid Redirects to Import' => 'لا توجد عمليات إعادة توجيه صالحة للاستيراد',
+    'Missing required field(s): Source URL or Destination URL' => 'الحقول المطلوبة مفقودة: URL المصدر أو URL الوجهة',
+    'Invalid source URL format - must start with / or be a full URL (http/https)' => 'تنسيق URL المصدر غير صالح: يجب أن يبدأ بـ / أو يكون URL كاملاً (http/https)',
+    'Source URL appears to be an email address' => 'يبدو أن URL المصدر عنوان بريد إلكتروني',
+    'Invalid destination URL format - must be a path (/) or valid URL scheme' => 'تنسيق URL الوجهة غير صالح: يجب أن يكون مساراً (/) أو مخطط URL صالحاً',
+    'Destination appears to be an email - use mailto: prefix' => 'تبدو الوجهة بريداً إلكترونياً: استخدم البادئة mailto:',
+    'Invalid match type: {matchType}' => 'نوع المطابقة غير صالح: {matchType}',
+    'Invalid status code: {statusCode}' => 'رمز الحالة غير صالح: {statusCode}',
+    'Already exists with same source URL, match type, and source match mode' => 'موجود بالفعل بنفس URL المصدر ونوع المطابقة ووضع مطابقة المصدر',
+    'Infinite loop: Source and destination are identical' => 'حلقة لا نهائية: المصدر والوجهة متطابقان',
 
     // Utilities
     'All Active' => 'كل شيء نشط',

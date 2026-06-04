@@ -335,6 +335,7 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Testen Sie, ob eine URL mit einer Ihrer konfigurierten Weiterleitungen übereinstimmt, ohne sie tatsächlich aufzurufen. Nützlich zur Überprüfung des Quell-Abgleichmodus (Pfad vs. vollständige URL) und der Abgleichtyp-Logik.',
     'Test URL' => 'Test-URL',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'Zu testende URL eingeben (kann eine vollständige URL wie https://example.com/alte-seite oder ein Pfad wie /alte-seite sein)',
+    'Please enter a URL to test' => 'Bitte geben Sie eine URL zum Testen ein',
 
     // Settings: Interface
     'Interface Settings' => 'Oberflächen-Einstellungen',
@@ -359,6 +360,7 @@ return [
     'Delete this redirect?' => 'Diese Weiterleitung löschen?',
     'Redirect deleted' => 'Weiterleitung gelöscht',
     'Could not delete redirect' => 'Weiterleitung konnte nicht gelöscht werden',
+    'Could not update redirect' => 'Weiterleitung konnte nicht aktualisiert werden',
     'Enabled {count} redirects' => '{count} Weiterleitungen aktiviert',
     'Disabled {count} redirects' => '{count} Weiterleitungen deaktiviert',
     'Deleted {count} redirects' => '{count} Weiterleitungen gelöscht',
@@ -586,6 +588,15 @@ return [
     'No valid redirects found to import.' => 'Keine gültigen Weiterleitungen zum Importieren gefunden.',
     'Import {count} Redirects' => '{count} Weiterleitungen importieren',
     'No Valid Redirects to Import' => 'Keine gültigen Weiterleitungen zum Importieren',
+    'Missing required field(s): Source URL or Destination URL' => 'Erforderliche Felder fehlen: Quell-URL oder Ziel-URL',
+    'Invalid source URL format - must start with / or be a full URL (http/https)' => 'Ungültiges Quell-URL-Format: muss mit / beginnen oder eine vollständige URL sein (http/https)',
+    'Source URL appears to be an email address' => 'Quell-URL scheint eine E-Mail-Adresse zu sein',
+    'Invalid destination URL format - must be a path (/) or valid URL scheme' => 'Ungültiges Ziel-URL-Format: muss ein Pfad (/) oder ein gültiges URL-Schema sein',
+    'Destination appears to be an email - use mailto: prefix' => 'Ziel scheint eine E-Mail-Adresse zu sein: Verwenden Sie das Präfix mailto:',
+    'Invalid match type: {matchType}' => 'Ungültiger Abgleichtyp: {matchType}',
+    'Invalid status code: {statusCode}' => 'Ungültiger Statuscode: {statusCode}',
+    'Already exists with same source URL, match type, and source match mode' => 'Existiert bereits mit derselben Quell-URL, demselben Abgleichtyp und demselben Quell-Abgleichmodus',
+    'Infinite loop: Source and destination are identical' => 'Endlosschleife: Quelle und Ziel sind identisch',
 
     // Utilities
     'All Active' => 'Alle aktiv',

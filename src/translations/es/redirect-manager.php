@@ -335,6 +335,7 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Pruebe si una URL coincide con alguna de sus redirecciones configuradas sin visitarla realmente. Útil para validar el Modo de coincidencia de origen (ruta vs URL completa) y la lógica del Tipo de coincidencia.',
     'Test URL' => 'URL de prueba',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'Introduzca una URL para probar (puede ser una URL completa como https://example.com/antigua-pagina o una ruta como /antigua-pagina)',
+    'Please enter a URL to test' => 'Introduzca una URL para probar',
 
     // Settings: Interface
     'Interface Settings' => 'Configuración de interfaz',
@@ -359,6 +360,7 @@ return [
     'Delete this redirect?' => '¿Eliminar esta redirección?',
     'Redirect deleted' => 'Redirección eliminada',
     'Could not delete redirect' => 'No se pudo eliminar la redirección',
+    'Could not update redirect' => 'No se pudo actualizar la redirección',
     'Enabled {count} redirects' => '{count} redirecciones activadas',
     'Disabled {count} redirects' => '{count} redirecciones desactivadas',
     'Deleted {count} redirects' => '{count} redirecciones eliminadas',
@@ -586,6 +588,15 @@ return [
     'No valid redirects found to import.' => 'No se encontraron redirecciones válidas para importar.',
     'Import {count} Redirects' => 'Importar {count} redirecciones',
     'No Valid Redirects to Import' => 'No hay redirecciones válidas para importar',
+    'Missing required field(s): Source URL or Destination URL' => 'Faltan campos obligatorios: URL de origen o URL de destino',
+    'Invalid source URL format - must start with / or be a full URL (http/https)' => 'Formato de URL de origen no válido: debe empezar por / o ser una URL completa (http/https)',
+    'Source URL appears to be an email address' => 'La URL de origen parece ser una dirección de correo electrónico',
+    'Invalid destination URL format - must be a path (/) or valid URL scheme' => 'Formato de URL de destino no válido: debe ser una ruta (/) o un esquema de URL válido',
+    'Destination appears to be an email - use mailto: prefix' => 'El destino parece ser un correo electrónico: use el prefijo mailto:',
+    'Invalid match type: {matchType}' => 'Tipo de coincidencia no válido: {matchType}',
+    'Invalid status code: {statusCode}' => 'Código de estado no válido: {statusCode}',
+    'Already exists with same source URL, match type, and source match mode' => 'Ya existe con la misma URL de origen, tipo de coincidencia y modo de coincidencia de origen',
+    'Infinite loop: Source and destination are identical' => 'Bucle infinito: el origen y el destino son idénticos',
 
     // Utilities
     'All Active' => 'Todo activo',

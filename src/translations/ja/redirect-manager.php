@@ -335,6 +335,7 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => '実際にアクセスせずに URL が設定済みのリダイレクトに一致するかテストします。ソース一致モード（パスと完全 URL）と一致タイプのロジックの検証に便利です。',
     'Test URL' => 'テスト URL',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'テストする URL を入力してください（https://example.com/old-page のような完全な URL または /old-page のようなパス）',
+    'Please enter a URL to test' => 'テストする URL を入力してください',
 
     // Settings: Interface
     'Interface Settings' => 'インターフェース設定',
@@ -359,6 +360,7 @@ return [
     'Delete this redirect?' => 'このリダイレクトを削除しますか？',
     'Redirect deleted' => 'リダイレクトを削除しました',
     'Could not delete redirect' => 'リダイレクトを削除できませんでした',
+    'Could not update redirect' => 'リダイレクトを更新できませんでした',
     'Enabled {count} redirects' => '{count} 件のリダイレクトを有効にしました',
     'Disabled {count} redirects' => '{count} 件のリダイレクトを無効にしました',
     'Deleted {count} redirects' => '{count} 件のリダイレクトを削除しました',
@@ -586,6 +588,15 @@ return [
     'No valid redirects found to import.' => 'インポートする有効なリダイレクトが見つかりません。',
     'Import {count} Redirects' => '{count} 件のリダイレクトをインポートする',
     'No Valid Redirects to Import' => 'インポートする有効なリダイレクトがありません',
+    'Missing required field(s): Source URL or Destination URL' => '必須フィールドがありません: ソース URL または転送先 URL',
+    'Invalid source URL format - must start with / or be a full URL (http/https)' => 'ソース URL の形式が無効です: / で始まるか、完全な URL（http/https）である必要があります',
+    'Source URL appears to be an email address' => 'ソース URL はメールアドレスのようです',
+    'Invalid destination URL format - must be a path (/) or valid URL scheme' => '転送先 URL の形式が無効です: パス（/）または有効な URL スキームである必要があります',
+    'Destination appears to be an email - use mailto: prefix' => '転送先はメールアドレスのようです: mailto: プレフィックスを使用してください',
+    'Invalid match type: {matchType}' => '一致タイプが無効です: {matchType}',
+    'Invalid status code: {statusCode}' => 'ステータスコードが無効です: {statusCode}',
+    'Already exists with same source URL, match type, and source match mode' => '同じソース URL、一致タイプ、ソース一致モードですでに存在します',
+    'Infinite loop: Source and destination are identical' => '無限ループ: ソースと転送先が同一です',
 
     // Utilities
     'All Active' => 'すべてアクティブ',

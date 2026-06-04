@@ -335,6 +335,7 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Testa om en URL matchar någon av dina konfigurerade omdirigeringar utan att faktiskt besöka den. Användbart för att validera källmatchningsläge (sökväg kontra fullständig URL) och matchningstyplogik.',
     'Test URL' => 'Test-URL',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'Ange en URL att testa (kan vara en fullständig URL som https://example.com/old-page eller en sökväg som /old-page)',
+    'Please enter a URL to test' => 'Ange en URL att testa',
 
     // Settings: Interface
     'Interface Settings' => 'Gränssnittsinställningar',
@@ -359,6 +360,7 @@ return [
     'Delete this redirect?' => 'Ta bort den här omdirigeringen?',
     'Redirect deleted' => 'Omdirigeringen har tagits bort',
     'Could not delete redirect' => 'Det gick inte att ta bort omdirigeringen',
+    'Could not update redirect' => 'Det gick inte att uppdatera omdirigeringen',
     'Enabled {count} redirects' => '{count} omdirigeringar har aktiverats',
     'Disabled {count} redirects' => '{count} omdirigeringar har inaktiverats',
     'Deleted {count} redirects' => '{count} omdirigeringar har tagits bort',
@@ -586,6 +588,15 @@ return [
     'No valid redirects found to import.' => 'Inga giltiga omdirigeringar hittades att importera.',
     'Import {count} Redirects' => 'Importera {count} omdirigeringar',
     'No Valid Redirects to Import' => 'Inga giltiga omdirigeringar att importera',
+    'Missing required field(s): Source URL or Destination URL' => 'Obligatoriska fält saknas: käll-URL eller mål-URL',
+    'Invalid source URL format - must start with / or be a full URL (http/https)' => 'Ogiltigt käll-URL-format: måste börja med / eller vara en fullständig URL (http/https)',
+    'Source URL appears to be an email address' => 'Käll-URL verkar vara en e-postadress',
+    'Invalid destination URL format - must be a path (/) or valid URL scheme' => 'Ogiltigt mål-URL-format: måste vara en sökväg (/) eller ett giltigt URL-schema',
+    'Destination appears to be an email - use mailto: prefix' => 'Målet verkar vara en e-postadress: använd prefixet mailto:',
+    'Invalid match type: {matchType}' => 'Ogiltig matchningstyp: {matchType}',
+    'Invalid status code: {statusCode}' => 'Ogiltig statuskod: {statusCode}',
+    'Already exists with same source URL, match type, and source match mode' => 'Finns redan med samma käll-URL, matchningstyp och källmatchningsläge',
+    'Infinite loop: Source and destination are identical' => 'Oändlig loop: källa och mål är identiska',
 
     // Utilities
     'All Active' => 'Alla aktiva',

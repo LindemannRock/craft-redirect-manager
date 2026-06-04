@@ -335,6 +335,7 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Test of een URL overeenkomt met een van uw geconfigureerde redirects zonder deze daadwerkelijk te bezoeken. Nuttig voor het valideren van de Bronovereenkomstmodus (pad vs. volledige URL) en de Overeenkomsttype-logica.',
     'Test URL' => 'Test-URL',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'Voer een te testen URL in (kan een volledige URL zijn zoals https://example.com/oude-pagina of een pad zoals /oude-pagina)',
+    'Please enter a URL to test' => 'Voer een URL in om te testen',
 
     // Settings: Interface
     'Interface Settings' => 'Interface-instellingen',
@@ -359,6 +360,7 @@ return [
     'Delete this redirect?' => 'Deze redirect verwijderen?',
     'Redirect deleted' => 'Redirect verwijderd',
     'Could not delete redirect' => 'Redirect kon niet worden verwijderd',
+    'Could not update redirect' => 'Redirect kon niet worden bijgewerkt',
     'Enabled {count} redirects' => '{count} redirects ingeschakeld',
     'Disabled {count} redirects' => '{count} redirects uitgeschakeld',
     'Deleted {count} redirects' => '{count} redirects verwijderd',
@@ -586,6 +588,15 @@ return [
     'No valid redirects found to import.' => 'Geen geldige redirects gevonden om te importeren.',
     'Import {count} Redirects' => '{count} redirects importeren',
     'No Valid Redirects to Import' => 'Geen geldige redirects om te importeren',
+    'Missing required field(s): Source URL or Destination URL' => 'Vereiste velden ontbreken: bron-URL of doel-URL',
+    'Invalid source URL format - must start with / or be a full URL (http/https)' => 'Ongeldig bron-URL-formaat: moet beginnen met / of een volledige URL zijn (http/https)',
+    'Source URL appears to be an email address' => 'Bron-URL lijkt een e-mailadres te zijn',
+    'Invalid destination URL format - must be a path (/) or valid URL scheme' => 'Ongeldig doel-URL-formaat: moet een pad (/) of geldig URL-schema zijn',
+    'Destination appears to be an email - use mailto: prefix' => 'Doel lijkt een e-mailadres te zijn: gebruik het voorvoegsel mailto:',
+    'Invalid match type: {matchType}' => 'Ongeldig overeenkomsttype: {matchType}',
+    'Invalid status code: {statusCode}' => 'Ongeldige statuscode: {statusCode}',
+    'Already exists with same source URL, match type, and source match mode' => 'Bestaat al met dezelfde bron-URL, hetzelfde overeenkomsttype en dezelfde bronovereenkomstmodus',
+    'Infinite loop: Source and destination are identical' => 'Oneindige lus: bron en doel zijn identiek',
 
     // Utilities
     'All Active' => 'Alles actief',

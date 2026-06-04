@@ -364,7 +364,7 @@ class RedirectsController extends Controller
             return $this->asJson(['success' => true]);
         }
 
-        return $this->asJson(['success' => false, 'error' => 'Could not delete redirect']);
+        return $this->asJson(['success' => false, 'error' => Craft::t('redirect-manager', 'Could not delete redirect')]);
     }
 
     /**
@@ -424,7 +424,7 @@ class RedirectsController extends Controller
             return $this->asJson(['success' => true]);
         }
 
-        return $this->asJson(['success' => false, 'error' => 'Could not update redirect']);
+        return $this->asJson(['success' => false, 'error' => Craft::t('redirect-manager', 'Could not update redirect')]);
     }
 
     /**

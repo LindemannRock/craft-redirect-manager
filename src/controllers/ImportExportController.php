@@ -617,7 +617,7 @@ class ImportExportController extends Controller
                     'rowNumber' => $rowNumber,
                     'sourceUrl' => $redirect['sourceUrl'] ?? '-',
                     'destinationUrl' => $redirect['destinationUrl'] ?? '-',
-                    'error' => 'Missing required field(s): Source URL or Destination URL',
+                    'error' => Craft::t('redirect-manager', 'Missing required field(s): Source URL or Destination URL'),
                 ];
                 continue;
             }
@@ -650,7 +650,7 @@ class ImportExportController extends Controller
                     'rowNumber' => $rowNumber,
                     'sourceUrl' => $sourceUrl,
                     'destinationUrl' => $redirect['destinationUrl'],
-                    'error' => 'Invalid source URL format - must start with / or be a full URL (http/https)',
+                    'error' => Craft::t('redirect-manager', 'Invalid source URL format - must start with / or be a full URL (http/https)'),
                 ];
                 continue;
             }
@@ -662,7 +662,7 @@ class ImportExportController extends Controller
                     'rowNumber' => $rowNumber,
                     'sourceUrl' => $sourceUrl,
                     'destinationUrl' => $redirect['destinationUrl'],
-                    'error' => 'Source URL appears to be an email address',
+                    'error' => Craft::t('redirect-manager', 'Source URL appears to be an email address'),
                 ];
                 continue;
             }
@@ -686,7 +686,7 @@ class ImportExportController extends Controller
                     'rowNumber' => $rowNumber,
                     'sourceUrl' => $sourceUrl,
                     'destinationUrl' => $destinationUrl,
-                    'error' => 'Invalid destination URL format - must be a path (/) or valid URL scheme',
+                    'error' => Craft::t('redirect-manager', 'Invalid destination URL format - must be a path (/) or valid URL scheme'),
                 ];
                 continue;
             }
@@ -699,7 +699,7 @@ class ImportExportController extends Controller
                     'rowNumber' => $rowNumber,
                     'sourceUrl' => $sourceUrl,
                     'destinationUrl' => $destinationUrl,
-                    'error' => 'Destination appears to be an email - use mailto: prefix',
+                    'error' => Craft::t('redirect-manager', 'Destination appears to be an email - use mailto: prefix'),
                 ];
                 continue;
             }
@@ -710,7 +710,9 @@ class ImportExportController extends Controller
                     'rowNumber' => $rowNumber,
                     'sourceUrl' => $sourceUrl,
                     'destinationUrl' => $destinationUrl,
-                    'error' => 'Invalid match type: ' . $redirect['matchType'],
+                    'error' => Craft::t('redirect-manager', 'Invalid match type: {matchType}', [
+                        'matchType' => $redirect['matchType'],
+                    ]),
                 ];
                 continue;
             }
@@ -721,7 +723,9 @@ class ImportExportController extends Controller
                     'rowNumber' => $rowNumber,
                     'sourceUrl' => $sourceUrl,
                     'destinationUrl' => $destinationUrl,
-                    'error' => 'Invalid status code: ' . $redirect['statusCode'],
+                    'error' => Craft::t('redirect-manager', 'Invalid status code: {statusCode}', [
+                        'statusCode' => $redirect['statusCode'],
+                    ]),
                 ];
                 continue;
             }
@@ -732,7 +736,7 @@ class ImportExportController extends Controller
                 $duplicateRows[] = [
                     'sourceUrl' => $redirect['sourceUrl'],
                     'destinationUrl' => $redirect['destinationUrl'],
-                    'reason' => 'Already exists with same source URL, match type, and source match mode',
+                    'reason' => Craft::t('redirect-manager', 'Already exists with same source URL, match type, and source match mode'),
                 ];
                 continue;
             }
@@ -743,7 +747,7 @@ class ImportExportController extends Controller
                     'rowNumber' => $rowNumber,
                     'sourceUrl' => $sourceUrl,
                     'destinationUrl' => $destinationUrl,
-                    'error' => 'Infinite loop: Source and destination are identical',
+                    'error' => Craft::t('redirect-manager', 'Infinite loop: Source and destination are identical'),
                 ];
                 continue;
             }

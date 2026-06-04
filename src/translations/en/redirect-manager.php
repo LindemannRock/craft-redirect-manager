@@ -335,6 +335,7 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.',
     'Test URL' => 'Test URL',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)',
+    'Please enter a URL to test' => 'Please enter a URL to test',
 
     // Settings: Interface
     'Interface Settings' => 'Interface Settings',
@@ -359,6 +360,7 @@ return [
     'Delete this redirect?' => 'Delete this redirect?',
     'Redirect deleted' => 'Redirect deleted',
     'Could not delete redirect' => 'Could not delete redirect',
+    'Could not update redirect' => 'Could not update redirect',
     'Enabled {count} redirects' => 'Enabled {count} redirects',
     'Disabled {count} redirects' => 'Disabled {count} redirects',
     'Deleted {count} redirects' => 'Deleted {count} redirects',
@@ -586,6 +588,15 @@ return [
     'No valid redirects found to import.' => 'No valid redirects found to import.',
     'Import {count} Redirects' => 'Import {count} Redirects',
     'No Valid Redirects to Import' => 'No Valid Redirects to Import',
+    'Missing required field(s): Source URL or Destination URL' => 'Missing required field(s): Source URL or Destination URL',
+    'Invalid source URL format - must start with / or be a full URL (http/https)' => 'Invalid source URL format - must start with / or be a full URL (http/https)',
+    'Source URL appears to be an email address' => 'Source URL appears to be an email address',
+    'Invalid destination URL format - must be a path (/) or valid URL scheme' => 'Invalid destination URL format - must be a path (/) or valid URL scheme',
+    'Destination appears to be an email - use mailto: prefix' => 'Destination appears to be an email - use mailto: prefix',
+    'Invalid match type: {matchType}' => 'Invalid match type: {matchType}',
+    'Invalid status code: {statusCode}' => 'Invalid status code: {statusCode}',
+    'Already exists with same source URL, match type, and source match mode' => 'Already exists with same source URL, match type, and source match mode',
+    'Infinite loop: Source and destination are identical' => 'Infinite loop: Source and destination are identical',
 
     // Utilities
     'All Active' => 'All Active',

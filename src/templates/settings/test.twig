@@ -67,7 +67,7 @@
 	            testResults.style.display = 'block';
 	            resultsTitle.textContent = '⚠️ Validation Error';
 	            resultsTitle.style.color = '#dc3545';
-	            resultsContent.innerHTML = '<p style="color: #dc3545;">Please enter a URL to test</p>';
+	            resultsContent.innerHTML = '<p style="color: #dc3545;">' + {{ 'Please enter a URL to test'|t('redirect-manager')|json_encode|raw }} + '</p>';
 			            return;
 			        }
 	

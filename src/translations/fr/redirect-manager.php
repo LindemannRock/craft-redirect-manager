@@ -335,6 +335,7 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Testez si une URL correspond à l\'une de vos redirections configurées sans la visiter réellement. Utile pour valider le Mode de correspondance source (chemin vs URL complète) et la logique du Type de correspondance.',
     'Test URL' => 'URL de test',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'Saisissez une URL à tester (peut être une URL complète comme https://example.com/ancienne-page ou un chemin comme /ancienne-page)',
+    'Please enter a URL to test' => 'Veuillez saisir une URL à tester',
 
     // Settings: Interface
     'Interface Settings' => 'Paramètres d\'interface',
@@ -359,6 +360,7 @@ return [
     'Delete this redirect?' => 'Supprimer cette redirection ?',
     'Redirect deleted' => 'Redirection supprimée',
     'Could not delete redirect' => 'Impossible de supprimer la redirection',
+    'Could not update redirect' => 'Impossible de mettre à jour la redirection',
     'Enabled {count} redirects' => '{count} redirections activées',
     'Disabled {count} redirects' => '{count} redirections désactivées',
     'Deleted {count} redirects' => '{count} redirections supprimées',
@@ -586,6 +588,15 @@ return [
     'No valid redirects found to import.' => 'Aucune redirection valide trouvée à importer.',
     'Import {count} Redirects' => 'Importer {count} redirections',
     'No Valid Redirects to Import' => 'Aucune redirection valide à importer',
+    'Missing required field(s): Source URL or Destination URL' => 'Champs obligatoires manquants : URL source ou URL de destination',
+    'Invalid source URL format - must start with / or be a full URL (http/https)' => 'Format d’URL source invalide : doit commencer par / ou être une URL complète (http/https)',
+    'Source URL appears to be an email address' => 'L’URL source semble être une adresse e-mail',
+    'Invalid destination URL format - must be a path (/) or valid URL scheme' => 'Format d’URL de destination invalide : doit être un chemin (/) ou un schéma d’URL valide',
+    'Destination appears to be an email - use mailto: prefix' => 'La destination semble être une adresse e-mail : utilisez le préfixe mailto:',
+    'Invalid match type: {matchType}' => 'Type de correspondance invalide : {matchType}',
+    'Invalid status code: {statusCode}' => 'Code de statut invalide : {statusCode}',
+    'Already exists with same source URL, match type, and source match mode' => 'Existe déjà avec la même URL source, le même type de correspondance et le même mode de correspondance source',
+    'Infinite loop: Source and destination are identical' => 'Boucle infinie : la source et la destination sont identiques',
 
     // Utilities
     'All Active' => 'Tout actif',

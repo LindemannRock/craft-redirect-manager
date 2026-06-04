@@ -501,7 +501,7 @@ class SettingsController extends Controller
         if (empty($testUrl)) {
             return $this->asJson([
                 'success' => false,
-                'error' => 'Please enter a URL to test',
+                'error' => Craft::t('redirect-manager', 'Please enter a URL to test'),
             ]);
         }
 

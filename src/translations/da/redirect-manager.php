@@ -335,6 +335,7 @@ return [
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Test om en URL matcher nogen af Deres konfigurerede omdirigeringer uden faktisk at besøge den. Nyttigt til validering af kildematchningstilstand (sti vs. fuld URL) og matchningstypelogik.',
     'Test URL' => 'Test-URL',
     'Enter a URL to test (can be a full URL like https://example.com/old-page or a path like /old-page)' => 'Angiv en URL til test (kan være en fuld URL som https://example.com/old-page eller en sti som /old-page)',
+    'Please enter a URL to test' => 'Angiv en URL, der skal testes',
 
     // Settings: Interface
     'Interface Settings' => 'Brugerflade-indstillinger',
@@ -359,6 +360,7 @@ return [
     'Delete this redirect?' => 'Slet denne omdirigering?',
     'Redirect deleted' => 'Omdirigeringen er slettet',
     'Could not delete redirect' => 'Kunne ikke slette omdirigeringen',
+    'Could not update redirect' => 'Kunne ikke opdatere omdirigeringen',
     'Enabled {count} redirects' => '{count} omdirigeringer aktiveret',
     'Disabled {count} redirects' => '{count} omdirigeringer deaktiveret',
     'Deleted {count} redirects' => '{count} omdirigeringer slettet',
@@ -586,6 +588,15 @@ return [
     'No valid redirects found to import.' => 'Ingen gyldige omdirigeringer fundet til import.',
     'Import {count} Redirects' => 'Importer {count} omdirigeringer',
     'No Valid Redirects to Import' => 'Ingen gyldige omdirigeringer til import',
+    'Missing required field(s): Source URL or Destination URL' => 'Påkrævede felter mangler: kilde-URL eller destinations-URL',
+    'Invalid source URL format - must start with / or be a full URL (http/https)' => 'Ugyldigt kilde-URL-format: skal starte med / eller være en fuld URL (http/https)',
+    'Source URL appears to be an email address' => 'Kilde-URL ser ud til at være en e-mailadresse',
+    'Invalid destination URL format - must be a path (/) or valid URL scheme' => 'Ugyldigt destinations-URL-format: skal være en sti (/) eller et gyldigt URL-skema',
+    'Destination appears to be an email - use mailto: prefix' => 'Destinationen ser ud til at være en e-mailadresse: brug præfikset mailto:',
+    'Invalid match type: {matchType}' => 'Ugyldig matchningstype: {matchType}',
+    'Invalid status code: {statusCode}' => 'Ugyldig statuskode: {statusCode}',
+    'Already exists with same source URL, match type, and source match mode' => 'Findes allerede med samme kilde-URL, matchningstype og kildematchningstilstand',
+    'Infinite loop: Source and destination are identical' => 'Uendelig løkke: kilde og destination er identiske',
 
     // Utilities
     'All Active' => 'Alle aktive',
