@@ -199,6 +199,163 @@ class AnalyticsController extends Controller
     }
 
     /**
+     * Parse and allowlist dashboard query parameters.
+     *
+     * @return array{handledFilter: string, typeFilter: string, search: string, sort: string, dir: string, page: int, limit: int, offset: int}
+     */
+    private function _getDashboardParams(int $itemsPerPage): array
+    {
+        $request = Craft::$app->getRequest();
+
+        $handledFilter = (string) $request->getQueryParam('handled', 'all');
+        if (!in_array($handledFilter, ['all', 'handled', 'unhandled'], true)) {
+            $handledFilter = 'all';
+        }
+
+        $typeFilter = (string) $request->getQueryParam('type', 'all');
+        if (!in_array($typeFilter, ['all', 'normal', 'bot', 'probe'], true)) {
+            $typeFilter = 'all';
+        }
+
+        $search = trim((string) $request->getQueryParam('search', ''));
+        if (mb_strlen($search) > 64) {
+            $search = mb_substr($search, 0, 64);
+        }
+
+        $validSortFields = ['url', 'count', 'lastHit', 'siteId', 'handled', 'deviceType', 'browser', 'requestType'];
+        $sort = (string) $request->getQueryParam('sort', 'lastHit');
+        if (!in_array($sort, $validSortFields, true)) {
+            $sort = 'lastHit';
+        }
+
+        $dir = strtolower((string) $request->getQueryParam('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $page = max(1, (int) $request->getQueryParam('page', 1));
+        $limit = max(1, $itemsPerPage);
+
+        return [
+            'handledFilter' => $handledFilter,
+            'typeFilter' => $typeFilter,
+            'search' => $search,
+            'sort' => $sort,
+            'dir' => $dir,
+            'page' => $page,
+            'limit' => $limit,
+            'offset' => ($page - 1) * $limit,
+        ];
+    }
+
+    /**
+     * Fetch filtered dashboard analytics and total count.
+     *
+     * @param array{handledFilter: string, typeFilter: string, search: string, sort: string, dir: string, page: int, limit: int, offset: int} $params
+     * @param array<int> $editableSiteIds
+     * @return array{analytics: array<int, array<string, mixed>>, totalCount: int}
+     */
+    private function _getDashboardAnalytics(array $params, array $editableSiteIds): array
+    {
+        $query = (new Query())
+            ->from(AnalyticsRecord::tableName())
+            ->andWhere(['siteId' => $editableSiteIds]);
+
+        if ($params['handledFilter'] === 'handled') {
+            $query->andWhere(['handled' => true]);
+        } elseif ($params['handledFilter'] === 'unhandled') {
+            $query->andWhere(['handled' => false]);
+        }
+
+        // Bot/normal map to DB columns; probe is pattern-based and filtered post-query.
+        if ($params['typeFilter'] === 'bot') {
+            $query->andWhere(['isRobot' => true]);
+        } elseif ($params['typeFilter'] === 'normal') {
+            $query->andWhere(['or', ['isRobot' => false], ['isRobot' => null]]);
+        }
+
+        if ($params['search'] !== '') {
+            $query->andWhere(['like', 'url', $params['search']]);
+        }
+
+        // Sort: requestType has no DB column, so it maps to isRobot.
+        $sortDirection = $params['dir'] === 'asc' ? SORT_ASC : SORT_DESC;
+        $sortColumn = $params['sort'] === 'requestType' ? 'isRobot' : $params['sort'];
+        $query->orderBy([$sortColumn => $sortDirection]);
+
+        if ($params['typeFilter'] === 'probe') {
+            $probeAnalytics = array_filter(
+                $query->all(),
+                fn(array $stat): bool => $this->_detectRequestType($stat) === 'probe'
+            );
+
+            return [
+                'analytics' => array_slice(array_values($probeAnalytics), $params['offset'], $params['limit']),
+                'totalCount' => count($probeAnalytics),
+            ];
+        }
+
+        $totalCount = (int)$query->count();
+        $analytics = $query
+            ->limit($params['limit'])
+            ->offset($params['offset'])
+            ->all();
+
+        return [
+            'analytics' => $analytics,
+            'totalCount' => $totalCount,
+        ];
+    }
+
+    /**
+     * Add request type, redirect ID, local last-hit date, and optional site name to analytics rows.
+     *
+     * @param array<int, array<string, mixed>> $analytics
+     * @return array<int, array<string, mixed>>
+     */
+    private function _prepareDashboardAnalyticsRows(array $analytics, bool $includeSiteName = false): array
+    {
+        $redirectIdMap = $this->_getRedirectIdMap($analytics);
+
+        foreach ($analytics as $key => $stat) {
+            if (!empty($stat['lastHit'])) {
+                $utcDate = new \DateTime($stat['lastHit'], new \DateTimeZone('UTC'));
+                $utcDate->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
+                $analytics[$key]['lastHit'] = $utcDate;
+            }
+
+            $analytics[$key]['requestType'] = $this->_detectRequestType($stat);
+
+            if ($includeSiteName) {
+                $site = Craft::$app->getSites()->getSiteById($stat['siteId']);
+                $analytics[$key]['siteName'] = $site ? $site->name : '-';
+            }
+
+            $analytics[$key]['redirectId'] = $stat['handled']
+                ? ($redirectIdMap[(string)$stat['urlParsed']] ?? null)
+                : null;
+        }
+
+        return $analytics;
+    }
+
+    /**
+     * Build dashboard count values shared by the page and AJAX response.
+     *
+     * @param array<int> $editableSiteIds
+     * @return array{allCount: int, handledCount: int, unhandledCount: int, botCount: int, probeCount: int, normalCount: int}
+     */
+    private function _getDashboardCounts(array $editableSiteIds): array
+    {
+        $typeCounts = $this->_getRequestTypeCounts($editableSiteIds);
+
+        return [
+            'allCount' => RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds),
+            'handledCount' => RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds, true),
+            'unhandledCount' => RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds, false),
+            'botCount' => $typeCounts['bot'],
+            'probeCount' => $typeCounts['probe'],
+            'normalCount' => $typeCounts['normal'],
+        ];
+    }
+
+    /**
      * Dashboard - 404 list with filters
      *
      * @return Response
@@ -220,141 +377,31 @@ class AnalyticsController extends Controller
             $this->requirePermission('redirectManager:viewAnalytics');
         }
 
-        $request = Craft::$app->getRequest();
-
-        // ---- Param parsing + allowlist validation -------------------------
-
-        $handledFilter = (string) $request->getQueryParam('handled', 'all');
-        $validHandled = ['all', 'handled', 'unhandled'];
-        if (!in_array($handledFilter, $validHandled, true)) {
-            $handledFilter = 'all';
-        }
-
-        $typeFilter = (string) $request->getQueryParam('type', 'all');
-        $validTypes = ['all', 'normal', 'bot', 'probe'];
-        if (!in_array($typeFilter, $validTypes, true)) {
-            $typeFilter = 'all';
-        }
-
-        $search = trim((string) $request->getQueryParam('search', ''));
-        if (mb_strlen($search) > 64) {
-            $search = mb_substr($search, 0, 64);
-        }
-
-        $validSortFields = ['url', 'count', 'lastHit', 'siteId', 'handled', 'deviceType', 'browser', 'requestType'];
-        $sort = (string) $request->getQueryParam('sort', 'lastHit');
-        if (!in_array($sort, $validSortFields, true)) {
-            $sort = 'lastHit';
-        }
-        $dir = strtolower((string) $request->getQueryParam('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
-
-        $page = max(1, (int) $request->getQueryParam('page', 1));
-        $limit = max(1, (int) $settings->itemsPerPage);
-        $offset = ($page - 1) * $limit;
-
-        // ---- Build query --------------------------------------------------
-
         // Scope to user's editable sites
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
-
-        $query = (new \craft\db\Query())
-            ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName())
-            ->andWhere(['siteId' => $editableSiteIds]);
-
-        if ($handledFilter === 'handled') {
-            $query->andWhere(['handled' => true]);
-        } elseif ($handledFilter === 'unhandled') {
-            $query->andWhere(['handled' => false]);
-        }
-
-        // Bot/normal map to DB columns; probe is pattern-based and filtered post-query.
-        if ($typeFilter === 'bot') {
-            $query->andWhere(['isRobot' => true]);
-        } elseif ($typeFilter === 'normal') {
-            $query->andWhere(['or', ['isRobot' => false], ['isRobot' => null]]);
-        }
-
-        if ($search !== '') {
-            $query->andWhere(['like', 'url', $search]);
-        }
-
-        // Sort: requestType has no DB column, so it maps to isRobot.
-        $sortDirection = $dir === 'asc' ? SORT_ASC : SORT_DESC;
-        $sortColumn = $sort === 'requestType' ? 'isRobot' : $sort;
-        $query->orderBy([$sortColumn => $sortDirection]);
-
-        // For probe filter, we need to fetch all and filter in PHP
-        // For other filters, use pagination
-        if ($typeFilter === 'probe') {
-            $allAnalytics = $query->all();
-
-            // Filter to only probes
-            $probeAnalytics = array_filter($allAnalytics, function($stat) {
-                return $this->_detectRequestType($stat) === 'probe';
-            });
-
-            $totalCount = count($probeAnalytics);
-            $analytics = array_slice($probeAnalytics, $offset, $limit);
-        } else {
-            // Get total count for pagination
-            $totalCount = $query->count();
-
-            // Apply pagination
-            $query->limit($limit)->offset($offset);
-
-            // Get analytics
-            $analytics = $query->all();
-        }
-
-        $redirectIdMap = $this->_getRedirectIdMap($analytics);
-    
-        // Add redirect ID, detect type, and convert timezone
-        // Use key-based iteration to ensure modifications persist
-        foreach ($analytics as $key => $stat) {
-            // Convert lastHit from UTC to user's timezone
-            if (!empty($stat['lastHit'])) {
-                $utcDate = new \DateTime($stat['lastHit'], new \DateTimeZone('UTC'));
-                $utcDate->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
-                $analytics[$key]['lastHit'] = $utcDate;
-            }
-
-            // Detect request type (probe, bot, or normal)
-            $analytics[$key]['requestType'] = $this->_detectRequestType($stat);
-
-            $analytics[$key]['redirectId'] = $stat['handled']
-                    ? ($redirectIdMap[(string)$stat['urlParsed']] ?? null)
-                    : null;
-        }
-
-        // Get overall counts (scoped to editable sites)
-        $allCount = RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds);
-        $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds, true);
-        $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds, false);
-
-        // Get type counts (for filter display, scoped to editable sites)
-        $typeCounts = $this->_getRequestTypeCounts($editableSiteIds);
-        $botCount = $typeCounts['bot'];
-        $probeCount = $typeCounts['probe'];
-        $normalCount = $typeCounts['normal'];
+        $params = $this->_getDashboardParams((int)$settings->itemsPerPage);
+        $result = $this->_getDashboardAnalytics($params, $editableSiteIds);
+        $analytics = $this->_prepareDashboardAnalyticsRows($result['analytics']);
+        $counts = $this->_getDashboardCounts($editableSiteIds);
 
         return $this->renderTemplate('redirect-manager/dashboard/index', [
             'analytics' => $analytics,
             'settings' => $settings,
-            'totalCount' => $totalCount,
-            'allCount' => $allCount,
-            'handledCount' => $handledCount,
-            'unhandledCount' => $unhandledCount,
-            'handledFilter' => $handledFilter,
-            'typeFilter' => $typeFilter,
-            'search' => $search,
-            'sort' => $sort,
-            'dir' => $dir,
-            'botCount' => $botCount,
-            'probeCount' => $probeCount,
-            'normalCount' => $normalCount,
-            'page' => $page,
-            'limit' => $limit,
-            'offset' => $offset,
+            'totalCount' => $result['totalCount'],
+            'allCount' => $counts['allCount'],
+            'handledCount' => $counts['handledCount'],
+            'unhandledCount' => $counts['unhandledCount'],
+            'handledFilter' => $params['handledFilter'],
+            'typeFilter' => $params['typeFilter'],
+            'search' => $params['search'],
+            'sort' => $params['sort'],
+            'dir' => $params['dir'],
+            'botCount' => $counts['botCount'],
+            'probeCount' => $counts['probeCount'],
+            'normalCount' => $counts['normalCount'],
+            'page' => $params['page'],
+            'limit' => $params['limit'],
+            'offset' => $params['offset'],
             'canCreate' => $user->checkPermission('redirectManager:createRedirects'),
             'canEdit' => $user->checkPermission('redirectManager:editRedirects'),
             'canClearAnalytics' => $user->checkPermission('redirectManager:clearAnalytics'),
@@ -417,141 +464,29 @@ class AnalyticsController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:viewAnalytics');
 
-        $request = Craft::$app->getRequest();
         $settings = RedirectManager::$plugin->getSettings();
 
         // Scope to user's editable sites
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
-
-        // ---- Param parsing + allowlist validation -------------------------
-
-        $handledFilter = (string) $request->getQueryParam('handled', 'all');
-        $validHandled = ['all', 'handled', 'unhandled'];
-        if (!in_array($handledFilter, $validHandled, true)) {
-            $handledFilter = 'all';
-        }
-
-        $typeFilter = (string) $request->getQueryParam('type', 'all');
-        $validTypes = ['all', 'normal', 'bot', 'probe'];
-        if (!in_array($typeFilter, $validTypes, true)) {
-            $typeFilter = 'all';
-        }
-
-        $search = trim((string) $request->getQueryParam('search', ''));
-        if (mb_strlen($search) > 64) {
-            $search = mb_substr($search, 0, 64);
-        }
-
-        $validSortFields = ['url', 'count', 'lastHit', 'siteId', 'handled', 'deviceType', 'browser', 'requestType'];
-        $sort = (string) $request->getQueryParam('sort', 'lastHit');
-        if (!in_array($sort, $validSortFields, true)) {
-            $sort = 'lastHit';
-        }
-        $dir = strtolower((string) $request->getQueryParam('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
-
-        $page = max(1, (int) $request->getQueryParam('page', 1));
-        $limit = max(1, (int) $settings->itemsPerPage);
-        $offset = ($page - 1) * $limit;
-
-        // ---- Build query --------------------------------------------------
-
-        $query = (new \craft\db\Query())
-            ->from(\lindemannrock\redirectmanager\records\AnalyticsRecord::tableName())
-            ->andWhere(['siteId' => $editableSiteIds]);
-
-        if ($handledFilter === 'handled') {
-            $query->andWhere(['handled' => true]);
-        } elseif ($handledFilter === 'unhandled') {
-            $query->andWhere(['handled' => false]);
-        }
-
-        // Bot/normal map to DB columns; probe is pattern-based and filtered post-query.
-        if ($typeFilter === 'bot') {
-            $query->andWhere(['isRobot' => true]);
-        } elseif ($typeFilter === 'normal') {
-            $query->andWhere(['or', ['isRobot' => false], ['isRobot' => null]]);
-        }
-
-        if ($search !== '') {
-            $query->andWhere(['like', 'url', $search]);
-        }
-
-        // Sort: requestType has no DB column, so it maps to isRobot.
-        $sortDirection = $dir === 'asc' ? SORT_ASC : SORT_DESC;
-        $sortColumn = $sort === 'requestType' ? 'isRobot' : $sort;
-        $query->orderBy([$sortColumn => $sortDirection]);
-
-        // For probe filter, we need to fetch all and filter in PHP
-        if ($typeFilter === 'probe') {
-            $allAnalytics = $query->all();
-
-            // Filter to only probes
-            $probeAnalytics = array_filter($allAnalytics, function($stat) {
-                return $this->_detectRequestType($stat) === 'probe';
-            });
-
-            $totalCount = count($probeAnalytics);
-            $analytics = array_slice(array_values($probeAnalytics), $offset, $limit);
-        } else {
-            // Get total count for pagination
-            $totalCount = $query->count();
-
-            // Apply pagination
-            $query->limit($limit)->offset($offset);
-
-            // Get analytics
-            $analytics = $query->all();
-        }
-
-        $redirectIdMap = $this->_getRedirectIdMap($analytics);
-    
-        // Process analytics data
-        // Use key-based iteration to ensure modifications persist
-        foreach ($analytics as $key => $stat) {
-            // Convert lastHit from UTC to user's timezone (keep as DateTime so |lrDatetime receives a local-tz object)
-            if (!empty($stat['lastHit'])) {
-                $utcDate = new \DateTime($stat['lastHit'], new \DateTimeZone('UTC'));
-                $utcDate->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
-                $analytics[$key]['lastHit'] = $utcDate;
-            }
-
-            // Detect request type
-            $analytics[$key]['requestType'] = $this->_detectRequestType($stat);
-
-            // Get site name
-            $site = Craft::$app->getSites()->getSiteById($stat['siteId']);
-            $analytics[$key]['siteName'] = $site ? $site->name : '-';
-
-            $analytics[$key]['redirectId'] = $stat['handled']
-                    ? ($redirectIdMap[(string)$stat['urlParsed']] ?? null)
-                    : null;
-        }
-
-        // Get overall counts (scoped to editable sites)
-        $allCount = RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds);
-        $handledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds, true);
-        $unhandledCount = RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds, false);
-
-        // Get type counts (for filter display, scoped to editable sites)
-        $typeCounts = $this->_getRequestTypeCounts($editableSiteIds);
-        $botCount = $typeCounts['bot'];
-        $probeCount = $typeCounts['probe'];
-        $normalCount = $typeCounts['normal'];
+        $params = $this->_getDashboardParams((int)$settings->itemsPerPage);
+        $result = $this->_getDashboardAnalytics($params, $editableSiteIds);
+        $analytics = $this->_prepareDashboardAnalyticsRows($result['analytics'], true);
+        $counts = $this->_getDashboardCounts($editableSiteIds);
 
         return $this->asJson([
             'success' => true,
             'analytics' => array_values($analytics),
-            'totalCount' => $totalCount,
-            'allCount' => $allCount,
-            'handledCount' => $handledCount,
-            'unhandledCount' => $unhandledCount,
-            'botCount' => $botCount,
-            'probeCount' => $probeCount,
-            'normalCount' => $normalCount,
-            'page' => $page,
-            'limit' => $limit,
-            'offset' => $offset,
-            'totalPages' => (int)ceil($totalCount / $limit),
+            'totalCount' => $result['totalCount'],
+            'allCount' => $counts['allCount'],
+            'handledCount' => $counts['handledCount'],
+            'unhandledCount' => $counts['unhandledCount'],
+            'botCount' => $counts['botCount'],
+            'probeCount' => $counts['probeCount'],
+            'normalCount' => $counts['normalCount'],
+            'page' => $params['page'],
+            'limit' => $params['limit'],
+            'offset' => $params['offset'],
+            'totalPages' => (int)ceil($result['totalCount'] / $params['limit']),
         ]);
     }
 
