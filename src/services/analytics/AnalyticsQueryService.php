@@ -244,7 +244,7 @@ class AnalyticsQueryService
             ])
             ->from(AnalyticsRecord::tableName())
             ->groupBy($localDate)
-            ->orderBy('date ASC');
+            ->orderBy(['date' => SORT_ASC]);
 
         $this->applyDateFilter($query, $days, $startDate, $endDate);
         $this->applySiteFilter($query, $siteId);
