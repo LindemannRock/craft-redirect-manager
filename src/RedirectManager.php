@@ -560,6 +560,8 @@ class RedirectManager extends Plugin
             ->from('{{%queue}}')
             ->where(['like', 'job', 'redirectmanager'])
             ->andWhere(['like', 'job', 'CreateBackupJob'])
+            ->andWhere(['fail' => false])
+            ->andWhere(['timePushed' => null])
             ->exists();
 
         if (!$existingJob) {
