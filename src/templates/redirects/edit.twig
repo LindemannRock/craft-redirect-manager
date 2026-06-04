@@ -349,6 +349,48 @@ if (saveShortcut) {
     const sourceUrlInput = document.getElementById('sourceUrl');
     const sourceUrlInstructions = document.getElementById('sourceUrlInstructions');
     const srcMatchInstructions = document.getElementById('srcMatchInstructions');
+    const sourceMatchInstructionText = {
+        regex: {
+            pathonly: {
+                sourceMatch: {{ 'Match by path pattern (regex). Works across all domains.'|t('redirect-manager')|json_encode|raw }},
+                sourceUrl: {{ 'Enter a regex pattern to match paths (e.g., ^/blog/.* or /category/[^/]+).'|t('redirect-manager')|json_encode|raw }},
+            },
+            fullurl: {
+                sourceMatch: {{ 'Match by full URL pattern (regex) including domain.'|t('redirect-manager')|json_encode|raw }},
+                sourceUrl: {{ 'Enter a regex pattern to match full URLs (e.g., ^https://example.com/blog/.*).'|t('redirect-manager')|json_encode|raw }},
+            },
+        },
+        wildcard: {
+            pathonly: {
+                sourceMatch: {{ 'Match by path pattern (wildcard). Works across all domains.'|t('redirect-manager')|json_encode|raw }},
+                sourceUrl: {{ 'Enter a wildcard pattern to match paths. Use * for any characters (e.g., /blog/* or /category/*/posts).'|t('redirect-manager')|json_encode|raw }},
+            },
+            fullurl: {
+                sourceMatch: {{ 'Match by full URL pattern (wildcard) including domain.'|t('redirect-manager')|json_encode|raw }},
+                sourceUrl: {{ 'Enter a wildcard pattern to match full URLs. Use * for any characters (e.g., https://example.com/blog/*).'|t('redirect-manager')|json_encode|raw }},
+            },
+        },
+        prefix: {
+            pathonly: {
+                sourceMatch: {{ 'Match any path starting with the pattern. Works across all domains.'|t('redirect-manager')|json_encode|raw }},
+                sourceUrl: {{ 'Enter the starting path (e.g., /blog matches /blog, /blog/post, /blog/category).'|t('redirect-manager')|json_encode|raw }},
+            },
+            fullurl: {
+                sourceMatch: {{ 'Match any URL starting with the pattern including domain.'|t('redirect-manager')|json_encode|raw }},
+                sourceUrl: {{ 'Enter the starting URL (e.g., https://example.com/blog matches all URLs starting with it).'|t('redirect-manager')|json_encode|raw }},
+            },
+        },
+        exact: {
+            pathonly: {
+                sourceMatch: {{ 'Match by path only (e.g., /old-page). Works across all domains.'|t('redirect-manager')|json_encode|raw }},
+                sourceUrl: {{ 'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.'|t('redirect-manager')|json_encode|raw }},
+            },
+            fullurl: {
+                sourceMatch: {{ 'Match by complete URL including domain (e.g., https://example.com/old-page).'|t('redirect-manager')|json_encode|raw }},
+                sourceUrl: {{ 'Enter the full URL to match (e.g., https://example.com/old-page).'|t('redirect-manager')|json_encode|raw }},
+            },
+        },
+    };
 
     // Show/hide priority field based on match type
     if (matchTypeSelect && priorityField) {
@@ -384,18 +426,10 @@ if (saveShortcut) {
         if (matchType === 'regex') {
             // Regex mode
             if (srcMatchInstructions) {
-                if (mode === 'pathonly') {
-                    srcMatchInstructions.textContent = '{{ 'Match by path pattern (regex). Works across all domains.'|t('redirect-manager') }}';
-                } else {
-                    srcMatchInstructions.textContent = '{{ 'Match by full URL pattern (regex) including domain.'|t('redirect-manager') }}';
-                }
+                srcMatchInstructions.textContent = sourceMatchInstructionText.regex[mode].sourceMatch;
             }
             if (sourceUrlInstructions) {
-                if (mode === 'pathonly') {
-                    sourceUrlInstructions.textContent = '{{ 'Enter a regex pattern to match paths (e.g., ^/blog/.* or /category/[^/]+).'|t('redirect-manager') }}';
-                } else {
-                    sourceUrlInstructions.textContent = '{{ 'Enter a regex pattern to match full URLs (e.g., ^https://example.com/blog/.*).'|t('redirect-manager') }}';
-                }
+                sourceUrlInstructions.textContent = sourceMatchInstructionText.regex[mode].sourceUrl;
             }
             if (sourceUrlInput) {
                 sourceUrlInput.placeholder = mode === 'pathonly' ? '^/blog/.*' : '^https://example.com/blog/.*';
@@ -403,18 +437,10 @@ if (saveShortcut) {
         } else if (matchType === 'wildcard') {
             // Wildcard mode
             if (srcMatchInstructions) {
-                if (mode === 'pathonly') {
-                    srcMatchInstructions.textContent = '{{ 'Match by path pattern (wildcard). Works across all domains.'|t('redirect-manager') }}';
-                } else {
-                    srcMatchInstructions.textContent = '{{ 'Match by full URL pattern (wildcard) including domain.'|t('redirect-manager') }}';
-                }
+                srcMatchInstructions.textContent = sourceMatchInstructionText.wildcard[mode].sourceMatch;
             }
             if (sourceUrlInstructions) {
-                if (mode === 'pathonly') {
-                    sourceUrlInstructions.textContent = '{{ 'Enter a wildcard pattern to match paths. Use * for any characters (e.g., /blog/* or /category/*/posts).'|t('redirect-manager') }}';
-                } else {
-                    sourceUrlInstructions.textContent = '{{ 'Enter a wildcard pattern to match full URLs. Use * for any characters (e.g., https://example.com/blog/*).'|t('redirect-manager') }}';
-                }
+                sourceUrlInstructions.textContent = sourceMatchInstructionText.wildcard[mode].sourceUrl;
             }
             if (sourceUrlInput) {
                 sourceUrlInput.placeholder = mode === 'pathonly' ? '/blog/*' : 'https://example.com/blog/*';
@@ -422,18 +448,10 @@ if (saveShortcut) {
         } else if (matchType === 'prefix') {
             // Prefix mode
             if (srcMatchInstructions) {
-                if (mode === 'pathonly') {
-                    srcMatchInstructions.textContent = '{{ 'Match any path starting with the pattern. Works across all domains.'|t('redirect-manager') }}';
-                } else {
-                    srcMatchInstructions.textContent = '{{ 'Match any URL starting with the pattern including domain.'|t('redirect-manager') }}';
-                }
+                srcMatchInstructions.textContent = sourceMatchInstructionText.prefix[mode].sourceMatch;
             }
             if (sourceUrlInstructions) {
-                if (mode === 'pathonly') {
-                    sourceUrlInstructions.textContent = '{{ 'Enter the starting path (e.g., /blog matches /blog, /blog/post, /blog/category).'|t('redirect-manager') }}';
-                } else {
-                    sourceUrlInstructions.textContent = '{{ 'Enter the starting URL (e.g., https://example.com/blog matches all URLs starting with it).'|t('redirect-manager') }}';
-                }
+                sourceUrlInstructions.textContent = sourceMatchInstructionText.prefix[mode].sourceUrl;
             }
             if (sourceUrlInput) {
                 sourceUrlInput.placeholder = mode === 'pathonly' ? '/blog' : 'https://example.com/blog';
@@ -443,10 +461,10 @@ if (saveShortcut) {
             if (mode === 'pathonly') {
                 if (pathOnlyTip) pathOnlyTip.style.display = 'block';
                 if (srcMatchInstructions) {
-                    srcMatchInstructions.textContent = '{{ 'Match by path only (e.g., /old-page). Works across all domains.'|t('redirect-manager') }}';
+                    srcMatchInstructions.textContent = sourceMatchInstructionText.exact.pathonly.sourceMatch;
                 }
                 if (sourceUrlInstructions) {
-                    sourceUrlInstructions.textContent = '{{ 'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.'|t('redirect-manager') }}';
+                    sourceUrlInstructions.textContent = sourceMatchInstructionText.exact.pathonly.sourceUrl;
                 }
                 if (sourceUrlInput) {
                     sourceUrlInput.placeholder = '/old-page';
@@ -454,10 +472,10 @@ if (saveShortcut) {
             } else {
                 if (pathOnlyTip) pathOnlyTip.style.display = 'none';
                 if (srcMatchInstructions) {
-                    srcMatchInstructions.textContent = '{{ 'Match by complete URL including domain (e.g., https://example.com/old-page).'|t('redirect-manager') }}';
+                    srcMatchInstructions.textContent = sourceMatchInstructionText.exact.fullurl.sourceMatch;
                 }
                 if (sourceUrlInstructions) {
-                    sourceUrlInstructions.textContent = '{{ 'Enter the full URL to match (e.g., https://example.com/old-page).'|t('redirect-manager') }}';
+                    sourceUrlInstructions.textContent = sourceMatchInstructionText.exact.fullurl.sourceUrl;
                 }
                 if (sourceUrlInput) {
                     sourceUrlInput.placeholder = 'https://example.com/old-page';
