@@ -414,6 +414,7 @@ class AnalyticsController extends Controller
      */
     public function actionGetDashboardData(): Response
     {
+        $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:viewAnalytics');
 
         $request = Craft::$app->getRequest();
@@ -746,6 +747,7 @@ class AnalyticsController extends Controller
      */
     public function actionGetChartData(): Response
     {
+        $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:viewAnalytics');
 
         $siteId = Craft::$app->getRequest()->getQueryParam('siteId');
@@ -770,6 +772,7 @@ class AnalyticsController extends Controller
      */
     public function actionGetData(): Response
     {
+        $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:viewAnalytics');
 
         $request = Craft::$app->getRequest();
