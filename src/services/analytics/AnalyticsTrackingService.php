@@ -9,12 +9,13 @@
 namespace lindemannrock\redirectmanager\services\analytics;
 
 use Craft;
-use craft\db\Query;
 use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use lindemannrock\base\helpers\AnalyticsIpHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\records\AnalyticsRecord;
 use lindemannrock\redirectmanager\RedirectManager;
+use yii\db\Expression;
 
 /**
  * Analytics Tracking Service
@@ -95,22 +96,49 @@ class AnalyticsTrackingService
             ? RedirectManager::$plugin->analytics->breakdown->getLocationFromIp($ipState['geoLookupIp'])
             : null;
 
-        // Check if record exists
-        $existing = (new Query())
-            ->from(AnalyticsRecord::tableName())
-            ->where([
-                'urlParsed' => $urlParsed,
+        $now = Db::prepareDateForDb(new \DateTime());
+        $analyticsData = [
                 'siteId' => $siteId,
-            ])
-            ->one();
-
-        if ($existing) {
-            // Update existing record
-            Craft::$app->getDb()->createCommand()
-                ->update(
+                'url' => $url,
+                'urlParsed' => $urlParsed,
+                'handled' => $handled,
+                'redirectId' => $redirectId,
+                'sourcePlugin' => $sourcePlugin,
+                'count' => 1,
+                'referrer' => $referrer,
+                'ip' => $ip,
+                'userAgent' => $userAgent,
+                // Device detection fields
+                'deviceType' => $deviceInfo['deviceType'],
+                'deviceBrand' => $deviceInfo['deviceBrand'],
+                'deviceModel' => $deviceInfo['deviceModel'],
+                'browser' => $deviceInfo['browser'],
+                'browserVersion' => $deviceInfo['browserVersion'],
+                'browserEngine' => $deviceInfo['browserEngine'],
+                'osName' => $deviceInfo['osName'],
+                'osVersion' => $deviceInfo['osVersion'],
+                'clientType' => $deviceInfo['clientType'],
+                'isRobot' => $deviceInfo['isRobot'],
+                'isMobileApp' => $deviceInfo['isMobileApp'],
+                'botName' => $deviceInfo['botName'],
+                // Geographic data
+                'country' => $geoData['countryCode'] ?? null,
+                'city' => $geoData['city'] ?? null,
+                'region' => $geoData['region'] ?? null,
+                'latitude' => $geoData['lat'] ?? null,
+                'longitude' => $geoData['lon'] ?? null,
+                'lastHit' => $now,
+                'dateCreated' => $now,
+                'dateUpdated' => $now,
+                'uid' => StringHelper::UUID(),
+            ];
+    
+        Craft::$app->getDb()->createCommand()
+                ->upsert(
                     AnalyticsRecord::tableName(),
+                    $analyticsData,
                     [
-                        'count' => new \yii\db\Expression('[[count]] + 1'),
+                        'count' => new Expression('[[count]] + 1'),
                         'url' => $url, // Update to latest URL (preserves most recent query string)
                         'handled' => $handled,
                         'redirectId' => $redirectId,
@@ -137,58 +165,16 @@ class AnalyticsTrackingService
                         'region' => $geoData['region'] ?? null,
                         'latitude' => $geoData['lat'] ?? null,
                         'longitude' => $geoData['lon'] ?? null,
-                        'lastHit' => Db::prepareDateForDb(new \DateTime()),
-                        'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
+                        'lastHit' => $now,
+                        'dateUpdated' => $now,
                     ],
-                    ['id' => $existing['id']]
                 )
                 ->execute();
-
-            $this->logDebug('Updated 404 analytics record', ['url' => $url, 'urlParsed' => $urlParsed, 'count' => $existing['count'] + 1, 'source' => $sourcePlugin]);
-        } else {
-            // Create new record
-            $record = new AnalyticsRecord();
-            $record->siteId = $siteId;
-            $record->url = $url;
-            $record->urlParsed = $urlParsed;
-            $record->handled = $handled;
-            $record->redirectId = $redirectId;
-            $record->sourcePlugin = $sourcePlugin;
-            $record->count = 1;
-            $record->referrer = $referrer;
-            $record->ip = $ip;
-            $record->userAgent = $userAgent;
-            // Device detection fields
-            $record->deviceType = $deviceInfo['deviceType'];
-            $record->deviceBrand = $deviceInfo['deviceBrand'];
-            $record->deviceModel = $deviceInfo['deviceModel'];
-            $record->browser = $deviceInfo['browser'];
-            $record->browserVersion = $deviceInfo['browserVersion'];
-            $record->browserEngine = $deviceInfo['browserEngine'];
-            $record->osName = $deviceInfo['osName'];
-            $record->osVersion = $deviceInfo['osVersion'];
-            $record->clientType = $deviceInfo['clientType'];
-            $record->isRobot = $deviceInfo['isRobot'];
-            $record->isMobileApp = $deviceInfo['isMobileApp'];
-            $record->botName = $deviceInfo['botName'];
-            // Geographic data
-            $record->country = $geoData['countryCode'] ?? null;
-            $record->city = $geoData['city'] ?? null;
-            $record->region = $geoData['region'] ?? null;
-            $record->latitude = $geoData['lat'] ?? null;
-            $record->longitude = $geoData['lon'] ?? null;
-            $record->lastHit = Db::prepareDateForDb(new \DateTime());
-
-            if ($record->save()) {
-                $this->logDebug('Created 404 analytics record', ['url' => $url, 'urlParsed' => $urlParsed, 'source' => $sourcePlugin]);
-
-                // Check if we need to trim analytics
-                if ($settings->autoTrimAnalytics) {
-                    $this->exportService->trimAnalytics();
-                }
-            } else {
-                $this->logError('Failed to save 404 analytics record', ['errors' => $record->getErrors()]);
-            }
+    
+        $this->logDebug('Recorded 404 analytics hit', ['url' => $url, 'urlParsed' => $urlParsed, 'source' => $sourcePlugin]);
+    
+        if ($settings->autoTrimAnalytics) {
+            $this->exportService->trimAnalytics();
         }
     }
 

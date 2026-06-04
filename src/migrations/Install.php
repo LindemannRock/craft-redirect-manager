@@ -178,6 +178,7 @@ class Install extends Migration
 
             // Add indexes for performance
             $this->createIndex(null, '{{%redirectmanager_analytics}}', ['urlParsed'], false);
+            $this->createIndex('idx_redirectmanager_analytics_urlparsed_siteid_unq', '{{%redirectmanager_analytics}}', ['urlParsed', 'siteId'], true);
             $this->createIndex(null, '{{%redirectmanager_analytics}}', ['handled'], false);
             $this->createIndex(null, '{{%redirectmanager_analytics}}', ['redirectId'], false);
             $this->createIndex(null, '{{%redirectmanager_analytics}}', ['siteId'], false);
