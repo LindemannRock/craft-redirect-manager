@@ -618,6 +618,8 @@ return [
     '{errors} invalid row(s) will be skipped.' => 'سيتم تخطي {errors} صف غير صالح.',
     'No valid redirects found to import.' => 'لم يتم العثور على عمليات إعادة توجيه صالحة للاستيراد.',
     'Import {count} Redirects' => 'استيراد {count} عملية إعادة توجيه',
+    'Import {count} redirect(s)?' => 'استيراد {count} عملية إعادة توجيه؟',
+    'A backup will be created first.' => 'سيتم إنشاء نسخة احتياطية أولاً.',
     'No Valid Redirects to Import' => 'لا توجد عمليات إعادة توجيه صالحة للاستيراد',
     'Required fields not mapped: {fields}' => 'الحقول المطلوبة غير معيّنة: {fields}',
     'You cannot map multiple CSV columns to the same field' => 'لا يمكنك تعيين عدة أعمدة CSV إلى الحقل نفسه',

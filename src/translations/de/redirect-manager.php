@@ -618,6 +618,8 @@ return [
     '{errors} invalid row(s) will be skipped.' => '{errors} ungültige Zeilen werden übersprungen.',
     'No valid redirects found to import.' => 'Keine gültigen Weiterleitungen zum Importieren gefunden.',
     'Import {count} Redirects' => '{count} Weiterleitungen importieren',
+    'Import {count} redirect(s)?' => '{count} Weiterleitungen importieren?',
+    'A backup will be created first.' => 'Zuerst wird ein Backup erstellt.',
     'No Valid Redirects to Import' => 'Keine gültigen Weiterleitungen zum Importieren',
     'Required fields not mapped: {fields}' => 'Erforderliche Felder nicht zugeordnet: {fields}',
     'You cannot map multiple CSV columns to the same field' => 'Sie können nicht mehrere CSV-Spalten demselben Feld zuordnen',

@@ -618,6 +618,8 @@ return [
     '{errors} invalid row(s) will be skipped.' => '{errors} 件の無効な行がスキップされます。',
     'No valid redirects found to import.' => 'インポートする有効なリダイレクトが見つかりません。',
     'Import {count} Redirects' => '{count} 件のリダイレクトをインポートする',
+    'Import {count} redirect(s)?' => '{count} 件のリダイレクトをインポートしますか？',
+    'A backup will be created first.' => '最初にバックアップが作成されます。',
     'No Valid Redirects to Import' => 'インポートする有効なリダイレクトがありません',
     'Required fields not mapped: {fields}' => '必須フィールドがマッピングされていません: {fields}',
     'You cannot map multiple CSV columns to the same field' => '複数の CSV 列を同じフィールドにマッピングすることはできません',

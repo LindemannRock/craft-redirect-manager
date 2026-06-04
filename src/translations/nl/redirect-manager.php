@@ -618,6 +618,8 @@ return [
     '{errors} invalid row(s) will be skipped.' => '{errors} ongeldige rij(en) worden overgeslagen.',
     'No valid redirects found to import.' => 'Geen geldige redirects gevonden om te importeren.',
     'Import {count} Redirects' => '{count} redirects importeren',
+    'Import {count} redirect(s)?' => '{count} redirect(s) importeren?',
+    'A backup will be created first.' => 'Er wordt eerst een back-up aangemaakt.',
     'No Valid Redirects to Import' => 'Geen geldige redirects om te importeren',
     'Required fields not mapped: {fields}' => 'Vereiste velden niet toegewezen: {fields}',
     'You cannot map multiple CSV columns to the same field' => 'U kunt niet meerdere CSV-kolommen aan hetzelfde veld toewijzen',

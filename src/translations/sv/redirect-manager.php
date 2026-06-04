@@ -618,6 +618,8 @@ return [
     '{errors} invalid row(s) will be skipped.' => '{errors} ogiltig(a) rad(er) hoppas över.',
     'No valid redirects found to import.' => 'Inga giltiga omdirigeringar hittades att importera.',
     'Import {count} Redirects' => 'Importera {count} omdirigeringar',
+    'Import {count} redirect(s)?' => 'Importera {count} omdirigering(ar)?',
+    'A backup will be created first.' => 'En säkerhetskopia skapas först.',
     'No Valid Redirects to Import' => 'Inga giltiga omdirigeringar att importera',
     'Required fields not mapped: {fields}' => 'Obligatoriska fält är inte mappade: {fields}',
     'You cannot map multiple CSV columns to the same field' => 'Du kan inte mappa flera CSV-kolumner till samma fält',

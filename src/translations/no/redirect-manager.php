@@ -618,6 +618,8 @@ return [
     '{errors} invalid row(s) will be skipped.' => '{errors} ugyldig(e) rad(er) hoppes over.',
     'No valid redirects found to import.' => 'Ingen gyldige omdirigeringer funnet å importere.',
     'Import {count} Redirects' => 'Importer {count} omdirigeringer',
+    'Import {count} redirect(s)?' => 'Importer {count} omdirigering(er)?',
+    'A backup will be created first.' => 'En sikkerhetskopi opprettes først.',
     'No Valid Redirects to Import' => 'Ingen gyldige omdirigeringer å importere',
     'Required fields not mapped: {fields}' => 'Påkrevde felt er ikke tilordnet: {fields}',
     'You cannot map multiple CSV columns to the same field' => 'Du kan ikke tilordne flere CSV-kolonner til samme felt',

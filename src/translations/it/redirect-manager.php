@@ -618,6 +618,8 @@ return [
     '{errors} invalid row(s) will be skipped.' => '{errors} righe non valide verranno ignorate.',
     'No valid redirects found to import.' => 'Nessun redirect valido trovato da importare.',
     'Import {count} Redirects' => 'Importa {count} redirect',
+    'Import {count} redirect(s)?' => 'Importare {count} redirect?',
+    'A backup will be created first.' => 'Verrà prima creato un backup.',
     'No Valid Redirects to Import' => 'Nessun redirect valido da importare',
     'Required fields not mapped: {fields}' => 'Campi obbligatori non mappati: {fields}',
     'You cannot map multiple CSV columns to the same field' => 'Non è possibile mappare più colonne CSV allo stesso campo',
