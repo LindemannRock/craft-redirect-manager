@@ -106,7 +106,7 @@
                 {% set navButtons = navButtons|merge([{type: 'link', label: 'Manage settings'|t('redirect-manager'), url: url('redirect-manager/settings')}]) %}
             {% endif %}
             {% if hasAnalyticsAccess %}
-                {% set navButtons = navButtons|merge([{type: 'link', label: 'View Analytics'|t('redirect-manager'), url: url('redirect-manager/analytics')}]) %}
+                {% set navButtons = navButtons|merge([{type: 'link', label: 'View analytics'|t('redirect-manager'), url: url('redirect-manager/analytics')}]) %}
             {% endif %}
 
             {% include 'lindemannrock-base/_layouts/cp-utilities/_action-section' with {
@@ -186,7 +186,7 @@
 {% include 'lindemannrock-base/_layouts/cp-utilities/_ajax-button' with {
     id: 'clear-all-caches',
     action: actionUrl('redirect-manager/settings/clear-all-caches'),
-    confirm: 'Clear all caches?'|t('redirect-manager'),
+    confirm: 'Are you sure you want to clear all caches?'|t('redirect-manager'),
     errorMessage: 'Failed'|t('redirect-manager'),
 } only %}
 {% endif %}

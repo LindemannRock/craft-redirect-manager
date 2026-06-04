@@ -172,8 +172,9 @@ document.addEventListener('click', function(e) {
     const dirname = restoreLink.dataset.dirname;
     const date = restoreLink.dataset.date;
     const count = restoreLink.dataset.count;
+    const backupCountMessage = '{{ "Backup contains {count} redirects."|t('redirect-manager', {count: "__COUNT__"})|e('js') }}';
     const message = '{{ "Are you sure you want to restore this backup? This will replace all current redirects. A backup of the current state will be created before restoring."|t('redirect-manager')|e('js') }}' +
-        (count ? ' {{ "Backup contains"|t('redirect-manager')|e('js') }} ' + count + ' {{ "redirects."|t('redirect-manager')|e('js') }}' : '');
+        (count ? ' ' + backupCountMessage.replace('__COUNT__', count) : '');
 
     if (!confirm(message)) return;
 
