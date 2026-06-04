@@ -288,33 +288,36 @@ class AnalyticsExportService
     {
         $settings = RedirectManager::$plugin->getSettings();
         $limit = $settings->analyticsLimit;
-
-        // Get current count
-        $currentCount = (new Query())
-            ->from(AnalyticsRecord::tableName())
-            ->count();
-
-        if ($currentCount <= $limit) {
-            return 0;
-        }
-
-        // Get IDs to delete (oldest by lastHit, lowest count)
-        $idsToDelete = (new Query())
-            ->select(['id'])
-            ->from(AnalyticsRecord::tableName())
-            ->orderBy(['lastHit' => SORT_ASC, 'count' => SORT_ASC])
-            ->limit($currentCount - $limit)
-            ->column();
-
-        if (empty($idsToDelete)) {
-            return 0;
-        }
-
-        // Delete the records
-        $deleted = Craft::$app->getDb()->createCommand()
-            ->delete(AnalyticsRecord::tableName(), ['in', 'id', $idsToDelete])
-            ->execute();
-
+        $db = Craft::$app->getDb();
+    
+        $deleted = $db->transaction(function() use ($db, $limit): int {
+            // Get current count
+            $currentCount = (new Query())
+                    ->from(AnalyticsRecord::tableName())
+                    ->count();
+    
+            if ($currentCount <= $limit) {
+                return 0;
+            }
+    
+            // Get IDs to delete (oldest by lastHit, lowest count)
+            $idsToDelete = (new Query())
+                    ->select(['id'])
+                    ->from(AnalyticsRecord::tableName())
+                    ->orderBy(['lastHit' => SORT_ASC, 'count' => SORT_ASC])
+                    ->limit($currentCount - $limit)
+                    ->column();
+    
+            if (empty($idsToDelete)) {
+                return 0;
+            }
+    
+            // Delete the records
+            return $db->createCommand()
+                    ->delete(AnalyticsRecord::tableName(), ['in', 'id', $idsToDelete])
+                    ->execute();
+        });
+    
         $this->logInfo('Trimmed analytics', ['deleted' => $deleted]);
 
         return $deleted;
