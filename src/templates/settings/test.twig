@@ -59,13 +59,41 @@
 	    const redirectEditUrl = function(id) {
 	        return Craft.getUrl('redirect-manager/redirects/' + encodeURIComponent(String(parseInt(id, 10) || '')));
 	    };
+	    const T = {
+	        createRedirect: {{ 'Create Redirect for This URL'|t('redirect-manager')|json_encode|raw }},
+	        destination: {{ 'Destination'|t('redirect-manager')|json_encode|raw }},
+	        destinationUrl: {{ 'Destination URL'|t('redirect-manager')|json_encode|raw }},
+	        error: {{ 'Error'|t('redirect-manager')|json_encode|raw }},
+	        fullUrl: {{ 'Full URL'|t('redirect-manager')|json_encode|raw }},
+	        id: {{ 'ID'|t('redirect-manager')|json_encode|raw }},
+	        matchFound: {{ 'Match Found!'|t('redirect-manager')|json_encode|raw }},
+	        matchType: {{ 'Match Type'|t('redirect-manager')|json_encode|raw }},
+	        noMatchFound: {{ 'No Match Found'|t('redirect-manager')|json_encode|raw }},
+	        noRedirectConfigured: {{ 'No redirect configured for this URL.'|t('redirect-manager')|json_encode|raw }},
+	        otherRedirectsTemplate: {{ '{count} other redirect(s) also match this URL'|t('redirect-manager')|json_encode|raw }},
+	        pathOnly: {{ 'Path Only'|t('redirect-manager')|json_encode|raw }},
+	        priority: {{ 'Priority'|t('redirect-manager')|json_encode|raw }},
+	        redirectId: {{ 'Redirect ID'|t('redirect-manager')|json_encode|raw }},
+	        resolvesTo: {{ 'Resolves to:'|t('redirect-manager')|json_encode|raw }},
+	        skippedLowerPriority: {{ 'Skipped due to lower priority (higher number = lower priority)'|t('redirect-manager')|json_encode|raw }},
+	        source: {{ 'Source'|t('redirect-manager')|json_encode|raw }},
+	        sourceMatchMode: {{ 'Source Match Mode'|t('redirect-manager')|json_encode|raw }},
+	        sourceUrl: {{ 'Source URL'|t('redirect-manager')|json_encode|raw }},
+	        statusCode: {{ 'Status Code'|t('redirect-manager')|json_encode|raw }},
+	        testUrl: {{ 'Test URL'|t('redirect-manager')|json_encode|raw }},
+	        testing: {{ 'Testing...'|t('redirect-manager')|json_encode|raw }},
+	        thisUrlWouldRedirect: {{ 'This URL would redirect:'|t('redirect-manager')|json_encode|raw }},
+	        validationError: {{ 'Validation Error'|t('redirect-manager')|json_encode|raw }},
+	        visiting: {{ 'Visiting'|t('redirect-manager')|json_encode|raw }},
+	        wouldResult404: {{ 'would result in a 404 error and be logged in analytics.'|t('redirect-manager')|json_encode|raw }},
+	    };
 
     testButton.addEventListener('click', function() {
         let testUrl = testUrlInput.value.trim();
 
 	        if (!testUrl) {
 	            testResults.style.display = 'block';
-	            resultsTitle.textContent = '⚠️ Validation Error';
+	            resultsTitle.textContent = '⚠️ ' + T.validationError;
 	            resultsTitle.style.color = '#dc3545';
 	            resultsContent.innerHTML = '<p style="color: #dc3545;">' + {{ 'Please enter a URL to test'|t('redirect-manager')|json_encode|raw }} + '</p>';
 			            return;
@@ -89,7 +117,7 @@
 		        }
 	
 		        testButton.disabled = true;
-		        testButton.textContent = 'Testing...';
+		        testButton.textContent = T.testing;
 	
 		        fetch('{{ actionUrl('redirect-manager/settings/test-url') }}', {
 		            method: 'POST',
@@ -105,13 +133,13 @@
 		        .then(response => response.json())
 		        .then(data => {
 		            testButton.disabled = false;
-		            testButton.textContent = 'Test URL';
+		            testButton.textContent = T.testUrl;
 	
 		            testResults.style.display = 'block';
 
 			            if (data.matched) {
 			                // Match found
-			                resultsTitle.textContent = '✅ Match Found!';
+			                resultsTitle.textContent = '✅ ' + T.matchFound;
 			                resultsTitle.style.color = '#28a745';
 		
 			                const r = data.redirect;
@@ -119,66 +147,66 @@
 			                const destinationUrl = escapeHtml(r.destinationUrl);
 			                resultsContent.innerHTML = `
 	<p style="padding: 15px; background: #e8f5e9; border-left: 4px solid #28a745; margin: 15px 0;">
-		<strong>This URL would redirect:</strong><br>
+		<strong>${escapeHtml(T.thisUrlWouldRedirect)}</strong><br>
 		<code>${escapeHtml(testUrl)}</code>
 		→
 		<code>${resolvedDestinationUrl}</code>
 	</p>
 	<dl style="display: grid; grid-template-columns: 200px 1fr; gap: 10px; margin: 20px 0;">
 		<dt>
-			<strong>Redirect ID:</strong>
+			<strong>${escapeHtml(T.redirectId)}:</strong>
 		</dt>
 		<dd>
 			<a href="${redirectEditUrl(r.id)}">#${escapeHtml(r.id)}</a>
 		</dd>
 	
 		<dt>
-			<strong>Source URL:</strong>
+			<strong>${escapeHtml(T.sourceUrl)}:</strong>
 		</dt>
 		<dd>
 			<code>${escapeHtml(r.sourceUrl)}</code>
 		</dd>
 	
 		<dt>
-			<strong>Destination URL:</strong>
+			<strong>${escapeHtml(T.destinationUrl)}:</strong>
 		</dt>
 		<dd>
 			<code>${destinationUrl}</code>
-			${r.destinationUrl !== r.resolvedDestinationUrl ? `<br><span style="color: #28a745;">→ Resolves to: <code>${resolvedDestinationUrl}</code></span>` : ''}
+			${r.destinationUrl !== r.resolvedDestinationUrl ? `<br><span style="color: #28a745;">→ ${escapeHtml(T.resolvesTo)} <code>${resolvedDestinationUrl}</code></span>` : ''}
 		</dd>
 	
 		<dt>
-			<strong>Match Type:</strong>
+			<strong>${escapeHtml(T.matchType)}:</strong>
 		</dt>
 		<dd>${escapeHtml(r.matchType)}</dd>
 	
 		<dt>
-			<strong>Source Match Mode:</strong>
+			<strong>${escapeHtml(T.sourceMatchMode)}:</strong>
 		</dt>
-	<dd>${r.redirectSrcMatch === 'pathonly' ? 'Path Only' : 'Full URL'}</dd>
+	<dd>${r.redirectSrcMatch === 'pathonly' ? escapeHtml(T.pathOnly) : escapeHtml(T.fullUrl)}</dd>
 	
 		<dt>
-			<strong>Status Code:</strong>
+			<strong>${escapeHtml(T.statusCode)}:</strong>
 		</dt>
 		<dd>${escapeHtml(r.statusCode)}</dd>
 	
 		<dt>
-			<strong>Priority:</strong>
+			<strong>${escapeHtml(T.priority)}:</strong>
 		</dt>
 		<dd>${escapeHtml(r.priority)}</dd>
 	</dl>
 	${data.alsoMatches && data.alsoMatches.length > 0 ? `
 	<div style="margin-top: 25px;">
-	<p><strong>${data.alsoMatches.length} other redirect${data.alsoMatches.length > 1 ? 's' : ''} also match${data.alsoMatches.length === 1 ? 'es' : ''} this URL</strong></p>
-	<p class="light" style="margin: 0 0 12px 0;">Skipped due to lower priority (higher number = lower priority)</p>
+	<p><strong>${escapeHtml(T.otherRedirectsTemplate.replace('{count}', data.alsoMatches.length))}</strong></p>
+	<p class="light" style="margin: 0 0 12px 0;">${escapeHtml(T.skippedLowerPriority)}</p>
 	<div class="tableview">
 		<table class="data fullwidth">
 			<thead>
 				<tr>
-					<th style="width: 80px;">ID</th>
-					<th>Source</th>
-					<th>Destination</th>
-					<th style="width: 80px;">Priority</th>
+					<th style="width: 80px;">${escapeHtml(T.id)}</th>
+					<th>${escapeHtml(T.source)}</th>
+					<th>${escapeHtml(T.destination)}</th>
+					<th style="width: 80px;">${escapeHtml(T.priority)}</th>
 				</tr>
 			</thead>
 				<tbody>
@@ -198,7 +226,7 @@
 `;
 	            } else {
 	                // No match
-	                resultsTitle.textContent = '❌ No Match Found';
+	                resultsTitle.textContent = '❌ ' + T.noMatchFound;
 	                resultsTitle.style.color = '#dc3545';
 
                 // Detect if tested URL is a full URL or path
@@ -214,23 +242,23 @@
 
                 resultsContent.innerHTML = `
 	<p style="padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; margin: 15px 0;">
-		<strong>No redirect configured for this URL.</strong><br>
-		Visiting
+		<strong>${escapeHtml(T.noRedirectConfigured)}</strong><br>
+		${escapeHtml(T.visiting)}
 		<code>${escapeHtml(testUrl)}</code>
-		would result in a 404 error and be logged in analytics.
+		${escapeHtml(T.wouldResult404)}
 	</p>
 <p style="margin-top: 15px;">
-	<a href="${Craft.getUrl('redirect-manager/redirects/new', createParams)}" class="btn">Create Redirect for This URL</a>
+	<a href="${Craft.getUrl('redirect-manager/redirects/new', createParams)}" class="btn">${escapeHtml(T.createRedirect)}</a>
 </p>
 `;
             }
         })
         .catch(error => {
             testButton.disabled = false;
-            testButton.textContent = 'Test URL';
+            testButton.textContent = T.testUrl;
 	
 	            testResults.style.display = 'block';
-	            resultsTitle.textContent = '⚠️ Error';
+	            resultsTitle.textContent = '⚠️ ' + T.error;
 	            resultsTitle.style.color = '#dc3545';
 	            resultsContent.innerHTML = `<p style="color: #dc3545;">${escapeHtml(error.message)}</p>`;
 			        });
