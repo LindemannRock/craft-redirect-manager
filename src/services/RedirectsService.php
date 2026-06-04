@@ -1222,11 +1222,6 @@ class RedirectsService extends Component
                 'to' => $nextRedirect['destinationUrl'],
             ]);
 
-            // Record analytics for this URL in the chain as handled
-            RedirectManager::$plugin->analytics->record404($searchUrl, true, [
-                'redirectId' => $nextRedirect['id'] ?? null,
-            ]);
-
             $currentUrl = $nextRedirect['destinationUrl'];
             $chain[] = $currentUrl;
         }
