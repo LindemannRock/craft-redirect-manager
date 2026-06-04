@@ -560,14 +560,14 @@ class SettingsController extends Controller
                 'matched' => true,
                 'redirect' => $winningRedirect,
                 'alsoMatches' => $allMatches, // Other matches that were skipped due to priority
-                'message' => 'Match found! This URL would redirect.',
+                'message' => Craft::t('redirect-manager', 'Match found! This URL would redirect.'),
             ]);
         }
 
         return $this->asJson([
             'success' => true,
             'matched' => false,
-            'message' => 'No matching redirect found. This URL would show a 404.',
+            'message' => Craft::t('redirect-manager', 'No matching redirect found. This URL would show a 404.'),
         ]);
     }
 
