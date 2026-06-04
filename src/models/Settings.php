@@ -404,6 +404,7 @@ class Settings extends Model
                     'stripQueryStringFromStats',
                     'autoTrimAnalytics',
                     'enableApiEndpoint',
+                    'cacheDeviceDetection',
                     'backupEnabled',
                     'backupOnImport',
                 ],
