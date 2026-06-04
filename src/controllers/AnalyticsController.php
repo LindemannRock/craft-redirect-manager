@@ -522,6 +522,7 @@ class AnalyticsController extends Controller
     public function actionDelete(): Response
     {
         $this->requirePostRequest();
+        $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:clearAnalytics');
 
         $analyticId = Craft::$app->getRequest()->getRequiredBodyParam('analyticId');
@@ -542,6 +543,7 @@ class AnalyticsController extends Controller
     public function actionClearAll(): Response
     {
         $this->requirePostRequest();
+        $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:clearAnalytics');
 
         $siteId = Craft::$app->getRequest()->getBodyParam('siteId');

@@ -154,6 +154,7 @@ class ImportExportController extends Controller
      */
     public function actionGetBackups(): Response
     {
+        $this->requireAcceptsJson();
         $this->requireAnyBackupPermission();
 
         $settings = RedirectManager::$plugin->getSettings();

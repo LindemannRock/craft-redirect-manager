@@ -350,6 +350,7 @@ class RedirectsController extends Controller
     public function actionDelete(): Response
     {
         $this->requirePostRequest();
+        $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:deleteRedirects');
 
         $redirectId = Craft::$app->getRequest()->getRequiredBodyParam('redirectId');
@@ -374,6 +375,7 @@ class RedirectsController extends Controller
     public function actionBulkDelete(): Response
     {
         $this->requirePostRequest();
+        $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:deleteRedirects');
 
         $redirectIds = Craft::$app->getRequest()->getRequiredBodyParam('redirectIds');
@@ -404,6 +406,7 @@ class RedirectsController extends Controller
     public function actionToggleEnabled(): Response
     {
         $this->requirePostRequest();
+        $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:editRedirects');
 
         $redirectId = Craft::$app->getRequest()->getRequiredBodyParam('redirectId');
@@ -429,6 +432,7 @@ class RedirectsController extends Controller
     public function actionBulkEnable(): Response
     {
         $this->requirePostRequest();
+        $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:editRedirects');
 
         $redirectIds = Craft::$app->getRequest()->getRequiredBodyParam('redirectIds');
@@ -459,6 +463,7 @@ class RedirectsController extends Controller
     public function actionBulkDisable(): Response
     {
         $this->requirePostRequest();
+        $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:editRedirects');
 
         $redirectIds = Craft::$app->getRequest()->getRequiredBodyParam('redirectIds');
@@ -489,6 +494,7 @@ class RedirectsController extends Controller
     public function actionTest(): Response
     {
         $this->requirePostRequest();
+        $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:manageRedirects');
 
         $testUrl = Craft::$app->getRequest()->getRequiredBodyParam('testUrl');
