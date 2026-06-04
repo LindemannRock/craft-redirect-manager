@@ -309,7 +309,7 @@ class AnalyticsController extends Controller
      * @param array<int, array<string, mixed>> $analytics
      * @return array<int, array<string, mixed>>
      */
-    private function _prepareDashboardAnalyticsRows(array $analytics, bool $includeSiteName = false): array
+    private function _prepareDashboardAnalyticsRows(array $analytics, bool $includeSiteName = false, bool $formatLastHit = false): array
     {
         $redirectIdMap = $this->_getRedirectIdMap($analytics);
 
@@ -317,7 +317,9 @@ class AnalyticsController extends Controller
             if (!empty($stat['lastHit'])) {
                 $utcDate = new \DateTime($stat['lastHit'], new \DateTimeZone('UTC'));
                 $utcDate->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
-                $analytics[$key]['lastHit'] = $utcDate;
+                $analytics[$key]['lastHit'] = $formatLastHit
+                    ? DateFormatHelper::formatDatetime($utcDate)
+                    : $utcDate;
             }
 
             $analytics[$key]['requestType'] = $this->_detectRequestType($stat);
@@ -470,7 +472,7 @@ class AnalyticsController extends Controller
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
         $params = $this->_getDashboardParams((int)$settings->itemsPerPage);
         $result = $this->_getDashboardAnalytics($params, $editableSiteIds);
-        $analytics = $this->_prepareDashboardAnalyticsRows($result['analytics'], true);
+        $analytics = $this->_prepareDashboardAnalyticsRows($result['analytics'], true, true);
         $counts = $this->_getDashboardCounts($editableSiteIds);
 
         return $this->asJson([
