@@ -536,7 +536,7 @@ class RedirectManager extends Plugin
                     ),
                 ]);
 
-                Craft::$app->queue->delay($initialDelay)->push($job);
+                Craft::$app->getQueue()->delay($initialDelay)->push($job);
 
                 $this->logInfo('Scheduled initial analytics cleanup job', ['interval' => '24 hours']);
             }
