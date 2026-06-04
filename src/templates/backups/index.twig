@@ -61,6 +61,27 @@ function renderRowActions(actionsHtml) {
     return actionsHtml || '<td class="thin"></td>';
 }
 
+const T = {
+    actions: {{ 'Actions'|t('redirect-manager')|json_encode|raw }},
+    backupContainsTemplate: {{ 'Backup contains {count} redirects.'|t('redirect-manager', {count: '__COUNT__'})|json_encode|raw }},
+    backupCreated: {{ 'Backup created.'|t('redirect-manager')|json_encode|raw }},
+    backupDeleted: {{ 'Backup deleted.'|t('redirect-manager')|json_encode|raw }},
+    backupRestored: {{ 'Backup restored.'|t('redirect-manager')|json_encode|raw }},
+    confirmDeleteBackup: {{ 'Are you sure you want to delete this backup? This action cannot be undone.'|t('redirect-manager')|json_encode|raw }},
+    confirmRestoreBackup: {{ 'Are you sure you want to restore this backup? This will replace all current redirects. A backup of the current state will be created before restoring.'|t('redirect-manager')|json_encode|raw }},
+    createdBy: {{ 'Created By'|t('redirect-manager')|json_encode|raw }},
+    date: {{ 'Date'|t('redirect-manager')|json_encode|raw }},
+    deletingBackup: {{ 'Deleting backup...'|t('redirect-manager')|json_encode|raw }},
+    failedToCreateBackup: {{ 'Failed to create backup'|t('redirect-manager')|json_encode|raw }},
+    failedToDeleteBackup: {{ 'Failed to delete backup.'|t('redirect-manager')|json_encode|raw }},
+    failedToLoadBackups: {{ 'Failed to load backups: '|t('redirect-manager')|json_encode|raw }},
+    failedToRestoreBackup: {{ 'Failed to restore backup.'|t('redirect-manager')|json_encode|raw }},
+    redirectCount: {{ 'Redirect Count'|t('redirect-manager')|json_encode|raw }},
+    restoringBackup: {{ 'Restoring backup...'|t('redirect-manager')|json_encode|raw }},
+    size: {{ 'Size'|t('redirect-manager')|json_encode|raw }},
+    type: {{ 'Type'|t('redirect-manager')|json_encode|raw }},
+};
+
 function renderBackupsTable(backups) {
     const numberFormatter = new Intl.NumberFormat();
     let rows = '';
@@ -85,12 +106,12 @@ function renderBackupsTable(backups) {
     return `<table class="data fullwidth">
         <thead>
             <tr>
-                <th>{{ "Date"|t('redirect-manager')|e('js') }}</th>
-                <th>{{ "Type"|t('redirect-manager')|e('js') }}</th>
-                <th>{{ "Created By"|t('redirect-manager')|e('js') }}</th>
-                <th>{{ "Redirect Count"|t('redirect-manager')|e('js') }}</th>
-                <th>{{ "Size"|t('redirect-manager')|e('js') }}</th>
-                <th class="thin">{{ "Actions"|t('redirect-manager')|e('js') }}</th>
+                <th>${escapeHtml(T.date)}</th>
+                <th>${escapeHtml(T.type)}</th>
+                <th>${escapeHtml(T.createdBy)}</th>
+                <th>${escapeHtml(T.redirectCount)}</th>
+                <th>${escapeHtml(T.size)}</th>
+                <th class="thin">${escapeHtml(T.actions)}</th>
             </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -140,7 +161,7 @@ fetch('{{ actionUrl('redirect-manager/import-export/get-backups') }}', {
         loadingDiv?.classList.add('hidden');
         contentDiv?.classList.remove('hidden');
         if (errorMsg) {
-            errorMsg.textContent = '{{ "Failed to load backups: "|t('redirect-manager')|e('js') }}' + error.message;
+            errorMsg.textContent = T.failedToLoadBackups + error.message;
             errorMsg.classList.remove('hidden');
         }
     });
@@ -152,11 +173,11 @@ document.getElementById('create-backup-btn')?.addEventListener('click', function
 
     Craft.sendActionRequest('POST', 'redirect-manager/import-export/create-backup')
         .then(function(response) {
-            Craft.cp.displayNotice(response.data?.message || '{{ "Backup created."|t('redirect-manager') }}');
+            Craft.cp.displayNotice(response.data?.message || T.backupCreated);
             window.location.reload();
         })
         .catch(function(error) {
-            Craft.cp.displayError(error.response?.data?.message || '{{ "Failed to create backup"|t('redirect-manager') }}');
+            Craft.cp.displayError(error.response?.data?.message || T.failedToCreateBackup);
         })
         .finally(function() {
             btn.classList.remove('loading');
@@ -170,23 +191,22 @@ document.addEventListener('click', function(e) {
     e.preventDefault();
 
     const dirname = restoreLink.dataset.dirname;
-    const date = restoreLink.dataset.date;
     const count = restoreLink.dataset.count;
-    const backupCountMessage = '{{ "Backup contains {count} redirects."|t('redirect-manager', {count: "__COUNT__"})|e('js') }}';
-    const message = '{{ "Are you sure you want to restore this backup? This will replace all current redirects. A backup of the current state will be created before restoring."|t('redirect-manager')|e('js') }}' +
+    const backupCountMessage = T.backupContainsTemplate;
+    const message = T.confirmRestoreBackup +
         (count ? ' ' + backupCountMessage.replace('__COUNT__', count) : '');
 
     if (!confirm(message)) return;
 
-    Craft.cp.displayNotice('{{ "Restoring backup..."|t('redirect-manager') }}');
+    Craft.cp.displayNotice(T.restoringBackup);
 
     Craft.sendActionRequest('POST', 'redirect-manager/import-export/restore-backup', {
         data: { dirname: dirname },
     }).then(function(response) {
-        Craft.cp.displayNotice(response.data?.message || '{{ "Backup restored."|t('redirect-manager') }}');
+        Craft.cp.displayNotice(response.data?.message || T.backupRestored);
         window.location.reload();
     }).catch(function(error) {
-        Craft.cp.displayError(error.response?.data?.message || '{{ "Failed to restore backup."|t('redirect-manager') }}');
+        Craft.cp.displayError(error.response?.data?.message || T.failedToRestoreBackup);
     });
 });
 
@@ -197,19 +217,19 @@ document.addEventListener('click', function(e) {
     e.preventDefault();
 
     const dirname = deleteLink.dataset.dirname;
-    const message = '{{ "Are you sure you want to delete this backup? This action cannot be undone."|t('redirect-manager')|e('js') }}';
+    const message = T.confirmDeleteBackup;
 
     if (!confirm(message)) return;
 
-    Craft.cp.displayNotice('{{ "Deleting backup..."|t('redirect-manager') }}');
+    Craft.cp.displayNotice(T.deletingBackup);
 
     Craft.sendActionRequest('POST', 'redirect-manager/import-export/delete-backup', {
         data: { dirname: dirname },
     }).then(function(response) {
-        Craft.cp.displayNotice(response.data?.message || '{{ "Backup deleted."|t('redirect-manager') }}');
+        Craft.cp.displayNotice(response.data?.message || T.backupDeleted);
         window.location.reload();
     }).catch(function(error) {
-        Craft.cp.displayError(error.response?.data?.message || '{{ "Failed to delete backup."|t('redirect-manager') }}');
+        Craft.cp.displayError(error.response?.data?.message || T.failedToDeleteBackup);
     });
 });
 {% endjs %}
