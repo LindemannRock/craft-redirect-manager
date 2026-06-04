@@ -49,7 +49,9 @@
 
 		<div id="cache-location-file" class="{{ (settings.cacheStorageMethod ?? 'file') == 'redis' ? 'hidden' }}">
 			{% include 'lindemannrock-base/_components/info-box' with {
-				message: '<strong>' ~ 'Cache Location'|t('redirect-manager') ~ ':</strong> <code>' ~ redirectHelper.cacheBasePath ~ '</code>',
+				message: '<strong>Cache Location:</strong> <code>{path}</code>'|t('redirect-manager', {
+					path: redirectHelper.cacheBasePath|e
+				}),
 				type: 'info'
 			} %}
 		</div>
@@ -58,12 +60,12 @@
 			{% if craftUsesRedis %}
 				{% include 'lindemannrock-base/_components/info-box' with {
 					type: 'success',
-					message: '<strong>' ~ 'Cache Location'|t('redirect-manager') ~ ':</strong> ' ~ "Using Craft's configured Redis cache from <code>config/app.php</code>"|t('redirect-manager')
+					message: '<strong>Cache Location:</strong> Using Craft\'s configured Redis cache from <code>config/app.php</code>'|t('redirect-manager')
 				} %}
 			{% else %}
 				{% include 'lindemannrock-base/_components/info-box' with {
 					type: 'warning',
-					message: '<strong>' ~ 'Redis Not Configured'|t('redirect-manager') ~ ':</strong> ' ~ "To use Redis caching, install <code>yiisoft/yii2-redis</code> and configure it in <code>config/app.php</code>."|t('redirect-manager') ~ ' <a href="https://craftcms.com/docs/5.x/reference/config/app.html#cache" target="_blank" rel="noopener">' ~ 'Learn more'|t('redirect-manager') ~ '</a>'
+					message: '<strong>Redis Not Configured:</strong> To use Redis caching, install <code>yiisoft/yii2-redis</code> and configure it in <code>config/app.php</code>. <a href="https://craftcms.com/docs/5.x/reference/config/app.html#cache" target="_blank" rel="noopener">Learn more</a>'|t('redirect-manager')
 				} %}
 			{% endif %}
 		</div>
@@ -90,7 +92,7 @@
 			<div id="device-cache-settings" class="{{ not (settings.cacheDeviceDetection ?? true) ? 'hidden' }}">
 				{{ forms.textField({
 	                label: "Device Detection Cache Duration"|t('redirect-manager'),
-	                instructions: ('Cache duration in seconds. Current:'|t('redirect-manager') ~ ' <strong id="deviceDetectionCacheDuration-human"></strong>')|raw,
+	                instructions: 'Cache duration in seconds. Current: <strong id="deviceDetectionCacheDuration-human"></strong>'|t('redirect-manager')|raw,
 	                id: 'deviceDetectionCacheDuration',
 	                name: 'settings[deviceDetectionCacheDuration]',
 	                value: settings.deviceDetectionCacheDuration ?? 3600,
@@ -105,10 +107,10 @@
 	            }) }}
 
 				{% include 'lindemannrock-base/_components/info-box' with {
-					message: '<strong>' ~ 'How it works'|t('redirect-manager') ~ ':</strong><br>'
-					~ '• ' ~ 'Device detection parses user-agent strings to identify devices, browsers, and operating systems'|t('redirect-manager') ~ '<br>'
-					~ '• ' ~ 'Results are cached to avoid re-parsing the same user-agent repeatedly'|t('redirect-manager') ~ '<br>'
-					~ '• ' ~ 'Recommended to keep enabled for production sites'|t('redirect-manager')
+					message: '<strong>How it works:</strong><br>
+• Device detection parses user-agent strings to identify devices, browsers, and operating systems<br>
+• Results are cached to avoid re-parsing the same user-agent repeatedly<br>
+• Recommended to keep enabled for production sites'|t('redirect-manager')
 				} %}
 			</div>
 
@@ -117,9 +119,9 @@
 
 			<div class="field">
 				<p class="light" style="color: #999;">
-					{{ "Device detection caching is only available when Analytics is enabled. Go to"|t('redirect-manager') }}
-					<a href="{{ url('redirect-manager/settings/analytics') }}">{{ "Analytics Settings"|t('redirect-manager') }}</a>
-					{{ "to enable analytics."|t('redirect-manager') }}
+					{{ 'Device detection caching is only available when Analytics is enabled. Go to {link} to enable analytics.'|t('redirect-manager', {
+						link: '<a href="' ~ url('redirect-manager/settings/analytics') ~ '">' ~ 'Analytics Settings'|t('redirect-manager') ~ '</a>'
+					})|raw }}
 				</p>
 			</div>
 
@@ -144,7 +146,7 @@
 		<div id="redirect-cache-settings" class="{{ not settings.enableRedirectCache ? 'hidden' }}">
 			{{ forms.textField({
 	            label: 'Redirect Cache Duration'|t('redirect-manager'),
-	            instructions: ('Cache duration in seconds. Current:'|t('redirect-manager') ~ ' <strong id="redirectCacheDuration-human"></strong>')|raw,
+	            instructions: 'Cache duration in seconds. Current: <strong id="redirectCacheDuration-human"></strong>'|t('redirect-manager')|raw,
 	            id: 'redirectCacheDuration',
 	            name: 'settings[redirectCacheDuration]',
 	            value: settings.redirectCacheDuration ?? 3600,
