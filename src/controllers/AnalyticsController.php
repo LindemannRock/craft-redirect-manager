@@ -629,7 +629,7 @@ class AnalyticsController extends Controller
         $siteId = Craft::$app->getRequest()->getQueryParam('siteId');
         $siteId = $siteId ? (int)$siteId : null;
         $effectiveSiteId = $this->_resolveSiteId($siteId);
-        $days = (int)Craft::$app->getRequest()->getQueryParam('days', 30);
+        $days = $this->_clampAnalyticsDays((int)Craft::$app->getRequest()->getQueryParam('days', 30));
 
         $chartData = RedirectManager::$plugin->analytics->getChartData($effectiveSiteId, $days);
         $chartData = $this->_normalizeChartData($chartData, $this->_getDaysStartDate($days), null);
@@ -807,6 +807,17 @@ class AnalyticsController extends Controller
 
         $days = (int)$start->diff($end)->format('%a');
         return max(1, $days);
+    }
+
+    /**
+     * Clamp raw day counts accepted from request params.
+     *
+     * @param int $days
+     * @return int
+     */
+    private function _clampAnalyticsDays(int $days): int
+    {
+        return max(1, min(36500, $days));
     }
 
     /**
