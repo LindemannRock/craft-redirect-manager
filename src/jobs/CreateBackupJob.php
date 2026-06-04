@@ -5,7 +5,7 @@
  * Queue job for creating redirect backups
  *
  * @link      https://lindemannrock.com
- * @copyright Copyright (c) 2025 LindemannRock
+ * @copyright Copyright (c) 2025-2026 LindemannRock
  */
 
 namespace lindemannrock\redirectmanager\jobs;

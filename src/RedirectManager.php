@@ -5,7 +5,7 @@
  * Intelligent redirect management and 404 handling
  *
  * @link      https://lindemannrock.com
- * @copyright Copyright (c) 2025 LindemannRock
+ * @copyright Copyright (c) 2025-2026 LindemannRock
  */
 
 namespace lindemannrock\redirectmanager;
