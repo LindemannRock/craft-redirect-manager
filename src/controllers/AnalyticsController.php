@@ -9,6 +9,7 @@
 namespace lindemannrock\redirectmanager\controllers;
 
 use Craft;
+use craft\db\Query;
 use craft\web\Controller;
 use lindemannrock\base\helpers\CpNavHelper;
 use lindemannrock\base\helpers\DateFormatHelper;
@@ -129,8 +130,44 @@ class AnalyticsController extends Controller
         if (!empty($stat['isRobot'])) {
             return 'bot';
         }
-
+    
         return 'normal';
+    }
+    
+    /**
+     * Resolve redirect IDs for handled analytics rows in one query.
+     *
+     * @param array<int, array<string, mixed>> $analytics
+     * @return array<string, int>
+     */
+    private function _getRedirectIdMap(array $analytics): array
+    {
+        $urlParsedValues = [];
+        foreach ($analytics as $stat) {
+            if (empty($stat['handled']) || empty($stat['urlParsed'])) {
+                continue;
+            }
+    
+            $urlParsedValues[] = (string)$stat['urlParsed'];
+        }
+    
+        $urlParsedValues = array_values(array_unique($urlParsedValues));
+        if ($urlParsedValues === []) {
+            return [];
+        }
+    
+        $rows = (new Query())
+                ->select(['sourceUrlParsed', 'id'])
+                ->from(RedirectRecord::tableName())
+                ->where(['sourceUrlParsed' => $urlParsedValues, 'enabled' => true])
+                ->all();
+    
+        $map = [];
+        foreach ($rows as $row) {
+            $map[(string)$row['sourceUrlParsed']] = (int)$row['id'];
+        }
+    
+        return $map;
     }
 
     /**
@@ -246,6 +283,8 @@ class AnalyticsController extends Controller
         $probeCount = 0;
         $normalCount = 0;
 
+        $redirectIdMap = $this->_getRedirectIdMap($analytics);
+    
         // Add redirect ID, detect type, and convert timezone
         // Use key-based iteration to ensure modifications persist
         foreach ($analytics as $key => $stat) {
@@ -259,14 +298,9 @@ class AnalyticsController extends Controller
             // Detect request type (probe, bot, or normal)
             $analytics[$key]['requestType'] = $this->_detectRequestType($stat);
 
-            if ($stat['handled']) {
-                $redirectId = (new \craft\db\Query())
-                    ->select('id')
-                    ->from(\lindemannrock\redirectmanager\records\RedirectRecord::tableName())
-                    ->where(['sourceUrlParsed' => $stat['urlParsed'], 'enabled' => true])
-                    ->scalar();
-                $analytics[$key]['redirectId'] = $redirectId ?: null;
-            }
+            $analytics[$key]['redirectId'] = $stat['handled']
+                    ? ($redirectIdMap[(string)$stat['urlParsed']] ?? null)
+                    : null;
         }
 
         // Get overall counts (scoped to editable sites)
@@ -461,6 +495,8 @@ class AnalyticsController extends Controller
         $probeCount = 0;
         $normalCount = 0;
 
+        $redirectIdMap = $this->_getRedirectIdMap($analytics);
+    
         // Process analytics data
         // Use key-based iteration to ensure modifications persist
         foreach ($analytics as $key => $stat) {
@@ -478,17 +514,9 @@ class AnalyticsController extends Controller
             $site = Craft::$app->getSites()->getSiteById($stat['siteId']);
             $analytics[$key]['siteName'] = $site ? $site->name : '-';
 
-            // Get redirect ID for handled analytics
-            if ($stat['handled']) {
-                $redirectId = (new \craft\db\Query())
-                    ->select('id')
-                    ->from(\lindemannrock\redirectmanager\records\RedirectRecord::tableName())
-                    ->where(['sourceUrlParsed' => $stat['urlParsed'], 'enabled' => true])
-                    ->scalar();
-                $analytics[$key]['redirectId'] = $redirectId ?: null;
-            } else {
-                $analytics[$key]['redirectId'] = null;
-            }
+            $analytics[$key]['redirectId'] = $stat['handled']
+                    ? ($redirectIdMap[(string)$stat['urlParsed']] ?? null)
+                    : null;
         }
 
         // Get overall counts (scoped to editable sites)
