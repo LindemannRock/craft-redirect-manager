@@ -1071,7 +1071,7 @@ class ImportExportController extends Controller
             $redirects = json_decode((string)$redirectContent, true);
 
             if (!$redirects || !is_array($redirects)) {
-                throw new \Exception('Invalid backup file format');
+                throw new \Exception(Craft::t('redirect-manager', 'Invalid backup file format'));
             }
 
             // Create backup after validating the selected backup, before replacing current redirects.

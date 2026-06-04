@@ -660,7 +660,7 @@ class AnalyticsController extends Controller
 
         $validTypes = ['summary', 'chart', 'devices', 'browsers', 'os', 'bots', 'bot-stats', 'countries', 'cities', 'recent-handled', 'recent-unhandled'];
         if (!in_array($type, $validTypes, true)) {
-            throw new \yii\web\BadRequestHttpException('Invalid data type.');
+            throw new \yii\web\BadRequestHttpException(Craft::t('redirect-manager', 'Invalid data type.'));
         }
 
         // Convert date range to days
