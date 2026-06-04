@@ -384,6 +384,7 @@ return [
     'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'Omdirigeringer kontrolleres i prioritetsrekkefølge (0 = høyest prioritet, 9 = lavest). Bruk dette når du har overlappende mønstre. Angi f.eks. et spesifikt mønster til prioritet 0 og en generell catch-all til prioritet 9.',
     'Highest priority' => 'Høyest prioritet',
     'Lowest priority' => 'Lavest prioritet',
+    'Priority {i}' => 'Prioritet {i}',
     'The HTTP status code to use for the redirect' => 'HTTP-statuskoden som skal brukes for omdirigeringen',
     'Most common: Use' => 'Vanligst: Bruk',
     'for permanent moves.' => 'for permanente flyttinger.',

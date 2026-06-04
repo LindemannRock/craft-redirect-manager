@@ -384,6 +384,7 @@ return [
     'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'リダイレクトは優先度順にチェックされます（0 = 最高優先度、9 = 最低）。パターンが重複している場合に使用してください。例えば、特定のパターンを優先度 0 に設定し、一般的なキャッチオールを優先度 9 に設定します。',
     'Highest priority' => '最高優先度',
     'Lowest priority' => '最低優先度',
+    'Priority {i}' => '優先度 {i}',
     'The HTTP status code to use for the redirect' => 'リダイレクトに使用する HTTP ステータスコード',
     'Most common: Use' => '最も一般的:',
     'for permanent moves.' => '永久的な移動に使用します。',

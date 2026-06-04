@@ -384,6 +384,7 @@ return [
     'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'Os redirecionamentos são verificados por ordem de prioridade (0 = prioridade máxima, 9 = mínima). Use isto quando tem padrões sobrepostos. Por exemplo, defina um padrão específico com prioridade 0 e um geral com prioridade 9.',
     'Highest priority' => 'Prioridade máxima',
     'Lowest priority' => 'Prioridade mínima',
+    'Priority {i}' => 'Prioridade {i}',
     'The HTTP status code to use for the redirect' => 'O código de estado HTTP a usar para o redirecionamento',
     'Most common: Use' => 'Mais comum: use',
     'for permanent moves.' => 'para movimentos permanentes.',

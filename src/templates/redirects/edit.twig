@@ -194,7 +194,7 @@
 							<option value="{{ i }}" {% if (redirect ? redirect.priority : 0) == i %} selected {% endif %}>
 								{{ i }}
 								-
-									{{ i == 0 ? 'Highest priority'|t('redirect-manager') : (i == 9 ? 'Lowest priority'|t('redirect-manager') : ('Priority'|t('redirect-manager') ~ ' ' ~ i)) }}
+									{{ i == 0 ? 'Highest priority'|t('redirect-manager') : (i == 9 ? 'Lowest priority'|t('redirect-manager') : 'Priority {i}'|t('redirect-manager', {i: i})) }}
 							</option>
 						{% endfor %}
 					</select>
