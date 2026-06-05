@@ -96,7 +96,7 @@
                                     {% set site = craft.app.sites.getSiteById(row.siteId) %}
                                     {{ site ? site.name : row.siteId }}
                                 {% else %}
-                                    <span class="light">All sites</span>
+                                    <span class="light">{{ 'All Sites'|t('redirect-manager') }}</span>
                                 {% endif %}
                             </td>
                             <td>{{ row.matchType }}</td>
