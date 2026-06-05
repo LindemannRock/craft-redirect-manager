@@ -103,7 +103,7 @@
                             <td>{{ row.redirectSrcMatch }}</td>
                             <td>{{ row.statusCode }}</td>
                             <td>{{ row.priority }}</td>
-                            <td>{{ row.enabled ? 'Yes' : 'No' }}</td>
+                            <td>{{ row.enabled ? 'Yes'|t('redirect-manager') : 'No'|t('redirect-manager') }}</td>
                             <td>{{ row.hitCount ?? 0 }}</td>
                             <td style="white-space: nowrap; font-size: 11px;">{{ row.lastHit ? row.lastHit : '-' }}</td>
                         </tr>
