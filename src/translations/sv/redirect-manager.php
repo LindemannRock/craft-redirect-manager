@@ -194,7 +194,6 @@ return [
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Jokertecknet (*) är inte tillåtet i {matchType}-matchning. Använd Jokerteckenmatchning istället.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'Jokerteckenmatchning kräver minst ett jokertecken * i mönstret (t.ex. /blog/* eller https://example.com/*).',
     'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Ange en giltig URL som börjar med https:// eller http://, eller en sökväg som börjar med / (t.ex. https://example.com eller /page)',
-    'Value must be a whole number.' => 'Värdet måste vara ett heltal.',
 
     // Settings: General
     'General Settings' => 'Allmänna inställningar',

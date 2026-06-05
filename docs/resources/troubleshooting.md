@@ -104,6 +104,14 @@ The queued job description shows when that specific queued row is due to run.
 
 ---
 
+## Settings Save Shows a Validation Error
+
+Numeric settings such as cache duration, analytics limits, and backup retention must be whole numbers within the field's allowed range. If a value is invalid, Redirect Manager keeps you on the same settings page and shows the field error inline.
+
+When a setting is overridden in `config/redirect-manager.php`, the Control Panel field is skipped during save. Change the config file value instead.
+
+---
+
 ## Auto-Redirects Not Being Created
 
 Entry URIs change but no redirects appear in the redirect list.

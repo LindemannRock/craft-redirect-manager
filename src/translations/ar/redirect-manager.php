@@ -194,7 +194,6 @@ return [
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'حرف البدل (*) غير مسموح به في مطابقة {matchType}. استخدم المطابقة بأحرف البدل عوضاً عن ذلك.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'تتطلب المطابقة بأحرف البدل حرف بدل * واحداً على الأقل في النمط (مثل /blog/* أو https://example.com/*).',
     'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'يرجى إدخال URL صالح يبدأ بـ https:// أو http://، أو مسار يبدأ بـ / (مثل https://example.com أو /page)',
-    'Value must be a whole number.' => 'يجب أن تكون القيمة عدداً صحيحاً.',
 
     // Settings: General
     'General Settings' => 'الإعدادات العامة',

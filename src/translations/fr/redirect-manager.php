@@ -194,7 +194,6 @@ return [
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Le caractère joker (*) n\'est pas autorisé dans la Correspondance {matchType}. Utilisez la Correspondance avec joker.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'La Correspondance avec joker nécessite au moins un caractère joker * dans le modèle (par ex. /blog/* ou https://example.com/*).',
     'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Veuillez saisir une URL valide commençant par https:// ou http://, ou un chemin commençant par / (par ex. https://example.com ou /page)',
-    'Value must be a whole number.' => 'La valeur doit être un nombre entier.',
 
     // Settings: General
     'General Settings' => 'Paramètres généraux',

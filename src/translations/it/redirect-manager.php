@@ -194,7 +194,6 @@ return [
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Il carattere jolly (*) non è consentito nella Corrispondenza {matchType}. Usare Corrispondenza jolly.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'La Corrispondenza jolly richiede almeno un carattere jolly * nel pattern (ad es. /blog/* o https://example.com/*).',
     'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Inserire un URL valido che inizi con https:// o http://, oppure un percorso che inizi con / (ad es. https://example.com o /page)',
-    'Value must be a whole number.' => 'Il valore deve essere un numero intero.',
 
     // Settings: General
     'General Settings' => 'Impostazioni generali',

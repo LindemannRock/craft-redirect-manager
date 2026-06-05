@@ -194,7 +194,6 @@ return [
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Wildcard-tegnet (*) er ikke tilladt i {matchType}-matchning. Brug Wildcard-matchning i stedet.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'Wildcard-matchning kræver mindst ét wildcard-tegn * i mønstret (f.eks. /blog/* eller https://example.com/*).',
     'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Angiv en gyldig URL, der starter med https:// eller http://, eller en sti, der starter med / (f.eks. https://example.com eller /page)',
-    'Value must be a whole number.' => 'Værdien skal være et helt tal.',
 
     // Settings: General
     'General Settings' => 'Generelle indstillinger',

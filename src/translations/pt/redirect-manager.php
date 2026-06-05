@@ -194,7 +194,6 @@ return [
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'O caractere curinga (*) não é permitido na Correspondência {matchType}. Use Correspondência curinga.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'A Correspondência curinga requer pelo menos um caractere curinga * no padrão (por ex., /blog/* ou https://example.com/*).',
     'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Introduza um URL válido que comece com https:// ou http://, ou um caminho que comece com / (por ex., https://example.com ou /page)',
-    'Value must be a whole number.' => 'O valor deve ser um número inteiro.',
 
     // Settings: General
     'General Settings' => 'Definições gerais',

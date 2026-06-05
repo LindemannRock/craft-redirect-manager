@@ -194,7 +194,6 @@ return [
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'El carácter comodín (*) no está permitido en Coincidencia {matchType}. Use Coincidencia con comodín.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'La Coincidencia con comodín requiere al menos un carácter comodín * en el patrón (p. ej., /blog/* o https://example.com/*).',
     'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Introduzca una URL válida que comience con https:// o http://, o una ruta que comience con / (p. ej., https://example.com o /pagina)',
-    'Value must be a whole number.' => 'El valor debe ser un número entero.',
 
     // Settings: General
     'General Settings' => 'Configuración general',

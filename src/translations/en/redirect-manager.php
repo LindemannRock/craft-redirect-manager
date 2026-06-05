@@ -194,7 +194,6 @@ return [
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).',
     'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)',
-    'Value must be a whole number.' => 'Value must be a whole number.',
 
     // Settings: General
     'General Settings' => 'General Settings',

@@ -194,7 +194,6 @@ return [
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Het jokerteken (*) is niet toegestaan in {matchType} overeenkomst. Gebruik Jokertekenovereenkomst.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'Jokertekenovereenkomst vereist minimaal één jokerteken * in het patroon (bijv. /blog/* of https://example.com/*).',
     'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Voer een geldige URL in die begint met https:// of http://, of een pad dat begint met / (bijv. https://example.com of /pagina)',
-    'Value must be a whole number.' => 'De waarde moet een geheel getal zijn.',
 
     // Settings: General
     'General Settings' => 'Algemene instellingen',

@@ -194,7 +194,6 @@ return [
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Platzhalterzeichen (*) ist im {matchType}-Abgleich nicht erlaubt. Verwenden Sie stattdessen den Platzhalter-Abgleich.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'Platzhalter-Abgleich erfordert mindestens ein Platzhalterzeichen * im Muster (z.B. /blog/* oder https://example.com/*).',
     'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Bitte geben Sie eine gültige URL ein, die mit https:// oder http:// beginnt, oder einen Pfad, der mit / beginnt (z.B. https://example.com oder /seite)',
-    'Value must be a whole number.' => 'Der Wert muss eine ganze Zahl sein.',
 
     // Settings: General
     'General Settings' => 'Allgemeine Einstellungen',

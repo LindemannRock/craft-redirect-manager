@@ -11,6 +11,7 @@ namespace lindemannrock\redirectmanager\controllers;
 use Craft;
 use craft\web\Controller;
 use lindemannrock\base\helpers\PluginHelper;
+use lindemannrock\base\helpers\SettingsPostHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\models\Settings;
 use lindemannrock\redirectmanager\RedirectManager;
@@ -169,65 +170,19 @@ class SettingsController extends Controller
             $this->request->getBodyParam('section', 'general'),
         );
         $sectionAttributes = $this->_validationAttributesForSection($section);
-        $integerAssignmentErrors = [];
 
-        // Only update fields that were posted and are not overridden by config
-        foreach ($settingsData as $key => $value) {
-            if (
-                in_array($key, $sectionAttributes, true) &&
-                !$settings->isOverriddenByConfig($key) &&
-                property_exists($settings, $key)
-            ) {
-                if (in_array($key, $this->_integerSettingKeys(), true)) {
-                    if (
-                        in_array($key, $this->_nullableIntegerSettingKeys(), true) &&
-                        is_string($value) &&
-                        trim($value) === ''
-                    ) {
-                        $value = null;
-                    } else {
-                        $normalized = $this->_normalizeIntegerSettingValue($value);
-                        if ($normalized === null) {
-                            $integerAssignmentErrors[$key] = Craft::t('redirect-manager', 'Value must be a whole number.');
-                            continue;
-                        }
-                        $value = $normalized;
-                    }
-                }
+        $result = SettingsPostHelper::apply(
+            model: $settings,
+            postedValues: is_array($settingsData) ? $settingsData : [],
+            allowedAttributes: $sectionAttributes,
+            isOverridden: fn(string $attribute): bool => $settings->isOverriddenByConfig($attribute),
+        );
 
-                // Multi-state selects (e.g. "Use global default" = '') need '' → null
-                // so nullable properties hold null, not a coerced false / 0.
-                if ($value === '') {
-                    $type = (new \ReflectionProperty($settings, $key))->getType();
-                    if ($type instanceof \ReflectionNamedType && $type->allowsNull()) {
-                        $value = null;
-                    }
-                }
-
-                // Check for setter method first (handles array conversions, etc.)
-                $setterMethod = 'set' . ucfirst($key);
-                if (method_exists($settings, $setterMethod)) {
-                    $settings->$setterMethod($value);
-                } else {
-                    $settings->$key = $value;
-                }
-            }
-        }
-
-        $attributesToValidate = $sectionAttributes;
-        $attributesToValidate = array_values(array_filter(
-            $attributesToValidate,
-            fn(string $attribute): bool => !$settings->isOverriddenByConfig($attribute),
-        ));
+        $attributesToValidate = $result->attributesToValidate;
 
         // Validate only the current section
         $isValid = $settings->validate($attributesToValidate);
-        foreach ($integerAssignmentErrors as $attribute => $message) {
-            if (in_array($attribute, $attributesToValidate, true)) {
-                $settings->addError($attribute, $message);
-            }
-        }
-        if (!$isValid || $settings->hasErrors()) {
+        if (!$isValid || $result->hasErrors || $settings->hasErrors()) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Could not save settings.'));
 
             $template = "redirect-manager/settings/{$section}";
@@ -848,55 +803,5 @@ class SettingsController extends Controller
             ],
             default => [],
         };
-    }
-
-    /**
-     * @return array<string>
-     */
-    private function _integerSettingKeys(): array
-    {
-        return [
-            'analyticsLimit',
-            'analyticsRetention',
-            'refreshIntervalSecs',
-            'itemsPerPage',
-            'redirectCacheDuration',
-            'undoWindowMinutes',
-            'deviceDetectionCacheDuration',
-            'backupRetentionDays',
-        ];
-    }
-
-    /**
-     * @return array<string>
-     */
-    private function _nullableIntegerSettingKeys(): array
-    {
-        return [
-            'refreshIntervalSecs',
-        ];
-    }
-
-    /**
-     * Normalize posted scalar values to int for typed settings properties.
-     *
-     * @param mixed $value
-     * @return int|null Null means invalid.
-     */
-    private function _normalizeIntegerSettingValue(mixed $value): ?int
-    {
-        if (is_int($value)) {
-            return $value;
-        }
-
-        if (is_string($value)) {
-            $value = trim($value);
-        }
-
-        if (filter_var($value, FILTER_VALIDATE_INT) === false) {
-            return null;
-        }
-
-        return (int)$value;
     }
 }

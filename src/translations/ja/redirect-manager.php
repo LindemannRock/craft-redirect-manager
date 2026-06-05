@@ -194,7 +194,6 @@ return [
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'ワイルドカード文字（*）は {matchType} 一致では使用できません。ワイルドカード一致を使用してください。',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'ワイルドカード一致には、パターンに少なくとも 1 つのワイルドカード文字 *（例: /blog/* または https://example.com/*）が必要です。',
     'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'https:// または http:// で始まる有効な URL、または / で始まるパス（例: https://example.com または /page）を入力してください',
-    'Value must be a whole number.' => '値は整数でなければなりません。',
 
     // Settings: General
     'General Settings' => '一般設定',
