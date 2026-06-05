@@ -88,10 +88,52 @@ final class AnalyticsRequestTypeTest extends TestCase
 
     public function testDetectClassifiesSecurityProbeUrls(): void
     {
-        $this->assertSame('probe', AnalyticsRequestTypeHelper::detect('/wp-config.php'));
-        $this->assertSame('probe', AnalyticsRequestTypeHelper::detect('/.env'));
-        $this->assertSame('probe', AnalyticsRequestTypeHelper::detect('/.git/config'));
-        $this->assertSame('probe', AnalyticsRequestTypeHelper::detect('/phpmyadmin'));
+        $probeUrls = [
+            '/backup.sql',
+            '/db.sql.zip',
+            '/dump.sql',
+            '/backup.sql.tar',
+            '/database.sql.gz',
+            '/db.sql.rar',
+            '/backup.sql.7z',
+            '/.env',
+            '/.env.local',
+            '/.git/config',
+            '/.htaccess',
+            '/.htpasswd',
+            '/.aws/credentials',
+            '/.ssh/id_rsa',
+            '/.DS_Store',
+            '/composer.json',
+            '/composer.lock',
+            '/package.json',
+            '/package-lock.json',
+            '/wp-config.php',
+            '/phpmyadmin',
+            '/adminer.php',
+            '/pma',
+            '/mysql',
+            '/myadmin',
+            '/shell.php',
+            '/cmd.php',
+            '/c99.php',
+            '/r57.php',
+            '/webshell',
+            '/cgi-bin/test',
+            '/eval-stdin.php',
+            '/sftp.json',
+            '/sftp-config.json',
+            '/debug',
+            '/phpinfo.php',
+            '/server-status',
+            '/trace.axd',
+            '/web.config',
+            '/xmlrpc.php',
+        ];
+
+        foreach ($probeUrls as $url) {
+            $this->assertSame('probe', AnalyticsRequestTypeHelper::detect($url), $url);
+        }
     }
 
     public function testDetectClassifiesRobotHitsAsBot(): void

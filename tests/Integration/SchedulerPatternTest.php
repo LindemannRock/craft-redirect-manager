@@ -110,6 +110,27 @@ final class SchedulerPatternTest extends TestCase
         $this->assertSame(1, $this->countQueueRows('CreateBackupJob'));
     }
 
+    public function testBackupScheduleChangeCancelsExistingBackupRowsWhenBackupsDisabled(): void
+    {
+        $this->settings()->backupEnabled = false;
+        $this->settings()->backupSchedule = 'daily';
+
+        Craft::$app->getQueue()->delay(300)->push(new CreateBackupJob([
+            'reason' => 'scheduled',
+            'reschedule' => true,
+        ]));
+        Craft::$app->getQueue()->delay(300)->push(new CreateBackupJob([
+            'reason' => 'scheduled',
+            'reschedule' => true,
+        ]));
+        $this->assertSame(2, $this->countQueueRows('CreateBackupJob'));
+
+        \lindemannrock\redirectmanager\RedirectManager::getInstance()
+            ->handleBackupScheduleChange($this->settings());
+
+        $this->assertSame(0, $this->countQueueRows('CreateBackupJob'));
+    }
+
     public function testBackupScheduleOptionsUseDisabledInsteadOfManual(): void
     {
         $this->assertSame([
