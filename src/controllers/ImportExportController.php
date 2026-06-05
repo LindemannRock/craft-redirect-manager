@@ -357,7 +357,7 @@ class ImportExportController extends Controller
         // Check for empty data
         if (empty($rows)) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'No redirects to export.'));
-            return $this->redirect(Craft::$app->getRequest()->getReferrer() ?? 'redirect-manager/redirects');
+            return $this->redirect('redirect-manager/redirects');
         }
 
         // Send as CSV download using ExportHelper for consistent filename

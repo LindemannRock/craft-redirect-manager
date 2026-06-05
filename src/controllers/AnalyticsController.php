@@ -566,7 +566,7 @@ class AnalyticsController extends Controller
         // Check for empty data
         if (empty($analyticsData)) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'No analytics data to export.'));
-            return $this->redirect(Craft::$app->getRequest()->getReferrer() ?? 'redirect-manager/analytics');
+            return $this->redirect('redirect-manager/analytics');
         }
 
         $settings = RedirectManager::$plugin->getSettings();
