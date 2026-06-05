@@ -145,7 +145,7 @@ class AnalyticsBreakdownService
         // Get top bots
         $topBots = (clone $query)
             ->select(['botName', 'COUNT(*) as count'])
-            ->where(['isRobot' => true])
+            ->andWhere(['isRobot' => true])
             ->andWhere(['not', ['botName' => null]])
             ->groupBy('botName')
             ->orderBy(['count' => SORT_DESC])
