@@ -462,13 +462,41 @@ class AnalyticsController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('redirectManager:clearAnalytics');
 
-        $analyticId = Craft::$app->getRequest()->getRequiredBodyParam('analyticId');
+        $analyticId = (int)Craft::$app->getRequest()->getRequiredBodyParam('analyticId');
+        $record = $this->requireEditableAnalyticsRecord(
+            $analyticId,
+            Craft::$app->getSites()->getEditableSiteIds()
+        );
 
-        if (RedirectManager::$plugin->analytics->deleteAnalytic($analyticId)) {
+        if ($record === null) {
+            return $this->asJson(['success' => false, 'error' => Craft::t('redirect-manager', 'Could not delete analytics record')]);
+        }
+
+        if (RedirectManager::$plugin->analytics->deleteAnalytic((int)$record->id)) {
             return $this->asJson(['success' => true]);
         }
 
         return $this->asJson(['success' => false, 'error' => Craft::t('redirect-manager', 'Could not delete analytics record')]);
+    }
+
+    /**
+     * Resolve an analytics row and ensure it belongs to an editable site.
+     *
+     * @param array<int> $editableSiteIds
+     * @throws ForbiddenHttpException
+     */
+    private function requireEditableAnalyticsRecord(int $analyticId, array $editableSiteIds): ?AnalyticsRecord
+    {
+        $record = AnalyticsRecord::findOne($analyticId);
+        if (!$record instanceof AnalyticsRecord) {
+            return null;
+        }
+
+        if ($record->siteId === null || !in_array((int)$record->siteId, $editableSiteIds, true)) {
+            throw new ForbiddenHttpException(Craft::t('redirect-manager', 'User does not have permission to view analytics for this site.'));
+        }
+
+        return $record;
     }
 
     /**
