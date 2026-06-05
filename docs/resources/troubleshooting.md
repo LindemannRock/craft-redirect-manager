@@ -102,6 +102,12 @@ Redirect Manager schedules recurring queue jobs for analytics cleanup and automa
 
 The queued job description shows when that specific queued row is due to run.
 
+## Duplicate Scheduled Backup Jobs Keep Appearing
+
+Scheduled backups should normally have one delayed queue row per next run. If multiple **Scheduled auto backup** rows appear for the same time, change `backupSchedule` or toggle `backupEnabled` from the Backup settings page. Redirect Manager removes existing scheduled backup rows and queues one replacement when backup scheduling changes.
+
+If duplicates keep returning, check whether `backupSchedule` or `backupEnabled` is overridden in `config/redirect-manager.php`. Config overrides prevent CP changes from taking effect, so update the config value directly and clear the duplicate queue rows once.
+
 ---
 
 ## Settings Save Shows a Validation Error

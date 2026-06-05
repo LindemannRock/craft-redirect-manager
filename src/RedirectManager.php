@@ -515,13 +515,7 @@ class RedirectManager extends Plugin
         // Only schedule cleanup if analytics is enabled and retention is set
         if ($settings->enableAnalytics && $settings->analyticsRetention > 0) {
             // Check if a cleanup job is already scheduled
-            $existingJob = (new \craft\db\Query())
-                    ->from('{{%queue}}')
-                    ->where(['like', 'job', 'redirectmanager'])
-                    ->andWhere(['like', 'job', 'CleanupAnalyticsJob'])
-                    ->andWhere(['fail' => false])
-                    ->andWhere(['timePushed' => null])
-                    ->exists();
+            $existingJob = $this->hasPendingQueueJob('CleanupAnalyticsJob');
 
             if (!$existingJob) {
                 $initialDelay = 5 * 60;
@@ -556,13 +550,7 @@ class RedirectManager extends Plugin
             return;
         }
 
-        $existingJob = (new \craft\db\Query())
-            ->from('{{%queue}}')
-            ->where(['like', 'job', 'redirectmanager'])
-            ->andWhere(['like', 'job', 'CreateBackupJob'])
-            ->andWhere(['fail' => false])
-            ->andWhere(['timePushed' => null])
-            ->exists();
+        $existingJob = $this->hasPendingQueueJob('CreateBackupJob');
 
         if (!$existingJob) {
             $nextRun = ScheduleHelper::calculateNext($schedule);
@@ -607,18 +595,7 @@ class RedirectManager extends Plugin
             return;
         }
 
-        $existingJob = (new \craft\db\Query())
-            ->from('{{%queue}}')
-            ->where(['like', 'job', 'redirectmanager'])
-            ->andWhere(['like', 'job', 'CreateBackupJob'])
-            ->andWhere(['fail' => false])
-            ->andWhere(['timePushed' => null])
-            ->exists();
-
-        if ($existingJob) {
-            $this->logInfo('Scheduled backup job already exists, not creating a new one');
-            return;
-        }
+        $this->cancelScheduledBackupJobs();
 
         $nextRun = ScheduleHelper::calculateNext($schedule);
         if ($nextRun === null) {
@@ -655,6 +632,20 @@ class RedirectManager extends Plugin
                 ['like', 'job', 'CreateBackupJob'],
             ])
             ->execute();
+    }
+
+    /**
+     * Check whether Redirect Manager already has a queued pending job.
+     */
+    private function hasPendingQueueJob(string $jobClass): bool
+    {
+        return (new \craft\db\Query())
+            ->from('{{%queue}}')
+            ->where(['like', 'job', 'redirectmanager'])
+            ->andWhere(['like', 'job', $jobClass])
+            ->andWhere(['fail' => false])
+            ->andWhere(['timeUpdated' => null])
+            ->exists();
     }
 
     /**
