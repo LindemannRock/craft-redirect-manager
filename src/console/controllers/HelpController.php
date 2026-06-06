@@ -25,7 +25,10 @@ final class HelpController extends AbstractHelpController
         return [
             'title' => 'Redirect Manager',
             'pluginHandle' => 'redirect-manager',
-            'commandPrefix' => 'ddev craft',
+            'commandPrefixes' => [
+                'php craft',
+                'ddev craft',
+            ],
             'summary' => 'Use these commands to create, list, and clean redirect backups, run scheduled backup checks, and generate the IP hash salt used for privacy-safe analytics.',
             'common' => [
                 'backup/create',
