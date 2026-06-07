@@ -240,12 +240,14 @@
 
 	{# Analytics Tab Content - only for existing redirects with analytics permission #}
 	{% if not isNew and plugin.settings.enableAnalytics and currentUser.can('redirectManager:viewAnalytics') %}
-		<div id="analytics" class="hidden">
-			{% include "redirect-manager/redirects/_partials/analytics" with {
-				redirect: redirect
-			} %}
-		</div>
-	{% endif %}
+			<div id="analytics" class="hidden">
+				{% include "redirect-manager/redirects/_partials/analytics" with {
+					redirect: redirect
+				} %}
+
+				{% include 'lindemannrock-base/_components/plugin-credit' %}
+			</div>
+		{% endif %}
 {% endblock %}
 
 {% block details %}
