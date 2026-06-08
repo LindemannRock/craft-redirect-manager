@@ -19,6 +19,7 @@ use lindemannrock\base\helpers\CsvImportHelper;
 use lindemannrock\base\helpers\DateFormatHelper;
 use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\base\helpers\SafeSegmentHelper;
+use lindemannrock\base\helpers\UrlSafetyHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\records\ImportHistoryRecord;
 use lindemannrock\redirectmanager\records\RedirectRecord;
@@ -684,19 +685,8 @@ class ImportExportController extends Controller
 
             // Validate destination URL format
             $destinationUrl = $redirect['destinationUrl'];
-            $isValidDestUrl = false;
 
-            // Destination can be:
-            // - Relative path (/...)
-            // - Full URL (http/https)
-            // - Special protocols: mailto:, tel:, whatsapp:, sms:, fax:, skype:, slack:, teams:
-            // - Regex capture groups ($1, $2, etc.)
-            $validProtocols = '#^/|^https?://|^mailto:|^tel:|^whatsapp:|^sms:|^fax:|^skype:|^slack://|^msteams:|^\$\d#i';
-            if (preg_match($validProtocols, $destinationUrl) === 1) {
-                $isValidDestUrl = true;
-            }
-
-            if (!$isValidDestUrl) {
+            if (!$this->isValidDestinationFormat($destinationUrl)) {
                 $errorRows[] = [
                     'rowNumber' => $rowNumber,
                     'sourceUrl' => $sourceUrl,
@@ -936,6 +926,23 @@ class ImportExportController extends Controller
 
         Craft::$app->getSession()->setNotice($message);
         return $this->redirect('redirect-manager/import-export');
+    }
+
+    /**
+     * Whether an imported destination is a valid target: a relative path, an
+     * http(s) URL, a recognized contact/app protocol, or a regex capture group.
+     *
+     * The dangerous-scheme guard rejects executable schemes (javascript:, data:,
+     * etc.) — including obfuscated variants — before the protocol allowlist runs.
+     */
+    private function isValidDestinationFormat(string $url): bool
+    {
+        if (UrlSafetyHelper::hasDangerousScheme($url)) {
+            return false;
+        }
+
+        // Relative path (/...), http(s), contact/app protocols, or regex capture group ($1, $2, ...).
+        return preg_match('#^/|^https?://|^mailto:|^tel:|^whatsapp:|^sms:|^fax:|^skype:|^slack://|^msteams:|^\$\d#i', $url) === 1;
     }
 
     /**
