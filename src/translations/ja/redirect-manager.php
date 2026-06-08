@@ -656,7 +656,7 @@ return [
     'Analytics Data Management' => 'アナリティクスデータ管理',
     'Permanently delete all analytics tracking data. This action cannot be undone!' => 'すべてのアナリティクス追跡データを完全に削除します。この操作は取り消せません！',
     'Clear All Analytics' => 'すべてのアナリティクスを削除する',
-    'Are you sure you want to clear all caches?' => 'すべてのキャッシュを削除してもよろしいですか？',
+    'Are you sure you want to clear all caches?' => 'すべてのキャッシュを削除しますか？',
     'Are you sure you want to permanently delete ALL analytics data? This action cannot be undone!' => 'すべてのアナリティクスデータを完全に削除しますか？この操作は取り消せません！',
     'This will delete all 404 tracking data. Are you absolutely sure?' => 'すべての 404 追跡データが削除されます。本当によろしいですか？',
 
