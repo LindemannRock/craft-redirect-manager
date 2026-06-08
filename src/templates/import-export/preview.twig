@@ -23,7 +23,7 @@
 {% block content %}
     <h2 class="first">{{ "Import Preview"|t('redirect-manager') }}</h2>
 
-    <div class="lr-unified-cards cols-4" style="margin: 30px 0;">
+    <div class="lr-unified-cards cols-4 lr-mt-30 lr-mb-30">
         {% include 'lindemannrock-base/_components/unified-card' with {
             value: summary.totalRows,
             description: 'Total Rows'|t('redirect-manager'),
@@ -70,9 +70,9 @@
     {% if validRows|length > 0 %}
         <hr>
         <h3>{{ "Valid Redirects to Import"|t('redirect-manager') }} ({{ validRows|length }})</h3>
-        <div style="max-height: 500px; overflow: auto; border: 1px solid #e0e0e0; border-radius: 4px;">
-            <table class="data fullwidth" style="margin: 0;">
-                <thead style="position: sticky; top: 0; background: #f7f7f7; z-index: 1;">
+        <div class="lr-preview-table lr-preview-table--tall">
+            <table class="data fullwidth">
+                <thead>
                     <tr>
                         <th>{{ "Source URL"|t('redirect-manager') }}</th>
                         <th>{{ "Destination URL"|t('redirect-manager') }}</th>
@@ -89,9 +89,9 @@
                 <tbody>
                     {% for row in validRows %}
                         <tr>
-                            <td><code style="font-size: 11px;">{{ row.sourceUrl }}</code></td>
-                            <td><code style="font-size: 11px;">{{ row.destinationUrl }}</code></td>
-                            <td style="white-space: nowrap;">
+                            <td><code>{{ row.sourceUrl }}</code></td>
+                            <td><code>{{ row.destinationUrl }}</code></td>
+                            <td class="lr-nowrap">
                                 {% if row.siteId %}
                                     {% set site = craft.app.sites.getSiteById(row.siteId) %}
                                     {{ site ? site.name : row.siteId }}
@@ -105,7 +105,7 @@
                             <td>{{ row.priority }}</td>
                             <td>{{ row.enabled ? 'Yes'|t('redirect-manager') : 'No'|t('redirect-manager') }}</td>
                             <td>{{ row.hitCount ?? 0 }}</td>
-                            <td style="white-space: nowrap; font-size: 11px;">{{ row.lastHit ? row.lastHit : '-' }}</td>
+                            <td class="lr-nowrap lr-text-sm">{{ row.lastHit ? row.lastHit : '-' }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -117,9 +117,9 @@
         <hr>
         <h3>{{ "Duplicate Redirects (will be skipped)"|t('redirect-manager') }} ({{ duplicateRows|length }})</h3>
         <p class="light">{{ "These redirects already exist with the same source URL, match type, and source match mode."|t('redirect-manager') }}</p>
-        <div style="max-height: 300px; overflow: auto; border: 1px solid #e0e0e0; border-radius: 4px;">
-            <table class="data fullwidth" style="margin: 0;">
-                <thead style="position: sticky; top: 0; background: #fffbf0; z-index: 1;">
+        <div class="lr-preview-table">
+            <table class="data fullwidth">
+                <thead class="is-warning">
                     <tr>
                         <th>{{ "Source URL"|t('redirect-manager') }}</th>
                         <th>{{ "Destination URL"|t('redirect-manager') }}</th>
@@ -129,8 +129,8 @@
                 <tbody>
                     {% for row in duplicateRows %}
                         <tr>
-                            <td><code style="font-size: 11px;">{{ row.sourceUrl }}</code></td>
-                            <td><code style="font-size: 11px;">{{ row.destinationUrl }}</code></td>
+                            <td><code>{{ row.sourceUrl }}</code></td>
+                            <td><code>{{ row.destinationUrl }}</code></td>
                             <td class="light">{{ row.reason }}</td>
                         </tr>
                     {% endfor %}
@@ -142,9 +142,9 @@
     {% if errorRows|length > 0 %}
         <hr>
         <h3>{{ "Invalid Rows (will be skipped)"|t('redirect-manager') }} ({{ errorRows|length }})</h3>
-        <div style="max-height: 300px; overflow: auto; border: 1px solid #e0e0e0; border-radius: 4px;">
-            <table class="data fullwidth" style="margin: 0;">
-                <thead style="position: sticky; top: 0; background: #fef2f2; z-index: 1;">
+        <div class="lr-preview-table">
+            <table class="data fullwidth">
+                <thead class="is-error">
                     <tr>
                         <th style="width: 60px;">{{ "Row"|t('redirect-manager') }}</th>
                         <th>{{ "Source URL"|t('redirect-manager') }}</th>
@@ -156,9 +156,9 @@
                     {% for row in errorRows %}
                         <tr>
                             <td>{{ row.rowNumber }}</td>
-                            <td><code style="font-size: 11px;">{{ row.sourceUrl }}</code></td>
-                            <td><code style="font-size: 11px;">{{ row.destinationUrl }}</code></td>
-                            <td style="color: #dc3545;">{{ row.error }}</td>
+                            <td><code>{{ row.sourceUrl }}</code></td>
+                            <td><code>{{ row.destinationUrl }}</code></td>
+                            <td class="lr-text-danger">{{ row.error }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -171,7 +171,7 @@
     <form method="post" action="{{ actionUrl('redirect-manager/import-export/import') }}" id="importForm">
         {{ csrfInput() }}
 
-        <div style="background: #f7f7f7; padding: 20px; border-radius: 4px; margin: 20px 0;">
+        <div class="lr-import-summary">
             <h3 class="first">{{ "Ready to Import"|t('redirect-manager') }}</h3>
             <p>
                 {% if summary.validRows > 0 %}
@@ -187,7 +187,7 @@
                 {% endif %}
             </p>
 
-            <div class="buttons" style="margin-top: 15px;">
+            <div class="buttons">
                 <a href="{{ url('redirect-manager/import-export') }}" class="btn secondary">{{ "Cancel"|t('redirect-manager') }}</a>
                 {% if summary.validRows > 0 %}
                     <button type="submit" class="btn submit">
