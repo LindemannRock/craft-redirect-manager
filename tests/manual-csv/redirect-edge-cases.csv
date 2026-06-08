@@ -1,0 +1,9 @@
+sourceUrl,destinationUrl,matchType,statusCode,enabled
+,,exact,301,1
+/src-only,,exact,301,1
+/bare-dest,example.com,exact,301,1
+/ftp-dest,ftp://example.com/file,exact,301,1
+/protocol-relative,//evil.com,exact,301,1
+/john@example.com,https://example.com,exact,301,1
+/email-dest,/john@example.com,exact,301,1
+/bad-status,https://example.com,exact,999,1

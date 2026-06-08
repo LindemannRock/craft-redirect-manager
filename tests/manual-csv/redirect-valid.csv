@@ -1,0 +1,8 @@
+sourceUrl,destinationUrl,matchType,statusCode,enabled
+/old-page,https://example.com,exact,301,1
+/relative-dest,/new-page,exact,301,1
+/contact,mailto:hello@example.com,exact,301,1
+/call-us,tel:+15551234567,exact,302,1
+^/blog/(.*)$,/news/$1,regex,301,1
+/promo-path,https://example.com/promo,wildcard,302,1
+/gone-page,https://example.com,exact,410,1

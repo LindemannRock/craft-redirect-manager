@@ -1,0 +1,8 @@
+sourceUrl,destinationUrl,matchType,statusCode,enabled
+/js-dest,javascript:alert(1),exact,301,1
+/js-obfuscated,javascript://%0aalert(1),exact,301,1
+/js-leading-space," javascript:alert(1)",exact,301,1
+/data-dest,"data:text/html,<script>alert(1)</script>",exact,301,1
+/vbscript-dest,vbscript:msgbox(1),exact,301,1
+/file-dest,file:///etc/passwd,exact,301,1
+javascript:alert(1),https://example.com,exact,301,1
