@@ -36,10 +36,11 @@
                 {
                     param: 'handled',
                     current: handledFilter,
+                    colorSet: 'yesNo',
                     options: [
                         {value: 'all', label: 'All'|t('redirect-manager'), count: allCount, status: 'all', extraParams: {type: 'all'}},
-                        {value: 'handled', label: 'Handled'|t('redirect-manager'), count: handledCount, colorKey: 'yes', statusColor: handledFilter == 'handled' ? '#10b981' : null},
-                        {value: 'unhandled', label: 'Unhandled'|t('redirect-manager'), count: unhandledCount, colorKey: 'no', statusColor: handledFilter == 'unhandled' ? '#ef4444' : null},
+                        {value: 'handled', label: 'Handled'|t('redirect-manager'), count: handledCount, colorKey: 'yes'},
+                        {value: 'unhandled', label: 'Unhandled'|t('redirect-manager'), count: unhandledCount, colorKey: 'no'},
                     ],
                 },
                 {
@@ -101,17 +102,17 @@
 
 {% block tableRow %}
     {# URL column #}
-    <td data-column="url" style="min-width: 200px; max-width: 50%; word-break: break-word;">
+    <td data-column="url" class="lr-break-word" style="min-width: 200px; max-width: 50%;">
         {% set isSafeUrl = item.url starts with '/' or item.url starts with 'http://' or item.url starts with 'https://' %}
         {% if isSafeUrl %}
             <a class="label-link" href="{{ item.url }}" target="_blank" rel="noopener noreferrer" title="{{ 'Visit URL'|t('redirect-manager') }}">
                 <span>
-                    <code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">{{ item.url }}</code>
+                    <code class="lr-break-word">{{ item.url }}</code>
                 </span>
             </a>
         {% else %}
             <span>
-                <code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">{{ item.url }}</code>
+                <code class="lr-break-word">{{ item.url }}</code>
             </span>
         {% endif %}
     </td>
@@ -123,7 +124,7 @@
     </td>
 
     {# Referrer column #}
-    <td data-column="referrer" style="max-width: 30%; word-break: break-word; overflow-wrap: break-word;">
+    <td data-column="referrer" class="lr-break-word" style="max-width: 30%;">
         {{ item.referrer ?: '-' }}
     </td>
 
@@ -131,7 +132,7 @@
     <td data-column="count" class="lr-hideable-column">{{ item.count }}</td>
 
     {# Last Hit column #}
-    <td data-column="lastHit" style="white-space: nowrap;">{{ item.lastHit|lrDatetime }}</td>
+    <td data-column="lastHit" class="lr-nowrap">{{ item.lastHit|lrDatetime }}</td>
 
     {# Handled column #}
     <td data-column="handled">
@@ -421,22 +422,22 @@
                 <td class="lr-checkbox-cell">
                     <div class="checkbox" title="${T.select}" tabindex="0" aria-checked="false" role="checkbox"></div>
                 </td>
-                <td data-column="url" style="min-width: 200px; max-width: 50%; word-break: break-word;">
+                <td data-column="url" class="lr-break-word" style="min-width: 200px; max-width: 50%;">
                     ${isSafeUrl(stat.url)
-                        ? `<a class="label-link" href="${encodeURI(stat.url)}" target="_blank" rel="noopener noreferrer" title="${T.visitUrl}"><span><code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">${Craft.escapeHtml(stat.url)}</code></span></a>`
-                        : `<span><code style="white-space: normal; word-break: break-word; overflow-wrap: break-word;">${Craft.escapeHtml(stat.url)}</code></span>`
+                        ? `<a class="label-link" href="${encodeURI(stat.url)}" target="_blank" rel="noopener noreferrer" title="${T.visitUrl}"><span><code class="lr-break-word">${Craft.escapeHtml(stat.url)}</code></span></a>`
+                        : `<span><code class="lr-break-word">${Craft.escapeHtml(stat.url)}</code></span>`
                     }
                 </td>
                 <td data-column="siteId"><span class="light">${Craft.escapeHtml(stat.siteName)}</span></td>
-                <td data-column="referrer" style="max-width: 30%; word-break: break-word; overflow-wrap: break-word;">${stat.referrer ? Craft.escapeHtml(stat.referrer) : '-'}</td>
+                <td data-column="referrer" class="lr-break-word" style="max-width: 30%;">${stat.referrer ? Craft.escapeHtml(stat.referrer) : '-'}</td>
                 <td data-column="count" class="lr-hideable-column">${stat.count}</td>
-                <td data-column="lastHit" style="white-space: nowrap;">${stat.lastHit}</td>
+                <td data-column="lastHit" class="lr-nowrap">${stat.lastHit}</td>
                 <td data-column="handled">${handledCell}</td>
                 <td data-column="deviceType" class="lr-hideable-column">${stat.deviceType ? stat.deviceType.charAt(0).toUpperCase() + stat.deviceType.slice(1) : '-'}</td>
                 <td data-column="browser" class="lr-hideable-column">${stat.browser ? Craft.escapeHtml(stat.browser) : '-'}</td>
                 <td data-column="requestType" class="lr-hideable-column">${typeCell}</td>
                 ${hasRowActions ? `
-                <td class="thin" style="text-align: right;">
+                <td class="thin rightalign">
                     <button type="button" class="btn menubtn" data-icon="settings" title="${T.actions}"></button>
                     <div class="menu">
                         <ul>
@@ -464,7 +465,7 @@
                     }
                 });
             } else {
-                tbody.innerHTML = `<tr class="lr-empty-row"><td colspan="11" style="text-align: center; padding: 2em;">${T.noAnalytics}</td></tr>`;
+                tbody.innerHTML = `<tr class="lr-empty-row"><td colspan="11" class="lr-text-center" style="padding: 2em;">${T.noAnalytics}</td></tr>`;
             }
         }
 
@@ -476,12 +477,21 @@
         const botCountEl = document.querySelector('.menu a[href*="type=bot"]');
         const probeCountEl = document.querySelector('.menu a[href*="type=probe"]');
 
+        const dotColors = {{ {
+            handled: lrSetColor('yesNo', 'yes').color,
+            unhandled: lrSetColor('yesNo', 'no').color,
+            normal: lrSetColor('requestType', 'normal').color,
+            bot: lrSetColor('requestType', 'bot').color,
+            probe: lrSetColor('requestType', 'probe').color,
+            neutral: lrNeutralColor(),
+        }|json_encode|raw }};
+
         if (allCountEl) allCountEl.innerHTML = `<span class="status all"></span>${T.all} (${data.allCount})`;
-        if (handledCountEl) handledCountEl.innerHTML = `<span class="status" style="background: ${handledFilter == 'handled' ? '#10b981' : '#aab6c1'};"></span>${T.handled} (${data.handledCount})`;
-        if (unhandledCountEl) unhandledCountEl.innerHTML = `<span class="status" style="background: ${handledFilter == 'unhandled' ? '#ef4444' : '#aab6c1'};"></span>${T.unhandled} (${data.unhandledCount})`;
-        if (normalCountEl) normalCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'normal' ? '#3b82f6' : '#aab6c1'};"></span>${T.normal} (${data.normalCount})`;
-        if (botCountEl) botCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'bot' ? '#f59e0b' : '#aab6c1'};"></span>${T.bot} (${data.botCount})`;
-        if (probeCountEl) probeCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'probe' ? '#ef4444' : '#aab6c1'};"></span>${T.securityProbe} (${data.probeCount})`;
+        if (handledCountEl) handledCountEl.innerHTML = `<span class="status" style="background: ${handledFilter == 'handled' ? dotColors.handled : dotColors.neutral};"></span>${T.handled} (${data.handledCount})`;
+        if (unhandledCountEl) unhandledCountEl.innerHTML = `<span class="status" style="background: ${handledFilter == 'unhandled' ? dotColors.unhandled : dotColors.neutral};"></span>${T.unhandled} (${data.unhandledCount})`;
+        if (normalCountEl) normalCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'normal' ? dotColors.normal : dotColors.neutral};"></span>${T.normal} (${data.normalCount})`;
+        if (botCountEl) botCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'bot' ? dotColors.bot : dotColors.neutral};"></span>${T.bot} (${data.botCount})`;
+        if (probeCountEl) probeCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'probe' ? dotColors.probe : dotColors.neutral};"></span>${T.securityProbe} (${data.probeCount})`;
     });
 
     updateActionLabels();

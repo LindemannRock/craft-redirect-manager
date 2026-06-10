@@ -3,7 +3,7 @@
 {% set settings = craft.app.plugins.getPlugin('redirect-manager').settings %}
 
 {% if settings.enableGeoDetection %}
-    <h2 style="margin: 0 0 20px;">{{ "Geographic Analytics"|t('redirect-manager') }}</h2>
+    <h2 class="lr-section-heading">{{ "Geographic Analytics"|t('redirect-manager') }}</h2>
 
     <div class="lr-analytics-charts two-columns">
         <div class="lr-chart-container">
@@ -19,7 +19,7 @@
                     </thead>
                     <tbody id="countries-body">
                         <tr>
-                            <td colspan="3" class="thin light" style="text-align: center;">{{ "Loading..."|t('redirect-manager') }}</td>
+                            <td colspan="3" class="thin light lr-text-center">{{ "Loading..."|t('redirect-manager') }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -40,7 +40,7 @@
                     </thead>
                     <tbody id="cities-body">
                         <tr>
-                            <td colspan="4" class="thin light" style="text-align: center;">{{ "Loading..."|t('redirect-manager') }}</td>
+                            <td colspan="4" class="thin light lr-text-center">{{ "Loading..."|t('redirect-manager') }}</td>
                         </tr>
                     </tbody>
                 </table>

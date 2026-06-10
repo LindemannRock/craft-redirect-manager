@@ -27,19 +27,10 @@
 		} %}
 	</div>
 
-	<div style="margin-top: 2rem; padding: 1rem; background: #f3f4f6; border-radius: 4px;">
-		<p class="light" style="margin: 0; display: flex; align-items: flex-start; gap: 8px;">
-			<svg aria-hidden="true" width="16" height="16" viewbox="0 0 16 16" style="flex-shrink: 0; margin-top: 2px;">
-				<circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/>
-				<path d="M8 4.5v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-				<circle cx="8" cy="11.5" r="1" fill="currentColor"/>
-			</svg>
-			<span>
-				<strong>{{ "Backup Location:"|t('redirect-manager') }}</strong>
-				<code>{{ settings.getBackupLocationLabel() }}</code>
-			</span>
-		</p>
-	</div>
+	{% include 'lindemannrock-base/_components/info-box' with {
+		type: 'info',
+		message: '<strong>' ~ "Backup Location:"|t('redirect-manager') ~ '</strong> <code>' ~ settings.getBackupLocationLabel() ~ '</code>',
+	} only %}
 {% endblock %}
 
 {% js %}
@@ -97,7 +88,7 @@ function renderBackupsTable(backups) {
             <td>${date}</td>
             <td>${reasonBadge}</td>
             <td>${user}</td>
-            <td style="color: #28a745;"><strong>${count}</strong></td>
+            <td><strong>${count}</strong></td>
             <td><code style="font-size: 11px;">${size}</code></td>
             ${rowActions}
         </tr>`;

@@ -113,7 +113,7 @@
 
 	</form>
 
-	<hr style="margin: 30px 0;">
+	<hr class="lr-mt-30 lr-mb-30">
 
 	<h3>{{ "Quick Setup"|t('redirect-manager') }}</h3>
 	<p>{{ "Apply recommended exclude patterns and SEO headers."|t('redirect-manager') }}</p>
@@ -124,12 +124,12 @@
 		<button type="submit" class="btn secondary">
 			{{ "Apply Recommended Settings"|t('redirect-manager') }}
 		</button>
-		<p class="light" style="margin-top: 10px;">
+		<p class="light lr-mt-10">
 			{{ "Adds exclude patterns for Craft admin/CMS URLs, system resources (.well-known), versioned build assets (dist/assets), and SEO headers (X-Robots-Tag: noindex). Safe for all installations."|t('redirect-manager') }}
 		</p>
 	</form>
 
-	<hr style="margin: 30px 0;">
+	<hr class="lr-mt-30 lr-mb-30">
 
 	<h3>{{ "WordPress Migration"|t('redirect-manager') }}</h3>
 	<p>{{ "Filter out WordPress bot traffic and spam 404s."|t('redirect-manager') }}</p>
@@ -140,12 +140,12 @@
 		<button type="submit" class="btn secondary">
 			{{ "Apply WordPress Migration Filters"|t('redirect-manager') }}
 		</button>
-		<p class="light" style="margin-top: 10px;">
+		<p class="light lr-mt-10">
 			{{ "Adds exclude patterns for WordPress bot traffic (wp-includes, wp-json, wp-admin, wp-login, xmlrpc.php, feeds, ?p= permalinks, etc.). <strong>Note:</strong> /wp-content/uploads URLs are NOT excluded - those media files may need legitimate redirects."|t('redirect-manager')|raw }}
 		</p>
 	</form>
 
-	<hr style="margin: 30px 0;">
+	<hr class="lr-mt-30 lr-mb-30">
 
 	<h3>{{ "Security Probe Filters"|t('redirect-manager') }}</h3>
 	<p>{{ "Filter out malicious vulnerability scanning attempts."|t('redirect-manager') }}</p>
@@ -156,7 +156,7 @@
 		<button type="submit" class="btn secondary">
 			{{ "Apply Security Probe Filters"|t('redirect-manager') }}
 		</button>
-		<p class="light" style="margin-top: 10px;">
+		<p class="light lr-mt-10">
 			{{ "Adds specific exclude patterns for security probes: database dumps (*.sql, dump.sql.gz), config files (.env, .git/, .htaccess), admin panels (/phpmyadmin, /pma/, adminer.php), and exploit attempts (shell.php, /cgi-bin/). Patterns are precise to avoid blocking legitimate URLs like /mysql-tips or /debugging-guide."|t('redirect-manager') }}
 		</p>
 	</form>

@@ -65,7 +65,7 @@
                     "This is being overridden by the <code>enableGeoDetection</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
             }) }}
 
-            <div id="geo-provider-settings" class="{{ not (settings.enableGeoDetection ?? false) ? 'hidden' }}" style="margin-top: 24px;">
+            <div id="geo-provider-settings" class="lr-mt-24 {{ not (settings.enableGeoDetection ?? false) ? 'hidden' }}">
                 {% include 'lindemannrock-base/_partials/cascade-geo-settings' with {
                     settings: settings,
                     pluginHandle: 'redirect-manager'

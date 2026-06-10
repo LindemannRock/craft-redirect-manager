@@ -113,7 +113,7 @@
                 {% endfor %}
             </ul>
         {% endif %}
-		<p id="pathOnlyTip" class="notice has-icon" style="display: {{ srcMatchValue == 'pathonly' ? 'block' : 'none' }}; margin-top: 10px;">
+		<p id="pathOnlyTip" class="notice has-icon lr-mt-10" style="display: {{ srcMatchValue == 'pathonly' ? 'block' : 'none' }};">
 			<span class="icon" aria-hidden="true"></span>
 			<span class="visually-hidden">Tip:
 			</span>
@@ -156,7 +156,7 @@
 				{% endfor %}
 			</ul>
 		{% endif %}
-		<p id="regexTip" class="notice has-icon" style="display: none; margin-top: 10px;">
+		<p id="regexTip" class="notice has-icon lr-mt-10" style="display: none;">
 			<span class="icon" aria-hidden="true"></span>
 			<span class="visually-hidden">Tip:
 			</span>
@@ -189,7 +189,7 @@
 			</div>
 			<div class="input ltr">
 				<div class="select">
-					<select id="priority" name="priority" style="width: 250px;">
+					<select id="priority" name="priority">
 						{% for i in 0..9 %}
 							<option value="{{ i }}" {% if (redirect ? redirect.priority : 0) == i %} selected {% endif %}>
 								{{ i }}
@@ -223,7 +223,7 @@
 				</select>
 			</div>
 		</div>
-		<p id="statusCodeTip" class="notice has-icon" style="margin-top: 10px;">
+		<p id="statusCodeTip" class="notice has-icon lr-mt-10">
 			<span class="icon" aria-hidden="true"></span>
 			<span class="visually-hidden">Tip:
 			</span>
