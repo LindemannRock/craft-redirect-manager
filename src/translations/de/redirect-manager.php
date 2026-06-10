@@ -559,7 +559,7 @@ return [
     'Auto (detect)' => 'Auto (erkennen)',
     'Comma (,)' => 'Komma (,)',
     'Semicolon (;)' => 'Semikolon (;)',
-    'Tab' => 'Tab',
+    'Tab' => 'Tabstopp',
     'Pipe (|)' => 'Pipe (|)',
     'Create Backup Before Import' => 'Backup vor dem Import erstellen',
     'Automatically backup existing redirects before importing (recommended)' => 'Vorhandene Weiterleitungen vor dem Import automatisch sichern (empfohlen)',

@@ -560,7 +560,7 @@ return [
     'Comma (,)' => 'Komma (,)',
     'Semicolon (;)' => 'Semikolon (;)',
     'Tab' => 'Tabulator',
-    'Pipe (|)' => 'Pipe (|)',
+    'Pipe (|)' => 'Loddrett strek (|)',
     'Create Backup Before Import' => 'Opprett sikkerhetskopi før import',
     'Automatically backup existing redirects before importing (recommended)' => 'Sikkerhetskopier automatisk eksisterende omdirigeringer før import (anbefalt)',
     'The maximum file size is {size} and the import is limited to {rows} rows per file.' => 'Den maksimale filstørrelsen er {size} og importen er begrenset til {rows} rader per fil.',

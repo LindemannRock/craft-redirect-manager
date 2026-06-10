@@ -560,7 +560,7 @@ return [
     'Comma (,)' => 'فاصلة (,)',
     'Semicolon (;)' => 'فاصلة منقوطة (;)',
     'Tab' => 'مسافة جدولة',
-    'Pipe (|)' => 'Pipe (|)',
+    'Pipe (|)' => 'شريط عمودي (|)',
     'Create Backup Before Import' => 'إنشاء نسخة احتياطية قبل الاستيراد',
     'Automatically backup existing redirects before importing (recommended)' => 'نسخ عمليات إعادة التوجيه الحالية احتياطياً تلقائياً قبل الاستيراد (موصى به)',
     'The maximum file size is {size} and the import is limited to {rows} rows per file.' => 'الحد الأقصى لحجم الملف هو {size} والاستيراد محدود بـ {rows} صف لكل ملف.',

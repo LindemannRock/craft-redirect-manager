@@ -560,7 +560,7 @@ return [
     'Comma (,)' => 'Vírgula (,)',
     'Semicolon (;)' => 'Ponto e vírgula (;)',
     'Tab' => 'Tabulação',
-    'Pipe (|)' => 'Pipe (|)',
+    'Pipe (|)' => 'Barra vertical (|)',
     'Create Backup Before Import' => 'Criar cópia de segurança antes da importação',
     'Automatically backup existing redirects before importing (recommended)' => 'Criar automaticamente uma cópia de segurança dos redirecionamentos existentes antes da importação (recomendado)',
     'The maximum file size is {size} and the import is limited to {rows} rows per file.' => 'O tamanho máximo do ficheiro é {size} e a importação está limitada a {rows} linhas por ficheiro.',
