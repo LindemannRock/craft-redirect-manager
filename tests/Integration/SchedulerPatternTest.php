@@ -11,8 +11,11 @@ declare(strict_types=1);
 namespace lindemannrock\redirectmanager\tests\Integration;
 
 use Craft;
+use lindemannrock\base\helpers\DateFormatHelper;
+use lindemannrock\base\helpers\ScheduleHelper;
 use lindemannrock\redirectmanager\jobs\CleanupAnalyticsJob;
 use lindemannrock\redirectmanager\jobs\CreateBackupJob;
+use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\tests\TestCase;
 use ReflectionMethod;
 
@@ -53,6 +56,38 @@ final class SchedulerPatternTest extends TestCase
         $this->assertSame(2, $this->countQueueRows('CleanupAnalyticsJob'));
     }
 
+    public function testAnalyticsCleanupBootstrapUsesCanonicalDailyRun(): void
+    {
+        $this->settings()->enableAnalytics = true;
+        $this->settings()->analyticsRetention = 30;
+
+        $this->invokePrivate(RedirectManager::getInstance(), 'scheduleAnalyticsCleanup');
+
+        $this->assertSame(1, $this->countQueueRows('CleanupAnalyticsJob'));
+
+        $row = $this->latestQueueRow('CleanupAnalyticsJob');
+        self::assertIsArray($row);
+        self::assertStringContainsString($this->expectedDailyRunTime(), (string) $row['description']);
+    }
+
+    public function testAnalyticsCleanupBootstrapCollapsesDuplicatePendingRows(): void
+    {
+        $this->settings()->enableAnalytics = true;
+        $this->settings()->analyticsRetention = 30;
+
+        Craft::$app->getQueue()->delay(300)->push(new CleanupAnalyticsJob([
+            'reschedule' => true,
+        ]));
+        Craft::$app->getQueue()->delay(300)->push(new CleanupAnalyticsJob([
+            'reschedule' => true,
+        ]));
+        $this->assertSame(2, $this->countQueueRows('CleanupAnalyticsJob'));
+
+        $this->invokePrivate(RedirectManager::getInstance(), 'scheduleAnalyticsCleanup');
+
+        $this->assertSame(1, $this->countQueueRows('CleanupAnalyticsJob'));
+    }
+
     public function testBackupReschedulesWhenExistingBackupRowExists(): void
     {
         $this->settings()->backupEnabled = true;
@@ -84,7 +119,27 @@ final class SchedulerPatternTest extends TestCase
         ]));
         $this->assertSame(1, $this->countQueueRows('CreateBackupJob'));
 
-        $this->invokePrivate(\lindemannrock\redirectmanager\RedirectManager::getInstance(), 'scheduleBackupJob');
+        $this->invokePrivate(RedirectManager::getInstance(), 'scheduleBackupJob');
+
+        $this->assertSame(1, $this->countQueueRows('CreateBackupJob'));
+    }
+
+    public function testBackupBootstrapCollapsesDuplicatePendingBackupRows(): void
+    {
+        $this->settings()->backupEnabled = true;
+        $this->settings()->backupSchedule = 'daily';
+
+        Craft::$app->getQueue()->delay(300)->push(new CreateBackupJob([
+            'reason' => 'scheduled',
+            'reschedule' => true,
+        ]));
+        Craft::$app->getQueue()->delay(300)->push(new CreateBackupJob([
+            'reason' => 'scheduled',
+            'reschedule' => true,
+        ]));
+        $this->assertSame(2, $this->countQueueRows('CreateBackupJob'));
+
+        $this->invokePrivate(RedirectManager::getInstance(), 'scheduleBackupJob');
 
         $this->assertSame(1, $this->countQueueRows('CreateBackupJob'));
     }
@@ -104,8 +159,7 @@ final class SchedulerPatternTest extends TestCase
         ]));
         $this->assertSame(2, $this->countQueueRows('CreateBackupJob'));
 
-        \lindemannrock\redirectmanager\RedirectManager::getInstance()
-            ->handleBackupScheduleChange($this->settings());
+        RedirectManager::getInstance()->handleBackupScheduleChange($this->settings());
 
         $this->assertSame(1, $this->countQueueRows('CreateBackupJob'));
     }
@@ -125,8 +179,7 @@ final class SchedulerPatternTest extends TestCase
         ]));
         $this->assertSame(2, $this->countQueueRows('CreateBackupJob'));
 
-        \lindemannrock\redirectmanager\RedirectManager::getInstance()
-            ->handleBackupScheduleChange($this->settings());
+        RedirectManager::getInstance()->handleBackupScheduleChange($this->settings());
 
         $this->assertSame(0, $this->countQueueRows('CreateBackupJob'));
     }
@@ -157,6 +210,35 @@ final class SchedulerPatternTest extends TestCase
             ->where(['like', 'job', 'redirectmanager'])
             ->andWhere(['like', 'job', $jobClass])
             ->count();
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function latestQueueRow(string $jobClass): ?array
+    {
+        $row = (new \craft\db\Query())
+            ->from('{{%queue}}')
+            ->where(['like', 'job', 'redirectmanager'])
+            ->andWhere(['like', 'job', $jobClass])
+            ->select(['id', 'description'])
+            ->orderBy(['id' => SORT_DESC])
+            ->one();
+
+        return $row !== false ? $row : null;
+    }
+
+    private function expectedDailyRunTime(): string
+    {
+        $nextRun = ScheduleHelper::calculateNext('daily');
+        self::assertNotNull($nextRun);
+
+        return DateFormatHelper::formatCompactDatetimeFromSettings(
+            $nextRun,
+            $this->settings(),
+            false,
+            false,
+        );
     }
 
     private function deleteRedirectManagerQueueRows(): void

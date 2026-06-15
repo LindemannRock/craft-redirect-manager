@@ -31,6 +31,7 @@ use lindemannrock\base\helpers\ColorHelper;
 use lindemannrock\base\helpers\CpNavHelper;
 use lindemannrock\base\helpers\DateFormatHelper;
 use lindemannrock\base\helpers\PluginHelper;
+use lindemannrock\base\helpers\RecurringQueueHelper;
 use lindemannrock\base\helpers\ScheduleHelper;
 use lindemannrock\logginglibrary\LoggingLibrary;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
@@ -513,28 +514,68 @@ class RedirectManager extends Plugin
         $settings = $this->getSettings();
 
         // Only schedule cleanup if analytics is enabled and retention is set
-        if ($settings->enableAnalytics && $settings->analyticsRetention > 0) {
-            // Check if a cleanup job is already scheduled
-            $existingJob = $this->hasPendingQueueJob('CleanupAnalyticsJob');
-
-            if (!$existingJob) {
-                $initialDelay = 5 * 60;
-                $initialRun = (clone DateFormatHelper::now())->modify("+{$initialDelay} seconds");
-                $job = new CleanupAnalyticsJob([
-                    'reschedule' => true,
-                    'nextRunTime' => DateFormatHelper::formatCompactDatetimeFromSettings(
-                        $initialRun,
-                        $settings,
-                        false,
-                        false,
-                    ),
-                ]);
-
-                Craft::$app->getQueue()->delay($initialDelay)->push($job);
-
-                $this->logInfo('Scheduled initial analytics cleanup job', ['interval' => '24 hours']);
-            }
+        if (!$settings->enableAnalytics || $settings->analyticsRetention <= 0) {
+            return;
         }
+
+        $nextRun = ScheduleHelper::calculateNext('daily');
+        if ($nextRun === null) {
+            return;
+        }
+
+        $delay = max(0, $nextRun->getTimestamp() - DateFormatHelper::now()->getTimestamp());
+        $nextRunTime = DateFormatHelper::formatCompactDatetimeFromSettings(
+            $nextRun,
+            $settings,
+            false,
+            false,
+        );
+
+        RecurringQueueHelper::ensurePending(
+            pluginToken: 'redirectmanager',
+            jobClass: CleanupAnalyticsJob::class,
+            delay: $delay,
+            jobFactory: fn() => new CleanupAnalyticsJob([
+                'reschedule' => true,
+                'nextRunTime' => $nextRunTime,
+            ]),
+        );
+    }
+
+    /**
+     * Queue the next scheduled backup row for the provided settings.
+     */
+    private function queueBackupJob(Settings $settings): void
+    {
+        $schedule = $settings->getEffectiveBackupSchedule();
+
+        if (!$settings->backupEnabled || $schedule === 'disabled') {
+            return;
+        }
+
+        $nextRun = ScheduleHelper::calculateNext($schedule);
+        if ($nextRun === null) {
+            return;
+        }
+
+        $delay = max(0, $nextRun->getTimestamp() - DateFormatHelper::now()->getTimestamp());
+        $nextRunTime = DateFormatHelper::formatCompactDatetimeFromSettings(
+            $nextRun,
+            $settings,
+            false,
+            false,
+        );
+
+        RecurringQueueHelper::ensurePending(
+            pluginToken: 'redirectmanager',
+            jobClass: CreateBackupJob::class,
+            delay: $delay,
+            jobFactory: fn() => new CreateBackupJob([
+                'reason' => 'scheduled',
+                'reschedule' => true,
+                'nextRunTime' => $nextRunTime,
+            ]),
+        );
     }
 
     /**
@@ -543,41 +584,7 @@ class RedirectManager extends Plugin
      */
     private function scheduleBackupJob(): void
     {
-        $settings = $this->getSettings();
-        $schedule = $settings->getEffectiveBackupSchedule();
-
-        if (!$settings->backupEnabled || $schedule === 'disabled') {
-            return;
-        }
-
-        $existingJob = $this->hasPendingQueueJob('CreateBackupJob');
-
-        if (!$existingJob) {
-            $nextRun = ScheduleHelper::calculateNext($schedule);
-            if ($nextRun === null) {
-                return;
-            }
-
-            $delay = max(0, $nextRun->getTimestamp() - DateFormatHelper::now()->getTimestamp());
-
-            $job = new CreateBackupJob([
-                'reason' => 'scheduled',
-                'reschedule' => true,
-                'nextRunTime' => DateFormatHelper::formatCompactDatetimeFromSettings(
-                    $nextRun,
-                    $settings,
-                    false,
-                    false,
-                ),
-            ]);
-
-            Craft::$app->getQueue()->delay($delay)->push($job);
-
-            $this->logInfo('Scheduled initial backup job', [
-                'delay_seconds' => $delay,
-                'schedule' => $schedule,
-            ]);
-        }
+        $this->queueBackupJob($this->getSettings());
     }
 
     /**
@@ -588,7 +595,6 @@ class RedirectManager extends Plugin
     public function handleBackupScheduleChange(Settings $settings): void
     {
         $schedule = $settings->getEffectiveBackupSchedule();
-
         if (!$settings->backupEnabled || $schedule === 'disabled') {
             $this->cancelScheduledBackupJobs();
             $this->logInfo('Backup scheduling disabled');
@@ -596,28 +602,7 @@ class RedirectManager extends Plugin
         }
 
         $this->cancelScheduledBackupJobs();
-
-        $nextRun = ScheduleHelper::calculateNext($schedule);
-        if ($nextRun === null) {
-            return;
-        }
-
-        $delay = max(0, $nextRun->getTimestamp() - DateFormatHelper::now()->getTimestamp());
-
-        $job = new CreateBackupJob([
-            'reason' => 'scheduled',
-            'reschedule' => true,
-            'nextRunTime' => DateFormatHelper::formatCompactDatetimeFromSettings(
-                $nextRun,
-                $settings,
-                false,
-                false,
-            ),
-        ]);
-
-        Craft::$app->getQueue()->delay($delay)->push($job);
-
-        $this->logInfo('Scheduled backup job queued', ['schedule' => $schedule]);
+        $this->queueBackupJob($settings);
     }
 
     /**
@@ -625,27 +610,7 @@ class RedirectManager extends Plugin
      */
     private function cancelScheduledBackupJobs(): void
     {
-        Craft::$app->getDb()->createCommand()
-            ->delete('{{%queue}}', [
-                'and',
-                ['like', 'job', 'redirectmanager'],
-                ['like', 'job', 'CreateBackupJob'],
-            ])
-            ->execute();
-    }
-
-    /**
-     * Check whether Redirect Manager already has a queued pending job.
-     */
-    private function hasPendingQueueJob(string $jobClass): bool
-    {
-        return (new \craft\db\Query())
-            ->from('{{%queue}}')
-            ->where(['like', 'job', 'redirectmanager'])
-            ->andWhere(['like', 'job', $jobClass])
-            ->andWhere(['fail' => false])
-            ->andWhere(['timeUpdated' => null])
-            ->exists();
+        RecurringQueueHelper::deletePending('redirectmanager', CreateBackupJob::class);
     }
 
     /**
