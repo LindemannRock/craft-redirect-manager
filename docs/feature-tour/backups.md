@@ -39,7 +39,9 @@ When both `backupPath` and `backupVolumeUid` are set, the volume takes precedenc
 | `weekly` | Backup runs once per week |
 | `monthly` | Backup runs once per month |
 
-Scheduled backups require a cron job that runs `redirect-manager/backup/scheduled`. The command checks the configured schedule and skips the run if a backup has already been created in the current period.
+Scheduled backups run through Craft's queue. Redirect Manager keeps one delayed scheduled-backup row for the next run and recreates it after each scheduled backup completes. Run a queue worker with `queue/listen` or a cron-driven `queue/run` so scheduled backups fire on time.
+
+The queued job description shows when that specific queued row is due to run. Craft stores that description when the row is queued, so date/time format changes apply to newly queued rows. Existing delayed rows keep their old label until they run or are requeued. Queue labels stay compact: numeric months render numerically, while short and long month settings both render as short month names.
 
 ### Retention
 
@@ -98,7 +100,7 @@ Options:
 
 ### Run Scheduled Backup
 
-Checks whether a backup is due based on `backupSchedule` and creates one if needed:
+Checks whether a backup is due based on `backupSchedule` and creates one if needed. This is useful for manual checks and legacy cron setups; normal automatic scheduling uses Craft's queue.
 
 ```bash title="PHP"
 php craft redirect-manager/backup/scheduled
@@ -108,7 +110,7 @@ php craft redirect-manager/backup/scheduled
 ddev craft redirect-manager/backup/scheduled
 ```
 
-Add this to your server's cron schedule to automate backups:
+If you prefer a direct cron setup instead of the recurring queue row, run the command on your server schedule:
 
 ```cron
 0 2 * * * /path/to/craft redirect-manager/backup/scheduled

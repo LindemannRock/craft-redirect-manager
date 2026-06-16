@@ -100,13 +100,13 @@ Redirect Manager schedules recurring queue jobs for analytics cleanup and automa
 - Check that `enableAnalytics` is on and `analyticsRetention` is greater than `0` for analytics cleanup.
 - Check that `backupEnabled` is on and `backupSchedule` is not `disabled` for scheduled backups.
 
-The queued job description shows when that specific queued row is due to run.
+The queued job description shows when that specific queued row is due to run. Craft stores that description when the row is queued, so date/time format changes apply to newly queued rows. Existing delayed rows keep their old label until they run or are requeued. Queue labels stay compact: numeric months render numerically, while short and long month settings both render as short month names.
 
 ## Duplicate Scheduled Backup Jobs Keep Appearing
 
-Scheduled backups should normally have one delayed queue row per next run. If multiple **Scheduled auto backup** rows appear for the same time, change `backupSchedule` or toggle `backupEnabled` from the Backup settings page. Redirect Manager removes existing scheduled backup rows and queues one replacement when backup scheduling changes.
+Scheduled backups and analytics cleanup should normally have one delayed queue row per next run. Redirect Manager checks for existing pending rows during bootstrap, collapses duplicate pending rows automatically, and keeps one row for the next scheduled run.
 
-If duplicates keep returning, check whether `backupSchedule` or `backupEnabled` is overridden in `config/redirect-manager.php`. Config overrides prevent CP changes from taking effect, so update the config value directly and clear the duplicate queue rows once.
+If duplicates keep returning after a deployment, check whether multiple app instances are running different plugin versions or whether `backupSchedule` or `backupEnabled` is overridden in `config/redirect-manager.php`. Config overrides prevent CP changes from taking effect, so update the config value directly.
 
 ---
 

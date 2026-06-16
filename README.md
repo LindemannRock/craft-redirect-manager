@@ -1,3 +1,5 @@
+![Redirect Manager](docs/images/hero.webp)
+
 # Redirect Manager for Craft CMS
 
 [![Latest Version](https://img.shields.io/packagist/v/lindemannrock/craft-redirect-manager.svg)](https://packagist.org/packages/lindemannrock/craft-redirect-manager)

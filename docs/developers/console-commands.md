@@ -56,7 +56,7 @@ ddev craft redirect-manager/backup/create
 
 ### `redirect-manager/backup/scheduled` @since(5.23.0)
 
-Runs the scheduled backup based on the `backupSchedule` setting. Checks the time elapsed since the last scheduled backup and creates a new one if due. Intended for cron jobs.
+Runs the scheduled backup based on the `backupSchedule` setting. Checks the time elapsed since the last scheduled backup and creates one if due. Redirect Manager normally schedules backups through Craft's queue; this command is useful for manual checks or direct cron setups.
 
 ```bash title="PHP"
 php craft redirect-manager/backup/scheduled
