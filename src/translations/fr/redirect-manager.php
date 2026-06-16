@@ -677,7 +677,7 @@ return [
     'Edit {item}' => 'Modifier {item}',
     'Create {item}' => 'Créer {item}',
     'Clear All' => 'Tout effacer',
-    'Clear ({count})' => 'Effacer ({count})',
+    'Clear' => 'Effacer',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Voulez-vous vraiment effacer TOUTES les analytiques ? Cette action est irréversible.',
     'Delete this analytics record?' => 'Supprimer cet enregistrement analytique ?',
     'Analytics record deleted' => 'Enregistrement analytique supprimé',

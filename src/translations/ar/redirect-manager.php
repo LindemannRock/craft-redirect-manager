@@ -677,7 +677,7 @@ return [
     'Edit {item}' => 'تعديل {item}',
     'Create {item}' => 'إنشاء {item}',
     'Clear All' => 'مسح الكل',
-    'Clear ({count})' => 'مسح ({count})',
+    'Clear' => 'مسح',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'هل أنت متأكد أنك تريد مسح جميع التحليلات؟ لا يمكن التراجع عن هذا الإجراء.',
     'Delete this analytics record?' => 'حذف هذا السجل التحليلي؟',
     'Analytics record deleted' => 'تم حذف السجل التحليلي',

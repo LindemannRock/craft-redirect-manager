@@ -677,7 +677,7 @@ return [
     'Edit {item}' => 'Edit {item}',
     'Create {item}' => 'Create {item}',
     'Clear All' => 'Clear All',
-    'Clear ({count})' => 'Clear ({count})',
+    'Clear' => 'Clear',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Are you sure you want to clear ALL analytics? This cannot be undone.',
     'Delete this analytics record?' => 'Delete this analytics record?',
     'Analytics record deleted' => 'Analytics record deleted',

@@ -677,7 +677,7 @@ return [
     'Edit {item}' => '{item} bewerken',
     'Create {item}' => '{item} aanmaken',
     'Clear All' => 'Alles wissen',
-    'Clear ({count})' => 'Wissen ({count})',
+    'Clear' => 'Wissen',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Weet u zeker dat u ALLE analysegegevens wilt wissen? Dit kan niet ongedaan worden gemaakt.',
     'Delete this analytics record?' => 'Deze analyserecord verwijderen?',
     'Analytics record deleted' => 'Analyserecord verwijderd',

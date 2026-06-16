@@ -677,7 +677,7 @@ return [
     'Edit {item}' => 'Editar {item}',
     'Create {item}' => 'Criar {item}',
     'Clear All' => 'Limpar tudo',
-    'Clear ({count})' => 'Limpar ({count})',
+    'Clear' => 'Limpar',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Limpar TODAS as análises? Esta ação não pode ser anulada.',
     'Delete this analytics record?' => 'Eliminar este registo de análise?',
     'Analytics record deleted' => 'Registo de análise eliminado',

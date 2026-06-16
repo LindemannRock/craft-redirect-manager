@@ -212,13 +212,21 @@
 {% endblock %}
 
 {% block bulkActions %}
-    {# Bulk actions handled in extraFooter for consistent layout #}
+    {% if canClearAnalytics %}
+        {% include 'lindemannrock-base/_components/bulk-actions-menu' with {
+            label: 'Actions'|t('redirect-manager'),
+            countId: 'lr-bulk-actions-count',
+            items: [
+                {id: 'lr-clear-btn', label: 'Clear'|t('redirect-manager'), class: 'error'},
+            ],
+        } only %}
+    {% endif %}
 {% endblock %}
 
 {% block extraFooter %}
     {% if canClearAnalytics %}
-        <button type="button" class="btn secondary" id="lr-clear-btn">
-            <span id="lr-clear-label">{{ 'Clear All'|t('redirect-manager') }}</span>
+        <button type="button" class="btn secondary" id="lr-clear-all-btn">
+            {{ 'Clear All'|t('redirect-manager') }}
         </button>
     {% endif %}
     {% if canExportAnalytics %}
@@ -241,8 +249,6 @@
     // Pre-translated strings — keep |t() in Twig (translatable) and emit as
     // JSON-encoded JS literals via |json_encode|raw. Avoids the |e('js') trap.
     const T = {
-        clearAll: {{ 'Clear All'|t('redirect-manager')|json_encode|raw }},
-        clearCountTemplate: {{ 'Clear ({count})'|t('redirect-manager')|json_encode|raw }},
         deleteAnalyticConfirm: {{ 'Delete this analytics record?'|t('redirect-manager')|json_encode|raw }},
         analyticDeleted: {{ 'Analytics record deleted'|t('redirect-manager')|json_encode|raw }},
         deleteFailed: {{ 'Could not delete analytics record'|t('redirect-manager')|json_encode|raw }},
@@ -279,25 +285,8 @@
     const canClearAnalytics = {{ canClearAnalytics ? 'true' : 'false' }};
     const redirectsBaseUrl = {{ url('redirect-manager/redirects')|json_encode|raw }};
 
-    let selectedIds = new Set();
-
-    document.addEventListener('lr:selectionChanged', function(e) {
-        selectedIds = new Set(e.detail.selectedIds);
-        updateActionLabels();
-    });
-
-    function updateActionLabels() {
-        const clearLabel = document.getElementById('lr-clear-label');
-        if (!clearLabel) return;
-        if (selectedIds.size > 0) {
-            clearLabel.textContent = T.clearCountTemplate.replace('{count}', selectedIds.size);
-        } else {
-            clearLabel.textContent = T.clearAll;
-        }
-    }
-
     function selectedIdArray() {
-        return Array.from(selectedIds);
+        return window.lrTableSelection ? window.lrTableSelection.getSelectedIds() : [];
     }
 
     // ---------------------------------------------------------------------
@@ -332,7 +321,7 @@
     });
 
     // ---------------------------------------------------------------------
-    // Clear button: handles both selected items and "Clear All".
+    // Clear selected analytics records.
     // ---------------------------------------------------------------------
     document.getElementById('lr-clear-btn')?.addEventListener('click', function() {
         const ids = selectedIdArray();
@@ -352,9 +341,13 @@
             }).catch(function() {
                 Craft.cp.displayError(T.deleteFailed);
             });
-            return;
         }
+    });
 
+    // ---------------------------------------------------------------------
+    // Clear all analytics records.
+    // ---------------------------------------------------------------------
+    document.getElementById('lr-clear-all-btn')?.addEventListener('click', function() {
         if (!confirm(T.clearAllConfirm)) return;
         Craft.sendActionRequest('POST', 'redirect-manager/analytics/clear-all', { data: {} })
             .then(function(response) {
@@ -494,7 +487,6 @@
         if (probeCountEl) probeCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'probe' ? dotColors.probe : dotColors.neutral};"></span>${T.securityProbe} (${data.probeCount})`;
     });
 
-    updateActionLabels();
 })();
 </script>
 {% endblock %}

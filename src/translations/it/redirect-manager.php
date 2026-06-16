@@ -677,7 +677,7 @@ return [
     'Edit {item}' => 'Modifica {item}',
     'Create {item}' => 'Crea {item}',
     'Clear All' => 'Cancella tutto',
-    'Clear ({count})' => 'Cancella ({count})',
+    'Clear' => 'Cancella',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Cancellare TUTTE le analisi? Questa azione non può essere annullata.',
     'Delete this analytics record?' => 'Eliminare questo record di analisi?',
     'Analytics record deleted' => 'Record di analisi eliminato',

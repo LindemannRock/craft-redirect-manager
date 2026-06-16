@@ -677,7 +677,7 @@ return [
     'Edit {item}' => 'Rediger {item}',
     'Create {item}' => 'Opret {item}',
     'Clear All' => 'Ryd alle',
-    'Clear ({count})' => 'Ryd ({count})',
+    'Clear' => 'Ryd',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Er du sikker på, at du vil rydde ALLE analyser? Dette kan ikke fortrydes.',
     'Delete this analytics record?' => 'Slet denne analysepost?',
     'Analytics record deleted' => 'Analyseposten er slettet',

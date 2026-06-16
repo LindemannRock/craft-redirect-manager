@@ -677,7 +677,7 @@ return [
     'Edit {item}' => 'Redigera {item}',
     'Create {item}' => 'Skapa {item}',
     'Clear All' => 'Rensa alla',
-    'Clear ({count})' => 'Rensa ({count})',
+    'Clear' => 'Rensa',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'Är du säker på att du vill rensa ALL analys? Det här går inte att ångra.',
     'Delete this analytics record?' => 'Ta bort den här analysposten?',
     'Analytics record deleted' => 'Analysposten har tagits bort',

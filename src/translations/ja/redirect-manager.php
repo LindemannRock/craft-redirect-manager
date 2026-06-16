@@ -677,7 +677,7 @@ return [
     'Edit {item}' => '{item} を編集する',
     'Create {item}' => '{item} を作成する',
     'Clear All' => 'すべて削除する',
-    'Clear ({count})' => '削除する ({count})',
+    'Clear' => '削除する',
     'Are you sure you want to clear ALL analytics? This cannot be undone.' => 'すべてのアナリティクスを削除しますか？この操作は取り消せません。',
     'Delete this analytics record?' => 'このアナリティクスレコードを削除しますか？',
     'Analytics record deleted' => 'アナリティクスレコードを削除しました',
