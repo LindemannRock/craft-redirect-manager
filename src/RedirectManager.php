@@ -527,8 +527,9 @@ class RedirectManager extends Plugin
         $nextRunTime = DateFormatHelper::formatCompactDatetimeFromSettings(
             $nextRun,
             $settings,
+            null,
             false,
-            false,
+            pluginHandle: 'redirect-manager',
         );
 
         RecurringQueueHelper::ensurePending(
@@ -562,8 +563,9 @@ class RedirectManager extends Plugin
         $nextRunTime = DateFormatHelper::formatCompactDatetimeFromSettings(
             $nextRun,
             $settings,
+            null,
             false,
-            false,
+            pluginHandle: 'redirect-manager',
         );
 
         RecurringQueueHelper::ensurePending(
