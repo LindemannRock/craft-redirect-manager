@@ -166,16 +166,28 @@
 			</p>
 		</div>
 
-	{{ forms.textField({
-        label: 'Destination URL'|t('redirect-manager'),
-        instructions: 'Full URL (https://example.com) or path (/page)'|t('redirect-manager'),
-        id: 'destinationUrl',
-        name: 'destinationUrl',
-        value: redirect ? redirect.destinationUrl : null,
-        placeholder: '/page or https://example.com',
-        required: true,
-        errors: redirect ? redirect.getErrors('destinationUrl') : null
-    }) }}
+	<div class="field" id="destinationUrl-field">
+		<div class="heading">
+			<label for="destinationUrl">{{ 'Destination URL'|t('redirect-manager') }}
+				<span class="required" aria-label="Required"></span>
+			</label>
+			<div class="instructions">
+				<p id="destinationUrlInstructions">
+					{{ 'The destination to redirect to — a path or full URL (e.g., /new-page or https://example.com/new-page).'|t('redirect-manager') }}
+				</p>
+			</div>
+		</div>
+		<div class="input ltr">
+			<input type="text" id="destinationUrl" name="destinationUrl" value="{{ redirect ? redirect.destinationUrl : craft.app.request.getParam('destinationUrl') }}" placeholder="{{ srcMatchValue == 'fullurl' ? 'https://example.com/new-page' : '/new-page' }}" required class="text fullwidth{% if redirect and redirect.getErrors('destinationUrl') %} error{% endif %}">
+		</div>
+		{% if redirect and redirect.getErrors('destinationUrl') %}
+			<ul class="errors">
+				{% for error in redirect.getErrors('destinationUrl') %}
+					<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	</div>
 
 	<hr>
 
@@ -351,6 +363,8 @@ if (saveShortcut) {
     const sourceUrlInput = document.getElementById('sourceUrl');
     const sourceUrlInstructions = document.getElementById('sourceUrlInstructions');
     const srcMatchInstructions = document.getElementById('srcMatchInstructions');
+    const destinationUrlInput = document.getElementById('destinationUrl');
+    const destinationUrlInstructions = document.getElementById('destinationUrlInstructions');
     const sourceMatchInstructionText = {
         regex: {
             pathonly: {
@@ -394,6 +408,22 @@ if (saveShortcut) {
         },
     };
 
+    // Destination instructions vary by match type (whether captures are available).
+    // The destination always allows a path or full URL regardless of source match
+    // mode, so each string shows both example forms; only the placeholder tracks mode.
+    const destinationInstructionText = {
+        exact: {{ 'The destination to redirect to — a path or full URL (e.g., /new-page or https://example.com/new-page).'|t('redirect-manager')|json_encode|raw }},
+        prefix: {{ 'The destination to redirect to. Use $1 to append the part of the URL after your matched prefix (e.g., /new-section/$1 or https://example.com/new-section/$1).'|t('redirect-manager')|json_encode|raw }},
+        wildcard: {{ 'The destination to redirect to. Use $1, $2, etc. to insert each * from your source pattern, in order (e.g., /new-blog/$1 or https://example.com/new-blog/$1).'|t('redirect-manager')|json_encode|raw }},
+        regex: {{ 'The destination to redirect to. Use $1, $2, etc. to insert your regex capture groups (e.g., /new-recipes/$1 or https://example.com/new-recipes/$1).'|t('redirect-manager')|json_encode|raw }},
+    };
+    const destinationPlaceholder = {
+        exact: { pathonly: '/new-page', fullurl: 'https://example.com/new-page' },
+        prefix: { pathonly: '/new-section/$1', fullurl: 'https://example.com/new-section/$1' },
+        wildcard: { pathonly: '/new-blog/$1', fullurl: 'https://example.com/new-blog/$1' },
+        regex: { pathonly: '/new-recipes/$1', fullurl: 'https://example.com/new-recipes/$1' },
+    };
+
     // Show/hide priority field based on match type
     if (matchTypeSelect && priorityField) {
         matchTypeSelect.addEventListener('change', function() {
@@ -418,6 +448,16 @@ if (saveShortcut) {
 
         const mode = redirectSrcMatchSelect.value;
         const matchType = matchTypeSelect ? matchTypeSelect.value : 'exact';
+
+        // Destination instruction depends on match type (captures); placeholder also tracks mode.
+        if (destinationInstructionText[matchType]) {
+            if (destinationUrlInstructions) {
+                destinationUrlInstructions.textContent = destinationInstructionText[matchType];
+            }
+            if (destinationUrlInput && destinationPlaceholder[matchType] && destinationPlaceholder[matchType][mode]) {
+                destinationUrlInput.placeholder = destinationPlaceholder[matchType][mode];
+            }
+        }
 
         // Always hide pathOnlyTip for non-exact matches
         if (matchType !== 'exact' && pathOnlyTip) {

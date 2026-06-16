@@ -58,7 +58,7 @@ class AnalyticsSummaryWidget extends Widget
      */
     public static function icon(): ?string
     {
-        return '@app/icons/chart-bar.svg';
+        return '@lindemannrock/redirectmanager/icon-mask.svg';
     }
 
     /**

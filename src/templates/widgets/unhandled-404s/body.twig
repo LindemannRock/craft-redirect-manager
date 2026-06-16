@@ -1,116 +1,34 @@
-{% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
 {% set pluginName = redirectHelper.fullName %}
+{% set rows = [] %}
 
-<div class="unhandled-404s-widget">
-    {% if stats|length > 0 %}
-        <table class="data fullwidth">
-            <thead>
-                <tr>
-                    <th>{{ "URL"|t('redirect-manager') }}</th>
-                    <th>{{ "Hits"|t('redirect-manager') }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for stat in stats %}
-                    <tr>
-                        <td>
-                            <div class="url-cell">
-                                <a href="{{ cpUrl('redirect-manager/analytics') }}#url-{{ stat.url|url_encode }}" class="url-path" title="{{ stat.url }}">
-                                    {{ stat.url }}
-                                </a>
-                                {% if stat.lastHit %}
-                                    <div class="last-hit">
-                                        {{ "Last seen"|t('redirect-manager') }}: {{ stat.lastHit|lrDatetime }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </td>
-                        <td class="count-cell">
-                            <span class="badge">{{ stat.count|number }}</span>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+{% for stat in stats %}
+    {% set meta %}
+        {% if stat.lastHit %}
+            {{ "Last seen"|t('redirect-manager') }}: {{ stat.lastHit|lrDatetime }}
+        {% endif %}
+    {% endset %}
+    {% set rows = rows|merge([{
+        primary: stat.url,
+        primaryUrl: cpUrl('redirect-manager/analytics') ~ '#url-' ~ stat.url|url_encode,
+        primaryTitle: stat.url,
+        primaryVariant: 'danger',
+        badgeVariant: 'danger',
+        metaHtml: meta,
+        value: stat.count|number,
+    }]) %}
+{% endfor %}
 
-        <div class="widget-footer">
-            <a href="{{ cpUrl('redirect-manager/analytics') }}" class="go">{{ "View all 404s"|t('redirect-manager') }}</a>
-        </div>
-    {% else %}
-        <div class="zilch">
-            <p>{{ "No unhandled 404s"|t('redirect-manager') }}</p>
-            <p class="light">{{ "Great! All 404s are being handled by {pluginName}."|t('redirect-manager', {pluginName: pluginName|lower}) }}</p>
-        </div>
-    {% endif %}
-</div>
-
-<style>
-.unhandled-404s-widget {
-    padding: 0;
-}
-
-.unhandled-404s-widget table {
-    margin-bottom: 0;
-}
-
-.unhandled-404s-widget table td {
-    vertical-align: top;
-}
-
-.url-cell {
-    min-width: 0;
-}
-
-.url-path {
-    color: #dc2626;
-    font-size: 11px;
-    display: block;
-    margin-bottom: 4px;
-    text-decoration: none;
-    word-break: break-all;
-}
-
-.url-path:hover {
-    text-decoration: underline;
-}
-
-.last-hit {
-    font-size: 10px;
-    color: #9ca3af;
-}
-
-.count-cell {
-    text-align: left;
-    white-space: nowrap;
-}
-
-.count-cell .badge {
-    background: #fef2f2;
-    color: #dc2626;
-    padding: 10px;
-    border-radius: 3px;
-    font-size: 13px;
-    font-weight: 600;
-    display: inline-block;
-    line-height: 0;
-}
-
-.widget-footer {
-    text-align: center;
-    padding: 12px;
-    border-top: 1px solid #e3e5e8;
-}
-
-.widget-footer .go {
-    font-size: 13px;
-}
-
-.zilch {
-    text-align: center;
-    padding: 40px 20px;
-}
-
-.zilch p {
-    margin-bottom: 8px;
-}
-</style>
+{% include 'lindemannrock-base/_components/dashboard-widget-list' with {
+    primaryHeader: "URL"|t('redirect-manager'),
+    valueHeader: "Hits"|t('redirect-manager'),
+    rows: rows,
+    empty: {
+        title: "No unhandled 404s"|t('redirect-manager'),
+        message: "Great! All 404s are being handled by {pluginName}."|t('redirect-manager', {pluginName: pluginName|lower}),
+        type: 'success',
+    },
+    footer: {
+        url: cpUrl('redirect-manager/analytics'),
+        label: "View all 404s"|t('redirect-manager'),
+    },
+} only %}
