@@ -19,6 +19,8 @@ use lindemannrock\redirectmanager\RedirectManager;
  */
 class AnalyticsSummaryWidget extends Widget
 {
+    use SiteFilterTrait;
+
     /**
      * @var int Number of days to show stats for
      */
@@ -31,7 +33,9 @@ class AnalyticsSummaryWidget extends Widget
     {
         $rules = parent::rules();
         $rules[] = [['days'], 'integer', 'min' => 1, 'max' => 365];
+        $rules[] = [['siteId'], 'in', 'range' => array_column($this->siteOptions(), 'value')];
         $rules[] = [['days'], 'default', 'value' => 7];
+        $rules[] = [['siteId'], 'default', 'value' => 'all'];
         return $rules;
     }
 
@@ -93,6 +97,7 @@ class AnalyticsSummaryWidget extends Widget
     {
         return Craft::$app->getView()->renderTemplate('redirect-manager/widgets/stats-summary/settings', [
             'widget' => $this,
+            'siteOptions' => $this->siteOptions(),
         ]);
     }
 
@@ -109,9 +114,7 @@ class AnalyticsSummaryWidget extends Widget
             return '<p class="light">' . Craft::t('redirect-manager', 'Analytics are disabled in plugin settings.') . '</p>';
         }
 
-        // Get analytics data scoped to user's editable sites
-        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
-        $chartData = RedirectManager::$plugin->analytics->getChartData($editableSiteIds, $this->days);
+        $chartData = RedirectManager::$plugin->analytics->getChartData($this->effectiveSiteId(), $this->days);
 
         // Calculate totals
         $totalHandled = array_sum(array_column($chartData, 'handled'));

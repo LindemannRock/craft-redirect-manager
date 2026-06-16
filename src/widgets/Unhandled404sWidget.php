@@ -19,6 +19,8 @@ use lindemannrock\redirectmanager\RedirectManager;
  */
 class Unhandled404sWidget extends Widget
 {
+    use SiteFilterTrait;
+
     /**
      * @var int Number of 404s to show
      */
@@ -31,7 +33,9 @@ class Unhandled404sWidget extends Widget
     {
         $rules = parent::rules();
         $rules[] = [['limit'], 'integer', 'min' => 5, 'max' => 50];
+        $rules[] = [['siteId'], 'in', 'range' => array_column($this->siteOptions(), 'value')];
         $rules[] = [['limit'], 'default', 'value' => 10];
+        $rules[] = [['siteId'], 'default', 'value' => 'all'];
         return $rules;
     }
 
@@ -93,6 +97,7 @@ class Unhandled404sWidget extends Widget
     {
         return Craft::$app->getView()->renderTemplate('redirect-manager/widgets/unhandled-404s/settings', [
             'widget' => $this,
+            'siteOptions' => $this->siteOptions(),
         ]);
     }
 
@@ -109,9 +114,7 @@ class Unhandled404sWidget extends Widget
             return '<p class="light">' . Craft::t('redirect-manager', 'Analytics are disabled in plugin settings.') . '</p>';
         }
 
-        // Get unhandled 404s scoped to user's editable sites
-        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
-        $analytics = RedirectManager::$plugin->analytics->getAllAnalytics($editableSiteIds, $this->limit);
+        $analytics = RedirectManager::$plugin->analytics->getAllAnalytics($this->effectiveSiteId(), $this->limit);
 
         // Filter only unhandled ones
         $unhandled404s = array_filter($analytics, function($stat) {

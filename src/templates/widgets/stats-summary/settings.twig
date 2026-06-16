@@ -11,3 +11,11 @@
     max: 365,
     size: 3
 }) }}
+
+{{ forms.selectField({
+    label: 'Site'|t('redirect-manager'),
+    id: 'siteId',
+    name: 'siteId',
+    value: widget.siteId,
+    options: siteOptions,
+}) }}
