@@ -193,7 +193,9 @@ return [
     'Wildcard character (*) is not allowed in Prefix Match. Use Wildcard Match instead, or remove the *.' => 'Wildcard-tegnet (*) er ikke tillatt i Prefiksmatch. Bruk Wildcard-match i stedet, eller fjern *.',
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Wildcard-tegnet (*) er ikke tillatt i {matchType}-match. Bruk Wildcard-match i stedet.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'Wildcard-match krever minst ett wildcard-tegn * i mønsteret (f.eks. /blog/* eller https://example.com/*).',
-    'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Angi en gyldig URL som starter med https:// eller http://, eller en sti som starter med / (f.eks. https://example.com eller /page)',
+    'Enter a path (/page), a full URL (https://example.com), or a contact link (e.g. mailto:, tel:). Protocol-relative URLs (//host) are not allowed.' => 'Angi en sti (/page), en fullstendig URL (https://example.com) eller en kontaktlenke (f.eks. mailto:, tel:). Protokollrelative URL-er (//host) er ikke tillatt.',
+    "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'Eksakt match gir ingen captures, så målet kan ikke bruke $1, $2 osv. Velg Wildcard, Prefiks eller RegEx, eller fjern capture-referansen.',
+    "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'Målet refererer til {ref}, men kildemønsteret gir ikke så mange captures.',
 
     // Settings: General
     'General Settings' => 'Generelle innstillinger',
@@ -406,7 +408,10 @@ return [
     'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.' => 'Angi stien som skal matches (f.eks. /old-page). Fulle URL-er konverteres automatisk til stier.',
     'Test your pattern at' => 'Test mønsteret ditt på',
     'before saving.' => 'før lagring.',
-    'Full URL (https://example.com) or path (/page)' => 'Full URL (https://example.com) eller sti (/page)',
+    'The destination to redirect to — a path or full URL (e.g., /new-page or https://example.com/new-page).' => 'Målet for omdirigeringen — en sti eller fullstendig URL (f.eks. /new-page eller https://example.com/new-page).',
+    'The destination to redirect to. Use $1 to append the part of the URL after your matched prefix (e.g., /new-section/$1 or https://example.com/new-section/$1).' => 'Målet for omdirigeringen. Bruk $1 for å legge til den delen av URL-en som kommer etter det matchede prefikset (f.eks. /new-section/$1 eller https://example.com/new-section/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert each * from your source pattern, in order (e.g., /new-blog/$1 or https://example.com/new-blog/$1).' => 'Målet for omdirigeringen. Bruk $1, $2 osv. for å sette inn hver * fra kildemønsteret, i rekkefølge (f.eks. /new-blog/$1 eller https://example.com/new-blog/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert your regex capture groups (e.g., /new-recipes/$1 or https://example.com/new-recipes/$1).' => 'Målet for omdirigeringen. Bruk $1, $2 osv. for å sette inn regex-capture-gruppene dine (f.eks. /new-recipes/$1 eller https://example.com/new-recipes/$1).',
     'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'Omdirigeringer kontrolleres i prioritetsrekkefølge (0 = høyest prioritet, 9 = lavest). Bruk dette når du har overlappende mønstre. Angi f.eks. et spesifikt mønster til prioritet 0 og en generell catch-all til prioritet 9.',
     'Highest priority' => 'Høyest prioritet',
     'Lowest priority' => 'Lavest prioritet',

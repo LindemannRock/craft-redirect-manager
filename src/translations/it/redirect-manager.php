@@ -193,7 +193,9 @@ return [
     'Wildcard character (*) is not allowed in Prefix Match. Use Wildcard Match instead, or remove the *.' => 'Il carattere jolly (*) non è consentito nella Corrispondenza prefisso. Usare Corrispondenza jolly o rimuovere il *.',
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Il carattere jolly (*) non è consentito nella Corrispondenza {matchType}. Usare Corrispondenza jolly.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'La Corrispondenza jolly richiede almeno un carattere jolly * nel pattern (ad es. /blog/* o https://example.com/*).',
-    'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Inserire un URL valido che inizi con https:// o http://, oppure un percorso che inizi con / (ad es. https://example.com o /page)',
+    'Enter a path (/page), a full URL (https://example.com), or a contact link (e.g. mailto:, tel:). Protocol-relative URLs (//host) are not allowed.' => 'Inserire un percorso (/page), un URL completo (https://example.com) o un link di contatto (ad es. mailto:, tel:). Gli URL relativi al protocollo (//host) non sono consentiti.',
+    "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'La Corrispondenza esatta non produce catture, quindi la destinazione non può usare $1, $2, ecc. Scegliere Jolly, Prefisso o RegEx, oppure rimuovere il riferimento di cattura.',
+    "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'La destinazione fa riferimento a {ref}, ma il pattern sorgente non fornisce così tante catture.',
 
     // Settings: General
     'General Settings' => 'Impostazioni generali',
@@ -406,7 +408,10 @@ return [
     'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.' => 'Inserire il percorso da trovare (ad es. /old-page). Gli URL completi verranno automaticamente convertiti in percorsi.',
     'Test your pattern at' => 'Testa il pattern su',
     'before saving.' => 'prima di salvare.',
-    'Full URL (https://example.com) or path (/page)' => 'URL completo (https://example.com) o percorso (/page)',
+    'The destination to redirect to — a path or full URL (e.g., /new-page or https://example.com/new-page).' => 'La destinazione del redirect — un percorso o URL completo (ad es. /new-page o https://example.com/new-page).',
+    'The destination to redirect to. Use $1 to append the part of the URL after your matched prefix (e.g., /new-section/$1 or https://example.com/new-section/$1).' => 'La destinazione del redirect. Usare $1 per aggiungere la parte dell\'URL successiva al prefisso corrispondente (ad es. /new-section/$1 o https://example.com/new-section/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert each * from your source pattern, in order (e.g., /new-blog/$1 or https://example.com/new-blog/$1).' => 'La destinazione del redirect. Usare $1, $2, ecc. per inserire ogni * del pattern sorgente, in ordine (ad es. /new-blog/$1 o https://example.com/new-blog/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert your regex capture groups (e.g., /new-recipes/$1 or https://example.com/new-recipes/$1).' => 'La destinazione del redirect. Usare $1, $2, ecc. per inserire i gruppi di cattura regex (ad es. /new-recipes/$1 o https://example.com/new-recipes/$1).',
     'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'I redirect vengono controllati in ordine di priorità (0 = priorità massima, 9 = minima). Usarlo quando si hanno pattern sovrapposti. Ad esempio, impostare un pattern specifico alla priorità 0 e uno generale a priorità 9.',
     'Highest priority' => 'Priorità massima',
     'Lowest priority' => 'Priorità minima',

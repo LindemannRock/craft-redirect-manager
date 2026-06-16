@@ -193,7 +193,9 @@ return [
     'Wildcard character (*) is not allowed in Prefix Match. Use Wildcard Match instead, or remove the *.' => 'Platzhalterzeichen (*) ist im Präfix-Abgleich nicht erlaubt. Verwenden Sie stattdessen den Platzhalter-Abgleich oder entfernen Sie das *.',
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Platzhalterzeichen (*) ist im {matchType}-Abgleich nicht erlaubt. Verwenden Sie stattdessen den Platzhalter-Abgleich.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'Platzhalter-Abgleich erfordert mindestens ein Platzhalterzeichen * im Muster (z.B. /blog/* oder https://example.com/*).',
-    'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Bitte geben Sie eine gültige URL ein, die mit https:// oder http:// beginnt, oder einen Pfad, der mit / beginnt (z.B. https://example.com oder /seite)',
+    'Enter a path (/page), a full URL (https://example.com), or a contact link (e.g. mailto:, tel:). Protocol-relative URLs (//host) are not allowed.' => 'Geben Sie einen Pfad (/seite), eine vollständige URL (https://example.com) oder einen Kontaktlink ein (z.B. mailto:, tel:). Protokollrelative URLs (//host) sind nicht zulässig.',
+    "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'Exakter Abgleich erzeugt keine Erfassungen, daher kann das Ziel $1, $2 usw. nicht verwenden. Wählen Sie Platzhalter, Präfix oder RegEx, oder entfernen Sie den Erfassungsverweis.',
+    "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'Das Ziel verweist auf {ref}, aber das Quellmuster stellt nicht so viele Erfassungen bereit.',
 
     // Settings: General
     'General Settings' => 'Allgemeine Einstellungen',
@@ -406,7 +408,10 @@ return [
     'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.' => 'Pfad zum Abgleichen eingeben (z.B. /alte-seite). Vollständige URLs werden automatisch in Pfade umgewandelt.',
     'Test your pattern at' => 'Testen Sie Ihr Muster unter',
     'before saving.' => 'bevor Sie speichern.',
-    'Full URL (https://example.com) or path (/page)' => 'Vollständige URL (https://example.com) oder Pfad (/seite)',
+    'The destination to redirect to — a path or full URL (e.g., /new-page or https://example.com/new-page).' => 'Das Weiterleitungsziel — ein Pfad oder eine vollständige URL (z.B. /new-page oder https://example.com/new-page).',
+    'The destination to redirect to. Use $1 to append the part of the URL after your matched prefix (e.g., /new-section/$1 or https://example.com/new-section/$1).' => 'Das Weiterleitungsziel. Mit $1 den URL-Teil nach dem abgeglichenen Präfix anhängen (z.B. /new-section/$1 oder https://example.com/new-section/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert each * from your source pattern, in order (e.g., /new-blog/$1 or https://example.com/new-blog/$1).' => 'Das Weiterleitungsziel. Mit $1, $2 usw. jedes * aus dem Quellmuster der Reihe nach einfügen (z.B. /new-blog/$1 oder https://example.com/new-blog/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert your regex capture groups (e.g., /new-recipes/$1 or https://example.com/new-recipes/$1).' => 'Das Weiterleitungsziel. Mit $1, $2 usw. die RegEx-Erfassungsgruppen einfügen (z.B. /new-recipes/$1 oder https://example.com/new-recipes/$1).',
     'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'Weiterleitungen werden in der Prioritätsreihenfolge geprüft (0 = höchste Priorität, 9 = niedrigste). Verwenden Sie dies bei überlappenden Mustern. Setzen Sie beispielsweise ein spezifisches Muster auf Priorität 0 und ein allgemeines Auffangmuster auf Priorität 9.',
     'Highest priority' => 'Höchste Priorität',
     'Lowest priority' => 'Niedrigste Priorität',

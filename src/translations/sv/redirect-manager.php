@@ -193,7 +193,9 @@ return [
     'Wildcard character (*) is not allowed in Prefix Match. Use Wildcard Match instead, or remove the *.' => 'Jokertecknet (*) är inte tillåtet i Prefixmatchning. Använd Jokerteckenmatchning istället, eller ta bort *.',
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Jokertecknet (*) är inte tillåtet i {matchType}-matchning. Använd Jokerteckenmatchning istället.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'Jokerteckenmatchning kräver minst ett jokertecken * i mönstret (t.ex. /blog/* eller https://example.com/*).',
-    'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Ange en giltig URL som börjar med https:// eller http://, eller en sökväg som börjar med / (t.ex. https://example.com eller /page)',
+    'Enter a path (/page), a full URL (https://example.com), or a contact link (e.g. mailto:, tel:). Protocol-relative URLs (//host) are not allowed.' => 'Ange en sökväg (/page), en fullständig URL (https://example.com) eller en kontaktlänk (t.ex. mailto:, tel:). Protokollrelativa URL:er (//host) tillåts inte.',
+    "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'Exakt matchning ger inga fångster, så målet kan inte använda $1, $2 osv. Välj Jokertecken, Prefix eller RegEx, eller ta bort fångstreferensen.',
+    "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'Målet refererar till {ref}, men källmönstret tillhandahåller inte så många fångster.',
 
     // Settings: General
     'General Settings' => 'Allmänna inställningar',
@@ -406,7 +408,10 @@ return [
     'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.' => 'Ange sökvägen att matcha (t.ex. /old-page). Fullständiga URL:er konverteras automatiskt till sökvägar.',
     'Test your pattern at' => 'Testa ditt mönster på',
     'before saving.' => 'innan du sparar.',
-    'Full URL (https://example.com) or path (/page)' => 'Fullständig URL (https://example.com) eller sökväg (/page)',
+    'The destination to redirect to — a path or full URL (e.g., /new-page or https://example.com/new-page).' => 'Målet för omdirigeringen — en sökväg eller fullständig URL (t.ex. /new-page eller https://example.com/new-page).',
+    'The destination to redirect to. Use $1 to append the part of the URL after your matched prefix (e.g., /new-section/$1 or https://example.com/new-section/$1).' => 'Målet för omdirigeringen. Använd $1 för att lägga till den del av URL:en som följer efter det matchande prefixet (t.ex. /new-section/$1 eller https://example.com/new-section/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert each * from your source pattern, in order (e.g., /new-blog/$1 or https://example.com/new-blog/$1).' => 'Målet för omdirigeringen. Använd $1, $2 osv. för att infoga varje * från ditt källmönster, i ordning (t.ex. /new-blog/$1 eller https://example.com/new-blog/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert your regex capture groups (e.g., /new-recipes/$1 or https://example.com/new-recipes/$1).' => 'Målet för omdirigeringen. Använd $1, $2 osv. för att infoga dina regex-fångstgrupper (t.ex. /new-recipes/$1 eller https://example.com/new-recipes/$1).',
     'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'Omdirigeringar kontrolleras i prioritetsordning (0 = högst prioritet, 9 = lägst). Använd det här när du har överlappande mönster. Ange t.ex. ett specifikt mönster till prioritet 0 och ett allmänt catch-all till prioritet 9.',
     'Highest priority' => 'Högst prioritet',
     'Lowest priority' => 'Lägst prioritet',

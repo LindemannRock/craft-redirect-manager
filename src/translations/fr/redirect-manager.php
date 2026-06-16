@@ -193,7 +193,9 @@ return [
     'Wildcard character (*) is not allowed in Prefix Match. Use Wildcard Match instead, or remove the *.' => 'Le caractère joker (*) n\'est pas autorisé dans la Correspondance par préfixe. Utilisez la Correspondance avec joker ou supprimez le *.',
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Le caractère joker (*) n\'est pas autorisé dans la Correspondance {matchType}. Utilisez la Correspondance avec joker.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'La Correspondance avec joker nécessite au moins un caractère joker * dans le modèle (par ex. /blog/* ou https://example.com/*).',
-    'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Veuillez saisir une URL valide commençant par https:// ou http://, ou un chemin commençant par / (par ex. https://example.com ou /page)',
+    'Enter a path (/page), a full URL (https://example.com), or a contact link (e.g. mailto:, tel:). Protocol-relative URLs (//host) are not allowed.' => 'Saisissez un chemin (/page), une URL complète (https://example.com) ou un lien de contact (par ex. mailto:, tel:). Les URL relatives au protocole (//host) ne sont pas autorisées.',
+    "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'La Correspondance exacte ne produit aucune capture. La destination ne peut donc pas utiliser $1, $2, etc. Choisissez Joker, Préfixe ou RegEx, ou supprimez la référence de capture.',
+    "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'La destination référence {ref}, mais le modèle source ne fournit pas autant de captures.',
 
     // Settings: General
     'General Settings' => 'Paramètres généraux',
@@ -406,7 +408,10 @@ return [
     'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.' => 'Saisir le chemin à faire correspondre (par ex. /ancienne-page). Les URL complètes seront automatiquement converties en chemins.',
     'Test your pattern at' => 'Testez votre modèle sur',
     'before saving.' => 'avant d\'enregistrer.',
-    'Full URL (https://example.com) or path (/page)' => 'URL complète (https://example.com) ou chemin (/page)',
+    'The destination to redirect to — a path or full URL (e.g., /new-page or https://example.com/new-page).' => 'La destination de la redirection — un chemin ou une URL complète (par ex. /new-page ou https://example.com/new-page).',
+    'The destination to redirect to. Use $1 to append the part of the URL after your matched prefix (e.g., /new-section/$1 or https://example.com/new-section/$1).' => 'La destination de la redirection. Utilisez $1 pour ajouter la partie de l\'URL située après le préfixe correspondant (par ex. /new-section/$1 ou https://example.com/new-section/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert each * from your source pattern, in order (e.g., /new-blog/$1 or https://example.com/new-blog/$1).' => 'La destination de la redirection. Utilisez $1, $2, etc. pour insérer chaque * de votre modèle source, dans l\'ordre (par ex. /new-blog/$1 ou https://example.com/new-blog/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert your regex capture groups (e.g., /new-recipes/$1 or https://example.com/new-recipes/$1).' => 'La destination de la redirection. Utilisez $1, $2, etc. pour insérer vos groupes de capture regex (par ex. /new-recipes/$1 ou https://example.com/new-recipes/$1).',
     'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'Les redirections sont vérifiées par ordre de priorité (0 = priorité la plus haute, 9 = la plus basse). Utilisez ceci lorsque vous avez des modèles qui se chevauchent. Par exemple, définissez un modèle spécifique à la priorité 0 et un modèle général attrape-tout à la priorité 9.',
     'Highest priority' => 'Priorité la plus haute',
     'Lowest priority' => 'Priorité la plus basse',

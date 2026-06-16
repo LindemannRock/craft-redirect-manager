@@ -193,7 +193,9 @@ return [
     'Wildcard character (*) is not allowed in Prefix Match. Use Wildcard Match instead, or remove the *.' => 'ワイルドカード文字（*）はプレフィックス一致では使用できません。ワイルドカード一致を使用するか、* を削除してください。',
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'ワイルドカード文字（*）は {matchType} 一致では使用できません。ワイルドカード一致を使用してください。',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'ワイルドカード一致には、パターンに少なくとも 1 つのワイルドカード文字 *（例: /blog/* または https://example.com/*）が必要です。',
-    'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'https:// または http:// で始まる有効な URL、または / で始まるパス（例: https://example.com または /page）を入力してください',
+    'Enter a path (/page), a full URL (https://example.com), or a contact link (e.g. mailto:, tel:). Protocol-relative URLs (//host) are not allowed.' => 'パス（/page）、完全な URL（https://example.com）、または連絡先リンク（例: mailto:、tel:）を入力してください。プロトコル相対 URL（//host）は使用できません。',
+    "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => '完全一致ではキャプチャが生成されないため、転送先で $1、$2 などは使用できません。ワイルドカード、プレフィックス、または RegEx を選択するか、キャプチャ参照を削除してください。',
+    "The destination references {ref}, but the source pattern doesn't provide that many captures." => '転送先が {ref} を参照していますが、ソースパターンにはそれほど多くのキャプチャがありません。',
 
     // Settings: General
     'General Settings' => '一般設定',
@@ -406,7 +408,10 @@ return [
     'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.' => '一致させるパスを入力してください（例: /old-page）。完全な URL は自動的にパスに変換されます。',
     'Test your pattern at' => 'パターンをテストする :',
     'before saving.' => '保存前に。',
-    'Full URL (https://example.com) or path (/page)' => '完全 URL（https://example.com）またはパス（/page）',
+    'The destination to redirect to — a path or full URL (e.g., /new-page or https://example.com/new-page).' => '転送先のパスまたは完全な URL（例: /new-page または https://example.com/new-page）',
+    'The destination to redirect to. Use $1 to append the part of the URL after your matched prefix (e.g., /new-section/$1 or https://example.com/new-section/$1).' => '転送先。一致したプレフィックス以降の URL 部分を $1 で挿入します（例: /new-section/$1 または https://example.com/new-section/$1）。',
+    'The destination to redirect to. Use $1, $2, etc. to insert each * from your source pattern, in order (e.g., /new-blog/$1 or https://example.com/new-blog/$1).' => '転送先。ソースパターンの各 * を順に挿入するには $1、$2 などを使用します（例: /new-blog/$1 または https://example.com/new-blog/$1）。',
+    'The destination to redirect to. Use $1, $2, etc. to insert your regex capture groups (e.g., /new-recipes/$1 or https://example.com/new-recipes/$1).' => '転送先。RegEx のキャプチャグループを挿入するには $1、$2 などを使用します（例: /new-recipes/$1 または https://example.com/new-recipes/$1）。',
     'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'リダイレクトは優先度順にチェックされます（0 = 最高優先度、9 = 最低）。パターンが重複している場合に使用してください。例えば、特定のパターンを優先度 0 に設定し、一般的なキャッチオールを優先度 9 に設定します。',
     'Highest priority' => '最高優先度',
     'Lowest priority' => '最低優先度',

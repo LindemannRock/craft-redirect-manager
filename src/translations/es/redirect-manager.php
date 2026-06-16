@@ -193,7 +193,9 @@ return [
     'Wildcard character (*) is not allowed in Prefix Match. Use Wildcard Match instead, or remove the *.' => 'El carácter comodín (*) no está permitido en Coincidencia por prefijo. Use Coincidencia con comodín o elimine el *.',
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'El carácter comodín (*) no está permitido en Coincidencia {matchType}. Use Coincidencia con comodín.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'La Coincidencia con comodín requiere al menos un carácter comodín * en el patrón (p. ej., /blog/* o https://example.com/*).',
-    'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Introduzca una URL válida que comience con https:// o http://, o una ruta que comience con / (p. ej., https://example.com o /pagina)',
+    'Enter a path (/page), a full URL (https://example.com), or a contact link (e.g. mailto:, tel:). Protocol-relative URLs (//host) are not allowed.' => 'Introduzca una ruta (/pagina), una URL completa (https://example.com) o un enlace de contacto (p. ej., mailto:, tel:). Las URL relativas al protocolo (//host) no están permitidas.',
+    "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'La Coincidencia exacta no produce capturas, por lo que el destino no puede usar $1, $2, etc. Elija Comodín, Prefijo o RegEx, o elimine la referencia de captura.',
+    "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'El destino hace referencia a {ref}, pero el patrón de origen no proporciona tantas capturas.',
 
     // Settings: General
     'General Settings' => 'Configuración general',
@@ -406,7 +408,10 @@ return [
     'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.' => 'Introduzca la ruta a hacer coincidir (p. ej., /antigua-pagina). Las URL completas se convertirán automáticamente en rutas.',
     'Test your pattern at' => 'Pruebe su patrón en',
     'before saving.' => 'antes de guardar.',
-    'Full URL (https://example.com) or path (/page)' => 'URL completa (https://example.com) o ruta (/pagina)',
+    'The destination to redirect to — a path or full URL (e.g., /new-page or https://example.com/new-page).' => 'El destino de la redirección — una ruta o URL completa (p. ej., /new-page o https://example.com/new-page).',
+    'The destination to redirect to. Use $1 to append the part of the URL after your matched prefix (e.g., /new-section/$1 or https://example.com/new-section/$1).' => 'El destino de la redirección. Use $1 para añadir la parte de la URL posterior al prefijo coincidente (p. ej., /new-section/$1 o https://example.com/new-section/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert each * from your source pattern, in order (e.g., /new-blog/$1 or https://example.com/new-blog/$1).' => 'El destino de la redirección. Use $1, $2, etc. para insertar cada * de su patrón de origen, en orden (p. ej., /new-blog/$1 o https://example.com/new-blog/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert your regex capture groups (e.g., /new-recipes/$1 or https://example.com/new-recipes/$1).' => 'El destino de la redirección. Use $1, $2, etc. para insertar sus grupos de captura regex (p. ej., /new-recipes/$1 o https://example.com/new-recipes/$1).',
     'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'Las redirecciones se comprueban en orden de prioridad (0 = prioridad más alta, 9 = más baja). Úselo cuando tenga patrones superpuestos. Por ejemplo, establezca un patrón específico con prioridad 0 y un patrón general comodín con prioridad 9.',
     'Highest priority' => 'Prioridad más alta',
     'Lowest priority' => 'Prioridad más baja',

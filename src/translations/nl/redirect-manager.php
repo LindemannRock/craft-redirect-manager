@@ -193,7 +193,9 @@ return [
     'Wildcard character (*) is not allowed in Prefix Match. Use Wildcard Match instead, or remove the *.' => 'Het jokerteken (*) is niet toegestaan in Voorvoegselovereenkomst. Gebruik Jokertekenovereenkomst of verwijder de *.',
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'Het jokerteken (*) is niet toegestaan in {matchType} overeenkomst. Gebruik Jokertekenovereenkomst.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'Jokertekenovereenkomst vereist minimaal één jokerteken * in het patroon (bijv. /blog/* of https://example.com/*).',
-    'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'Voer een geldige URL in die begint met https:// of http://, of een pad dat begint met / (bijv. https://example.com of /pagina)',
+    'Enter a path (/page), a full URL (https://example.com), or a contact link (e.g. mailto:, tel:). Protocol-relative URLs (//host) are not allowed.' => 'Voer een pad (/pagina), een volledige URL (https://example.com) of een contactlink in (bijv. mailto:, tel:). Protocolrelatieve URL\'s (//host) zijn niet toegestaan.',
+    "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'Exacte overeenkomst levert geen captures op, dus de bestemming kan $1, $2, enz. niet gebruiken. Kies Jokerteken, Voorvoegsel of RegEx, of verwijder de captureverwijzing.',
+    "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'De bestemming verwijst naar {ref}, maar het bronpatroon levert niet zoveel captures op.',
 
     // Settings: General
     'General Settings' => 'Algemene instellingen',
@@ -406,7 +408,10 @@ return [
     'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.' => 'Voer het te matchen pad in (bijv. /oude-pagina). Volledige URL\'s worden automatisch omgezet naar paden.',
     'Test your pattern at' => 'Test uw patroon op',
     'before saving.' => 'vóór het opslaan.',
-    'Full URL (https://example.com) or path (/page)' => 'Volledige URL (https://example.com) of pad (/pagina)',
+    'The destination to redirect to — a path or full URL (e.g., /new-page or https://example.com/new-page).' => 'De bestemming van de redirect — een pad of volledige URL (bijv. /new-page of https://example.com/new-page).',
+    'The destination to redirect to. Use $1 to append the part of the URL after your matched prefix (e.g., /new-section/$1 or https://example.com/new-section/$1).' => 'De bestemming van de redirect. Gebruik $1 om het deel van de URL na het overeenkomende voorvoegsel toe te voegen (bijv. /new-section/$1 of https://example.com/new-section/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert each * from your source pattern, in order (e.g., /new-blog/$1 or https://example.com/new-blog/$1).' => 'De bestemming van de redirect. Gebruik $1, $2, enz. om elke * uit uw bronpatroon op volgorde in te voegen (bijv. /new-blog/$1 of https://example.com/new-blog/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert your regex capture groups (e.g., /new-recipes/$1 or https://example.com/new-recipes/$1).' => 'De bestemming van de redirect. Gebruik $1, $2, enz. om uw regex-capturegroepen in te voegen (bijv. /new-recipes/$1 of https://example.com/new-recipes/$1).',
     'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'Redirects worden gecontroleerd op volgorde van prioriteit (0 = hoogste prioriteit, 9 = laagste). Gebruik dit wanneer u overlappende patronen heeft. Stel bijvoorbeeld een specifiek patroon in op prioriteit 0 en een algemeen vangnet op prioriteit 9.',
     'Highest priority' => 'Hoogste prioriteit',
     'Lowest priority' => 'Laagste prioriteit',

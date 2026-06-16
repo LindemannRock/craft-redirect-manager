@@ -193,7 +193,9 @@ return [
     'Wildcard character (*) is not allowed in Prefix Match. Use Wildcard Match instead, or remove the *.' => 'حرف البدل (*) غير مسموح به في المطابقة بالبادئة. استخدم المطابقة بأحرف البدل عوضاً عن ذلك، أو احذف *.',
     'Wildcard character (*) is not allowed in {matchType} Match. Use Wildcard Match instead.' => 'حرف البدل (*) غير مسموح به في مطابقة {matchType}. استخدم المطابقة بأحرف البدل عوضاً عن ذلك.',
     'Wildcard Match requires at least one * wildcard character in the pattern (e.g., /blog/* or https://example.com/*).' => 'تتطلب المطابقة بأحرف البدل حرف بدل * واحداً على الأقل في النمط (مثل /blog/* أو https://example.com/*).',
-    'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)' => 'يرجى إدخال URL صالح يبدأ بـ https:// أو http://، أو مسار يبدأ بـ / (مثل https://example.com أو /page)',
+    'Enter a path (/page), a full URL (https://example.com), or a contact link (e.g. mailto:, tel:). Protocol-relative URLs (//host) are not allowed.' => 'أدخل مسارًا (/page) أو URL كاملاً (https://example.com) أو رابط تواصل (مثل mailto:، tel:). روابط URL النسبية للبروتوكول (//host) غير مسموح بها.',
+    "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'المطابقة التامة لا تنتج أي التقاطات، لذا لا يمكن للوجهة استخدام $1 و$2 وغيرها. اختر أحرف البدل أو البادئة أو RegEx، أو أزل مرجع الالتقاط.',
+    "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'تشير الوجهة إلى {ref}، لكن نمط المصدر لا يوفر هذا العدد من الالتقاطات.',
 
     // Settings: General
     'General Settings' => 'الإعدادات العامة',
@@ -406,7 +408,10 @@ return [
     'Enter the path to match (e.g., /old-page). Full URLs will be automatically converted to paths.' => 'أدخل المسار للمطابقة (مثل /old-page). سيتم تحويل عناوين URL الكاملة تلقائياً إلى مسارات.',
     'Test your pattern at' => 'اختبر نمطك على',
     'before saving.' => 'قبل الحفظ.',
-    'Full URL (https://example.com) or path (/page)' => 'URL كامل (https://example.com) أو مسار (/page)',
+    'The destination to redirect to — a path or full URL (e.g., /new-page or https://example.com/new-page).' => 'وجهة إعادة التوجيه — مسار أو URL كامل (مثل /new-page أو https://example.com/new-page).',
+    'The destination to redirect to. Use $1 to append the part of the URL after your matched prefix (e.g., /new-section/$1 or https://example.com/new-section/$1).' => 'وجهة إعادة التوجيه. استخدم $1 لإلحاق جزء URL الذي يلي البادئة المطابقة (مثل /new-section/$1 أو https://example.com/new-section/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert each * from your source pattern, in order (e.g., /new-blog/$1 or https://example.com/new-blog/$1).' => 'وجهة إعادة التوجيه. استخدم $1 و$2 وغيرها لإدراج كل * من نمط المصدر بالترتيب (مثل /new-blog/$1 أو https://example.com/new-blog/$1).',
+    'The destination to redirect to. Use $1, $2, etc. to insert your regex capture groups (e.g., /new-recipes/$1 or https://example.com/new-recipes/$1).' => 'وجهة إعادة التوجيه. استخدم $1 و$2 وغيرها لإدراج مجموعات الالتقاط في RegEx (مثل /new-recipes/$1 أو https://example.com/new-recipes/$1).',
     'Redirects are checked in priority order (0 = highest priority, 9 = lowest). Use this when you have overlapping patterns. For example, set a specific pattern to priority 0 and a general catch-all to priority 9.' => 'يتم فحص عمليات إعادة التوجيه بترتيب الأولوية (0 = أعلى أولوية، 9 = أدنى). استخدم هذا عند وجود أنماط متداخلة. على سبيل المثال، اضبط نمطاً محدداً على الأولوية 0 ونمطاً عاماً شاملاً على الأولوية 9.',
     'Highest priority' => 'أعلى أولوية',
     'Lowest priority' => 'أدنى أولوية',
