@@ -145,7 +145,7 @@ Returns the matching redirect as an array with `destinationUrl` and `statusCode`
 | `sourceUrl` | Yes | The source URL pattern (max 255 chars) |
 | `sourceUrlParsed` | Yes | Normalized form of `sourceUrl` (max 255 chars) |
 | `destinationUrl` | Yes | The redirect destination (max 500 chars) |
-| `matchType` | Yes | `exact`, `contains`, `regex`, `wildcard`, or `prefix` |
+| `matchType` | Yes | `exact`, `regex`, `wildcard`, or `prefix` |
 | `redirectSrcMatch` | **Yes** | `pathonly` or `fullurl` — this field is required |
 | `statusCode` | Yes | HTTP status code (301, 302, etc.) |
 | `siteId` | No | Craft site ID, or `null` for all sites |

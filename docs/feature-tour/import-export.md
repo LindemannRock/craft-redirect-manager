@@ -28,11 +28,19 @@ Optional fields (defaults are used when omitted):
 
 | Field | Default | Description |
 |-------|---------|-------------|
-| Match Type | `exact` | `exact`, `contains`, `regex`, `wildcard`, `prefix` |
+| Match Type | `exact` | `exact`, `regex`, `wildcard`, `prefix` |
 | Status Code | `301` | `301`, `302`, `303`, `307`, `308`, `410` |
 | Priority | `0` | `0`–`9` (lower = higher priority) |
 | Enabled | `true` | `true` or `false` |
 | Site ID | `null` | Numeric site ID, or blank for all sites |
+
+### Row Validation
+
+Each row is validated before import; problems are flagged in the **Preview** errors bucket and those rows are skipped. A row is rejected when:
+
+- **Source or Destination URL is missing or malformed** — a bare scheme (`https://` with no host), an email-looking value, or a protocol-relative `//host` is rejected. A destination may be a path, a full `http(s)://` URL with a host, a contact link (`mailto:`, `tel:`, `whatsapp:`, `sms:`, `fax:`, `skype://`, `msteams:`), or a capture reference (`$1`, `$2`).
+- **A capture reference exceeds the match type** — e.g. `$1` under `exact`, or `$2` when the source has only one `*` / one capturing group. See [Match Types](redirects.md#match-types).
+- **Match type or status code is invalid**, the row duplicates an existing redirect, or the source and destination are identical (a loop).
 
 ### Import Limits
 

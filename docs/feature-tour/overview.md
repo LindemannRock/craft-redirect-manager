@@ -11,7 +11,7 @@ At its core, Redirect Manager intercepts every 404 response on your site, checks
 
 ## Core Capabilities
 
-- **[Redirects](redirects.md)** — Create and manage redirects with five match types: exact, contains, regex, wildcard, and prefix. Assign priority to control which rule wins when multiple patterns match. Supports all common status codes (301, 302, 303, 307, 308, 410) and full multi-site configuration.
+- **[Redirects](redirects.md)** — Create and manage redirects with four match types: exact, regex, wildcard, and prefix. Assign priority to control which rule wins when multiple patterns match. Supports all common status codes (301, 302, 303, 307, 308, 410) and full multi-site configuration.
 
 - **[Auto-Redirects](auto-redirects.md)** — When an entry's URI changes, Redirect Manager automatically creates a redirect from the old path to the new one. Includes an undo detection window so that immediately reversing a slug change removes the redirect instead of stacking redirects.
 

@@ -1,6 +1,6 @@
 # Redirects
 
-Redirect Manager matches incoming 404 requests against a library of redirect rules and issues the appropriate HTTP redirect. Rules support five match types, priority ordering, all standard redirect status codes, and multi-site scoping.
+Redirect Manager matches incoming 404 requests against a library of redirect rules and issues the appropriate HTTP redirect. Rules support four match types, priority ordering, all standard redirect status codes, and multi-site scoping.
 
 ## Creating Redirects
 
@@ -29,12 +29,11 @@ RedirectManager::$plugin->redirects->createRedirect([
 
 ## Match Types
 
-Five match types give you precise control over how source URLs are compared.
+Four match types give you precise control over how source URLs are compared.
 
 | Match Type | Behavior | Example Pattern | Matches |
 |------------|----------|-----------------|---------|
 | `exact` | Case-insensitive exact match | `/old-page` | `/old-page`, `/OLD-PAGE` |
-| `contains` | URL contains the pattern anywhere | `old-post` | `/blog/old-post`, `/archive/old-post/123` |
 | `wildcard` | `*` wildcards match any characters | `/blog/*` | `/blog/post-1`, `/blog/category/news` |
 | `prefix` | URL starts with the pattern | `/old-` | `/old-page`, `/old-blog`, `/old-anything` |
 | `regex` | Full regular expression | `^/blog/(\d+)/(.*)$` | `/blog/123/my-post` |
@@ -51,22 +50,9 @@ No match: /old-page/subpage
           /old-page-2
 ```
 
-### Contains Match
-
-Matches any URL that includes the pattern string.
-
-```
-Pattern:  old-post
-Matches:  /blog/old-post
-          /archive/old-post/123
-          /old-post-title
-```
-
-Use this cautiously — a short pattern like `page` would match many unintended URLs.
-
 ### Wildcard Match
 
-Replaces `*` with "any characters". Useful for redirecting entire URL subtrees.
+Replaces `*` with "any characters". Useful for redirecting entire URL subtrees. Each `*` is also a capture group — use `$1`, `$2` (etc.) in the destination to insert what each `*` matched, in order (e.g. `/blog/*` → `/news/$1`).
 
 ```
 Pattern:  /blog/*
@@ -77,7 +63,7 @@ Matches:  /blog/post-1
 
 ### Prefix Match
 
-Matches any URL that starts with the pattern string.
+Matches any URL that starts with the pattern string. The portion of the URL after the prefix is available as `$1` in the destination (e.g. `/old-` → `/new-/$1`).
 
 ```
 Pattern:  /old-
@@ -103,7 +89,21 @@ Matches and redirects:
 Capture group substitution is processed by `MatchingService::applyCaptures()` @since(5.10.0).
 
 > [!NOTE]
+> Capture substitution works for **Wildcard**, **Prefix**, and **Regex** matches (Exact produces no captures). A destination that references more captures than the match type can produce — `$1` under Exact Match, or `$2` when the source has only one `*` / one capturing group — is rejected when you save or import.
+
+> [!NOTE]
 > Regex patterns are matched against the full path (or full URL, depending on [Source Match Mode](#source-match-mode)). Do not wrap patterns in delimiters.
+
+## Destination URL
+
+The destination is where matched requests are sent. Valid destinations:
+
+- A relative path — `/new-page` (not protocol-relative `//host`)
+- A full `http(s)://` URL **with a host** — `https://example.com/new-page`
+- A contact/app link — `mailto:`, `tel:`, `whatsapp:`, `sms:`, `fax:`, `skype://`, `msteams:`
+- A capture reference — `$1`, `$2` (etc.), substituted from the matched source (see [Match Types](#match-types))
+
+Bare schemes (`https://` with no host), protocol-relative URLs (`//host`), and executable schemes (`javascript:`, `data:`, …) are rejected. The same rule applies to the Control Panel form and CSV import.
 
 ## Priority
 
