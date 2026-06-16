@@ -654,11 +654,11 @@ class ImportExportController extends Controller
 
             // For regex/wildcard patterns, be more lenient but still require URL-like structure
             if (in_array($redirect['matchType'], ['regex', 'wildcard'])) {
-                // Regex/wildcard: must start with / or ^ (regex start anchor) or contain URL-like characters
-                $isValidSourceUrl = preg_match('#^[/^]|^https?://#i', $sourceUrl) === 1;
+                // Regex/wildcard: must start with / or ^ (regex start anchor), or be a full URL with a host
+                $isValidSourceUrl = preg_match('#^[/^]#', $sourceUrl) === 1 || UrlSafetyHelper::isHttpUrlWithHost($sourceUrl);
             } else {
-                // Exact/prefix: must start with / or be a full URL
-                $isValidSourceUrl = preg_match('#^/|^https?://#i', $sourceUrl) === 1;
+                // Exact/prefix: must start with / or be a full URL with a host
+                $isValidSourceUrl = str_starts_with($sourceUrl, '/') || UrlSafetyHelper::isHttpUrlWithHost($sourceUrl);
             }
 
             if (!$isValidSourceUrl) {
@@ -686,7 +686,7 @@ class ImportExportController extends Controller
             // Validate destination URL format
             $destinationUrl = $redirect['destinationUrl'];
 
-            if (!$this->isValidDestinationFormat($destinationUrl)) {
+            if (!RedirectRecord::isValidDestination($destinationUrl)) {
                 $errorRows[] = [
                     'rowNumber' => $rowNumber,
                     'sourceUrl' => $sourceUrl,
@@ -718,6 +718,18 @@ class ImportExportController extends Controller
                     'error' => Craft::t('redirect-manager', 'Invalid match type: {matchType}', [
                         'matchType' => $redirect['matchType'],
                     ]),
+                ];
+                continue;
+            }
+
+            // Validate capture references against match type / source pattern
+            $captureError = RedirectRecord::captureReferenceError($destinationUrl, $redirect['matchType'], $sourceUrl);
+            if ($captureError !== null) {
+                $errorRows[] = [
+                    'rowNumber' => $rowNumber,
+                    'sourceUrl' => $sourceUrl,
+                    'destinationUrl' => $destinationUrl,
+                    'error' => $captureError,
                 ];
                 continue;
             }
@@ -926,23 +938,6 @@ class ImportExportController extends Controller
 
         Craft::$app->getSession()->setNotice($message);
         return $this->redirect('redirect-manager/import-export');
-    }
-
-    /**
-     * Whether an imported destination is a valid target: a relative path, an
-     * http(s) URL, a recognized contact/app protocol, or a regex capture group.
-     *
-     * The dangerous-scheme guard rejects executable schemes (javascript:, data:,
-     * etc.) — including obfuscated variants — before the protocol allowlist runs.
-     */
-    private function isValidDestinationFormat(string $url): bool
-    {
-        if (UrlSafetyHelper::hasDangerousScheme($url)) {
-            return false;
-        }
-
-        // Relative path (/...), http(s), contact/app protocols, or regex capture group ($1, $2, ...).
-        return preg_match('#^/|^https?://|^mailto:|^tel:|^whatsapp:|^sms:|^fax:|^skype:|^slack://|^msteams:|^\$\d#i', $url) === 1;
     }
 
     /**

@@ -7,3 +7,9 @@ sourceUrl,destinationUrl,matchType,statusCode,enabled
 /john@example.com,https://example.com,exact,301,1
 /email-dest,/john@example.com,exact,301,1
 /bad-status,https://example.com,exact,999,1
+/bare-scheme-dest,https://,exact,301,1
+https://,/landing,exact,301,1
+/cap-exact,/landing/$1,exact,301,1
+/cap-prefix,/landing/$2,prefix,301,1
+^/no-group$,/landing/$1,regex,301,1
+/cap-wild/*,/landing/$2,wildcard,301,1

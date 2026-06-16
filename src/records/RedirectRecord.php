@@ -10,6 +10,7 @@ namespace lindemannrock\redirectmanager\records;
 
 use craft\db\ActiveRecord;
 use craft\records\Site;
+use lindemannrock\base\helpers\UrlSafetyHelper;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -41,6 +42,12 @@ use yii\db\ActiveQueryInterface;
 class RedirectRecord extends ActiveRecord
 {
     /**
+     * Schemes accepted as redirect destinations in addition to relative paths
+     * and http(s) URLs. These back vanity action links (e.g. /call → tel:).
+     */
+    private const DESTINATION_SCHEMES = ['mailto', 'tel', 'whatsapp', 'sms', 'fax', 'skype', 'slack', 'msteams'];
+
+    /**
      * @inheritdoc
      */
     public static function tableName(): string
@@ -58,6 +65,7 @@ class RedirectRecord extends ActiveRecord
         $rules[] = [['sourceUrl', 'destinationUrl', 'redirectSrcMatch'], 'required'];
         $rules[] = [['sourceUrl'], 'validateSourceUrl'];
         $rules[] = [['destinationUrl'], 'validateDestinationUrl'];
+        $rules[] = [['destinationUrl'], 'validateCaptureReferences'];
 
         return $rules;
     }
@@ -106,7 +114,7 @@ class RedirectRecord extends ActiveRecord
 
         // For all other match types, enforce format based on source match mode
         $isPath = str_starts_with($url, '/');
-        $isFullUrl = str_starts_with($url, 'http://') || str_starts_with($url, 'https://');
+        $isFullUrl = UrlSafetyHelper::isHttpUrlWithHost($url);
 
         if ($this->redirectSrcMatch === 'pathonly') {
             if (!$isPath) {
@@ -146,12 +154,116 @@ class RedirectRecord extends ActiveRecord
             return;
         }
 
-        $isPath = str_starts_with($url, '/');
-        $isFullUrl = str_starts_with($url, 'http://') || str_starts_with($url, 'https://');
-
-        if (!$isPath && !$isFullUrl) {
-            $this->addError($attribute, \Craft::t('redirect-manager', 'Please enter a valid URL starting with https:// or http://, or a path starting with / (e.g., https://example.com or /page)'));
+        if (!self::isValidDestination($url)) {
+            $this->addError($attribute, \Craft::t('redirect-manager', 'Enter a path (/page), a full URL (https://example.com), or a contact link (e.g. mailto:, tel:). Protocol-relative URLs (//host) are not allowed.'));
         }
+    }
+
+    /**
+     * Validate that capture references ($1, $2, …) in the destination can be
+     * produced by the chosen match type and source pattern.
+     *
+     * @param string $attribute
+     * @since 5.33.0
+     */
+    public function validateCaptureReferences($attribute): void
+    {
+        $url = $this->$attribute;
+
+        if (empty($url)) {
+            return;
+        }
+
+        $error = self::captureReferenceError($url, (string)$this->matchType, (string)$this->sourceUrl);
+        if ($error !== null) {
+            $this->addError($attribute, $error);
+        }
+    }
+
+    /**
+     * Whether a destination value is a valid redirect target: a relative path
+     * (not protocol-relative //host), an http(s) URL, a recognized contact/app
+     * scheme, or a capture reference ($1, $2, …).
+     *
+     * Shared by the CP form and CSV import so the two surfaces can't drift.
+     *
+     * @param string $url
+     * @return bool
+     * @since 5.33.0
+     */
+    public static function isValidDestination(string $url): bool
+    {
+        if (UrlSafetyHelper::hasDangerousScheme($url)) {
+            return false;
+        }
+
+        // Capture reference ($1, $2, …) resolved at redirect time.
+        if (preg_match('#^\$\d#', $url) === 1) {
+            return true;
+        }
+
+        return UrlSafetyHelper::isSafeRedirectUrl($url, self::DESTINATION_SCHEMES);
+    }
+
+    /**
+     * Returns an error message when the destination references a capture group
+     * ($1, $2, …) the match type / source pattern can't produce, or null when
+     * the references are valid. $0 (full match) is always allowed.
+     *
+     * @param string $destination
+     * @param string $matchType
+     * @param string $sourceUrl
+     * @return string|null
+     * @since 5.33.0
+     */
+    public static function captureReferenceError(string $destination, string $matchType, string $sourceUrl): ?string
+    {
+        if (preg_match_all('/\$(\d+)/', $destination, $matches) < 1) {
+            return null;
+        }
+
+        $refs = array_map('intval', $matches[1]);
+        if ($refs === []) {
+            return null;
+        }
+
+        $maxRef = max($refs);
+        if ($maxRef < 1) {
+            return null;
+        }
+
+        if ($matchType === 'exact') {
+            return \Craft::t('redirect-manager', "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference.");
+        }
+
+        $capacity = match ($matchType) {
+            'prefix' => 1,
+            'wildcard' => substr_count($sourceUrl, '*'),
+            'regex' => self::countCaptureGroups($sourceUrl),
+            default => 0,
+        };
+
+        if ($maxRef > $capacity) {
+            return \Craft::t('redirect-manager', "The destination references {ref}, but the source pattern doesn't provide that many captures.", ['ref' => '$' . $maxRef]);
+        }
+
+        return null;
+    }
+
+    /**
+     * Count capturing groups in a regex source pattern. Deliberately over-counts
+     * (treats non-capturing groups as capturing) so a valid capture reference is
+     * never wrongly rejected — only genuinely impossible references are flagged.
+     *
+     * @param string $pattern
+     * @return int
+     */
+    private static function countCaptureGroups(string $pattern): int
+    {
+        $stripped = preg_replace('/\\\\./', '', $pattern) ?? $pattern;
+        $stripped = preg_replace('/\[[^\]]*\]/', '', $stripped) ?? $stripped;
+
+        return substr_count($stripped, '(');
     }
 
     /**

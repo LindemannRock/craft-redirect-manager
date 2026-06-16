@@ -5,4 +5,6 @@ sourceUrl,destinationUrl,matchType,statusCode,enabled
 /call-us,tel:+15551234567,exact,302,1
 ^/blog/(.*)$,/news/$1,regex,301,1
 /promo-path,https://example.com/promo,wildcard,302,1
+/blog-wild/*,/news/$1,wildcard,301,1
+/docs-prefix,/help/$1,prefix,301,1
 /gone-page,https://example.com,exact,410,1
