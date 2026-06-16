@@ -113,4 +113,41 @@ final class MatchingResolutionTest extends TestCase
 
         $this->assertSame('https://example.com/page', $result);
     }
+
+    public function testApplyCapturesSubstitutesDollarZeroFullMatch(): void
+    {
+        // $0 is the full matched string and must substitute like any other index.
+        $result = $this->matching->applyCaptures('/log$0', ['/blog/2024/post']);
+
+        $this->assertSame('/log/blog/2024/post', $result);
+    }
+
+    public function testRegexMatchingIsCaseInsensitive(): void
+    {
+        // Patterns are compiled with the `i` flag.
+        $result = $this->matching->matchWithCaptures('regex', '^/ABOUT/(.*)$', '/about/team');
+
+        $this->assertTrue($result['matched']);
+        $this->assertSame('team', $result['captures'][1]);
+    }
+
+    public function testRegexCharacterClassCaptureAndAnchoredNonMatch(): void
+    {
+        // `[^/]+` captures a single segment; the `$` anchor must reject a deeper path.
+        $match = $this->matching->matchWithCaptures('regex', '^/p/([^/]+)$', '/p/widget');
+        $this->assertTrue($match['matched']);
+        $this->assertSame('widget', $match['captures'][1]);
+
+        $noMatch = $this->matching->matchWithCaptures('regex', '^/p/([^/]+)$', '/p/widget/extra');
+        $this->assertFalse($noMatch['matched']);
+    }
+
+    public function testRegexAlternationCaptures(): void
+    {
+        $result = $this->matching->matchWithCaptures('regex', '^/(cats|dogs)/(.+)$', '/dogs/rex');
+
+        $this->assertTrue($result['matched']);
+        $this->assertSame('dogs', $result['captures'][1]);
+        $this->assertSame('rex', $result['captures'][2]);
+    }
 }
