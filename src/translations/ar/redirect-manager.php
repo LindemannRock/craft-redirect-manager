@@ -109,6 +109,7 @@ return [
     'You don\'t have permission to view analytics.' => 'ليس لديك صلاحية لعرض التحليلات.',
     'Analytics are disabled in plugin settings.' => 'التحليلات معطّلة في إعدادات الإضافة.',
     'View full analytics' => 'عرض التحليلات الكاملة',
+    'View all analytics' => 'عرض جميع التحليلات',
     'No 404s recorded' => 'لا توجد أخطاء 404 مسجّلة',
     '404 errors will appear here when they occur.' => 'ستظهر أخطاء 404 هنا عند حدوثها.',
     'Number of Days' => 'عدد الأيام',

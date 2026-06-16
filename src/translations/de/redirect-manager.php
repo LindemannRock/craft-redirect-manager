@@ -109,6 +109,7 @@ return [
     'You don\'t have permission to view analytics.' => 'Sie haben keine Berechtigung, Analytics anzuzeigen.',
     'Analytics are disabled in plugin settings.' => 'Analytics ist in den Plugin-Einstellungen deaktiviert.',
     'View full analytics' => 'Vollständige Analytics anzeigen',
+    'View all analytics' => 'Alle Analytics anzeigen',
     'No 404s recorded' => 'Keine 404-Fehler aufgezeichnet',
     '404 errors will appear here when they occur.' => '404-Fehler erscheinen hier, wenn sie auftreten.',
     'Number of Days' => 'Anzahl der Tage',

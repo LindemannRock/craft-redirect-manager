@@ -109,6 +109,7 @@ return [
     'You don\'t have permission to view analytics.' => 'アナリティクスを表示する権限がありません。',
     'Analytics are disabled in plugin settings.' => 'プラグインの設定でアナリティクスが無効になっています。',
     'View full analytics' => 'アナリティクスの全体を表示する',
+    'View all analytics' => 'すべてのアナリティクスを表示',
     'No 404s recorded' => '404 は記録されていません',
     '404 errors will appear here when they occur.' => '404 エラーが発生すると、ここに表示されます。',
     'Number of Days' => '日数',

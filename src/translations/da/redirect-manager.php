@@ -109,6 +109,7 @@ return [
     'You don\'t have permission to view analytics.' => 'Du har ikke tilladelse til at se analyser.',
     'Analytics are disabled in plugin settings.' => 'Analyser er deaktiveret i plugin-indstillingerne.',
     'View full analytics' => 'Vis fulde analyser',
+    'View all analytics' => 'Vis alle analyser',
     'No 404s recorded' => 'Ingen 404 registreret',
     '404 errors will appear here when they occur.' => '404-fejl vises her, når de opstår.',
     'Number of Days' => 'Antal dage',
