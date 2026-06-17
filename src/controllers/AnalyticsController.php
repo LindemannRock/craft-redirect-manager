@@ -68,12 +68,12 @@ class AnalyticsController extends Controller
      * Detect the type of a 404 request
      *
      * @param array $stat Analytics record data
-     * @return string 'probe', 'bot', or 'normal'
+     * @return string 'probe', 'system', 'bot', or 'normal'
      */
     private function _detectRequestType(array $stat): string
     {
         $requestType = $stat['requestType'] ?? null;
-        if (in_array($requestType, ['probe', 'bot', 'normal'], true)) {
+        if (in_array($requestType, ['probe', 'system', 'bot', 'normal'], true)) {
             return $requestType;
         }
     
@@ -120,12 +120,13 @@ class AnalyticsController extends Controller
      * Count request types while loading only the columns required by the classifier.
      *
      * @param int|array<int> $siteIds
-     * @return array{bot: int, probe: int, normal: int}
+     * @return array{bot: int, system: int, probe: int, normal: int}
      */
     private function _getRequestTypeCounts(int|array $siteIds): array
     {
         $counts = [
                 'bot' => 0,
+                'system' => 0,
                 'probe' => 0,
                 'normal' => 0,
             ];
@@ -162,7 +163,7 @@ class AnalyticsController extends Controller
         }
 
         $typeFilter = (string) $request->getQueryParam('type', 'all');
-        if (!in_array($typeFilter, ['all', 'normal', 'bot', 'probe'], true)) {
+        if (!in_array($typeFilter, ['all', 'normal', 'system', 'bot', 'probe'], true)) {
             $typeFilter = 'all';
         }
 
@@ -215,6 +216,8 @@ class AnalyticsController extends Controller
         // Request type is stored at write time so dashboard filters stay SQL-backed.
         if ($params['typeFilter'] === 'bot') {
             $query->andWhere(['requestType' => 'bot']);
+        } elseif ($params['typeFilter'] === 'system') {
+            $query->andWhere(['requestType' => 'system']);
         } elseif ($params['typeFilter'] === 'normal') {
             $query->andWhere(['requestType' => 'normal']);
         } elseif ($params['typeFilter'] === 'probe') {
@@ -278,7 +281,7 @@ class AnalyticsController extends Controller
      * Build dashboard count values shared by the page and AJAX response.
      *
      * @param array<int> $editableSiteIds
-     * @return array{allCount: int, handledCount: int, unhandledCount: int, botCount: int, probeCount: int, normalCount: int}
+     * @return array{allCount: int, handledCount: int, unhandledCount: int, botCount: int, systemCount: int, probeCount: int, normalCount: int}
      */
     private function _getDashboardCounts(array $editableSiteIds): array
     {
@@ -289,6 +292,7 @@ class AnalyticsController extends Controller
             'handledCount' => RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds, true),
             'unhandledCount' => RedirectManager::$plugin->analytics->getAnalyticsCount($editableSiteIds, false),
             'botCount' => $typeCounts['bot'],
+            'systemCount' => $typeCounts['system'],
             'probeCount' => $typeCounts['probe'],
             'normalCount' => $typeCounts['normal'],
         ];
@@ -336,6 +340,7 @@ class AnalyticsController extends Controller
             'sort' => $params['sort'],
             'dir' => $params['dir'],
             'botCount' => $counts['botCount'],
+            'systemCount' => $counts['systemCount'],
             'probeCount' => $counts['probeCount'],
             'normalCount' => $counts['normalCount'],
             'page' => $params['page'],
@@ -420,6 +425,7 @@ class AnalyticsController extends Controller
             'handledCount' => $counts['handledCount'],
             'unhandledCount' => $counts['unhandledCount'],
             'botCount' => $counts['botCount'],
+            'systemCount' => $counts['systemCount'],
             'probeCount' => $counts['probeCount'],
             'normalCount' => $counts['normalCount'],
             'page' => $params['page'],
@@ -615,8 +621,13 @@ class AnalyticsController extends Controller
             'os' => Craft::t('redirect-manager', 'OS'),
             'country' => Craft::t('redirect-manager', 'Country'),
             'city' => Craft::t('redirect-manager', 'City'),
+            'requestType' => Craft::t('redirect-manager', 'Request Type'),
+            'trafficType' => Craft::t('redirect-manager', 'Traffic Type'),
+            'isSystemAgent' => Craft::t('redirect-manager', 'System Agent'),
             'isRobot' => Craft::t('redirect-manager', 'Is Bot'),
             'botName' => Craft::t('redirect-manager', 'Bot Name'),
+            'botCategory' => Craft::t('redirect-manager', 'Bot Category'),
+            'botProducerName' => Craft::t('redirect-manager', 'Bot Producer'),
             'lastHit' => Craft::t('redirect-manager', 'Last Hit'),
         ];
 

@@ -80,7 +80,11 @@ class AnalyticsTrackingService
 
         // Detect device information using Matomo DeviceDetector
         $deviceInfo = RedirectManager::$plugin->deviceDetection->detectDevice($userAgent);
-        $requestType = AnalyticsRequestTypeHelper::detect($url, (bool)$deviceInfo['isRobot']);
+        $requestType = AnalyticsRequestTypeHelper::detect(
+            $url,
+            (bool)$deviceInfo['isRobot'],
+            is_string($deviceInfo['trafficType'] ?? null) ? $deviceInfo['trafficType'] : null,
+        );
 
         $ipState = AnalyticsIpHelper::prepare(
             $request->getUserIP(),
@@ -123,6 +127,12 @@ class AnalyticsTrackingService
                 'isRobot' => $deviceInfo['isRobot'],
                 'isMobileApp' => $deviceInfo['isMobileApp'],
                 'botName' => $deviceInfo['botName'],
+                'botCategory' => $deviceInfo['botCategory'] ?? null,
+                'botUrl' => $deviceInfo['botUrl'] ?? null,
+                'botProducerName' => $deviceInfo['botProducerName'] ?? null,
+                'botProducerUrl' => $deviceInfo['botProducerUrl'] ?? null,
+                'isSystemAgent' => $deviceInfo['isSystemAgent'] ?? false,
+                'trafficType' => $deviceInfo['trafficType'] ?? 'human',
                 'requestType' => $requestType,
                 // Geographic data
                 'country' => $geoData['countryCode'] ?? null,
@@ -135,12 +145,14 @@ class AnalyticsTrackingService
                 'dateUpdated' => $now,
                 'uid' => StringHelper::UUID(),
             ];
+
+        $analyticsData = $this->filterAnalyticsColumns($analyticsData);
     
         Craft::$app->getDb()->createCommand()
                 ->upsert(
                     AnalyticsRecord::tableName(),
                     $analyticsData,
-                    [
+                    $this->filterAnalyticsColumns([
                         'count' => new Expression('[[count]] + 1'),
                         'url' => $url, // Update to latest URL (preserves most recent query string)
                         'handled' => $handled,
@@ -162,6 +174,12 @@ class AnalyticsTrackingService
                         'isRobot' => $deviceInfo['isRobot'],
                         'isMobileApp' => $deviceInfo['isMobileApp'],
                         'botName' => $deviceInfo['botName'],
+                        'botCategory' => $deviceInfo['botCategory'] ?? null,
+                        'botUrl' => $deviceInfo['botUrl'] ?? null,
+                        'botProducerName' => $deviceInfo['botProducerName'] ?? null,
+                        'botProducerUrl' => $deviceInfo['botProducerUrl'] ?? null,
+                        'isSystemAgent' => $deviceInfo['isSystemAgent'] ?? false,
+                        'trafficType' => $deviceInfo['trafficType'] ?? 'human',
                         'requestType' => $requestType,
                         // Geographic data
                         'country' => $geoData['countryCode'] ?? null,
@@ -171,7 +189,7 @@ class AnalyticsTrackingService
                         'longitude' => $geoData['lon'] ?? null,
                         'lastHit' => $now,
                         'dateUpdated' => $now,
-                    ],
+                    ]),
                 )
                 ->execute();
     
@@ -180,6 +198,23 @@ class AnalyticsTrackingService
         if ($settings->autoTrimAnalytics) {
             $this->exportService->trimAnalytics();
         }
+    }
+
+    /**
+     * Keep pre-release local databases working until their analytics table is
+     * refreshed with the latest optional columns from Install.php.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    private function filterAnalyticsColumns(array $data): array
+    {
+        $schema = Craft::$app->getDb()->getSchema()->getTableSchema(AnalyticsRecord::tableName());
+        if ($schema === null) {
+            return $data;
+        }
+
+        return array_intersect_key($data, $schema->columns);
     }
 
     /**

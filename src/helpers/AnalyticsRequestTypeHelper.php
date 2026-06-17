@@ -68,14 +68,19 @@ class AnalyticsRequestTypeHelper
      *
      * @param string $url
      * @param bool|null $isRobot
-     * @return string 'probe', 'bot', or 'normal'
+     * @param string|null $trafficType Base device-detection traffic type (`human`, `bot`, or `system`)
+     * @return string 'probe', 'system', 'bot', or 'normal'
      */
-    public static function detect(string $url, ?bool $isRobot = false): string
+    public static function detect(string $url, ?bool $isRobot = false, ?string $trafficType = null): string
     {
         foreach (self::SECURITY_PROBE_PATTERNS as $pattern) {
             if (preg_match($pattern, $url) === 1) {
                 return 'probe';
             }
+        }
+
+        if ($trafficType === 'system') {
+            return 'system';
         }
 
         return $isRobot ? 'bot' : 'normal';

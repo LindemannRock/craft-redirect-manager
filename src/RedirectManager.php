@@ -111,6 +111,7 @@ class RedirectManager extends Plugin
                 'colorSets' => [
                     'requestType' => [
                         'normal' => ColorHelper::getPaletteColor('blue'),
+                        'system' => ColorHelper::getPaletteColor('cyan'),
                         'bot' => ColorHelper::getPaletteColor('amber'),
                         'probe' => ColorHelper::getPaletteColor('red'),
                     ],

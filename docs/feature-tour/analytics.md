@@ -15,6 +15,9 @@ Every 404 event records:
 | Browser | Browser name and version |
 | OS | Operating system name |
 | Is bot | Whether the visitor was identified as a bot |
+| Request type | Normal, bot, system agent, or security probe |
+| Bot details | Bot name, category, and producer when identified |
+| Agent | The identified bot or first-party system agent name shown in the dashboard table |
 | Country | Visitor's country (when geo-detection is enabled) |
 | City | Visitor's city (when geo-detection is enabled) |
 | IP hash | Salted SHA256 hash — original IP is never stored |
@@ -63,6 +66,10 @@ Country and city distribution charts. Only shown when `enableGeoDetection` is `t
 
 A separate view of bot-originated 404s. Bots are identified using Matomo DeviceDetector and are flagged in the data so you can exclude them from human traffic analysis.
 
+First-party service agents, such as Cache Manager warmup requests, are tracked
+as **System** traffic. They stay separate from human visitors, public crawler
+bots, and security probes in the dashboard request-type filter.
+
 ## Auto-Refresh
 
 The dashboard can refresh automatically at a configurable interval:
@@ -79,7 +86,7 @@ The most common action in the analytics dashboard is fixing unhandled 404s. Each
 
 ## Device Detection
 
-Device detection is powered by [Matomo DeviceDetector](https://github.com/matomo-org/device-detector) @since(5.14.0). It identifies device type, browser name, browser version, OS, and bot status from the user-agent string.
+Device detection is powered by [Matomo DeviceDetector](https://github.com/matomo-org/device-detector) @since(5.14.0). It identifies device type, browser name, browser version, OS, bot status, bot category, bot producer, and first-party system-agent traffic from the user-agent string and browser Client Hints when available.
 
 Detection results are cached to avoid re-parsing the same user-agent repeatedly:
 

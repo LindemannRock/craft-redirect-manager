@@ -51,6 +51,7 @@
                     options: [
                         {value: 'all', label: 'All Types'|t('redirect-manager'), status: 'all'},
                         {value: 'normal', label: 'Normal'|t('redirect-manager'), count: normalCount, colorKey: 'normal'},
+                        {value: 'system', label: 'System'|t('redirect-manager'), count: systemCount, colorKey: 'system'},
                         {value: 'bot', label: 'Bot'|t('redirect-manager'), count: botCount, colorKey: 'bot'},
                         {value: 'probe', label: 'Security Probe'|t('redirect-manager'), count: probeCount, colorKey: 'probe'},
                     ],
@@ -76,6 +77,7 @@
             {key: 'handled', label: 'Handled'|t('redirect-manager'), sortable: true},
             {key: 'deviceType', label: 'Device'|t('redirect-manager'), sortable: true, hideable: true},
             {key: 'browser', label: 'Browser'|t('redirect-manager'), sortable: true, hideable: true},
+            {key: 'agent', label: 'Agent'|t('redirect-manager'), hideable: true},
             {key: 'requestType', label: 'Type'|t('redirect-manager'), sortable: true, hideable: true},
         ],
         items: analytics,
@@ -154,16 +156,29 @@
     </td>
 
     {# Device column #}
-    <td data-column="deviceType" class="lr-hideable-column">{{ item.deviceType ? item.deviceType|capitalize : '-' }}</td>
+    <td data-column="deviceType" class="lr-hideable-column">{{ item.requestType|default('normal') == 'system' ? 'System'|t('redirect-manager') : (item.deviceType ? item.deviceType|capitalize : '-') }}</td>
 
     {# Browser column #}
     <td data-column="browser" class="lr-hideable-column">{{ item.browser ?: '-' }}</td>
 
+    {# Agent column #}
+    <td data-column="agent" class="lr-hideable-column">
+        {% set agentTitleParts = [item.botCategory ?? null, item.botProducerName ?? null]|filter %}
+        {% set agentTitle = agentTitleParts|length ? agentTitleParts|join(' · ') : null %}
+        {% if item.botName %}
+            <span{% if agentTitle %} title="{{ agentTitle }}"{% endif %}>{{ item.botName }}</span>
+        {% else %}
+            -
+        {% endif %}
+    </td>
+
     {# Request Type column #}
     <td data-column="requestType" class="lr-hideable-column">
         {% set rType = item.requestType|default('normal') %}
-        {% set typeLabel = rType == 'probe' ? 'Probe' : (rType == 'bot' ? 'Bot' : 'Normal') %}
-        {% set typeTitle = rType == 'probe' ? 'Security vulnerability scanning attempt'|t('redirect-manager') : (rType == 'bot' ? (item.botName ?: 'Bot') : 'Regular browser request'|t('redirect-manager')) %}
+        {% set typeLabel = rType == 'probe' ? 'Probe' : (rType == 'system' ? 'System' : (rType == 'bot' ? 'Bot' : 'Normal')) %}
+        {% set agentTitleParts = [item.botName ?? null, item.botCategory ?? null, item.botProducerName ?? null]|filter %}
+        {% set agentTitle = agentTitleParts|length ? agentTitleParts|join(' · ') : null %}
+        {% set typeTitle = rType == 'probe' ? 'Security vulnerability scanning attempt'|t('redirect-manager') : (rType == 'system' ? (agentTitle ?: 'System'|t('redirect-manager')) : (rType == 'bot' ? (agentTitle ?: 'Bot') : 'Regular browser request'|t('redirect-manager'))) %}
         {% include 'lindemannrock-base/_components/badge' with {
             label: typeLabel|t('redirect-manager'),
             value: rType,
@@ -263,6 +278,7 @@
         editHandlingRedirect: {{ 'Edit handling redirect'|t('redirect-manager')|json_encode|raw }},
         probe: {{ 'Probe'|t('redirect-manager')|json_encode|raw }},
         bot: {{ 'Bot'|t('redirect-manager')|json_encode|raw }},
+        system: {{ 'System'|t('redirect-manager')|json_encode|raw }},
         normal: {{ 'Normal'|t('redirect-manager')|json_encode|raw }},
         probeTitle: {{ 'Security vulnerability scanning attempt'|t('redirect-manager')|json_encode|raw }},
         normalTitle: {{ 'Regular browser request'|t('redirect-manager')|json_encode|raw }},
@@ -390,8 +406,12 @@
             typeTitle = T.probeTitle;
             typeLabel = T.probe;
             typeColor = 'red';
+        } else if (requestType === 'system') {
+            typeTitle = Craft.escapeHtml([stat.botName, stat.botCategory, stat.botProducerName].filter(Boolean).join(' · ') || T.system);
+            typeLabel = T.system;
+            typeColor = 'cyan';
         } else if (requestType === 'bot') {
-            typeTitle = Craft.escapeHtml(stat.botName || T.bot);
+            typeTitle = Craft.escapeHtml([stat.botName, stat.botCategory, stat.botProducerName].filter(Boolean).join(' · ') || T.bot);
             typeLabel = T.bot;
             typeColor = 'amber';
         } else {
@@ -426,8 +446,13 @@
                 <td data-column="count" class="lr-hideable-column">${stat.count}</td>
                 <td data-column="lastHit" class="lr-nowrap">${stat.lastHit}</td>
                 <td data-column="handled">${handledCell}</td>
-                <td data-column="deviceType" class="lr-hideable-column">${stat.deviceType ? stat.deviceType.charAt(0).toUpperCase() + stat.deviceType.slice(1) : '-'}</td>
+                <td data-column="deviceType" class="lr-hideable-column">${requestType === 'system' ? T.system : (stat.deviceType ? stat.deviceType.charAt(0).toUpperCase() + stat.deviceType.slice(1) : '-')}</td>
                 <td data-column="browser" class="lr-hideable-column">${stat.browser ? Craft.escapeHtml(stat.browser) : '-'}</td>
+                <td data-column="agent" class="lr-hideable-column">${
+                    stat.botName
+                        ? `<span${[stat.botCategory, stat.botProducerName].filter(Boolean).length ? ` title="${Craft.escapeHtml([stat.botCategory, stat.botProducerName].filter(Boolean).join(' · '))}"` : ''}>${Craft.escapeHtml(stat.botName)}</span>`
+                        : '-'
+                }</td>
                 <td data-column="requestType" class="lr-hideable-column">${typeCell}</td>
                 ${hasRowActions ? `
                 <td class="thin rightalign">
@@ -452,7 +477,7 @@
             if (data.analytics.length > 0) {
                 tbody.innerHTML = data.analytics.map(renderRow).join('');
             } else {
-                tbody.innerHTML = `<tr class="lr-empty-row"><td colspan="11" class="lr-text-center" style="padding: 2em;">${T.noAnalytics}</td></tr>`;
+                tbody.innerHTML = `<tr class="lr-empty-row"><td colspan="12" class="lr-text-center" style="padding: 2em;">${T.noAnalytics}</td></tr>`;
             }
         }
 
@@ -461,6 +486,7 @@
         const handledCountEl = document.querySelector('.menu a[href*="handled=handled"]');
         const unhandledCountEl = document.querySelector('.menu a[href*="handled=unhandled"]');
         const normalCountEl = document.querySelector('.menu a[href*="type=normal"]');
+        const systemCountEl = document.querySelector('.menu a[href*="type=system"]');
         const botCountEl = document.querySelector('.menu a[href*="type=bot"]');
         const probeCountEl = document.querySelector('.menu a[href*="type=probe"]');
 
@@ -468,6 +494,7 @@
             handled: lrSetColor('yesNo', 'yes').color,
             unhandled: lrSetColor('yesNo', 'no').color,
             normal: lrSetColor('requestType', 'normal').color,
+            system: lrSetColor('requestType', 'system').color,
             bot: lrSetColor('requestType', 'bot').color,
             probe: lrSetColor('requestType', 'probe').color,
             neutral: lrNeutralColor(),
@@ -477,6 +504,7 @@
         if (handledCountEl) handledCountEl.innerHTML = `<span class="status" style="background: ${handledFilter == 'handled' ? dotColors.handled : dotColors.neutral};"></span>${T.handled} (${data.handledCount})`;
         if (unhandledCountEl) unhandledCountEl.innerHTML = `<span class="status" style="background: ${handledFilter == 'unhandled' ? dotColors.unhandled : dotColors.neutral};"></span>${T.unhandled} (${data.unhandledCount})`;
         if (normalCountEl) normalCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'normal' ? dotColors.normal : dotColors.neutral};"></span>${T.normal} (${data.normalCount})`;
+        if (systemCountEl) systemCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'system' ? dotColors.system : dotColors.neutral};"></span>${T.system} (${data.systemCount})`;
         if (botCountEl) botCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'bot' ? dotColors.bot : dotColors.neutral};"></span>${T.bot} (${data.botCount})`;
         if (probeCountEl) probeCountEl.innerHTML = `<span class="status" style="background: ${typeFilter == 'probe' ? dotColors.probe : dotColors.neutral};"></span>${T.securityProbe} (${data.probeCount})`;
     });

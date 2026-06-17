@@ -164,6 +164,12 @@ class Install extends Migration
                 'isRobot' => $this->boolean()->defaultValue(false),
                 'isMobileApp' => $this->boolean()->defaultValue(false),
                 'botName' => $this->string(100)->null(),
+                'botCategory' => $this->string(100)->null(),
+                'botUrl' => $this->string(255)->null(),
+                'botProducerName' => $this->string(100)->null(),
+                'botProducerUrl' => $this->string(255)->null(),
+                'isSystemAgent' => $this->boolean()->defaultValue(false),
+                'trafficType' => $this->string(20)->notNull()->defaultValue('human'),
                 'requestType' => $this->string(20)->notNull()->defaultValue('normal'),
                 // Geographic data
                 'country' => $this->string(2)->null(),

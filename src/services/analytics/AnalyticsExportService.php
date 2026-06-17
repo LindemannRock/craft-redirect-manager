@@ -128,8 +128,13 @@ class AnalyticsExportService
                 'os' => $stat['osName'] ?? '',
                 'country' => GeoHelper::getCountryName($stat['country'] ?? ''),
                 'city' => $stat['city'] ?? '',
+                'requestType' => $stat['requestType'] ?? '',
+                'trafficType' => $stat['trafficType'] ?? '',
+                'isSystemAgent' => !empty($stat['isSystemAgent']) ? 'Yes' : 'No',
                 'isRobot' => $stat['isRobot'] ? 'Yes' : 'No',
                 'botName' => $stat['botName'] ?? '',
+                'botCategory' => $stat['botCategory'] ?? '',
+                'botProducerName' => $stat['botProducerName'] ?? '',
                 'lastHit' => $stat['lastHit'],
             ];
         }
@@ -198,14 +203,14 @@ class AnalyticsExportService
             return $this->_exportAsJson($analytics);
         }
 
-        $csv = "URL,Referrer,Hits,Last Hit,Site,Handled,Device Type,Device Brand,Device Model,Browser,Browser Version,Browser Engine,OS Name,OS Version,Bot,Bot Name,Country,City,IP Hash,User Agent,Date Created\n";
+        $csv = "URL,Referrer,Hits,Last Hit,Site,Handled,Device Type,Device Brand,Device Model,Browser,Browser Version,Browser Engine,OS Name,OS Version,Request Type,Traffic Type,System Agent,Bot,Bot Name,Bot Category,Bot Producer,Country,City,IP Hash,User Agent,Date Created\n";
         $siteNameMap = $this->_getSiteNameMap($analytics);
     
         foreach ($analytics as $stat) {
             $siteName = $siteNameMap[(int)$stat['siteId']] ?? '-';
 
             $csv .= sprintf(
-                '"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s"' . "\n",
+                '"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s"' . "\n",
                 str_replace('"', '""', $stat['url']),
                 str_replace('"', '""', $stat['referrer'] ?? ''),
                 $stat['count'],
@@ -220,8 +225,13 @@ class AnalyticsExportService
                 $stat['browserEngine'] ?? '',
                 $stat['osName'] ?? '',
                 $stat['osVersion'] ?? '',
+                $stat['requestType'] ?? '',
+                $stat['trafficType'] ?? '',
+                !empty($stat['isSystemAgent']) ? 'Yes' : 'No',
                 $stat['isRobot'] ? 'Yes' : 'No',
                 $stat['botName'] ?? '',
+                $stat['botCategory'] ?? '',
+                $stat['botProducerName'] ?? '',
                 GeoHelper::getCountryName($stat['country'] ?? ''),
                 $stat['city'] ?? '',
                 $stat['ip'] ?? '',

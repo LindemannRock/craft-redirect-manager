@@ -21,12 +21,13 @@ use yii\base\Request as YiiRequest;
  * SQL-backed request-type filter (audit batch 2.10).
  *
  * {@see \lindemannrock\redirectmanager\helpers\AnalyticsRequestTypeHelper::detect()}
- * collapses a 404 into one of three buckets — `probe` (security-scanner URL
- * pattern), `bot` (a non-probe hit flagged as a robot), or `normal` — and
- * `record404()` persists that value into the indexed `requestType` column so
- * the dashboard can filter in SQL instead of scanning every row in PHP. A
- * security probe outranks the bot flag: `/wp-config.php` from a crawler is a
- * probe, not a bot.
+ * collapses a 404 into one of four buckets — `probe` (security-scanner URL
+ * pattern), `system` (first-party service agent), `bot` (a non-probe hit
+ * flagged as a robot), or `normal` — and `record404()` persists that value
+ * into the indexed `requestType` column so the dashboard can filter in SQL
+ * instead of scanning every row in PHP. A security probe outranks the bot and
+ * system flags: `/wp-config.php` from a crawler is a probe, not a bot/system
+ * row.
  *
  * The pure `detect()` assertions need no fixtures. The storage assertion drives
  * the full `record404()` path, which reaches for `Craft::$app->request`
@@ -145,6 +146,15 @@ final class AnalyticsRequestTypeTest extends TestCase
         );
     }
 
+    public function testDetectClassifiesSystemTrafficSeparately(): void
+    {
+        $this->assertSame(
+            'system',
+            AnalyticsRequestTypeHelper::detect('/some/missing/page', true, 'system'),
+            'A non-probe system-agent hit is tracked separately from public bot traffic.',
+        );
+    }
+
     public function testDetectClassifiesOrdinaryHitsAsNormal(): void
     {
         $this->assertSame(
@@ -164,6 +174,15 @@ final class AnalyticsRequestTypeTest extends TestCase
             'probe',
             AnalyticsRequestTypeHelper::detect('/wp-config.php', true),
             'A security-scanner pattern is a probe even when the request is a robot.',
+        );
+    }
+
+    public function testProbeOutranksSystem(): void
+    {
+        $this->assertSame(
+            'probe',
+            AnalyticsRequestTypeHelper::detect('/wp-config.php', true, 'system'),
+            'A security-scanner pattern is a probe even when the request is a system agent.',
         );
     }
 
@@ -197,5 +216,35 @@ final class AnalyticsRequestTypeTest extends TestCase
             $row['requestType'],
             'An ordinary path must not be classified as a security probe.',
         );
+    }
+
+    public function testRecord404PersistsSystemRequestType(): void
+    {
+        Craft::$app->set('request', new StubConsoleRequest(
+            userIp: '203.0.113.42',
+            userAgent: 'CacheManager/1.0',
+        ));
+
+        $url = '/' . self::MARKER . 'system_' . substr(uniqid('', true), -8);
+
+        $this->analytics->record404($url, false);
+
+        $row = $this->fetchRow('{{%redirectmanager_analytics}}', ['urlParsed' => $url]);
+        $this->assertNotNull($row);
+        $this->assertSame(
+            'system',
+            $row['requestType'],
+            'A Cache Manager warmup hit must persist as system traffic.',
+        );
+
+        if (array_key_exists('trafficType', $row)) {
+            $this->assertSame('system', $row['trafficType']);
+        }
+        if (array_key_exists('isSystemAgent', $row)) {
+            $this->assertSame('1', (string)$row['isSystemAgent']);
+        }
+        if (array_key_exists('botProducerName', $row)) {
+            $this->assertSame('LindemannRock', $row['botProducerName']);
+        }
     }
 }
