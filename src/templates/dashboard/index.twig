@@ -411,7 +411,7 @@
         const hasRowActions = actionMenuItem !== '' || canClearAnalytics;
 
         return `
-            <tr class="lr-data-row" data-id="${stat.id}" data-entry-id="${stat.id}">
+            <tr class="lr-data-row" data-id="${stat.id}" data-entry-id="${stat.id}" data-selectable="true">
                 <td class="lr-checkbox-cell">
                     <div class="checkbox" title="${T.select}" tabindex="0" aria-checked="false" role="checkbox"></div>
                 </td>
@@ -451,12 +451,6 @@
         if (tbody && data.analytics) {
             if (data.analytics.length > 0) {
                 tbody.innerHTML = data.analytics.map(renderRow).join('');
-
-                tbody.querySelectorAll('.menubtn').forEach(function(btn) {
-                    if (!btn._menuBtn && Craft.MenuBtn) {
-                        btn._menuBtn = new Craft.MenuBtn(btn);
-                    }
-                });
             } else {
                 tbody.innerHTML = `<tr class="lr-empty-row"><td colspan="11" class="lr-text-center" style="padding: 2em;">${T.noAnalytics}</td></tr>`;
             }

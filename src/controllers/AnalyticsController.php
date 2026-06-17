@@ -425,7 +425,16 @@ class AnalyticsController extends Controller
             'page' => $params['page'],
             'limit' => $params['limit'],
             'offset' => $params['offset'],
-            'totalPages' => (int)ceil($result['totalCount'] / $params['limit']),
+            'totalPages' => max(1, (int)ceil($result['totalCount'] / $params['limit'])),
+            'pagination' => [
+                'page' => $params['page'],
+                'limit' => $params['limit'],
+                'totalCount' => $result['totalCount'],
+                'totalPages' => max(1, (int)ceil($result['totalCount'] / $params['limit'])),
+            ],
+            'refresh' => [
+                'enabled' => $settings->refreshIntervalSecs > 0,
+            ],
         ]);
     }
 
