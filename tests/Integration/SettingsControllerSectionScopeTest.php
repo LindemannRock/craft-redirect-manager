@@ -69,7 +69,6 @@ final class SettingsControllerSectionScopeTest extends TestCase
                 'redirectCacheDuration',
             ],
             'advanced' => [
-                'enableApiEndpoint',
                 'excludePatterns',
                 'additionalHeaders',
             ],

@@ -315,10 +315,6 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => '詳細設定',
-    'API Settings' => 'API 設定',
-    'Enable API Endpoint' => 'API エンドポイントを有効にする',
-    'Enable GraphQL endpoint for headless implementations<br><strong>Note:</strong> GraphQL API coming soon in future update.' => 'ヘッドレス実装用の GraphQL エンドポイントを有効にする<br><strong>注意:</strong> GraphQL API は将来のアップデートで提供予定です。',
-    'Coming soon - GraphQL API is planned for a future release' => '近日公開予定 – GraphQL API は将来のリリースに予定されています',
     'URL Filtering' => 'URL フィルタリング',
     'Exclude Patterns' => '除外パターン',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '{pluginName} から除外する URI に一致させる[正規表現](https://regexr.com/)です。',
@@ -736,7 +732,6 @@ return [
     'This is being overridden by the <code>deviceDetectionCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>deviceDetectionCacheDuration</code> 設定によって上書きされています。',
     'This is being overridden by the <code>enableRedirectCache</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>enableRedirectCache</code> 設定によって上書きされています。',
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>redirectCacheDuration</code> 設定によって上書きされています。',
-    'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>enableApiEndpoint</code> 設定によって上書きされています。',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>excludePatterns</code> 設定によって上書きされています。',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>additionalHeaders</code> 設定によって上書きされています。',
 ];

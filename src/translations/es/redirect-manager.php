@@ -315,10 +315,6 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => 'Configuración avanzada',
-    'API Settings' => 'Configuración de API',
-    'Enable API Endpoint' => 'Activar punto de conexión API',
-    'Enable GraphQL endpoint for headless implementations<br><strong>Note:</strong> GraphQL API coming soon in future update.' => 'Activar punto de conexión GraphQL para implementaciones headless<br><strong>Nota:</strong> La API GraphQL estará disponible próximamente en una actualización futura.',
-    'Coming soon - GraphQL API is planned for a future release' => 'Próximamente – La API GraphQL está planificada para una versión futura',
     'URL Filtering' => 'Filtrado de URL',
     'Exclude Patterns' => 'Patrones de exclusión',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '[Expresiones regulares](https://regexr.com/) para hacer coincidir URI que deben excluirse de {pluginName}.',
@@ -736,7 +732,6 @@ return [
     'This is being overridden by the <code>deviceDetectionCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta configuración está siendo sobreescrita por el ajuste <code>deviceDetectionCacheDuration</code> en <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>enableRedirectCache</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta configuración está siendo sobreescrita por el ajuste <code>enableRedirectCache</code> en <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta configuración está siendo sobreescrita por el ajuste <code>redirectCacheDuration</code> en <code>config/redirect-manager.php</code>.',
-    'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta configuración está siendo sobreescrita por el ajuste <code>enableApiEndpoint</code> en <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta configuración está siendo sobreescrita por el ajuste <code>excludePatterns</code> en <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta configuración está siendo sobreescrita por el ajuste <code>additionalHeaders</code> en <code>config/redirect-manager.php</code>.',
 ];

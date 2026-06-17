@@ -315,10 +315,6 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => 'Impostazioni avanzate',
-    'API Settings' => 'Impostazioni API',
-    'Enable API Endpoint' => 'Abilita endpoint API',
-    'Enable GraphQL endpoint for headless implementations<br><strong>Note:</strong> GraphQL API coming soon in future update.' => 'Abilita l\'endpoint GraphQL per implementazioni headless<br><strong>Nota:</strong> API GraphQL in arrivo in un aggiornamento futuro.',
-    'Coming soon - GraphQL API is planned for a future release' => 'Disponibile a breve – API GraphQL prevista per una versione futura',
     'URL Filtering' => 'Filtraggio URL',
     'Exclude Patterns' => 'Pattern di esclusione',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '[Espressioni regolari](https://regexr.com/) per trovare URI da escludere da {pluginName}.',
@@ -736,7 +732,6 @@ return [
     'This is being overridden by the <code>deviceDetectionCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Questa impostazione viene sovrascritta da <code>deviceDetectionCacheDuration</code> in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>enableRedirectCache</code> setting in <code>config/redirect-manager.php</code>.' => 'Questa impostazione viene sovrascritta da <code>enableRedirectCache</code> in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Questa impostazione viene sovrascritta da <code>redirectCacheDuration</code> in <code>config/redirect-manager.php</code>.',
-    'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => 'Questa impostazione viene sovrascritta da <code>enableApiEndpoint</code> in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Questa impostazione viene sovrascritta da <code>excludePatterns</code> in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Questa impostazione viene sovrascritta da <code>additionalHeaders</code> in <code>config/redirect-manager.php</code>.',
 ];

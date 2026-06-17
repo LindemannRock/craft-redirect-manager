@@ -28,23 +28,7 @@
 		{{ redirectInput('redirect-manager/settings/advanced') }}
 		{{ hiddenInput('section', 'advanced') }}
 
-		<h2 class="first">{{ "API Settings"|t('redirect-manager') }}</h2>
-
-		{{ forms.lightswitchField({
-            label: 'Enable API Endpoint'|t('redirect-manager'),
-            instructions: 'Enable GraphQL endpoint for headless implementations<br><strong>Note:</strong> GraphQL API coming soon in future update.'|t('redirect-manager')|raw,
-            id: 'enableApiEndpoint',
-            name: 'settings[enableApiEndpoint]',
-            on: settings.enableApiEndpoint,
-            disabled: true,
-            tip: 'Coming soon - GraphQL API is planned for a future release'|t('redirect-manager'),
-            warning: settings.isOverriddenByConfig('enableApiEndpoint') ?
-                "This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
-        }) }}
-
-		<hr>
-
-		<h2>{{ "URL Filtering"|t('redirect-manager') }}</h2>
+		<h2 class="first">{{ "URL Filtering"|t('redirect-manager') }}</h2>
 
 		{{ forms.editableTableField({
             label: 'Exclude Patterns'|t('redirect-manager'),

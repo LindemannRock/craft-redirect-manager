@@ -186,11 +186,7 @@ return [
         // ========================================
         // ADVANCED SETTINGS
         // ========================================
-        // API endpoints, exclusion patterns, and custom headers
-
-        // Enable API Endpoint
-        // Whether to enable the GraphQL endpoint
-        'enableApiEndpoint' => false,
+        // Exclusion patterns and custom headers
 
         // Exclude Patterns
         // Regular expressions to exclude URLs from redirect handling

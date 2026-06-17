@@ -25,7 +25,7 @@ return [
     'Interface' => 'Interface',
     'Backup' => 'Cópia de segurança',
     'Cache' => 'Cache',
-    'Advanced' => 'Avançadas',
+    'Advanced' => 'Avançado',
     'Test' => 'Teste',
 
     // Permissions
@@ -315,10 +315,6 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => 'Definições avançadas',
-    'API Settings' => 'Definições de API',
-    'Enable API Endpoint' => 'Ativar endpoint de API',
-    'Enable GraphQL endpoint for headless implementations<br><strong>Note:</strong> GraphQL API coming soon in future update.' => 'Ativar endpoint GraphQL para implementações headless<br><strong>Nota:</strong> API GraphQL disponível em breve numa atualização futura.',
-    'Coming soon - GraphQL API is planned for a future release' => 'Disponível em breve – API GraphQL prevista para uma versão futura',
     'URL Filtering' => 'Filtragem de URL',
     'Exclude Patterns' => 'Padrões de exclusão',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '[Expressões regulares](https://regexr.com/) para corresponder a URI que devem ser excluídos de {pluginName}.',
@@ -736,7 +732,6 @@ return [
     'This is being overridden by the <code>deviceDetectionCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta definição está a ser substituída por <code>deviceDetectionCacheDuration</code> em <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>enableRedirectCache</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta definição está a ser substituída por <code>enableRedirectCache</code> em <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta definição está a ser substituída por <code>redirectCacheDuration</code> em <code>config/redirect-manager.php</code>.',
-    'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta definição está a ser substituída por <code>enableApiEndpoint</code> em <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta definição está a ser substituída por <code>excludePatterns</code> em <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta definição está a ser substituída por <code>additionalHeaders</code> em <code>config/redirect-manager.php</code>.',
 ];

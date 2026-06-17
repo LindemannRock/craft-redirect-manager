@@ -315,10 +315,6 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => 'Paramètres avancés',
-    'API Settings' => 'Paramètres API',
-    'Enable API Endpoint' => 'Activer le point de terminaison API',
-    'Enable GraphQL endpoint for headless implementations<br><strong>Note:</strong> GraphQL API coming soon in future update.' => 'Activer le point de terminaison GraphQL pour les implémentations headless<br><strong>Remarque :</strong> L\'API GraphQL sera disponible prochainement dans une prochaine mise à jour.',
-    'Coming soon - GraphQL API is planned for a future release' => 'Bientôt disponible – L\'API GraphQL est prévue pour une prochaine version',
     'URL Filtering' => 'Filtrage des URL',
     'Exclude Patterns' => 'Modèles d\'exclusion',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '[Expressions régulières](https://regexr.com/) pour faire correspondre les URI à exclure de {pluginName}.',
@@ -736,7 +732,6 @@ return [
     'This is being overridden by the <code>deviceDetectionCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Ce paramètre est remplacé par le paramètre <code>deviceDetectionCacheDuration</code> dans <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>enableRedirectCache</code> setting in <code>config/redirect-manager.php</code>.' => 'Ce paramètre est remplacé par le paramètre <code>enableRedirectCache</code> dans <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Ce paramètre est remplacé par le paramètre <code>redirectCacheDuration</code> dans <code>config/redirect-manager.php</code>.',
-    'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => 'Ce paramètre est remplacé par le paramètre <code>enableApiEndpoint</code> dans <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Ce paramètre est remplacé par le paramètre <code>excludePatterns</code> dans <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Ce paramètre est remplacé par le paramètre <code>additionalHeaders</code> dans <code>config/redirect-manager.php</code>.',
 ];

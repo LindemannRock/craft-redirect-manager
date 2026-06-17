@@ -171,11 +171,6 @@ class Settings extends Model
     public ?int $refreshIntervalSecs = null;
 
     /**
-     * @var bool Whether to enable GraphQL endpoint
-     */
-    public bool $enableApiEndpoint = false;
-
-    /**
      * @var array Regular expressions to exclude URLs from redirect handling
      */
     public array $excludePatterns = [];
@@ -322,7 +317,6 @@ class Settings extends Model
             'enableGeoDetection',
             'stripQueryStringFromStats',
             'autoTrimAnalytics',
-            'enableApiEndpoint',
             'enableRedirectCache',
             'cacheDeviceDetection',
             'backupEnabled',
@@ -403,7 +397,6 @@ class Settings extends Model
                     'enableGeoDetection',
                     'stripQueryStringFromStats',
                     'autoTrimAnalytics',
-                    'enableApiEndpoint',
                     'cacheDeviceDetection',
                     'backupEnabled',
                     'backupOnImport',
@@ -479,8 +472,6 @@ class Settings extends Model
             'analyticsRetention' => Craft::t('redirect-manager', 'Analytics Retention (Days)'),
             'autoTrimAnalytics' => Craft::t('redirect-manager', 'Auto Trim Analytics'),
             'refreshIntervalSecs' => Craft::t('redirect-manager', 'Dashboard Refresh Interval'),
-            // API endpoint
-            'enableApiEndpoint' => Craft::t('redirect-manager', 'Enable API Endpoint'),
             'excludePatterns' => Craft::t('redirect-manager', 'Exclude Patterns'),
             'additionalHeaders' => Craft::t('redirect-manager', 'Additional Headers'),
             // Redirect cache

@@ -93,7 +93,6 @@ class Install extends Migration
                 'autoTrimAnalytics' => $this->boolean()->notNull()->defaultValue(true),
                 'refreshIntervalSecs' => $this->integer()->null()->defaultValue(null),
                 'itemsPerPage' => $this->integer()->notNull()->defaultValue(100),
-                'enableApiEndpoint' => $this->boolean()->notNull()->defaultValue(false),
                 'excludePatterns' => $this->text()->null()->comment('JSON array'),
                 'additionalHeaders' => $this->text()->null()->comment('JSON array'),
                 'logLevel' => $this->string(20)->notNull()->defaultValue('error'),

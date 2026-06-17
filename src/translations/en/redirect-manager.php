@@ -315,10 +315,6 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => 'Advanced Settings',
-    'API Settings' => 'API Settings',
-    'Enable API Endpoint' => 'Enable API Endpoint',
-    'Enable GraphQL endpoint for headless implementations<br><strong>Note:</strong> GraphQL API coming soon in future update.' => 'Enable GraphQL endpoint for headless implementations<br><strong>Note:</strong> GraphQL API coming soon in future update.',
-    'Coming soon - GraphQL API is planned for a future release' => 'Coming soon - GraphQL API is planned for a future release',
     'URL Filtering' => 'URL Filtering',
     'Exclude Patterns' => 'Exclude Patterns',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.',
@@ -736,7 +732,6 @@ return [
     'This is being overridden by the <code>deviceDetectionCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>deviceDetectionCacheDuration</code> setting in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>enableRedirectCache</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>enableRedirectCache</code> setting in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.',
-    'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.',
 ];

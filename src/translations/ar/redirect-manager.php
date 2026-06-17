@@ -315,10 +315,6 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => 'الإعدادات المتقدمة',
-    'API Settings' => 'إعدادات API',
-    'Enable API Endpoint' => 'تفعيل نقطة نهاية API',
-    'Enable GraphQL endpoint for headless implementations<br><strong>Note:</strong> GraphQL API coming soon in future update.' => 'تفعيل نقطة نهاية GraphQL للتطبيقات headless<br><strong>ملاحظة:</strong> GraphQL API قادم قريباً في تحديث مستقبلي.',
-    'Coming soon - GraphQL API is planned for a future release' => 'قريباً – GraphQL API مخطط له في إصدار مستقبلي',
     'URL Filtering' => 'تصفية URL',
     'Exclude Patterns' => 'أنماط الاستثناء',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '[التعبيرات النمطية](https://regexr.com/) لمطابقة URIs التي يجب استثناؤها من {pluginName}.',
@@ -736,7 +732,6 @@ return [
     'This is being overridden by the <code>deviceDetectionCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>deviceDetectionCacheDuration</code> في <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>enableRedirectCache</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>enableRedirectCache</code> في <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>redirectCacheDuration</code> في <code>config/redirect-manager.php</code>.',
-    'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>enableApiEndpoint</code> في <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>excludePatterns</code> في <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>additionalHeaders</code> في <code>config/redirect-manager.php</code>.',
 ];

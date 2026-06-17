@@ -315,10 +315,6 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => 'Avancerade inställningar',
-    'API Settings' => 'API-inställningar',
-    'Enable API Endpoint' => 'Aktivera API-slutpunkt',
-    'Enable GraphQL endpoint for headless implementations<br><strong>Note:</strong> GraphQL API coming soon in future update.' => 'Aktivera GraphQL-slutpunkt för headless-implementationer<br><strong>Obs:</strong> GraphQL API kommer snart i en framtida uppdatering.',
-    'Coming soon - GraphQL API is planned for a future release' => 'Kommer snart – GraphQL API planeras för en framtida version',
     'URL Filtering' => 'URL-filtrering',
     'Exclude Patterns' => 'Exkluderingsmönster',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '[Reguljära uttryck](https://regexr.com/) för att matcha URI:er som ska exkluderas från {pluginName}.',
@@ -596,7 +592,7 @@ return [
     'Map Columns' => 'Mappa kolumner',
     'Your CSV has {count} rows. Map each CSV column to a redirect field.' => 'Din CSV har {count} rader. Mappa varje CSV-kolumn till ett omdirigeringsfält.',
     'Backup will be created automatically before importing to protect your existing redirects.' => 'En säkerhetskopia skapas automatiskt innan import för att skydda dina befintliga omdirigeringar.',
-    'Preview of CSV Data' => 'Förhandsgranskning av CSV-data',
+    'Preview of CSV Data' => 'Förhandsvisning av CSV-data',
     'Showing first 5 rows. {total} total rows will be imported.' => 'Visar de första 5 raderna. Totalt {total} rader kommer att importeras.',
     'Column Mapping' => 'Kolumnmappning',
     'Map your CSV columns to redirect fields. Required fields must be mapped.' => 'Mappa dina CSV-kolumner till omdirigeringsfält. Obligatoriska fält måste mappas.',
@@ -617,7 +613,7 @@ return [
     'Sample Data' => 'Exempeldata',
     'Preview Import' => 'Förhandsgranska import',
     'Import Preview' => 'Importförhandsgranskning',
-    'Preview' => 'Förhandsgranskning',
+    'Preview' => 'Förhandsvisning',
     'Total Rows' => 'Totalt antal rader',
     'Valid' => 'Giltiga',
     'Duplicates' => 'Dubbletter',
@@ -736,7 +732,6 @@ return [
     'This is being overridden by the <code>deviceDetectionCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Den här inställningen åsidosätts av <code>deviceDetectionCacheDuration</code> i <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>enableRedirectCache</code> setting in <code>config/redirect-manager.php</code>.' => 'Den här inställningen åsidosätts av <code>enableRedirectCache</code> i <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Den här inställningen åsidosätts av <code>redirectCacheDuration</code> i <code>config/redirect-manager.php</code>.',
-    'This is being overridden by the <code>enableApiEndpoint</code> setting in <code>config/redirect-manager.php</code>.' => 'Den här inställningen åsidosätts av <code>enableApiEndpoint</code> i <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Den här inställningen åsidosätts av <code>excludePatterns</code> i <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Den här inställningen åsidosätts av <code>additionalHeaders</code> i <code>config/redirect-manager.php</code>.',
 ];
