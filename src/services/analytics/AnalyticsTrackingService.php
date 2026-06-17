@@ -114,6 +114,7 @@ class AnalyticsTrackingService
                 'referrer' => $referrer,
                 'ip' => $ip,
                 'userAgent' => $userAgent,
+                'language' => $deviceInfo['language'] ?? null,
                 // Device detection fields
                 'deviceType' => $deviceInfo['deviceType'],
                 'deviceBrand' => $deviceInfo['deviceBrand'],
@@ -161,6 +162,7 @@ class AnalyticsTrackingService
                         'referrer' => $referrer,
                         'ip' => $ip,
                         'userAgent' => $userAgent,
+                        'language' => $deviceInfo['language'] ?? null,
                         // Device detection fields
                         'deviceType' => $deviceInfo['deviceType'],
                         'deviceBrand' => $deviceInfo['deviceBrand'],

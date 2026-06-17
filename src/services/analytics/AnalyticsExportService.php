@@ -124,10 +124,14 @@ class AnalyticsExportService
                 'handled' => $stat['handled'] ? 'Yes' : 'No',
                 'referrer' => $stat['referrer'] ?? '',
                 'deviceType' => $stat['deviceType'] ?? '',
-                'browser' => $stat['browser'] ?? '',
+                'deviceBrand' => $stat['deviceBrand'] ?? '',
+                'deviceModel' => $stat['deviceModel'] ?? '',
                 'os' => $stat['osName'] ?? '',
-                'country' => GeoHelper::getCountryName($stat['country'] ?? ''),
-                'city' => $stat['city'] ?? '',
+                'osVersion' => $stat['osVersion'] ?? '',
+                'browser' => $stat['browser'] ?? '',
+                'browserVersion' => $stat['browserVersion'] ?? '',
+                'browserEngine' => $stat['browserEngine'] ?? '',
+                'language' => $stat['language'] ?? '',
                 'requestType' => $stat['requestType'] ?? '',
                 'trafficType' => $stat['trafficType'] ?? '',
                 'isSystemAgent' => !empty($stat['isSystemAgent']) ? 'Yes' : 'No',
@@ -135,6 +139,9 @@ class AnalyticsExportService
                 'botName' => $stat['botName'] ?? '',
                 'botCategory' => $stat['botCategory'] ?? '',
                 'botProducerName' => $stat['botProducerName'] ?? '',
+                'userAgent' => $stat['userAgent'] ?? '',
+                'country' => GeoHelper::getCountryName($stat['country'] ?? ''),
+                'city' => $stat['city'] ?? '',
                 'lastHit' => $stat['lastHit'],
             ];
         }
@@ -203,14 +210,14 @@ class AnalyticsExportService
             return $this->_exportAsJson($analytics);
         }
 
-        $csv = "URL,Referrer,Hits,Last Hit,Site,Handled,Device Type,Device Brand,Device Model,Browser,Browser Version,Browser Engine,OS Name,OS Version,Request Type,Traffic Type,System Agent,Bot,Bot Name,Bot Category,Bot Producer,Country,City,IP Hash,User Agent,Date Created\n";
+        $csv = "URL,Referrer,Hits,Last Hit,Site,Handled,Device Type,Device Brand,Device Model,Browser,Browser Version,Browser Engine,Detected Language,OS Name,OS Version,Request Type,Traffic Type,System Agent,Bot,Bot Name,Bot Category,Bot Producer,Country,City,IP Hash,User Agent,Date Created\n";
         $siteNameMap = $this->_getSiteNameMap($analytics);
     
         foreach ($analytics as $stat) {
             $siteName = $siteNameMap[(int)$stat['siteId']] ?? '-';
 
             $csv .= sprintf(
-                '"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s"' . "\n",
+                '"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s"' . "\n",
                 str_replace('"', '""', $stat['url']),
                 str_replace('"', '""', $stat['referrer'] ?? ''),
                 $stat['count'],
@@ -223,6 +230,7 @@ class AnalyticsExportService
                 $stat['browser'] ?? '',
                 $stat['browserVersion'] ?? '',
                 $stat['browserEngine'] ?? '',
+                $stat['language'] ?? '',
                 $stat['osName'] ?? '',
                 $stat['osVersion'] ?? '',
                 $stat['requestType'] ?? '',
@@ -393,6 +401,7 @@ class AnalyticsExportService
                     'version' => $stat['browserVersion'] ?? null,
                     'engine' => $stat['browserEngine'] ?? null,
                 ],
+                'language' => $stat['language'] ?? null,
                 'os' => [
                     'name' => $stat['osName'] ?? null,
                     'version' => $stat['osVersion'] ?? null,

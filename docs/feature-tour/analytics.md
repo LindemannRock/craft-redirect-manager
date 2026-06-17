@@ -14,6 +14,7 @@ Every 404 event records:
 | Device type | Desktop, mobile, or tablet (via Matomo DeviceDetector) |
 | Browser | Browser name and version |
 | OS | Operating system name |
+| Detected language | Detected language code from request/browser fallback logic |
 | Is bot | Whether the visitor was identified as a bot |
 | Request type | Normal, bot, system agent, or security probe |
 | Bot details | Bot name, category, and producer when identified |
@@ -80,6 +81,11 @@ First-party service agents, such as Cache Manager warmup requests, are tracked
 as **System** traffic. They stay separate from human visitors, public crawler
 bots, and security probes in both the analytics charts and the dashboard
 request-type filter.
+
+Analytics exports include the same enriched request metadata, including device
+brand/model, browser version and engine, OS version, detected language, user
+agent, traffic type, system-agent flag, bot flag, bot category, and bot
+producer.
 
 ## Auto-Refresh
 

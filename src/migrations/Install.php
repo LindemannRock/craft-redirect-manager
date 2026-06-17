@@ -151,6 +151,7 @@ class Install extends Migration
                 'referrer' => $this->string(500),
                 'ip' => $this->string(64)->null(),
                 'userAgent' => $this->string(500),
+                'language' => $this->string(10)->null(),
                 // Device detection fields
                 'deviceType' => $this->string(50)->null(),
                 'deviceBrand' => $this->string(50)->null(),

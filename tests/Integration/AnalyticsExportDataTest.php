@@ -34,9 +34,15 @@ final class AnalyticsExportDataTest extends TestCase
         self::assertSame('system', $rows[0]['trafficType']);
         self::assertSame('Yes', $rows[0]['isSystemAgent']);
         self::assertSame('Yes', $rows[0]['isRobot']);
+        self::assertSame('system', $rows[0]['deviceType']);
+        self::assertSame('CacheBot', $rows[0]['browser']);
+        self::assertSame('1.0', $rows[0]['browserVersion']);
+        self::assertSame('ServiceEngine', $rows[0]['browserEngine']);
+        self::assertSame($this->analyticsTableHasColumn('language') ? 'en' : '', $rows[0]['language']);
         self::assertSame('Cache Manager', $rows[0]['botName']);
         self::assertSame('Service Agent', $rows[0]['botCategory']);
         self::assertSame('LindemannRock', $rows[0]['botProducerName']);
+        self::assertSame('CacheManager/1.0', $rows[0]['userAgent']);
     }
 
     public function testSelectedAnalyticsIdsDoNotBypassSiteScope(): void
@@ -68,11 +74,24 @@ final class AnalyticsExportDataTest extends TestCase
         $record->botCategory = 'Service Agent';
         $record->botProducerName = 'LindemannRock';
         $record->deviceType = 'system';
+        $record->browser = 'CacheBot';
+        $record->browserVersion = '1.0';
+        $record->browserEngine = 'ServiceEngine';
+        if ($this->analyticsTableHasColumn('language')) {
+            $record->language = 'en';
+        }
         $record->userAgent = 'CacheManager/1.0';
         $record->lastHit = date('Y-m-d H:i:s');
 
         self::assertTrue($record->save(false));
 
         return $record;
+    }
+
+    private function analyticsTableHasColumn(string $column): bool
+    {
+        $columns = Craft::$app->getDb()->getTableSchema(AnalyticsRecord::tableName(), true)?->columnNames ?? [];
+
+        return in_array($column, $columns, true);
     }
 }

@@ -8,11 +8,13 @@
 
 namespace lindemannrock\redirectmanager\services;
 
+use Craft;
 use craft\base\Component;
 use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\base\traits\DeviceDetectionTrait;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
+use Throwable;
 
 /**
  * Device Detection Service
@@ -43,7 +45,10 @@ class DeviceDetectionService extends Component
      */
     public function detectDevice(?string $userAgent = null): array
     {
-        return $this->detectDeviceInfo($userAgent);
+        $deviceInfo = $this->detectDeviceInfo($userAgent, ['includeLanguage' => false]);
+        $deviceInfo['language'] = $this->_detectLanguageSafely();
+
+        return $deviceInfo;
     }
 
     /**
@@ -86,5 +91,24 @@ class DeviceDetectionService extends Component
             'includeLanguage' => false,
             'includePlatform' => false,
         ];
+    }
+
+    /**
+     * Detect language without breaking console/test requests that do not expose
+     * web-only query/header helpers used by the shared detector.
+     */
+    private function _detectLanguageSafely(): string
+    {
+        $request = Craft::$app->getRequest();
+
+        if (method_exists($request, 'getQueryParam')) {
+            try {
+                return $this->detectLanguageFromConfig(['includeLanguage' => true]);
+            } catch (Throwable $e) {
+                $this->logWarning('Failed to detect request language', ['error' => $e->getMessage()]);
+            }
+        }
+
+        return substr(Craft::$app->getSites()->getPrimarySite()->language, 0, 2);
     }
 }
