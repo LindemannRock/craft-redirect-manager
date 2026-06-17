@@ -4,24 +4,27 @@
 
 <div class="lr-analytics-charts two-columns">
     <div class="lr-chart-container">
-        <h3>{{ "Bot vs Human Traffic"|t('redirect-manager') }}</h3>
+        <h3>{{ "Request Type"|t('redirect-manager') }}</h3>
         <canvas id="bot-chart"></canvas>
         <div id="bot-percentage-text" style="text-align: center; margin-top: 10px; color: #666;"></div>
     </div>
 
     <div class="lr-chart-container">
-        <h3>{{ "Top Bots"|t('redirect-manager') }}</h3>
+        <h3>{{ "Top Agents"|t('redirect-manager') }}</h3>
         <div class="lr-table-scroll">
             <table class="data fullwidth" id="top-bots-table">
                 <thead>
                     <tr>
-                        <th>{{ "Bot Name"|t('redirect-manager') }}</th>
+                        <th>{{ "Agent"|t('redirect-manager') }}</th>
+                        <th>{{ "Type"|t('redirect-manager') }}</th>
+                        <th>{{ "Bot Category"|t('redirect-manager') }}</th>
+                        <th>{{ "Bot Producer"|t('redirect-manager') }}</th>
                         <th>{{ "404s"|t('redirect-manager') }}</th>
                     </tr>
                 </thead>
                 <tbody id="top-bots-body">
                     <tr>
-                        <td colspan="2" class="thin light lr-text-center">{{ "Loading..."|t('redirect-manager') }}</td>
+                        <td colspan="5" class="thin light lr-text-center">{{ "Loading..."|t('redirect-manager') }}</td>
                     </tr>
                 </tbody>
             </table>

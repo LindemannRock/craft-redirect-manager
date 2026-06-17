@@ -174,6 +174,13 @@
             );
         }
 
+        function requestTypeLabel(type) {
+            if (type === 'system') return strings.system || 'System';
+            if (type === 'bot') return strings.bot || 'Bot';
+            if (type === 'probe') return strings.probe || 'Probe';
+            return strings.normal || 'Normal';
+        }
+
         function loadRecentUnhandled(dateRange, siteId) {
             if (recentUnhandledLoaded) return;
             requestData('recent-unhandled', { dateRange: dateRange, siteId: siteId }, function(data) {
@@ -190,7 +197,7 @@
             if (!tbody) return;
 
             if (!data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="thin light">' + Craft.escapeHtml(strings.noRecentUnhandled || 'No unhandled 404s! Great job!') + '</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="thin light">' + Craft.escapeHtml(strings.noRecentUnhandled || 'No unhandled 404s! Great job!') + '</td></tr>';
                 return;
             }
 
@@ -215,11 +222,18 @@
                 var urlCell = isSafeUrl(stat.url)
                     ? '<a class="label-link" href="' + Craft.escapeHtml(encodeURI(stat.url)) + '" target="_blank" rel="noopener noreferrer"><span><code>' + Craft.escapeHtml(urlDisplay) + '</code></span></a>'
                     : '<span><code>' + Craft.escapeHtml(urlDisplay) + '</code></span>';
+                var requestType = stat.requestType || 'normal';
+                var agentTitle = [stat.botCategory, stat.botProducerName].filter(Boolean).join(' · ');
+                var agentCell = stat.botName
+                    ? '<span' + (agentTitle ? ' title="' + Craft.escapeHtml(agentTitle) + '"' : '') + '>' + Craft.escapeHtml(stat.botName) + '</span>'
+                    : '-';
 
                 html += '<tr>' +
                     '<td>' + urlCell + '</td>' +
                     '<td>' + Craft.escapeHtml(stat.siteName || '\u2014') + '</td>' +
                     '<td>' + Number(stat.count).toLocaleString() + '</td>' +
+                    '<td>' + Craft.escapeHtml(requestTypeLabel(requestType)) + '</td>' +
+                    '<td>' + agentCell + '</td>' +
                     '<td>' + Craft.escapeHtml(referrerDisplay) + '</td>' +
                     '<td>' + dateTimeDisplay + '</td>' +
                     '<td>' + (createUrl ? '<a href="' + Craft.escapeHtml(createUrl) + '" class="btn submit icon add" title="' + Craft.escapeHtml(strings.createRedirect || 'Create redirect') + '"></a>' : '') + '</td>' +
@@ -268,21 +282,21 @@
             var ctx = document.getElementById('bot-chart');
             if (!ctx) return;
             resetChartState(ctx);
-            if (!data || !data.chart || !data.chart.labels || !data.chart.labels.length) {
-                renderEmptyState('bot-chart', strings.noBot || 'No bot data available.', prefix);
+            if (!data || !data.chart || !data.chart.types || !data.chart.types.length) {
+                renderEmptyState('bot-chart', strings.noRequestType || strings.noBot || 'No request type data available.', prefix);
                 return;
             }
 
             window.lrCreateChart('bot-chart', 'doughnut', {
-                labels: data.chart.labels,
-                datasets: [{ data: data.chart.values, backgroundColor: [chartColors[1], chartColors[2]] }]
+                labels: data.chart.types.map(requestTypeLabel),
+                datasets: [{ data: data.chart.values, backgroundColor: [chartColors[0], chartColors[5], chartColors[2], chartColors[3]] }]
             }, {
                 plugins: { legend: { position: 'bottom' } }
             });
 
             var botText = document.getElementById('bot-percentage-text');
             if (botText) {
-                botText.innerHTML = '<strong>' + Craft.escapeHtml(String(data.botPercentage)) + '%</strong> ' + Craft.escapeHtml(strings.botTraffic || 'of traffic is from bots');
+                botText.innerHTML = Craft.escapeHtml(strings.nonHumanTraffic || 'Non-human traffic') + ': <strong>' + Craft.escapeHtml(String(data.nonHumanPercentage || 0)) + '%</strong>';
             }
         }
 
@@ -290,16 +304,20 @@
             var tbody = document.getElementById('top-bots-body');
             if (!tbody) return;
 
-            if (!data || !data.topBots || data.topBots.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="2" class="thin light" style="text-align: center;">' + Craft.escapeHtml(strings.noBotData || 'No bot data available') + '</td></tr>';
+            var topAgents = data && data.topAgents ? data.topAgents : [];
+            if (topAgents.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="thin light" style="text-align: center;">' + Craft.escapeHtml(strings.noAgentData || strings.noBotData || 'No agent data available') + '</td></tr>';
                 return;
             }
 
             var html = '';
-            data.topBots.forEach(function(bot) {
+            topAgents.forEach(function(agent) {
                 html += '<tr>' +
-                    '<td>' + Craft.escapeHtml(bot.botName) + '</td>' +
-                    '<td>' + Number(bot.count).toLocaleString() + '</td>' +
+                    '<td>' + Craft.escapeHtml(agent.botName || '-') + '</td>' +
+                    '<td>' + Craft.escapeHtml(requestTypeLabel(agent.requestType || 'normal')) + '</td>' +
+                    '<td>' + Craft.escapeHtml(agent.botCategory || '-') + '</td>' +
+                    '<td>' + Craft.escapeHtml(agent.botProducerName || '-') + '</td>' +
+                    '<td>' + Number(agent.count).toLocaleString() + '</td>' +
                     '</tr>';
             });
 

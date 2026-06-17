@@ -77,7 +77,7 @@
             {key: 'handled', label: 'Handled'|t('redirect-manager'), sortable: true},
             {key: 'deviceType', label: 'Device'|t('redirect-manager'), sortable: true, hideable: true},
             {key: 'browser', label: 'Browser'|t('redirect-manager'), sortable: true, hideable: true},
-            {key: 'agent', label: 'Agent'|t('redirect-manager'), hideable: true},
+            {key: 'botName', label: 'Agent'|t('redirect-manager'), sortable: true, hideable: true},
             {key: 'requestType', label: 'Type'|t('redirect-manager'), sortable: true, hideable: true},
         ],
         items: analytics,
@@ -162,7 +162,7 @@
     <td data-column="browser" class="lr-hideable-column">{{ item.browser ?: '-' }}</td>
 
     {# Agent column #}
-    <td data-column="agent" class="lr-hideable-column">
+    <td data-column="botName" class="lr-hideable-column">
         {% set agentTitleParts = [item.botCategory ?? null, item.botProducerName ?? null]|filter %}
         {% set agentTitle = agentTitleParts|length ? agentTitleParts|join(' · ') : null %}
         {% if item.botName %}
@@ -448,7 +448,7 @@
                 <td data-column="handled">${handledCell}</td>
                 <td data-column="deviceType" class="lr-hideable-column">${requestType === 'system' ? T.system : (stat.deviceType ? stat.deviceType.charAt(0).toUpperCase() + stat.deviceType.slice(1) : '-')}</td>
                 <td data-column="browser" class="lr-hideable-column">${stat.browser ? Craft.escapeHtml(stat.browser) : '-'}</td>
-                <td data-column="agent" class="lr-hideable-column">${
+                <td data-column="botName" class="lr-hideable-column">${
                     stat.botName
                         ? `<span${[stat.botCategory, stat.botProducerName].filter(Boolean).length ? ` title="${Craft.escapeHtml([stat.botCategory, stat.botProducerName].filter(Boolean).join(' · '))}"` : ''}>${Craft.escapeHtml(stat.botName)}</span>`
                         : '-'

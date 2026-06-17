@@ -44,8 +44,10 @@
                     <tr>
                         <th>{{ 'URL'|t('redirect-manager') }}</th>
                         <th>{{ 'Site'|t('redirect-manager') }}</th>
-                        <th>{{ 'Count'|t('redirect-manager') }}</th>
+                        <th>{{ 'Hits'|t('redirect-manager') }}</th>
                         <th>{{ 'Handled'|t('redirect-manager') }}</th>
+                        <th>{{ 'Type'|t('redirect-manager') }}</th>
+                        <th>{{ 'Agent'|t('redirect-manager') }}</th>
                         <th>{{ 'Last Hit'|t('redirect-manager') }}</th>
                     </tr>
                 </thead>
@@ -86,11 +88,29 @@
                                     } only %}
                                 {% endif %}
                             </td>
+                            <td>
+                                {% set rType = stat.requestType|default('normal') %}
+                                {% set typeLabel = rType == 'probe' ? 'Probe' : (rType == 'system' ? 'System' : (rType == 'bot' ? 'Bot' : 'Normal')) %}
+                                {% include 'lindemannrock-base/_components/badge' with {
+                                    label: typeLabel|t('redirect-manager'),
+                                    value: rType,
+                                    colorSet: 'requestType',
+                                } only %}
+                            </td>
+                            <td>
+                                {% set agentTitleParts = [stat.botCategory ?? null, stat.botProducerName ?? null]|filter %}
+                                {% set agentTitle = agentTitleParts|length ? agentTitleParts|join(' · ') : null %}
+                                {% if stat.botName %}
+                                    <span{% if agentTitle %} title="{{ agentTitle }}"{% endif %}>{{ stat.botName }}</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
                             <td>{{ stat.lastHit|lrDatetime }}</td>
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="5" class="thin light">{{ "No 404s recorded yet"|t('redirect-manager') }}</td>
+                            <td colspan="7" class="thin light">{{ "No 404s recorded yet"|t('redirect-manager') }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -109,7 +129,9 @@
                     <tr>
                         <th>{{ 'URL'|t('redirect-manager') }}</th>
                         <th>{{ 'Site'|t('redirect-manager') }}</th>
-                        <th>{{ 'Count'|t('redirect-manager') }}</th>
+                        <th>{{ 'Hits'|t('redirect-manager') }}</th>
+                        <th>{{ 'Type'|t('redirect-manager') }}</th>
+                        <th>{{ 'Agent'|t('redirect-manager') }}</th>
                         <th>{{ 'Referrer'|t('redirect-manager') }}</th>
                         <th>{{ 'Last Hit'|t('redirect-manager') }}</th>
                         <th></th>
@@ -117,7 +139,7 @@
                 </thead>
                 <tbody id="recent-unhandled-body">
                     <tr>
-                        <td colspan="6" class="thin light">{{ "Loading..."|t('redirect-manager') }}</td>
+                        <td colspan="8" class="thin light">{{ "Loading..."|t('redirect-manager') }}</td>
                     </tr>
                 </tbody>
             </table>

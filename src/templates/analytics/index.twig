@@ -78,18 +78,25 @@
 {% set redirectStrings = {
     noTrend: 'No trend data available for the selected filters.'|t('redirect-manager'),
     noBot: 'No bot data available for the selected filters.'|t('redirect-manager'),
+    noRequestType: 'No request type data available for the selected filters.'|t('redirect-manager'),
     noDevice: 'No device data available for the selected filters.'|t('redirect-manager'),
     noBrowser: 'No browser data available for the selected filters.'|t('redirect-manager'),
     noOs: 'No OS data available for the selected filters.'|t('redirect-manager'),
     handledLabel: 'Handled'|t('redirect-manager'),
     unhandledLabel: 'Unhandled'|t('redirect-manager'),
     botTraffic: 'of traffic is from bots'|t('redirect-manager'),
+    nonHumanTraffic: 'Non-human traffic'|t('redirect-manager'),
     redirectsLabel: '404s'|t('redirect-manager'),
     noRecentUnhandled: 'No unhandled 404s! Great job!'|t('redirect-manager'),
     noBotData: 'No bot data available'|t('redirect-manager'),
+    noAgentData: 'No agent data available'|t('redirect-manager'),
     noCountryData: 'No country data available'|t('redirect-manager'),
     noCityData: 'No city data available'|t('redirect-manager'),
     createRedirect: 'Create redirect'|t('redirect-manager'),
+    normal: 'Normal'|t('redirect-manager'),
+    system: 'System'|t('redirect-manager'),
+    bot: 'Bot'|t('redirect-manager'),
+    probe: 'Probe'|t('redirect-manager'),
 } %}
 
 {% set redirectAnalyticsConfig = {

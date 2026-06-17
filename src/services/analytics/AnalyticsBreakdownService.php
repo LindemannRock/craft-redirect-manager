@@ -14,6 +14,7 @@ use lindemannrock\base\helpers\GeoHelper;
 use lindemannrock\base\traits\GeoLookupTrait;
 use lindemannrock\redirectmanager\records\AnalyticsRecord;
 use lindemannrock\redirectmanager\RedirectManager;
+use yii\db\Expression;
 
 /**
  * Analytics Breakdown Service
@@ -41,7 +42,7 @@ class AnalyticsBreakdownService
     public function getDeviceBreakdown(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $query = (new Query())
-            ->select(['deviceType', 'COUNT(*) as count'])
+            ->select(['deviceType', 'count' => new Expression('SUM([[count]])')])
             ->from(AnalyticsRecord::tableName())
             ->where(['not', ['deviceType' => null]])
             ->groupBy('deviceType')
@@ -72,7 +73,7 @@ class AnalyticsBreakdownService
     public function getBrowserBreakdown(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $query = (new Query())
-            ->select(['browser', 'COUNT(*) as count'])
+            ->select(['browser', 'count' => new Expression('SUM([[count]])')])
             ->from(AnalyticsRecord::tableName())
             ->where(['not', ['browser' => null]])
             ->groupBy('browser')
@@ -102,7 +103,7 @@ class AnalyticsBreakdownService
     public function getOsBreakdown(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $query = (new Query())
-            ->select(['osName', 'COUNT(*) as count'])
+            ->select(['osName', 'count' => new Expression('SUM([[count]])')])
             ->from(AnalyticsRecord::tableName())
             ->where(['not', ['osName' => null]])
             ->groupBy('osName')
@@ -136,18 +137,49 @@ class AnalyticsBreakdownService
         $this->applyDateFilter($query, $days, $startDate, $endDate);
         $this->applySiteFilter($query, $siteId);
 
-        $total = (int) $query->count();
-        $botCount = (int) (clone $query)->andWhere(['isRobot' => true])->count();
-        $humanCount = $total - $botCount;
+        $total = (int) (clone $query)
+            ->select(['total' => new Expression('COALESCE(SUM([[count]]), 0)')])
+            ->scalar();
+
+        $typeRows = (clone $query)
+            ->select(['requestType', 'count' => new Expression('SUM([[count]])')])
+            ->andWhere(['requestType' => ['normal', 'system', 'bot', 'probe']])
+            ->groupBy(['requestType'])
+            ->all();
+
+        $typeCounts = [
+            'normal' => 0,
+            'system' => 0,
+            'bot' => 0,
+            'probe' => 0,
+        ];
+        foreach ($typeRows as $row) {
+            $type = (string)($row['requestType'] ?? '');
+            if (isset($typeCounts[$type])) {
+                $typeCounts[$type] = (int)$row['count'];
+            }
+        }
+
+        $humanCount = $typeCounts['normal'];
+        $botCount = $typeCounts['bot'];
+        $systemCount = $typeCounts['system'];
+        $probeCount = $typeCounts['probe'];
+        $nonHumanCount = $systemCount + $botCount + $probeCount;
 
         $botPercentage = $total > 0 ? round(($botCount / $total) * 100, 1) : 0;
+        $nonHumanPercentage = $total > 0 ? round(($nonHumanCount / $total) * 100, 1) : 0;
 
-        // Get top bots
-        $topBots = (clone $query)
-            ->select(['botName', 'COUNT(*) as count'])
-            ->andWhere(['isRobot' => true])
+        $topAgents = (clone $query)
+            ->select([
+                'botName',
+                'requestType',
+                'botCategory',
+                'botProducerName',
+                'count' => new Expression('SUM([[count]])'),
+            ])
             ->andWhere(['not', ['botName' => null]])
-            ->groupBy('botName')
+            ->andWhere(['<>', 'botName', ''])
+            ->groupBy(['botName', 'requestType', 'botCategory', 'botProducerName'])
             ->orderBy(['count' => SORT_DESC])
             ->limit(5)
             ->all();
@@ -156,11 +188,16 @@ class AnalyticsBreakdownService
             'total' => $total,
             'botCount' => $botCount,
             'humanCount' => $humanCount,
+            'systemCount' => $systemCount,
+            'probeCount' => $probeCount,
+            'nonHumanCount' => $nonHumanCount,
             'botPercentage' => $botPercentage,
-            'topBots' => $topBots,
+            'nonHumanPercentage' => $nonHumanPercentage,
+            'topAgents' => $topAgents,
+            'topBots' => $topAgents,
             'chart' => [
-                'labels' => ['Human Traffic', 'Bot Traffic'],
-                'values' => [$humanCount, $botCount],
+                'types' => ['normal', 'system', 'bot', 'probe'],
+                'values' => [$humanCount, $systemCount, $botCount, $probeCount],
             ],
         ];
     }

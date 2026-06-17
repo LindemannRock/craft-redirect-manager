@@ -172,7 +172,7 @@ class AnalyticsController extends Controller
             $search = mb_substr($search, 0, 64);
         }
 
-        $validSortFields = ['url', 'count', 'lastHit', 'siteId', 'handled', 'deviceType', 'browser', 'requestType'];
+        $validSortFields = ['url', 'count', 'lastHit', 'siteId', 'handled', 'deviceType', 'browser', 'botName', 'requestType'];
         $sort = (string) $request->getQueryParam('sort', 'lastHit');
         if (!in_array($sort, $validSortFields, true)) {
             $sort = 'lastHit';
@@ -819,6 +819,10 @@ class AnalyticsController extends Controller
                 'referrer' => $stat['referrer'] ?? null,
                 'siteId' => $stat['siteId'] ?? null,
                 'siteName' => $siteName ?? '—',
+                'requestType' => $this->_detectRequestType($stat),
+                'botName' => $stat['botName'] ?? null,
+                'botCategory' => $stat['botCategory'] ?? null,
+                'botProducerName' => $stat['botProducerName'] ?? null,
                 'date' => $date instanceof \DateTime
                     ? DateFormatHelper::formatDate($date, 'cascade', true, false)
                     : null,

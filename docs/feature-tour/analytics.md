@@ -47,12 +47,17 @@ A table of the top 404 URLs ranked by hit count. Each row shows:
 - The URL
 - Total hit count
 - Whether it was handled (redirected) or unhandled
+- Request type: normal, system, bot, or security probe
+- Agent name when a bot or first-party system agent was identified
 - Last seen timestamp
 - A "Create Redirect" action button for unhandled entries
 
 ### Recent 404s
 
-The most recent 404 events in reverse chronological order. Useful for catching new broken links quickly.
+The most recent unhandled 404 events in reverse chronological order. The table
+includes request type and agent columns so system warmups, public bots, and
+security probes can be separated from normal visitor traffic while you triage
+new broken links.
 
 ### Device & Browser Breakdown
 
@@ -62,13 +67,19 @@ Bar charts showing the distribution of device types, browsers, and operating sys
 
 Country and city distribution charts. Only shown when `enableGeoDetection` is `true`.
 
-### Bot Traffic
+### Request Type and Agents
 
-A separate view of bot-originated 404s. Bots are identified using Matomo DeviceDetector and are flagged in the data so you can exclude them from human traffic analysis.
+The Traffic & Devices tab shows a request-type chart split into normal, system,
+bot, and probe traffic. The same tab lists the top identified agents with their
+type, category, producer, and hit total.
+
+Bots are identified using Matomo DeviceDetector and are flagged in the data so
+you can separate them from human traffic analysis.
 
 First-party service agents, such as Cache Manager warmup requests, are tracked
 as **System** traffic. They stay separate from human visitors, public crawler
-bots, and security probes in the dashboard request-type filter.
+bots, and security probes in both the analytics charts and the dashboard
+request-type filter.
 
 ## Auto-Refresh
 
@@ -168,7 +179,7 @@ ddev craft queue/run
 
 ## Exporting Analytics
 
-Export 404 analytics as CSV from **Redirect Manager > Analytics > Export CSV**. The export includes all tracked fields: URL, hit count, handled status, device, browser, OS, country, city, and timestamps.
+Export 404 analytics as CSV from **Redirect Manager > Analytics > Export CSV**. The export includes all tracked fields: URL, hit count, handled status, request type, traffic type, system-agent flag, bot name, bot category, bot producer, device, browser, OS, country, city, and timestamps.
 
 The `redirectManager:exportAnalytics` permission is required to access the export button.
 
