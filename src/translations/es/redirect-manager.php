@@ -50,6 +50,7 @@ return [
     'View system logs' => 'Ver registros del sistema',
     'Download system logs' => 'Descargar registros del sistema',
     'Manage settings' => 'Gestionar configuración',
+    'Query {name} data' => 'Consultar datos de {name}',
 
     // Common
     'Save Settings' => 'Guardar configuración',

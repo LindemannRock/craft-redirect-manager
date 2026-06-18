@@ -50,6 +50,7 @@ return [
     'View system logs' => 'Afficher les journaux système',
     'Download system logs' => 'Télécharger les journaux système',
     'Manage settings' => 'Gérer les paramètres',
+    'Query {name} data' => 'Interroger les données {name}',
 
     // Common
     'Save Settings' => 'Enregistrer les paramètres',

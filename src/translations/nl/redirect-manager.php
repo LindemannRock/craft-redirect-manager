@@ -50,6 +50,7 @@ return [
     'View system logs' => 'Systeemlogboeken bekijken',
     'Download system logs' => 'Systeemlogboeken downloaden',
     'Manage settings' => 'Instellingen beheren',
+    'Query {name} data' => '{name}-gegevens opvragen',
 
     // Common
     'Save Settings' => 'Instellingen opslaan',

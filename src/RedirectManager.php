@@ -460,8 +460,14 @@ class RedirectManager extends Plugin
             Gql::class,
             Gql::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS,
             static function(RegisterGqlSchemaComponentsEvent $event) {
-                $event->queries[Craft::t('redirect-manager', 'Redirects')]['redirectManager.all:read'] = [
-                    'label' => Craft::t('redirect-manager', 'Redirects'),
+                if (self::$plugin === null) {
+                    return;
+                }
+
+                $pluginName = self::$plugin->getSettings()->getFullName();
+
+                $event->queries[$pluginName]['redirectManager.all:read'] = [
+                    'label' => Craft::t('redirect-manager', 'Query {name} data', ['name' => $pluginName]),
                 ];
             }
         );

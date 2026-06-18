@@ -2,7 +2,7 @@
 
 Redirect Manager exposes GraphQL queries for headless and SPA frontends that need the same redirect behavior Craft gets from normal 404 handling.
 
-GraphQL is controlled by Craft's GraphQL schema permissions. There is no plugin-level toggle. Enable the Redirects schema permission on the GraphQL schema used by your frontend token.
+GraphQL is controlled by Craft's GraphQL schema permissions. There is no plugin-level toggle. Enable the Query Redirect Manager data schema permission on the GraphQL schema used by your frontend token.
 
 ## Schema Permission
 

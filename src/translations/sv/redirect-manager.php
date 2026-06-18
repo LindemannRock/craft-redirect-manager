@@ -50,6 +50,7 @@ return [
     'View system logs' => 'Visa systemloggar',
     'Download system logs' => 'Ladda ner systemloggar',
     'Manage settings' => 'Hantera inställningar',
+    'Query {name} data' => 'Fråga {name}-data',
 
     // Common
     'Save Settings' => 'Spara inställningar',
