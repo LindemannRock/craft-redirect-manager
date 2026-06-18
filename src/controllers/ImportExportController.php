@@ -300,7 +300,11 @@ class ImportExportController extends Controller
     }
 
     /**
-     * Export redirects to CSV
+     * Export redirects.
+     *
+     * The redirects table uses the base export menu and posts an explicit
+     * format. The Import/Export page posts no format and remains CSV-only
+     * through the default below.
      *
      * @return Response
      */
@@ -314,6 +318,8 @@ class ImportExportController extends Controller
         // Check if specific redirects were selected
         $redirectIdsJson = $request->getBodyParam('redirectIds');
         $redirectIds = $redirectIdsJson ? json_decode($redirectIdsJson, true) : null;
+        $format = (string)$request->getBodyParam('format', 'csv');
+        ExportHelper::assertFormatEnabled($format, 'redirect-manager');
 
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
         $query = $this->buildRedirectExportQuery($redirectIds, $editableSiteIds);
@@ -361,11 +367,12 @@ class ImportExportController extends Controller
             return $this->redirect('redirect-manager/redirects');
         }
 
-        // Send as CSV download using ExportHelper for consistent filename
+        // Send download using ExportHelper for consistent filename/format handling.
         $settings = RedirectManager::$plugin->getSettings();
-        $filename = ExportHelper::filename($settings, ['export'], 'csv');
+        $extension = ExportHelper::extensionForFormat($format);
+        $filename = ExportHelper::filename($settings, ['export'], $extension);
 
-        return ExportHelper::dispatchTable($rows, $headers, 'csv', $filename, ['lastHit']);
+        return ExportHelper::dispatchTable($rows, $headers, $format, $filename, ['lastHit']);
     }
 
     /**
