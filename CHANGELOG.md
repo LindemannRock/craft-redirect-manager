@@ -1,5 +1,39 @@
 # Changelog
 
+## [5.33.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.32.1...v5.33.0) - 2026-06-18
+
+
+### Added
+
+* **analytics:** add bot detection and request type handling in analytics ([383e815](https://github.com/LindemannRock/craft-redirect-manager/commit/383e815cfdf982c8f2c58a43a48902fd4a7449ca))
+* **analytics:** add system request type detection and handling ([e705654](https://github.com/LindemannRock/craft-redirect-manager/commit/e705654846feae5a6b1129c96633089840f2aace))
+* **api:** add JSON redirects API endpoint ([96a9d33](https://github.com/LindemannRock/craft-redirect-manager/commit/96a9d330699478e11e9433e630cad4fd9d7832e6))
+* **dashboard:** add bulk actions for clearing analytics records ([50edf8e](https://github.com/LindemannRock/craft-redirect-manager/commit/50edf8ed3c079f2f194ccf5d84129b152eef0a50))
+* enrich redirect analytics traffic exports ([c24d615](https://github.com/LindemannRock/craft-redirect-manager/commit/c24d615ec557c1be9e85773fa7bfd566a4524d6d))
+* **gql:** add GraphQL support ([bd2ab4a](https://github.com/LindemannRock/craft-redirect-manager/commit/bd2ab4ae8f5c0695201081b5fcd3da48a364c9df))
+* **gql:** register dynamic redirect query with plugin name ([2f35e42](https://github.com/LindemannRock/craft-redirect-manager/commit/2f35e42ed90ea23f36952a7148ca6914b6bc9fa3))
+* **i18n:** add "View all analytics" translation across multiple locales ([7ce66eb](https://github.com/LindemannRock/craft-redirect-manager/commit/7ce66ebcf99a3022204f0f607952500e6c2f12d2))
+* **import-export:** enhance CSV export functionality with format support ([706ce32](https://github.com/LindemannRock/craft-redirect-manager/commit/706ce329b565b4e27e41a8eb0a9c43da676baa46))
+* **import-export:** enhance URL validation and capture reference checks ([a574885](https://github.com/LindemannRock/craft-redirect-manager/commit/a57488580aa517a6de2a9dc338131099d8dd794e))
+* **tests:** add analytics export data tests with enriched metadata ([b3e119a](https://github.com/LindemannRock/craft-redirect-manager/commit/b3e119ab9ff51c640086e5c4a89ebf1fd9424e4e))
+* **tests:** add integration tests for redirect resolution functionality ([a20faeb](https://github.com/LindemannRock/craft-redirect-manager/commit/a20faeb1da3ff7593ba131e0abb149856273b869))
+* **tests:** add manual CSV fixtures for testing import flow ([4e99ca0](https://github.com/LindemannRock/craft-redirect-manager/commit/4e99ca0a6bd132c584eccab16a7477d60d9cd614))
+* **widgets:** add site filtering to analytics and 404s widgets ([c98b0f0](https://github.com/LindemannRock/craft-redirect-manager/commit/c98b0f0e8ba7d16dac6c29d7c93555ba6a262c2d))
+
+
+### Fixed
+
+* **i18n:** correct phrasing in cache clearing confirmation message ([f877272](https://github.com/LindemannRock/craft-redirect-manager/commit/f877272d515a167f78ac188e0eb512c04f480bb5))
+* **i18n:** correct translations across multiple locales ([ab80da6](https://github.com/LindemannRock/craft-redirect-manager/commit/ab80da619809e495b682d1b22d5a532d903a2dad))
+* **i18n:** correct translations for pipe and tab symbol in multiple locales ([c4dc468](https://github.com/LindemannRock/craft-redirect-manager/commit/c4dc46809fdbfbb34b558b79b26ffb03fd36f7b2))
+* **i18n:** update translation keys and locale strings ([1332f8e](https://github.com/LindemannRock/craft-redirect-manager/commit/1332f8ee0861a675fd524177bea4125594febecc))
+* return cp-table refresh metadata ([97aaf63](https://github.com/LindemannRock/craft-redirect-manager/commit/97aaf63f734ef1ce173c3614425adca2f2de9096))
+
+
+### Security
+
+* block dangerous URL schemes in validation ([2316bbf](https://github.com/LindemannRock/craft-redirect-manager/commit/2316bbf0afca0b5dad013bf3cfe96019bdacf494))
+
 ## [5.32.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.32.0...v5.32.1) - 2026-06-07
 
 
