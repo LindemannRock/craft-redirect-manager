@@ -59,7 +59,10 @@ class AnalyticsTrackingService
             return;
         }
 
-        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        $contextSiteId = $context['siteId'] ?? null;
+        $siteId = is_numeric($contextSiteId) && (int)$contextSiteId > 0
+            ? (int)$contextSiteId
+            : Craft::$app->getSites()->getCurrentSite()->id;
 
         // Extract source plugin and redirectId from context
         $sourcePlugin = $context['source'] ?? 'redirect-manager';

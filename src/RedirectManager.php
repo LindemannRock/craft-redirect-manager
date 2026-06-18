@@ -15,12 +15,17 @@ use craft\base\Model;
 use craft\base\Plugin;
 use craft\events\ElementEvent;
 use craft\events\ExceptionEvent;
+use craft\events\ExecuteGqlQueryEvent;
 use craft\events\RegisterCacheOptionsEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\events\RegisterGqlQueriesEvent;
+use craft\events\RegisterGqlSchemaComponentsEvent;
+use craft\events\RegisterGqlTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\services\Dashboard;
 use craft\services\Elements;
+use craft\services\Gql;
 use craft\services\UserPermissions;
 use craft\services\Utilities;
 use craft\utilities\ClearCaches;
@@ -35,6 +40,8 @@ use lindemannrock\base\helpers\RecurringQueueHelper;
 use lindemannrock\base\helpers\ScheduleHelper;
 use lindemannrock\logginglibrary\LoggingLibrary;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
+use lindemannrock\redirectmanager\gql\queries\RedirectQuery;
+use lindemannrock\redirectmanager\gql\types\RedirectType;
 use lindemannrock\redirectmanager\jobs\CleanupAnalyticsJob;
 use lindemannrock\redirectmanager\jobs\CreateBackupJob;
 use lindemannrock\redirectmanager\models\Settings;
@@ -161,6 +168,8 @@ class RedirectManager extends Plugin
                 $variable->set('redirectManager', RedirectManagerVariable::class);
             }
         );
+
+        $this->registerGraphql();
 
         // Register CP routes
         Event::on(
@@ -418,6 +427,82 @@ class RedirectManager extends Plugin
             'redirect-manager/settings' => 'redirect-manager/settings/index',
             'redirect-manager/settings/<section:\w+>' => 'redirect-manager/settings/<section>',
         ];
+    }
+
+    /**
+     * Register GraphQL types, queries, and schema permissions.
+     *
+     * @return void
+     */
+    private function registerGraphql(): void
+    {
+        $graphqlCacheSetting = null;
+
+        Event::on(
+            Gql::class,
+            Gql::EVENT_REGISTER_GQL_TYPES,
+            static function(RegisterGqlTypesEvent $event) {
+                $event->types[] = RedirectType::class;
+            }
+        );
+
+        Event::on(
+            Gql::class,
+            Gql::EVENT_REGISTER_GQL_QUERIES,
+            static function(RegisterGqlQueriesEvent $event) {
+                foreach (RedirectQuery::getQueries() as $key => $value) {
+                    $event->queries[$key] = $value;
+                }
+            }
+        );
+
+        Event::on(
+            Gql::class,
+            Gql::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS,
+            static function(RegisterGqlSchemaComponentsEvent $event) {
+                $event->queries[Craft::t('redirect-manager', 'Redirects')]['redirectManager.all:read'] = [
+                    'label' => Craft::t('redirect-manager', 'Redirects'),
+                ];
+            }
+        );
+
+        Event::on(
+            Gql::class,
+            Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY,
+            static function(ExecuteGqlQueryEvent $event) use (&$graphqlCacheSetting) {
+                if (!self::queryResolvesRedirect($event->query)) {
+                    return;
+                }
+
+                $generalConfig = Craft::$app->getConfig()->getGeneral();
+                $graphqlCacheSetting = $generalConfig->enableGraphqlCaching;
+                $generalConfig->enableGraphqlCaching = false;
+            }
+        );
+
+        Event::on(
+            Gql::class,
+            Gql::EVENT_AFTER_EXECUTE_GQL_QUERY,
+            static function(ExecuteGqlQueryEvent $event) use (&$graphqlCacheSetting) {
+                if ($graphqlCacheSetting === null || !self::queryResolvesRedirect($event->query)) {
+                    return;
+                }
+
+                Craft::$app->getConfig()->getGeneral()->enableGraphqlCaching = $graphqlCacheSetting;
+                $graphqlCacheSetting = null;
+            }
+        );
+    }
+
+    /**
+     * Whether a GraphQL operation includes the side-effecting resolve query.
+     *
+     * @param string $query
+     * @return bool
+     */
+    private static function queryResolvesRedirect(string $query): bool
+    {
+        return str_contains($query, 'redirectManagerResolveRedirect');
     }
 
     /**

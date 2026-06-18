@@ -789,7 +789,6 @@ class SettingsController extends Controller
                 'redirectCacheDuration',
             ],
             'advanced' => [
-                'enableApiEndpoint',
                 'excludePatterns',
                 'additionalHeaders',
             ],

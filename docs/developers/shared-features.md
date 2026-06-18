@@ -8,6 +8,7 @@ Redirect Manager uses the following shared libraries and features.
 |---------|-------------|
 | `PluginHelper::bootstrap()` | Initializes base module, Twig globals, and logging configuration |
 | `PluginHelper::applyPluginNameFromConfig()` | Overrides plugin name from config file |
+| `GqlHelper` | Shared schema permission checks plus `site` / `siteId` argument resolution |
 | `SettingsConfigTrait` | Config file override detection and log level validation |
 | `SettingsDisplayNameTrait` | Standardized plugin name helper methods |
 | `SettingsPersistenceTrait` | Database persistence for Settings models |
@@ -23,6 +24,10 @@ Provides plugin name helpers in Twig templates (see Twig Globals section)
 **PluginHelper::applyPluginNameFromConfig()**
 
 Allows customizing the plugin display name via config/{plugin-handle}.php
+
+**GqlHelper**
+
+Redirect Manager uses `GqlHelper` for GraphQL schema permission checks, `site` / `siteId` argument resolution, virtual site fields, and empty string normalization. Redirect Manager still owns its query names, field list, matching behavior, and analytics side effects.
 
 **SettingsConfigTrait**
 

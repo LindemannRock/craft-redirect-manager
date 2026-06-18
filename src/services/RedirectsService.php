@@ -180,6 +180,26 @@ class RedirectsService extends Component
     {
         $siteId = Craft::$app->getSites()->getCurrentSite()->id;
 
+        return $this->findRedirectForSite($fullUrl, $pathOnly, $siteId);
+    }
+
+    /**
+     * Find a redirect for the given URLs and site ID.
+     *
+     * This is the site-aware variant used by GraphQL and integrations that
+     * need to resolve against an explicit site instead of Craft's current
+     * request site. Matching still includes global redirects (`siteId` null).
+     *
+     * @param string $fullUrl
+     * @param string $pathOnly
+     * @param int $siteId
+     * @return array|null Returns redirect array with '_captures' key if match uses capture groups
+     * @since 5.33.0
+     */
+    public function findRedirectForSite(string $fullUrl, string $pathOnly, int $siteId): ?array
+    {
+        $this->_lastMatchCaptures = [];
+
         // Try cache first (exact match only - cached redirects don't need capture recalculation)
         // Use fullUrl as cache key to properly handle both pathonly and fullurl matching modes
         $redirect = $this->getFromCache($fullUrl, $siteId);
