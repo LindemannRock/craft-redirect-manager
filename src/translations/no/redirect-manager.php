@@ -316,6 +316,11 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => 'Avanserte innstillinger',
+    'JSON API' => 'JSON API',
+    'Enable JSON API Endpoint' => 'Aktiver JSON API-endepunkt',
+    'JSON API Token' => 'JSON API-token',
+    'Expose enabled redirects as read-only JSON for SPAs, static builds, edge workers, or backend integrations. REDIRECT_MANAGER_API_TOKEN is required.' => 'Eksponer aktiverte omdirigeringer som skrivebeskyttet JSON for SPA-er, statiske bygg, edge workers eller backend-integrasjoner. REDIRECT_MANAGER_API_TOKEN er påkrevd.',
+    'Endpoint: {endpoint}' => 'Endepunkt: {endpoint}',
     'URL Filtering' => 'URL-filtrering',
     'Exclude Patterns' => 'Ekskluderingsmønstre',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '[Regulære uttrykk](https://regexr.com/) for å matche URI-er som skal ekskluderes fra {pluginName}.',
@@ -339,6 +344,11 @@ return [
 
     // Settings: Test
     'Test Redirects' => 'Test omdirigeringer',
+    'Test JSON API Endpoint' => 'Test JSON API-endepunkt',
+    'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.' => 'JSON API-endepunktet er deaktivert. Aktiver det i avanserte innstillinger før du kjører endepunktstester.',
+    'REDIRECT_MANAGER_API_TOKEN is configured. Endpoint tests will use it automatically.' => 'REDIRECT_MANAGER_API_TOKEN er konfigurert. Endepunktstester bruker den automatisk.',
+    'REDIRECT_MANAGER_API_TOKEN is not configured. Add it to your environment before running endpoint tests.' => 'REDIRECT_MANAGER_API_TOKEN er ikke konfigurert. Legg den til i miljøet før du kjører endepunktstester.',
+    'Run API Test' => 'Kjør API-test',
     'Test URL Redirects' => 'Test URL-omdirigeringer',
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Test om en URL matcher noen av dine konfigurerte omdirigeringer uten å faktisk besøke den. Nyttig for å validere kildematchmodus (sti vs. full URL) og matchetypelogikk.',
     'Test URL' => 'Test-URL',
@@ -346,6 +356,14 @@ return [
     'Please enter a URL to test' => 'Angi en URL som skal testes',
     'Validation Error' => 'Valideringsfeil',
     'Testing...' => 'Tester...',
+    'Result' => 'Resultat',
+    'Status:' => 'Status:',
+    'Time:' => 'Tid:',
+    'Equivalent curl' => 'Tilsvarende curl-kommando',
+    'Response headers' => 'Svar-headere',
+    'Response body' => 'Svar-body',
+    'Error:' => 'Feil:',
+    'Unknown error' => 'Ukjent feil',
     'Match found! This URL would redirect.' => 'Treff funnet! Denne URL-en ville omdirigere.',
     'Match Found!' => 'Treff funnet!',
     'This URL would redirect:' => 'Denne URL-en ville omdirigere:',
@@ -735,4 +753,5 @@ return [
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne innstillingen overstyres av <code>redirectCacheDuration</code> i <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne innstillingen overstyres av <code>excludePatterns</code> i <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne innstillingen overstyres av <code>additionalHeaders</code> i <code>config/redirect-manager.php</code>.',
+    'This is being overridden by the <code>apiEndpointEnabled</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne innstillingen overstyres av <code>apiEndpointEnabled</code> i <code>config/redirect-manager.php</code>.',
 ];

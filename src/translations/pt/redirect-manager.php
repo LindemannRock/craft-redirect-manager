@@ -316,6 +316,11 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => 'Definições avançadas',
+    'JSON API' => 'API JSON',
+    'Enable JSON API Endpoint' => 'Ativar endpoint da API JSON',
+    'JSON API Token' => 'Token da API JSON',
+    'Expose enabled redirects as read-only JSON for SPAs, static builds, edge workers, or backend integrations. REDIRECT_MANAGER_API_TOKEN is required.' => 'Expor redirecionamentos ativados como JSON só de leitura para SPA, builds estáticas, edge workers ou integrações backend. REDIRECT_MANAGER_API_TOKEN é obrigatório.',
+    'Endpoint: {endpoint}' => 'Endpoint: {endpoint}',
     'URL Filtering' => 'Filtragem de URL',
     'Exclude Patterns' => 'Padrões de exclusão',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '[Expressões regulares](https://regexr.com/) para corresponder a URI que devem ser excluídos de {pluginName}.',
@@ -339,6 +344,11 @@ return [
 
     // Settings: Test
     'Test Redirects' => 'Testar redirecionamentos',
+    'Test JSON API Endpoint' => 'Testar endpoint da API JSON',
+    'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.' => 'O endpoint da API JSON está desativado. Ative-o nas definições avançadas antes de executar testes do endpoint.',
+    'REDIRECT_MANAGER_API_TOKEN is configured. Endpoint tests will use it automatically.' => 'REDIRECT_MANAGER_API_TOKEN está configurado. Os testes do endpoint irão utilizá-lo automaticamente.',
+    'REDIRECT_MANAGER_API_TOKEN is not configured. Add it to your environment before running endpoint tests.' => 'REDIRECT_MANAGER_API_TOKEN não está configurado. Adicione-o ao seu ambiente antes de executar testes do endpoint.',
+    'Run API Test' => 'Executar teste da API',
     'Test URL Redirects' => 'Testar URL de redirecionamento',
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Teste se um URL corresponde a algum dos seus redirecionamentos configurados sem o visitar efetivamente. Útil para validar o Modo de correspondência de origem (caminho vs URL completo) e a lógica do Tipo de correspondência.',
     'Test URL' => 'URL de teste',
@@ -346,6 +356,14 @@ return [
     'Please enter a URL to test' => 'Introduza um URL para testar',
     'Validation Error' => 'Erro de validação',
     'Testing...' => 'A testar...',
+    'Result' => 'Resultado',
+    'Status:' => 'Estado:',
+    'Time:' => 'Tempo:',
+    'Equivalent curl' => 'Comando curl equivalente',
+    'Response headers' => 'Cabeçalhos da resposta',
+    'Response body' => 'Corpo da resposta',
+    'Error:' => 'Erro:',
+    'Unknown error' => 'Erro desconhecido',
     'Match found! This URL would redirect.' => 'Correspondência encontrada! Este URL redirecionaria.',
     'Match Found!' => 'Correspondência encontrada!',
     'This URL would redirect:' => 'Este URL redirecionaria:',
@@ -735,4 +753,5 @@ return [
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta definição está a ser substituída por <code>redirectCacheDuration</code> em <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta definição está a ser substituída por <code>excludePatterns</code> em <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta definição está a ser substituída por <code>additionalHeaders</code> em <code>config/redirect-manager.php</code>.',
+    'This is being overridden by the <code>apiEndpointEnabled</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta definição está a ser substituída por <code>apiEndpointEnabled</code> em <code>config/redirect-manager.php</code>.',
 ];

@@ -26,6 +26,15 @@ Configure Redirect Manager by creating a config file at `config/redirect-manager
 | `setNoCacheHeaders` | `bool` | `true` | Set no-cache headers on redirect responses |
 | `additionalHeaders` | `array` | `[]` | Additional HTTP headers to add to redirect responses |
 
+## JSON API
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `apiEndpointEnabled` | `bool` | `false` | Enable the read-only JSON redirects endpoint at `/actions/redirect-manager/api/get-redirects` |
+| `apiEndpointToken` | `?string` | `null` | Token for the JSON endpoint. Falls back to `REDIRECT_MANAGER_API_TOKEN`; callers must send a bearer token or `X-Redirect-Manager-Key` header |
+
+When enabled and token-configured, test the endpoint from **Redirect Manager → Settings → Test**.
+
 ## Analytics
 
 | Option | Type | Default | Description |
@@ -89,6 +98,17 @@ Configure Redirect Manager by creating a config file at `config/redirect-manager
 | `REDIRECT_MANAGER_IP_SALT` | `ipHashSalt` | IP hash salt for privacy-focused analytics |
 | `REDIRECT_MANAGER_DEFAULT_COUNTRY` | `defaultCountry` | Default country code for local development |
 | `REDIRECT_MANAGER_DEFAULT_CITY` | `defaultCity` | Default city for local development |
+| `REDIRECT_MANAGER_API_TOKEN` | `apiEndpointToken` | Token required by the read-only JSON redirects endpoint |
+
+Generate a secure JSON API token with:
+
+```bash title="PHP"
+php craft redirect-manager/security/generate-api-token
+```
+
+```bash title="DDEV"
+ddev craft redirect-manager/security/generate-api-token
+```
 
 ## Example Configuration
 
@@ -96,12 +116,18 @@ Configure Redirect Manager by creating a config file at `config/redirect-manager
 <?php
 // config/redirect-manager.php
 
+use craft\helpers\App;
+
 return [
     '*' => [
         'pluginName' => 'Redirect Manager',
         'autoCreateRedirects' => true,
         'undoWindowMinutes' => 60,
         'redirectSrcMatch' => 'pathonly',
+
+        // JSON API
+        'apiEndpointEnabled' => false,
+        'apiEndpointToken' => App::env('REDIRECT_MANAGER_API_TOKEN'),
 
         // Analytics
         'enableAnalytics' => true,

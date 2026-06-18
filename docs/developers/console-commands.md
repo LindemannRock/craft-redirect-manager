@@ -10,6 +10,7 @@ Use the plugin-level help command to see the available Redirect Manager commands
 ddev craft redirect-manager/help
 ddev craft redirect-manager/help backup/create
 ddev craft redirect-manager/help security/generate-salt
+ddev craft redirect-manager/help security/generate-api-token
 ```
 
 Craft's native command help is still available when you need the exact Yii option signature:
@@ -17,6 +18,7 @@ Craft's native command help is still available when you need the exact Yii optio
 ```bash title="DDEV"
 ddev craft help redirect-manager/backup/create
 ddev craft help redirect-manager/security/generate-salt
+ddev craft help redirect-manager/security/generate-api-token
 ```
 
 ## Security
@@ -32,6 +34,20 @@ php craft redirect-manager/security/generate-salt
 ```bash title="DDEV"
 ddev craft redirect-manager/security/generate-salt
 ```
+
+### `redirect-manager/security/generate-api-token` @since(5.33.0)
+
+Generates a cryptographically secure token for the read-only JSON redirects endpoint. The command prints the token, asks whether to write it to `.env` as `REDIRECT_MANAGER_API_TOKEN`, and asks before replacing an existing token.
+
+```bash title="PHP"
+php craft redirect-manager/security/generate-api-token
+```
+
+```bash title="DDEV"
+ddev craft redirect-manager/security/generate-api-token
+```
+
+Rotating this token immediately invalidates external consumers that still send the previous value.
 
 ## Backups @since(5.23.0)
 

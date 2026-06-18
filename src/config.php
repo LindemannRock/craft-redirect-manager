@@ -186,7 +186,20 @@ return [
         // ========================================
         // ADVANCED SETTINGS
         // ========================================
-        // Exclusion patterns and custom headers
+        // JSON API, exclusion patterns, and custom headers
+
+        // JSON API Endpoint
+        // Enables read-only access to enabled redirects at:
+        // /actions/redirect-manager/api/get-redirects
+        // Keep disabled unless a SPA, static build, edge worker, or backend
+        // integration needs to fetch redirects outside Craft's normal request flow.
+        'apiEndpointEnabled' => false,
+
+        // Required JSON API token
+        // Callers must send either:
+        // Authorization: Bearer <token>
+        // or X-Redirect-Manager-Key: <token>
+        'apiEndpointToken' => App::env('REDIRECT_MANAGER_API_TOKEN'),
 
         // Exclude Patterns
         // Regular expressions to exclude URLs from redirect handling

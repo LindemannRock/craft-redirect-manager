@@ -7,6 +7,15 @@
 {% set errorSummary = include('lindemannrock-base/_partials/ip-salt-error', {
     pluginHandle: 'redirect-manager'
 })|trim %}
+{% if settings is defined and settings.apiEndpointEnabled and not settings.apiEndpointToken %}
+    {% set apiTokenSummary = include('lindemannrock-base/_partials/env-command-error', {
+        pluginHandle: 'redirect-manager',
+        envVarName: 'REDIRECT_MANAGER_API_TOKEN',
+        commandPath: 'security/generate-api-token',
+        messageHtml: 'REDIRECT_MANAGER_API_TOKEN is not configured. Add it to your environment before running endpoint tests.'|t('redirect-manager'),
+    })|trim %}
+    {% set errorSummary = (errorSummary ~ apiTokenSummary)|trim %}
+{% endif %}
 {% if settings is defined and settings.hasErrors() %}
     {% set validationSummary = include('lindemannrock-base/_partials/error-summary', {
         errors: settings.getErrors(),

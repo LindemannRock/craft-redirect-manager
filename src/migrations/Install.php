@@ -95,6 +95,7 @@ class Install extends Migration
                 'itemsPerPage' => $this->integer()->notNull()->defaultValue(100),
                 'excludePatterns' => $this->text()->null()->comment('JSON array'),
                 'additionalHeaders' => $this->text()->null()->comment('JSON array'),
+                'apiEndpointEnabled' => $this->boolean()->notNull()->defaultValue(false),
                 'logLevel' => $this->string(20)->notNull()->defaultValue('error'),
                 'enableRedirectCache' => $this->boolean()->notNull()->defaultValue(true),
                 'redirectCacheDuration' => $this->integer()->notNull()->defaultValue(3600),

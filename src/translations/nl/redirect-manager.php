@@ -316,6 +316,11 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => 'Geavanceerde instellingen',
+    'JSON API' => 'JSON-API',
+    'Enable JSON API Endpoint' => 'JSON-API-endpoint inschakelen',
+    'JSON API Token' => 'JSON-API-token',
+    'Expose enabled redirects as read-only JSON for SPAs, static builds, edge workers, or backend integrations. REDIRECT_MANAGER_API_TOKEN is required.' => 'Stel ingeschakelde redirects beschikbaar als alleen-lezen JSON voor SPA\'s, statische builds, edge workers of backendintegraties. REDIRECT_MANAGER_API_TOKEN is vereist.',
+    'Endpoint: {endpoint}' => 'Endpoint: {endpoint}',
     'URL Filtering' => 'URL-filtering',
     'Exclude Patterns' => 'Uitsluitingspatronen',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '[Reguliere expressies](https://regexr.com/) om URI\'s te matchen die moeten worden uitgesloten van {pluginName}.',
@@ -339,6 +344,11 @@ return [
 
     // Settings: Test
     'Test Redirects' => 'Redirects testen',
+    'Test JSON API Endpoint' => 'JSON-API-endpoint testen',
+    'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.' => 'Het JSON-API-endpoint is uitgeschakeld. Schakel het in bij Geavanceerde instellingen voordat u endpointtests uitvoert.',
+    'REDIRECT_MANAGER_API_TOKEN is configured. Endpoint tests will use it automatically.' => 'REDIRECT_MANAGER_API_TOKEN is geconfigureerd. Endpointtests gebruiken deze automatisch.',
+    'REDIRECT_MANAGER_API_TOKEN is not configured. Add it to your environment before running endpoint tests.' => 'REDIRECT_MANAGER_API_TOKEN is niet geconfigureerd. Voeg deze toe aan uw omgeving voordat u endpointtests uitvoert.',
+    'Run API Test' => 'API-test uitvoeren',
     'Test URL Redirects' => 'URL-redirects testen',
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Test of een URL overeenkomt met een van uw geconfigureerde redirects zonder deze daadwerkelijk te bezoeken. Nuttig voor het valideren van de Bronovereenkomstmodus (pad vs. volledige URL) en de Overeenkomsttype-logica.',
     'Test URL' => 'Test-URL',
@@ -346,6 +356,14 @@ return [
     'Please enter a URL to test' => 'Voer een URL in om te testen',
     'Validation Error' => 'Validatiefout',
     'Testing...' => 'Bezig met testen...',
+    'Result' => 'Resultaat',
+    'Status:' => 'Status:',
+    'Time:' => 'Duur:',
+    'Equivalent curl' => 'Equivalent curl-commando',
+    'Response headers' => 'Antwoordheaders',
+    'Response body' => 'Antwoordbody',
+    'Error:' => 'Fout:',
+    'Unknown error' => 'Onbekende fout',
     'Match found! This URL would redirect.' => 'Overeenkomst gevonden! Deze URL zou redirecten.',
     'Match Found!' => 'Overeenkomst gevonden!',
     'This URL would redirect:' => 'Deze URL zou redirecten:',
@@ -735,4 +753,5 @@ return [
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Deze instelling wordt overschreven door de instelling <code>redirectCacheDuration</code> in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Deze instelling wordt overschreven door de instelling <code>excludePatterns</code> in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Deze instelling wordt overschreven door de instelling <code>additionalHeaders</code> in <code>config/redirect-manager.php</code>.',
+    'This is being overridden by the <code>apiEndpointEnabled</code> setting in <code>config/redirect-manager.php</code>.' => 'Deze instelling wordt overschreven door de instelling <code>apiEndpointEnabled</code> in <code>config/redirect-manager.php</code>.',
 ];

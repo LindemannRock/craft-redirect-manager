@@ -316,6 +316,11 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => 'Impostazioni avanzate',
+    'JSON API' => 'API JSON',
+    'Enable JSON API Endpoint' => 'Abilita endpoint API JSON',
+    'JSON API Token' => 'Token API JSON',
+    'Expose enabled redirects as read-only JSON for SPAs, static builds, edge workers, or backend integrations. REDIRECT_MANAGER_API_TOKEN is required.' => 'Espone i redirect abilitati come JSON di sola lettura per SPA, build statiche, edge worker o integrazioni backend. REDIRECT_MANAGER_API_TOKEN è obbligatorio.',
+    'Endpoint: {endpoint}' => 'Endpoint: {endpoint}',
     'URL Filtering' => 'Filtraggio URL',
     'Exclude Patterns' => 'Pattern di esclusione',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '[Espressioni regolari](https://regexr.com/) per trovare URI da escludere da {pluginName}.',
@@ -339,6 +344,11 @@ return [
 
     // Settings: Test
     'Test Redirects' => 'Testa redirect',
+    'Test JSON API Endpoint' => 'Test endpoint API JSON',
+    'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.' => 'L\'endpoint API JSON è disattivato. Attivarlo nelle impostazioni avanzate prima di eseguire i test dell\'endpoint.',
+    'REDIRECT_MANAGER_API_TOKEN is configured. Endpoint tests will use it automatically.' => 'REDIRECT_MANAGER_API_TOKEN è configurato. I test dell\'endpoint lo useranno automaticamente.',
+    'REDIRECT_MANAGER_API_TOKEN is not configured. Add it to your environment before running endpoint tests.' => 'REDIRECT_MANAGER_API_TOKEN non è configurato. Aggiungerlo all\'ambiente prima di eseguire i test dell\'endpoint.',
+    'Run API Test' => 'Esegui test API',
     'Test URL Redirects' => 'Testa URL redirect',
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Verifica se un URL corrisponde a uno dei redirect configurati senza visitarlo effettivamente. Utile per convalidare la Modalità di corrispondenza sorgente (percorso vs URL completo) e la logica del Tipo di corrispondenza.',
     'Test URL' => 'URL di test',
@@ -346,6 +356,14 @@ return [
     'Please enter a URL to test' => 'Inserire un URL da testare',
     'Validation Error' => 'Errore di validazione',
     'Testing...' => 'Test in corso...',
+    'Result' => 'Risultato',
+    'Status:' => 'Stato:',
+    'Time:' => 'Tempo:',
+    'Equivalent curl' => 'Comando curl equivalente',
+    'Response headers' => 'Intestazioni della risposta',
+    'Response body' => 'Corpo della risposta',
+    'Error:' => 'Errore:',
+    'Unknown error' => 'Errore sconosciuto',
     'Match found! This URL would redirect.' => 'Corrispondenza trovata! Questo URL reindirizzerebbe.',
     'Match Found!' => 'Corrispondenza trovata!',
     'This URL would redirect:' => 'Questo URL reindirizzerebbe:',
@@ -735,4 +753,5 @@ return [
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Questa impostazione viene sovrascritta da <code>redirectCacheDuration</code> in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Questa impostazione viene sovrascritta da <code>excludePatterns</code> in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Questa impostazione viene sovrascritta da <code>additionalHeaders</code> in <code>config/redirect-manager.php</code>.',
+    'This is being overridden by the <code>apiEndpointEnabled</code> setting in <code>config/redirect-manager.php</code>.' => 'Questa impostazione viene sovrascritta da <code>apiEndpointEnabled</code> in <code>config/redirect-manager.php</code>.',
 ];

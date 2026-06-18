@@ -9,6 +9,7 @@
 namespace lindemannrock\redirectmanager\controllers;
 
 use Craft;
+use craft\helpers\Json;
 use craft\web\Controller;
 use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\base\helpers\SettingsPostHelper;
@@ -435,7 +436,7 @@ class SettingsController extends Controller
 
         $settings = RedirectManager::$plugin->getSettings();
 
-        return $this->renderTemplate('redirect-manager/settings/test', [
+        return $this->renderTemplate('redirect-manager/settings/test/index', [
             'settings' => $settings,
         ]);
     }
@@ -527,6 +528,82 @@ class SettingsController extends Controller
     }
 
     /**
+     * Run a test request against the read-only JSON API endpoint.
+     *
+     * @since 5.33.0
+     */
+    public function actionRunApiTest(): Response
+    {
+        $this->requirePostRequest();
+        $this->requirePermission('redirectManager:manageSettings');
+        $this->requireAcceptsJson();
+
+        $settings = RedirectManager::$plugin->getSettings();
+        if (!$settings->apiEndpointEnabled) {
+            return $this->asJson([
+                'error' => Craft::t('redirect-manager', 'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.'),
+            ]);
+        }
+
+        $request = Craft::$app->getRequest();
+        $token = trim((string) ($settings->apiEndpointToken ?? ''));
+        if ($token === '') {
+            return $this->asJson([
+                'error' => Craft::t('redirect-manager', 'REDIRECT_MANAGER_API_TOKEN is not configured. Add it to your environment before running endpoint tests.'),
+            ]);
+        }
+
+        $site = trim((string) $request->getBodyParam('testSite', ''));
+
+        $query = [];
+        if ($site !== '') {
+            $query['site'] = $site;
+        }
+
+        $path = '/actions/redirect-manager/api/get-redirects';
+        $queryString = http_build_query($query);
+        $pathWithQuery = $path . ($queryString !== '' ? '?' . $queryString : '');
+        $baseUrl = rtrim(Craft::$app->getSites()->getCurrentSite()->getBaseUrl() ?? Craft::$app->getRequest()->getHostInfo(), '/');
+        $url = $baseUrl . $pathWithQuery;
+
+        $headers = ['Accept' => 'application/json'];
+        if ($token !== '') {
+            $headers['X-Redirect-Manager-Key'] = $token;
+        }
+
+        $client = Craft::createGuzzleClient(['http_errors' => false, 'timeout' => 15]);
+        $start = microtime(true);
+
+        try {
+            $response = $client->request('GET', $url, [
+                'headers' => $headers,
+            ]);
+            $timeMs = (int) ((microtime(true) - $start) * 1000);
+
+            $responseHeaders = [];
+            foreach ($response->getHeaders() as $name => $values) {
+                $responseHeaders[$name] = implode(', ', $values);
+            }
+
+            $bodyRaw = (string) $response->getBody();
+            $bodyDecoded = Json::decodeIfJson($bodyRaw);
+            $body = is_array($bodyDecoded)
+                ? Json::encode($bodyDecoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+                : $bodyRaw;
+
+            return $this->asJson([
+                'status' => $response->getStatusCode(),
+                'timeMs' => $timeMs,
+                'headers' => $responseHeaders,
+                'body' => $body,
+                'curl' => $this->buildApiCurl($url, true),
+            ]);
+        } catch (\Throwable $e) {
+            return $this->asJson(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
      * Clear redirect cache
      *
      * @return Response
@@ -573,6 +650,22 @@ class SettingsController extends Controller
         } catch (\Exception $e) {
             return $this->asJson(['success' => false, 'error' => $e->getMessage()]);
         }
+    }
+
+    private function buildApiCurl(string $url, bool $includeToken): string
+    {
+        $parts = [
+            'curl',
+            '-H ' . escapeshellarg('Accept: application/json'),
+        ];
+
+        if ($includeToken) {
+            $parts[] = '-H ' . escapeshellarg('X-Redirect-Manager-Key: $REDIRECT_MANAGER_API_TOKEN');
+        }
+
+        $parts[] = escapeshellarg($url);
+
+        return implode(' ', $parts);
     }
 
     /**
@@ -789,6 +882,7 @@ class SettingsController extends Controller
                 'redirectCacheDuration',
             ],
             'advanced' => [
+                'apiEndpointEnabled',
                 'excludePatterns',
                 'additionalHeaders',
             ],

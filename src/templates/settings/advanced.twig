@@ -20,15 +20,43 @@
 
 {% import "_includes/forms" as forms %}
 
+{% block actionButton %}
+	<div class="btngroup">
+		<input type="submit" class="btn submit" value="{{ 'Save'|t('redirect-manager') }}" form="redirect-manager-advanced-settings">
+	</div>
+{% endblock %}
+
 {% block content %}
 
-	<form method="post" accept-charset="UTF-8">
+	<form id="redirect-manager-advanced-settings" method="post" accept-charset="UTF-8">
 		{{ actionInput('redirect-manager/settings/save') }}
 		{{ csrfInput() }}
 		{{ redirectInput('redirect-manager/settings/advanced') }}
 		{{ hiddenInput('section', 'advanced') }}
 
-		<h2 class="first">{{ "URL Filtering"|t('redirect-manager') }}</h2>
+		<h2 class="first">{{ "JSON API"|t('redirect-manager') }}</h2>
+
+		{{ forms.lightswitchField({
+            label: 'Enable JSON API Endpoint'|t('redirect-manager'),
+            instructions: 'Expose enabled redirects as read-only JSON for SPAs, static builds, edge workers, or backend integrations. REDIRECT_MANAGER_API_TOKEN is required.'|t('redirect-manager'),
+            id: 'apiEndpointEnabled',
+            name: 'settings[apiEndpointEnabled]',
+            on: settings.apiEndpointEnabled,
+            errors: settings.getErrors('apiEndpointEnabled'),
+            disabled: settings.isOverriddenByConfig('apiEndpointEnabled'),
+            warning: settings.isOverriddenByConfig('apiEndpointEnabled') ?
+                "This is being overridden by the <code>apiEndpointEnabled</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+        }) }}
+
+		<p class="light">
+			{{ "Endpoint: {endpoint}"|t('redirect-manager', {
+                endpoint: '<code>/actions/redirect-manager/api/get-redirects</code>'
+            })|raw }}
+		</p>
+
+		<hr class="lr-mt-30 lr-mb-30">
+
+		<h2>{{ "URL Filtering"|t('redirect-manager') }}</h2>
 
 		{{ forms.editableTableField({
             label: 'Exclude Patterns'|t('redirect-manager'),
@@ -147,3 +175,13 @@
 
 	{% include 'lindemannrock-base/_components/plugin-credit' %}
 {% endblock %}
+
+{% js %}
+	const advancedSettingsForm = document.getElementById('redirect-manager-advanced-settings');
+	document.addEventListener('keydown', (event) => {
+		if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+			event.preventDefault();
+			advancedSettingsForm.requestSubmit();
+		}
+	});
+{% endjs %}

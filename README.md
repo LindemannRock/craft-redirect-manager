@@ -30,6 +30,7 @@ This plugin is in active development and not yet available on the Craft Plugin S
 - **Smart Caching** — file or Redis caching for fast redirect lookups
 - **Multi-Site Support** — site-specific or global redirects
 - **GraphQL Support** — resolve redirects and list enabled redirects for headless/SPAs
+- **Read-only JSON API** — expose enabled redirects to static builds, SPAs, edge workers, or backend integrations
 - **Plugin Integration** — pluggable architecture for other plugins to handle 404s
 - **Privacy-First** — salted IP hashing, optional subnet masking, GDPR-friendly
 - **Query String Control** — strip, preserve, or consolidate query strings

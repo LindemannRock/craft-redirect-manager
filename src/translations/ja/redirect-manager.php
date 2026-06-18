@@ -316,6 +316,11 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => '詳細設定',
+    'JSON API' => 'JSON API',
+    'Enable JSON API Endpoint' => 'JSON API エンドポイントを有効にする',
+    'JSON API Token' => 'JSON API トークン',
+    'Expose enabled redirects as read-only JSON for SPAs, static builds, edge workers, or backend integrations. REDIRECT_MANAGER_API_TOKEN is required.' => '有効なリダイレクトを SPA、静的ビルド、エッジワーカー、バックエンド統合向けの読み取り専用 JSON として公開します。REDIRECT_MANAGER_API_TOKEN が必要です。',
+    'Endpoint: {endpoint}' => 'エンドポイント: {endpoint}',
     'URL Filtering' => 'URL フィルタリング',
     'Exclude Patterns' => '除外パターン',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '{pluginName} から除外する URI に一致させる[正規表現](https://regexr.com/)です。',
@@ -339,6 +344,11 @@ return [
 
     // Settings: Test
     'Test Redirects' => 'リダイレクトをテストする',
+    'Test JSON API Endpoint' => 'JSON API エンドポイントをテスト',
+    'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.' => 'JSON API エンドポイントは無効です。エンドポイントテストを実行する前に、詳細設定で有効にしてください。',
+    'REDIRECT_MANAGER_API_TOKEN is configured. Endpoint tests will use it automatically.' => 'REDIRECT_MANAGER_API_TOKEN が設定されています。エンドポイントテストでは自動的に使用されます。',
+    'REDIRECT_MANAGER_API_TOKEN is not configured. Add it to your environment before running endpoint tests.' => 'REDIRECT_MANAGER_API_TOKEN が設定されていません。エンドポイントテストを実行する前に環境に追加してください。',
+    'Run API Test' => 'API テストを実行',
     'Test URL Redirects' => 'URL リダイレクトをテストする',
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => '実際にアクセスせずに URL が設定済みのリダイレクトに一致するかテストします。ソース一致モード（パスと完全 URL）と一致タイプのロジックの検証に便利です。',
     'Test URL' => 'テスト URL',
@@ -346,6 +356,14 @@ return [
     'Please enter a URL to test' => 'テストする URL を入力してください',
     'Validation Error' => '検証エラー',
     'Testing...' => 'テスト中...',
+    'Result' => '結果',
+    'Status:' => 'ステータス :',
+    'Time:' => '所要時間 :',
+    'Equivalent curl' => '同等の curl コマンド',
+    'Response headers' => 'レスポンスヘッダー',
+    'Response body' => 'レスポンスボディ',
+    'Error:' => 'エラー :',
+    'Unknown error' => '不明なエラー',
     'Match found! This URL would redirect.' => '一致が見つかりました！この URL はリダイレクトされます。',
     'Match Found!' => '一致が見つかりました!',
     'This URL would redirect:' => 'この URL はリダイレクトされます :',
@@ -735,4 +753,5 @@ return [
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>redirectCacheDuration</code> 設定によって上書きされています。',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>excludePatterns</code> 設定によって上書きされています。',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>additionalHeaders</code> 設定によって上書きされています。',
+    'This is being overridden by the <code>apiEndpointEnabled</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>apiEndpointEnabled</code> 設定によって上書きされています。',
 ];

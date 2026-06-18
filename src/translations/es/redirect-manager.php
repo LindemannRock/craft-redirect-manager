@@ -316,6 +316,11 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => 'Configuración avanzada',
+    'JSON API' => 'API JSON',
+    'Enable JSON API Endpoint' => 'Activar endpoint de API JSON',
+    'JSON API Token' => 'Token de API JSON',
+    'Expose enabled redirects as read-only JSON for SPAs, static builds, edge workers, or backend integrations. REDIRECT_MANAGER_API_TOKEN is required.' => 'Exponer redirecciones activadas como JSON de solo lectura para SPA, compilaciones estáticas, edge workers o integraciones backend. REDIRECT_MANAGER_API_TOKEN es obligatorio.',
+    'Endpoint: {endpoint}' => 'Endpoint: {endpoint}',
     'URL Filtering' => 'Filtrado de URL',
     'Exclude Patterns' => 'Patrones de exclusión',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '[Expresiones regulares](https://regexr.com/) para hacer coincidir URI que deben excluirse de {pluginName}.',
@@ -339,6 +344,11 @@ return [
 
     // Settings: Test
     'Test Redirects' => 'Probar redirecciones',
+    'Test JSON API Endpoint' => 'Probar endpoint de API JSON',
+    'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.' => 'El endpoint de API JSON está desactivado. Actívelo en los ajustes avanzados antes de ejecutar pruebas del endpoint.',
+    'REDIRECT_MANAGER_API_TOKEN is configured. Endpoint tests will use it automatically.' => 'REDIRECT_MANAGER_API_TOKEN está configurado. Las pruebas del endpoint lo usarán automáticamente.',
+    'REDIRECT_MANAGER_API_TOKEN is not configured. Add it to your environment before running endpoint tests.' => 'REDIRECT_MANAGER_API_TOKEN no está configurado. Añádalo a su entorno antes de ejecutar pruebas del endpoint.',
+    'Run API Test' => 'Ejecutar prueba de API',
     'Test URL Redirects' => 'Probar redirecciones de URL',
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Pruebe si una URL coincide con alguna de sus redirecciones configuradas sin visitarla realmente. Útil para validar el Modo de coincidencia de origen (ruta vs URL completa) y la lógica del Tipo de coincidencia.',
     'Test URL' => 'URL de prueba',
@@ -346,6 +356,14 @@ return [
     'Please enter a URL to test' => 'Introduzca una URL para probar',
     'Validation Error' => 'Error de validación',
     'Testing...' => 'Probando...',
+    'Result' => 'Resultado',
+    'Status:' => 'Estado:',
+    'Time:' => 'Tiempo:',
+    'Equivalent curl' => 'Comando curl equivalente',
+    'Response headers' => 'Cabeceras de respuesta',
+    'Response body' => 'Cuerpo de la respuesta',
+    'Error:' => 'Error:',
+    'Unknown error' => 'Error desconocido',
     'Match found! This URL would redirect.' => 'Coincidencia encontrada. Esta URL redirigiría.',
     'Match Found!' => 'Coincidencia encontrada',
     'This URL would redirect:' => 'Esta URL redirigiría:',
@@ -735,4 +753,5 @@ return [
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta configuración está siendo sobreescrita por el ajuste <code>redirectCacheDuration</code> en <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta configuración está siendo sobreescrita por el ajuste <code>excludePatterns</code> en <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta configuración está siendo sobreescrita por el ajuste <code>additionalHeaders</code> en <code>config/redirect-manager.php</code>.',
+    'This is being overridden by the <code>apiEndpointEnabled</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta configuración está siendo sobreescrita por el ajuste <code>apiEndpointEnabled</code> en <code>config/redirect-manager.php</code>.',
 ];

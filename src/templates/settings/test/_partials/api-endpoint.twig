@@ -1,0 +1,127 @@
+{% import "_includes/forms" as forms %}
+{% set apiEndpointReady = settings.apiEndpointEnabled and settings.apiEndpointToken %}
+{% set siteOptions = [{label: 'All Sites'|t('redirect-manager'), value: ''}] %}
+{% for site in craft.app.sites.getAllSites() %}
+    {% set siteOptions = siteOptions|merge([{label: site.name, value: site.handle}]) %}
+{% endfor %}
+
+<h2 class="first">{{ "Test JSON API Endpoint"|t('redirect-manager') }}</h2>
+
+{% if not settings.apiEndpointEnabled %}
+    {% include 'lindemannrock-base/_components/info-box' with {
+        type: 'warning',
+        variant: 'colored',
+        margin: 'bottom',
+        message: 'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.'|t('redirect-manager'),
+    } only %}
+{% elseif not settings.apiEndpointToken %}
+{% else %}
+    {% include 'lindemannrock-base/_components/info-box' with {
+        type: 'info',
+        variant: 'colored',
+        margin: 'bottom',
+        message: 'REDIRECT_MANAGER_API_TOKEN is configured. Endpoint tests will use it automatically.'|t('redirect-manager'),
+    } only %}
+{% endif %}
+
+<div class="pane" style="margin-bottom: 30px;">
+    <p class="light">{{ "Endpoint: {endpoint}"|t('redirect-manager', {
+        endpoint: '<code>/actions/redirect-manager/api/get-redirects</code>'
+    })|raw }}</p>
+
+    {{ forms.selectField({
+        first: true,
+        label: 'Site'|t('redirect-manager'),
+        id: 'testSite',
+        name: 'testSite',
+        options: siteOptions,
+        disabled: not apiEndpointReady,
+    }) }}
+
+    <div style="display: flex; gap: 10px; align-items: center; margin-top: 16px;">
+        <button type="button" id="apiTestButton" class="btn submit" {% if not apiEndpointReady %}disabled{% endif %}>{{ "Run API Test"|t('redirect-manager') }}</button>
+        <span id="apiTestStatus" class="light"></span>
+    </div>
+</div>
+
+<div id="apiTestResults" style="display: none; margin-bottom: 30px;">
+    <div class="pane">
+        <h3 class="first">{{ "Result"|t('redirect-manager') }}</h3>
+        <p>
+            <strong>{{ "Status:"|t('redirect-manager') }}</strong> <span id="apiResultStatus"></span>
+            <span class="light" style="margin-left: 16px;"><strong>{{ "Time:"|t('redirect-manager') }}</strong> <span id="apiResultTime"></span> ms</span>
+        </p>
+
+        <h4>{{ "Equivalent curl"|t('redirect-manager') }}</h4>
+        <pre id="apiResultCurl" class="lr-code-block rm-pre-wrap"></pre>
+
+        <h4>{{ "Response headers"|t('redirect-manager') }}</h4>
+        <pre id="apiResultHeaders" class="lr-code-block rm-pre-scroll"></pre>
+
+        <h4>{{ "Response body"|t('redirect-manager') }}</h4>
+        <pre id="apiResultBody" class="lr-code-block rm-pre-scroll-lg"></pre>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const apiEndpointReady = {{ apiEndpointReady ? 'true' : 'false' }};
+    const apiTestButton = document.getElementById('apiTestButton');
+    const apiTestStatus = document.getElementById('apiTestStatus');
+    const apiTestResults = document.getElementById('apiTestResults');
+    const T = {
+        errorPrefix: {{ 'Error:'|t('redirect-manager')|json_encode|raw }},
+        testing: {{ 'Testing...'|t('redirect-manager')|json_encode|raw }},
+        unknownError: {{ 'Unknown error'|t('redirect-manager')|json_encode|raw }},
+    };
+
+    if (!apiTestButton) {
+        return;
+    }
+
+    apiTestButton.addEventListener('click', async function() {
+        if (!apiEndpointReady) {
+            return;
+        }
+
+        apiTestButton.disabled = true;
+        apiTestStatus.textContent = T.testing;
+        apiTestStatus.classList.remove('lr-text-red');
+        apiTestResults.style.display = 'none';
+
+        const payload = {
+            testSite: document.getElementById('testSite').value,
+        };
+
+        try {
+            const response = await Craft.sendActionRequest('POST', 'redirect-manager/settings/run-api-test', { data: payload });
+            const data = response.data;
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            const resultStatus = document.getElementById('apiResultStatus');
+            const isOk = data.status >= 200 && data.status < 300;
+            resultStatus.textContent = data.status;
+            resultStatus.classList.toggle('lr-text-green', isOk);
+            resultStatus.classList.toggle('lr-text-red', !isOk);
+            document.getElementById('apiResultTime').textContent = data.timeMs;
+            document.getElementById('apiResultCurl').textContent = data.curl;
+            document.getElementById('apiResultHeaders').textContent = Object.entries(data.headers)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join('\n');
+            document.getElementById('apiResultBody').textContent = data.body;
+
+            apiTestResults.style.display = 'block';
+            apiTestStatus.textContent = '';
+        } catch (e) {
+            const detail = e.response?.data?.error || e.message || T.unknownError;
+            apiTestStatus.textContent = T.errorPrefix + ' ' + detail;
+            apiTestStatus.classList.add('lr-text-red');
+        } finally {
+            apiTestButton.disabled = false;
+        }
+    });
+});
+</script>

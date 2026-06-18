@@ -181,6 +181,18 @@ class Settings extends Model
     public array $additionalHeaders = [];
 
     /**
+     * @var bool Enable the read-only JSON redirects API endpoint
+     * @since 5.33.0
+     */
+    public bool $apiEndpointEnabled = false;
+
+    /**
+     * @var string|null Optional bearer/header token for the JSON redirects API endpoint
+     * @since 5.33.0
+     */
+    public ?string $apiEndpointToken = null;
+
+    /**
      * @var bool Enable redirect caching
      */
     public bool $enableRedirectCache = true;
@@ -249,6 +261,10 @@ class Settings extends Model
         }
         if ($this->defaultCity === null) {
             $this->defaultCity = App::env('REDIRECT_MANAGER_DEFAULT_CITY');
+        }
+
+        if ($this->apiEndpointToken === null) {
+            $this->apiEndpointToken = App::env('REDIRECT_MANAGER_API_TOKEN');
         }
     }
 
@@ -321,6 +337,7 @@ class Settings extends Model
             'cacheDeviceDetection',
             'backupEnabled',
             'backupOnImport',
+            'apiEndpointEnabled',
             'showSeconds',
             'exportsCsv',
             'exportsJson',
@@ -365,6 +382,7 @@ class Settings extends Model
             'ipHashSalt',
             'defaultCountry',
             'defaultCity',
+            'apiEndpointToken',
         ];
     }
 
@@ -400,6 +418,7 @@ class Settings extends Model
                     'cacheDeviceDetection',
                     'backupEnabled',
                     'backupOnImport',
+                    'apiEndpointEnabled',
                 ],
                 'boolean',
             ],
@@ -423,6 +442,9 @@ class Settings extends Model
                 ['excludePatterns', 'additionalHeaders'],
                 ArrayValidator::class,
             ],
+            ['apiEndpointEnabled', 'boolean'],
+            ['apiEndpointEnabled', 'default', 'value' => false],
+            ['apiEndpointToken', 'string', 'max' => 255],
             ['enableRedirectCache', 'boolean'],
             ['enableRedirectCache', 'default', 'value' => true],
             ['redirectCacheDuration', 'integer', 'min' => 60, 'max' => 86400],
@@ -474,6 +496,8 @@ class Settings extends Model
             'refreshIntervalSecs' => Craft::t('redirect-manager', 'Dashboard Refresh Interval'),
             'excludePatterns' => Craft::t('redirect-manager', 'Exclude Patterns'),
             'additionalHeaders' => Craft::t('redirect-manager', 'Additional Headers'),
+            'apiEndpointEnabled' => Craft::t('redirect-manager', 'Enable JSON API Endpoint'),
+            'apiEndpointToken' => Craft::t('redirect-manager', 'JSON API Token'),
             // Redirect cache
             'enableRedirectCache' => Craft::t('redirect-manager', 'Enable Redirect Cache'),
             'redirectCacheDuration' => Craft::t('redirect-manager', 'Redirect Cache Duration'),

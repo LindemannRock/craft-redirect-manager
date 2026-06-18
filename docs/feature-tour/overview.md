@@ -25,6 +25,8 @@ At its core, Redirect Manager intercepts every 404 response on your site, checks
 
 - **[GraphQL](../developers/graphql.md) @since(5.33.0)** — Resolve redirects and list enabled redirects for headless/SPAs. Resolution uses the same matching path as normal 404 handling and records handled or unhandled analytics.
 
+- **[JSON API](../developers/api-endpoints.md) @since(5.33.0)** — Expose enabled redirects as plain read-only JSON for static builds, SPAs, edge workers, or backend integrations that do not use GraphQL.
+
 - **[Plugin Integration](plugin-integration.md) @since(5.3.0)** — `RedirectHandlingTrait` lets other plugins push redirects into Redirect Manager and query its redirect table when handling their own 404s. Source attribution keeps the analytics dashboard accurate across integrations.
 
 - **[Dashboard Widgets](dashboard-widgets.md) @since(5.1.0)** — Two Craft dashboard widgets: an unhandled 404 counter and an analytics summary. Add them from **Dashboard > New Widget**.

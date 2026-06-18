@@ -7,7 +7,7 @@ Redirect Manager exposes two read-oriented GraphQL queries:
 - `redirectManagerResolveRedirect` resolves one missed URI and records redirect/404 analytics
 - `redirectManagerRedirects` lists enabled redirects for frontend clients that want a read-only redirect table
 
-There are no GraphQL mutations and no public JSON API endpoint for creating or editing redirects. Editors manage redirects in the Craft Control Panel.
+There are no GraphQL mutations and no JSON API endpoints for creating or editing redirects. Editors manage redirects in the Craft Control Panel. If you need a plain read-only JSON list of enabled redirects, use the [API endpoints](api-endpoints.md) guide.
 
 ## Before you query
 

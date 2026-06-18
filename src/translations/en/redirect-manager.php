@@ -316,6 +316,11 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => 'Advanced Settings',
+    'JSON API' => 'JSON API',
+    'Enable JSON API Endpoint' => 'Enable JSON API Endpoint',
+    'JSON API Token' => 'JSON API Token',
+    'Expose enabled redirects as read-only JSON for SPAs, static builds, edge workers, or backend integrations. REDIRECT_MANAGER_API_TOKEN is required.' => 'Expose enabled redirects as read-only JSON for SPAs, static builds, edge workers, or backend integrations. REDIRECT_MANAGER_API_TOKEN is required.',
+    'Endpoint: {endpoint}' => 'Endpoint: {endpoint}',
     'URL Filtering' => 'URL Filtering',
     'Exclude Patterns' => 'Exclude Patterns',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.',
@@ -339,6 +344,11 @@ return [
 
     // Settings: Test
     'Test Redirects' => 'Test Redirects',
+    'Test JSON API Endpoint' => 'Test JSON API Endpoint',
+    'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.' => 'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.',
+    'REDIRECT_MANAGER_API_TOKEN is configured. Endpoint tests will use it automatically.' => 'REDIRECT_MANAGER_API_TOKEN is configured. Endpoint tests will use it automatically.',
+    'REDIRECT_MANAGER_API_TOKEN is not configured. Add it to your environment before running endpoint tests.' => 'REDIRECT_MANAGER_API_TOKEN is not configured. Add it to your environment before running endpoint tests.',
+    'Run API Test' => 'Run API Test',
     'Test URL Redirects' => 'Test URL Redirects',
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.',
     'Test URL' => 'Test URL',
@@ -346,6 +356,14 @@ return [
     'Please enter a URL to test' => 'Please enter a URL to test',
     'Validation Error' => 'Validation Error',
     'Testing...' => 'Testing...',
+    'Result' => 'Result',
+    'Status:' => 'Status:',
+    'Time:' => 'Time:',
+    'Equivalent curl' => 'Equivalent curl',
+    'Response headers' => 'Response headers',
+    'Response body' => 'Response body',
+    'Error:' => 'Error:',
+    'Unknown error' => 'Unknown error',
     'Match found! This URL would redirect.' => 'Match found! This URL would redirect.',
     'Match Found!' => 'Match Found!',
     'This URL would redirect:' => 'This URL would redirect:',
@@ -735,4 +753,5 @@ return [
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.',
+    'This is being overridden by the <code>apiEndpointEnabled</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>apiEndpointEnabled</code> setting in <code>config/redirect-manager.php</code>.',
 ];

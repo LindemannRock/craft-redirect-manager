@@ -1,0 +1,72 @@
+{% extends "redirect-manager/_layouts/settings" %}
+{% set title = "Test Redirects"|t('redirect-manager') %}
+{% set selectedSettingsItem = 'test' %}
+
+{% set crumbs = [
+    {
+        label: redirectHelper.fullName|t('redirect-manager'),
+        url: url('redirect-manager'),
+    },
+    {
+        label: 'Settings'|t('redirect-manager'),
+        url: url('redirect-manager/settings'),
+    },
+    {
+        label: 'Test'|t('redirect-manager'),
+        url: url('redirect-manager/settings/test'),
+    },
+] %}
+
+{% set tabs = {
+    url: { label: "Test URL Redirects"|t('redirect-manager'), url: '#url' },
+    api: { label: "Test JSON API Endpoint"|t('redirect-manager'), url: '#api' },
+} %}
+
+{% set selectedTab = 'url' %}
+
+{% block content %}
+    <div id="url" class="tab-content">
+        {% include 'redirect-manager/settings/test/_partials/url-redirect' %}
+    </div>
+
+    <div id="api" class="tab-content hidden">
+        {% include 'redirect-manager/settings/test/_partials/api-endpoint' %}
+    </div>
+
+    {% include 'lindemannrock-base/_components/plugin-credit' %}
+{% endblock %}
+
+{% css %}
+    .tab-content {
+        padding: 24px;
+    }
+
+    .rm-pre-wrap { white-space: pre-wrap; word-break: break-all; }
+    .rm-pre-scroll { max-height: 200px; overflow: auto; }
+    .rm-pre-scroll-lg { max-height: 400px; overflow: auto; }
+{% endcss %}
+
+{% js %}
+    function switchTab(tabId) {
+        if (!tabId) {
+            tabId = 'url';
+        }
+
+        document.querySelectorAll('.tab-content').forEach(function(el) {
+            el.classList.add('hidden');
+        });
+
+        const selectedTab = document.getElementById(tabId);
+        if (selectedTab) {
+            selectedTab.classList.remove('hidden');
+        }
+    }
+
+    window.addEventListener('hashchange', function() {
+        switchTab(window.location.hash.substring(1));
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        switchTab(window.location.hash.substring(1) || 'url');
+    });
+{% endjs %}

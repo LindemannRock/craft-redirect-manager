@@ -29,12 +29,13 @@ final class HelpController extends AbstractHelpController
                 'php craft',
                 'ddev craft',
             ],
-            'summary' => 'Use these commands to create, list, and clean redirect backups, run scheduled backup checks, and generate the IP hash salt used for privacy-safe analytics.',
+            'summary' => 'Use these commands to create, list, and clean redirect backups, run scheduled backup checks, and generate security secrets.',
             'common' => [
                 'backup/create',
                 'backup/list',
                 'backup/scheduled',
                 'security/generate-salt',
+                'security/generate-api-token',
             ],
             'groups' => [
                 [
@@ -111,6 +112,19 @@ final class HelpController extends AbstractHelpController
                             'notes' => [
                                 'Use the same salt across environments if you need unique-visitor analytics continuity.',
                                 'Changing an existing salt resets unique-visitor tracking because future hashes will no longer match old analytics rows.',
+                            ],
+                        ],
+                        [
+                            'path' => 'security/generate-api-token',
+                            'summary' => 'Generate the JSON API token.',
+                            'description' => 'Generate a secure REDIRECT_MANAGER_API_TOKEN value for the read-only JSON redirects endpoint, then optionally write it to the project .env file.',
+                            'examples' => [
+                                'redirect-manager/security/generate-api-token',
+                            ],
+                            'notes' => [
+                                'The JSON API endpoint remains disabled until apiEndpointEnabled is true.',
+                                'If a token already exists, the command asks before replacing it.',
+                                'Rotating the token requires updating every external consumer that calls the endpoint.',
                             ],
                         ],
                     ],

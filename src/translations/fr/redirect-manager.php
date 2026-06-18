@@ -316,6 +316,11 @@ return [
 
     // Settings: Advanced
     'Advanced Settings' => 'Paramètres avancés',
+    'JSON API' => 'API JSON',
+    'Enable JSON API Endpoint' => 'Activer le point de terminaison API JSON',
+    'JSON API Token' => 'Jeton API JSON',
+    'Expose enabled redirects as read-only JSON for SPAs, static builds, edge workers, or backend integrations. REDIRECT_MANAGER_API_TOKEN is required.' => 'Exposer les redirections activées en JSON en lecture seule pour les SPA, les builds statiques, les edge workers ou les intégrations backend. REDIRECT_MANAGER_API_TOKEN est requis.',
+    'Endpoint: {endpoint}' => 'Point de terminaison : {endpoint}',
     'URL Filtering' => 'Filtrage des URL',
     'Exclude Patterns' => 'Modèles d\'exclusion',
     '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.' => '[Expressions régulières](https://regexr.com/) pour faire correspondre les URI à exclure de {pluginName}.',
@@ -339,6 +344,11 @@ return [
 
     // Settings: Test
     'Test Redirects' => 'Tester les redirections',
+    'Test JSON API Endpoint' => 'Tester le point de terminaison API JSON',
+    'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.' => 'Le point de terminaison API JSON est désactivé. Activez-le dans les paramètres avancés avant d’exécuter des tests de point de terminaison.',
+    'REDIRECT_MANAGER_API_TOKEN is configured. Endpoint tests will use it automatically.' => 'REDIRECT_MANAGER_API_TOKEN est configuré. Les tests de point de terminaison l’utiliseront automatiquement.',
+    'REDIRECT_MANAGER_API_TOKEN is not configured. Add it to your environment before running endpoint tests.' => 'REDIRECT_MANAGER_API_TOKEN n’est pas configuré. Ajoutez-le à votre environnement avant d’exécuter des tests de point de terminaison.',
+    'Run API Test' => 'Lancer le test API',
     'Test URL Redirects' => 'Tester les redirections d\'URL',
     'Test if a URL matches any of your configured redirects without actually visiting it. Useful for validating Source Match Mode (path vs full URL) and Match Type logic.' => 'Testez si une URL correspond à l\'une de vos redirections configurées sans la visiter réellement. Utile pour valider le Mode de correspondance source (chemin vs URL complète) et la logique du Type de correspondance.',
     'Test URL' => 'URL de test',
@@ -346,6 +356,14 @@ return [
     'Please enter a URL to test' => 'Veuillez saisir une URL à tester',
     'Validation Error' => 'Erreur de validation',
     'Testing...' => 'Test en cours...',
+    'Result' => 'Résultat',
+    'Status:' => 'Statut :',
+    'Time:' => 'Durée :',
+    'Equivalent curl' => 'Commande curl équivalente',
+    'Response headers' => 'En-têtes de réponse',
+    'Response body' => 'Corps de la réponse',
+    'Error:' => 'Erreur :',
+    'Unknown error' => 'Erreur inconnue',
     'Match found! This URL would redirect.' => 'Correspondance trouvée ! Cette URL serait redirigée.',
     'Match Found!' => 'Correspondance trouvée !',
     'This URL would redirect:' => 'Cette URL serait redirigée :',
@@ -735,4 +753,5 @@ return [
     'This is being overridden by the <code>redirectCacheDuration</code> setting in <code>config/redirect-manager.php</code>.' => 'Ce paramètre est remplacé par le paramètre <code>redirectCacheDuration</code> dans <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Ce paramètre est remplacé par le paramètre <code>excludePatterns</code> dans <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Ce paramètre est remplacé par le paramètre <code>additionalHeaders</code> dans <code>config/redirect-manager.php</code>.',
+    'This is being overridden by the <code>apiEndpointEnabled</code> setting in <code>config/redirect-manager.php</code>.' => 'Ce paramètre est remplacé par le paramètre <code>apiEndpointEnabled</code> dans <code>config/redirect-manager.php</code>.',
 ];
