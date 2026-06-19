@@ -409,7 +409,8 @@ return [
     'Failed to enable redirects' => 'Kunne ikke aktivere omdirigeringer',
     'Failed to disable redirects' => 'Kunne ikke deaktivere omdirigeringer',
     'Failed to delete redirects' => 'Kunne ikke slette omdirigeringer',
-    'Delete {count} redirect(s)? This cannot be undone.' => 'Slet {count} omdirigeringer? Dette kan ikke fortrydes.',
+    'Delete {count} redirect? This cannot be undone.' => 'Slet {count} redirect? Denne handling kan ikke fortrydes.',
+    'Delete {count} redirects? This cannot be undone.' => 'Slet {count} redirects? Denne handling kan ikke fortrydes.',
 
     // Redirects: Edit
     'Edit {singularName}' => 'Rediger {singularName}',
@@ -721,7 +722,8 @@ return [
     'Delete this analytics record?' => 'Slet denne analysepost?',
     'Analytics record deleted' => 'Analyseposten er slettet',
     'Could not delete analytics record' => 'Kunne ikke slette analyseposten',
-    'Delete {count} analytics record(s)?' => 'Slet {count} analyseposter?',
+    'Delete {count} analytics record?' => 'Slet {count} analysepost?',
+    'Delete {count} analytics records?' => 'Slet {count} analyseposter?',
     'Deleted {count} analytics record(s)' => '{count} analyseposter slettet',
     'Cleared {count} analytics record(s)' => '{count} analyseposter ryddet',
     'Failed to clear analytics' => 'Kunne ikke rydde analyserne',

@@ -409,7 +409,8 @@ return [
     'Failed to enable redirects' => 'Redirects konden niet worden ingeschakeld',
     'Failed to disable redirects' => 'Redirects konden niet worden uitgeschakeld',
     'Failed to delete redirects' => 'Redirects konden niet worden verwijderd',
-    'Delete {count} redirect(s)? This cannot be undone.' => '{count} redirects verwijderen? Dit kan niet ongedaan worden gemaakt.',
+    'Delete {count} redirect? This cannot be undone.' => '{count} redirect verwijderen? Dit kan niet ongedaan worden gemaakt.',
+    'Delete {count} redirects? This cannot be undone.' => '{count} redirects verwijderen? Dit kan niet ongedaan worden gemaakt.',
 
     // Redirects: Edit
     'Edit {singularName}' => '{singularName} bewerken',
@@ -721,7 +722,8 @@ return [
     'Delete this analytics record?' => 'Deze analyserecord verwijderen?',
     'Analytics record deleted' => 'Analyserecord verwijderd',
     'Could not delete analytics record' => 'Analyserecord kon niet worden verwijderd',
-    'Delete {count} analytics record(s)?' => '{count} analyserecords verwijderen?',
+    'Delete {count} analytics record?' => '{count} analyserecord verwijderen?',
+    'Delete {count} analytics records?' => '{count} analyserecords verwijderen?',
     'Deleted {count} analytics record(s)' => '{count} analyserecords verwijderd',
     'Cleared {count} analytics record(s)' => '{count} analyserecords gewist',
     'Failed to clear analytics' => 'Analysegegevens konden niet worden gewist',

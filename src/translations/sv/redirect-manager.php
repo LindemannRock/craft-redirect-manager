@@ -409,7 +409,8 @@ return [
     'Failed to enable redirects' => 'Det gick inte att aktivera omdirigeringar',
     'Failed to disable redirects' => 'Det gick inte att inaktivera omdirigeringar',
     'Failed to delete redirects' => 'Det gick inte att ta bort omdirigeringar',
-    'Delete {count} redirect(s)? This cannot be undone.' => 'Ta bort {count} omdirigeringar? Det här går inte att ångra.',
+    'Delete {count} redirect? This cannot be undone.' => 'Ta bort {count} omdirigering? Den här åtgärden kan inte ångras.',
+    'Delete {count} redirects? This cannot be undone.' => 'Ta bort {count} omdirigeringar? Den här åtgärden kan inte ångras.',
 
     // Redirects: Edit
     'Edit {singularName}' => 'Redigera {singularName}',
@@ -721,7 +722,8 @@ return [
     'Delete this analytics record?' => 'Ta bort den här analysposten?',
     'Analytics record deleted' => 'Analysposten har tagits bort',
     'Could not delete analytics record' => 'Det gick inte att ta bort analysposten',
-    'Delete {count} analytics record(s)?' => 'Ta bort {count} analysposter?',
+    'Delete {count} analytics record?' => 'Ta bort {count} analyspost?',
+    'Delete {count} analytics records?' => 'Ta bort {count} analysposter?',
     'Deleted {count} analytics record(s)' => '{count} analysposter har tagits bort',
     'Cleared {count} analytics record(s)' => '{count} analysposter har rensats',
     'Failed to clear analytics' => 'Det gick inte att rensa analyserna',

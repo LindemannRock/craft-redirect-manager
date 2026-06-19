@@ -276,7 +276,8 @@
         bulkDisableFailed: {{ 'Failed to disable redirects'|t('redirect-manager')|json_encode|raw }},
         bulkDeletedTemplate: {{ 'Deleted {count} redirects'|t('redirect-manager')|json_encode|raw }},
         bulkDeleteFailed: {{ 'Failed to delete redirects'|t('redirect-manager')|json_encode|raw }},
-        bulkDeleteConfirmTemplate: {{ 'Delete {count} redirect(s)? This cannot be undone.'|t('redirect-manager')|json_encode|raw }},
+        bulkDeleteConfirmSingular: {{ 'Delete {count} redirect? This cannot be undone.'|t('redirect-manager')|json_encode|raw }},
+        bulkDeleteConfirmPlural: {{ 'Delete {count} redirects? This cannot be undone.'|t('redirect-manager')|json_encode|raw }},
     };
 
     function selectedIds() {
@@ -350,7 +351,8 @@
     document.getElementById('lr-bulk-delete-btn')?.addEventListener('click', function() {
         const ids = selectedIds();
         if (!ids.length) return;
-        if (!confirm(T.bulkDeleteConfirmTemplate.replace('{count}', ids.length))) return;
+        const confirmTemplate = ids.length === 1 ? T.bulkDeleteConfirmSingular : T.bulkDeleteConfirmPlural;
+        if (!confirm(confirmTemplate.replace('{count}', ids.length))) return;
         runBulkStatus('redirect-manager/redirects/bulk-delete', T.bulkDeletedTemplate, T.bulkDeleteFailed);
     });
 })();

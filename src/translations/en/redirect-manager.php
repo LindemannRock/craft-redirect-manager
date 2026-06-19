@@ -409,7 +409,8 @@ return [
     'Failed to enable redirects' => 'Failed to enable redirects',
     'Failed to disable redirects' => 'Failed to disable redirects',
     'Failed to delete redirects' => 'Failed to delete redirects',
-    'Delete {count} redirect(s)? This cannot be undone.' => 'Delete {count} redirect(s)? This cannot be undone.',
+    'Delete {count} redirect? This cannot be undone.' => 'Delete {count} redirect? This cannot be undone.',
+    'Delete {count} redirects? This cannot be undone.' => 'Delete {count} redirects? This cannot be undone.',
 
     // Redirects: Edit
     'Edit {singularName}' => 'Edit {singularName}',
@@ -721,7 +722,8 @@ return [
     'Delete this analytics record?' => 'Delete this analytics record?',
     'Analytics record deleted' => 'Analytics record deleted',
     'Could not delete analytics record' => 'Could not delete analytics record',
-    'Delete {count} analytics record(s)?' => 'Delete {count} analytics record(s)?',
+    'Delete {count} analytics record?' => 'Delete {count} analytics record?',
+    'Delete {count} analytics records?' => 'Delete {count} analytics records?',
     'Deleted {count} analytics record(s)' => 'Deleted {count} analytics record(s)',
     'Cleared {count} analytics record(s)' => 'Cleared {count} analytics record(s)',
     'Failed to clear analytics' => 'Failed to clear analytics',

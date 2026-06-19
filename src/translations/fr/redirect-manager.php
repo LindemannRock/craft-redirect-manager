@@ -409,7 +409,8 @@ return [
     'Failed to enable redirects' => 'Échec de l\'activation des redirections',
     'Failed to disable redirects' => 'Échec de la désactivation des redirections',
     'Failed to delete redirects' => 'Échec de la suppression des redirections',
-    'Delete {count} redirect(s)? This cannot be undone.' => 'Supprimer {count} redirections ? Cette action est irréversible.',
+    'Delete {count} redirect? This cannot be undone.' => 'Supprimer {count} redirection ? Cette action est irréversible.',
+    'Delete {count} redirects? This cannot be undone.' => 'Supprimer {count} redirections ? Cette action est irréversible.',
 
     // Redirects: Edit
     'Edit {singularName}' => 'Modifier {singularName}',
@@ -721,7 +722,8 @@ return [
     'Delete this analytics record?' => 'Supprimer cet enregistrement analytique ?',
     'Analytics record deleted' => 'Enregistrement analytique supprimé',
     'Could not delete analytics record' => 'Impossible de supprimer l\'enregistrement analytique',
-    'Delete {count} analytics record(s)?' => 'Supprimer {count} enregistrements analytiques ?',
+    'Delete {count} analytics record?' => 'Supprimer {count} enregistrement analytique ?',
+    'Delete {count} analytics records?' => 'Supprimer {count} enregistrements analytiques ?',
     'Deleted {count} analytics record(s)' => '{count} enregistrements analytiques supprimés',
     'Cleared {count} analytics record(s)' => '{count} enregistrements analytiques effacés',
     'Failed to clear analytics' => 'Échec de l\'effacement des analytiques',

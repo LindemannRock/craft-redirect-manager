@@ -409,7 +409,8 @@ return [
     'Failed to enable redirects' => 'リダイレクトの有効化に失敗しました',
     'Failed to disable redirects' => 'リダイレクトの無効化に失敗しました',
     'Failed to delete redirects' => 'リダイレクトの削除に失敗しました',
-    'Delete {count} redirect(s)? This cannot be undone.' => '{count} 件のリダイレクトを削除しますか？この操作は取り消せません。',
+    'Delete {count} redirect? This cannot be undone.' => '{count} 件のリダイレクトを削除しますか？この操作は取り消せません。',
+    'Delete {count} redirects? This cannot be undone.' => '{count} 件のリダイレクトを削除しますか？この操作は取り消せません。',
 
     // Redirects: Edit
     'Edit {singularName}' => '{singularName} を編集する',
@@ -721,7 +722,8 @@ return [
     'Delete this analytics record?' => 'このアナリティクスレコードを削除しますか？',
     'Analytics record deleted' => 'アナリティクスレコードを削除しました',
     'Could not delete analytics record' => 'アナリティクスレコードを削除できませんでした',
-    'Delete {count} analytics record(s)?' => '{count} 件のアナリティクスレコードを削除しますか？',
+    'Delete {count} analytics record?' => '{count} 件のアナリティクスレコードを削除しますか？',
+    'Delete {count} analytics records?' => '{count} 件のアナリティクスレコードを削除しますか？',
     'Deleted {count} analytics record(s)' => '{count} 件のアナリティクスレコードを削除しました',
     'Cleared {count} analytics record(s)' => '{count} 件のアナリティクスレコードを削除しました',
     'Failed to clear analytics' => 'アナリティクスの削除に失敗しました',

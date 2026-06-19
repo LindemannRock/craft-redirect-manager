@@ -409,7 +409,8 @@ return [
     'Failed to enable redirects' => 'Não foi possível ativar os redirecionamentos',
     'Failed to disable redirects' => 'Não foi possível desativar os redirecionamentos',
     'Failed to delete redirects' => 'Não foi possível eliminar os redirecionamentos',
-    'Delete {count} redirect(s)? This cannot be undone.' => 'Eliminar {count} redirecionamentos? Esta ação não pode ser anulada.',
+    'Delete {count} redirect? This cannot be undone.' => 'Eliminar {count} redirecionamento? Esta ação não pode ser anulada.',
+    'Delete {count} redirects? This cannot be undone.' => 'Eliminar {count} redirecionamentos? Esta ação não pode ser anulada.',
 
     // Redirects: Edit
     'Edit {singularName}' => 'Editar {singularName}',
@@ -721,7 +722,8 @@ return [
     'Delete this analytics record?' => 'Eliminar este registo de análise?',
     'Analytics record deleted' => 'Registo de análise eliminado',
     'Could not delete analytics record' => 'Não foi possível eliminar o registo de análise',
-    'Delete {count} analytics record(s)?' => 'Eliminar {count} registos de análise?',
+    'Delete {count} analytics record?' => 'Eliminar {count} registo de análise?',
+    'Delete {count} analytics records?' => 'Eliminar {count} registos de análise?',
     'Deleted {count} analytics record(s)' => '{count} registos de análise eliminados',
     'Cleared {count} analytics record(s)' => '{count} registos de análise limpos',
     'Failed to clear analytics' => 'Não foi possível limpar as análises',

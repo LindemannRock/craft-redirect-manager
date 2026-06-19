@@ -409,7 +409,8 @@ return [
     'Failed to enable redirects' => 'فشل تفعيل عمليات إعادة التوجيه',
     'Failed to disable redirects' => 'فشل تعطيل عمليات إعادة التوجيه',
     'Failed to delete redirects' => 'فشل حذف عمليات إعادة التوجيه',
-    'Delete {count} redirect(s)? This cannot be undone.' => 'حذف {count} عمليات إعادة توجيه؟ لا يمكن التراجع عن هذا الإجراء.',
+    'Delete {count} redirect? This cannot be undone.' => 'حذف {count} عملية إعادة توجيه؟ لا يمكن التراجع عن هذا الإجراء.',
+    'Delete {count} redirects? This cannot be undone.' => 'حذف {count} عمليات إعادة توجيه؟ لا يمكن التراجع عن هذا الإجراء.',
 
     // Redirects: Edit
     'Edit {singularName}' => 'تعديل {singularName}',
@@ -721,7 +722,8 @@ return [
     'Delete this analytics record?' => 'حذف هذا السجل التحليلي؟',
     'Analytics record deleted' => 'تم حذف السجل التحليلي',
     'Could not delete analytics record' => 'تعذر حذف السجل التحليلي',
-    'Delete {count} analytics record(s)?' => 'حذف {count} سجلات تحليلية؟',
+    'Delete {count} analytics record?' => 'حذف {count} سجل تحليلي؟',
+    'Delete {count} analytics records?' => 'حذف {count} سجلات تحليلية؟',
     'Deleted {count} analytics record(s)' => 'تم حذف {count} سجلات تحليلية',
     'Cleared {count} analytics record(s)' => 'تم مسح {count} سجلات تحليلية',
     'Failed to clear analytics' => 'فشل مسح التحليلات',
