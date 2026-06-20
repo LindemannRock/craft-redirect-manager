@@ -1,6 +1,6 @@
 # Changelog
 
-## [5.34.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.33.0...v5.34.0) (2026-06-20)
+## [5.34.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.33.0...v5.34.0) - 2026-06-20
 
 
 ### Added
