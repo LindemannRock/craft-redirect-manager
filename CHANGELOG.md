@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.34.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.33.0...v5.34.0) - 2026-06-20
+
+
+### Added
+
+* **i18n:** correct translations for redirect and analytics prompts ([95ae8f6](https://github.com/LindemannRock/craft-redirect-manager/commit/95ae8f6d251474ae3f1d9851a65aeefe4d7fd4dc))
+
 ## [5.33.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.32.1...v5.33.0) - 2026-06-18
 
 
