@@ -921,12 +921,12 @@ class RedirectsService extends Component
     }
 
     /**
-     * Get all enabled redirects for a site, ordered by priority
+     * Get all enabled redirects for one or more sites, ordered by priority
      *
-     * @param int|null $siteId
+     * @param int|array<int>|null $siteId
      * @return array
      */
-    public function getEnabledRedirects(?int $siteId = null): array
+    public function getEnabledRedirects(int|array|null $siteId = null): array
     {
         $query = (new Query())
             ->from(RedirectRecord::tableName())

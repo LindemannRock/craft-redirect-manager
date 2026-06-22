@@ -468,7 +468,9 @@ class SettingsController extends Controller
 
         // Find ALL matching redirects (not just the first one)
         $allMatches = [];
-        $redirects = RedirectManager::$plugin->redirects->getEnabledRedirects();
+        $redirects = RedirectManager::$plugin->redirects->getEnabledRedirects(
+            Craft::$app->getSites()->getEditableSiteIds(),
+        );
 
         foreach ($redirects as $redirect) {
             $matchType = $redirect['matchType'];
