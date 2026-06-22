@@ -216,7 +216,7 @@ class AnalyticsBreakdownService
     public function getTopCountries(int|array|null $siteId = null, int $days = 30, int $limit = 15, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $query = (new Query())
-            ->select(['country', 'COUNT(*) as count'])
+            ->select(['country', 'count' => new Expression('SUM([[count]])')])
             ->from(AnalyticsRecord::tableName())
             ->where(['not', ['country' => null]])
             ->andWhere(['not', ['country' => '']])
@@ -257,7 +257,7 @@ class AnalyticsBreakdownService
     public function getTopCities(int|array|null $siteId = null, int $days = 30, int $limit = 15, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $query = (new Query())
-            ->select(['city', 'country', 'COUNT(*) as count'])
+            ->select(['city', 'country', 'count' => new Expression('SUM([[count]])')])
             ->from(AnalyticsRecord::tableName())
             ->where(['not', ['city' => null]])
             ->andWhere(['not', ['city' => '']])
