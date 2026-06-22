@@ -27,11 +27,12 @@
 		} %}
 	</div>
 
-	{% include 'lindemannrock-base/_components/info-box' with {
-		type: 'info',
-		message: '<strong>' ~ "Backup Location:"|t('redirect-manager') ~ '</strong> <code>' ~ settings.getBackupLocationLabel() ~ '</code>',
-	} only %}
-{% endblock %}
+		{% set backupPath = settings.getBackupLocationLabel() %}
+		{% include 'lindemannrock-base/_components/info-box' with {
+			type: 'info',
+			message: '<strong>' ~ "Backup Location:"|t('redirect-manager') ~ '</strong> <code>' ~ backupPath|e ~ '</code>',
+		} only %}
+	{% endblock %}
 
 {% js %}
 function escapeHtml(str) {
