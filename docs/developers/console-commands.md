@@ -1,10 +1,17 @@
-# Console Commands
+# Console commands
 
-Redirect Manager provides the following console commands.
+Use these commands for setup tasks, backup maintenance, and operator discovery. Most day-to-day redirect management happens in the Control Panel, but these commands are useful during deploys, cron jobs, and incident response.
 
-## Console Help
+## Console help
 
 Use the plugin-level help command to see the available Redirect Manager commands and focused guidance for each workflow:
+
+```bash title="PHP"
+php craft redirect-manager/help
+php craft redirect-manager/help backup/create
+php craft redirect-manager/help security/generate-salt
+php craft redirect-manager/help security/generate-api-token
+```
 
 ```bash title="DDEV"
 ddev craft redirect-manager/help
@@ -14,6 +21,12 @@ ddev craft redirect-manager/help security/generate-api-token
 ```
 
 Craft's native command help is still available when you need the exact Yii option signature:
+
+```bash title="PHP"
+php craft help redirect-manager/backup/create
+php craft help redirect-manager/security/generate-salt
+php craft help redirect-manager/security/generate-api-token
+```
 
 ```bash title="DDEV"
 ddev craft help redirect-manager/backup/create
@@ -49,9 +62,9 @@ ddev craft redirect-manager/security/generate-api-token
 
 Rotating this token immediately invalidates external consumers that still send the previous value.
 
-## Backups @since(5.23.0)
+## Backups @since(5.24.0)
 
-### `redirect-manager/backup/create` @since(5.23.0)
+### `redirect-manager/backup/create` @since(5.24.0)
 
 Creates a manual backup of all redirects. By default, the command also cleans old backups when backup retention is enabled.
 
@@ -70,7 +83,7 @@ ddev craft redirect-manager/backup/create
 | `--reason` | `?string` | `'console'` | Reason for the backup |
 | `--clean` | `bool` | `true` | Clean old backups after creating |
 
-### `redirect-manager/backup/scheduled` @since(5.23.0)
+### `redirect-manager/backup/scheduled` @since(5.24.0)
 
 Runs the scheduled backup based on the `backupSchedule` setting. Checks the time elapsed since the last scheduled backup and creates one if due. Redirect Manager normally schedules backups through Craft's queue; this command is useful for manual checks or direct cron setups.
 
@@ -82,7 +95,7 @@ php craft redirect-manager/backup/scheduled
 ddev craft redirect-manager/backup/scheduled
 ```
 
-### `redirect-manager/backup/list` @since(5.23.0)
+### `redirect-manager/backup/list` @since(5.24.0)
 
 Lists all available backups with date, reason, size, and redirect count.
 
@@ -94,7 +107,7 @@ php craft redirect-manager/backup/list
 ddev craft redirect-manager/backup/list
 ```
 
-### `redirect-manager/backup/clean` @since(5.23.0)
+### `redirect-manager/backup/clean` @since(5.24.0)
 
 Removes backups older than the configured `backupRetentionDays`. Does nothing if retention is set to `0` (keep forever).
 

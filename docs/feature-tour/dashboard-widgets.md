@@ -2,6 +2,8 @@
 
 Redirect Manager provides two Craft dashboard widgets for at-a-glance visibility into your site's redirect health and 404 activity.
 
+![Both Redirect Manager dashboard widgets — Analytics Summary and Unhandled 404s — on the Craft dashboard](images/dashboard-widgets-cp.webp)
+
 ## Adding Widgets
 
 1. Go to **Dashboard** in the Craft CP

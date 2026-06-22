@@ -1,6 +1,6 @@
-# Shared Features
+# Shared features
 
-Redirect Manager uses the following shared libraries and features.
+Redirect Manager builds on shared LindemannRock packages instead of duplicating common plugin infrastructure. This page explains which behavior comes from the base plugin or Logging Library so developers know where a setting, helper, or UI pattern originates.
 
 ## `lindemannrock/base`
 
@@ -17,37 +17,14 @@ Redirect Manager uses the following shared libraries and features.
 
 ### Details
 
-**PluginHelper::bootstrap()**
-
-Provides plugin name helpers in Twig templates (see Twig Globals section)
-
-**PluginHelper::applyPluginNameFromConfig()**
-
-Allows customizing the plugin display name via config/{plugin-handle}.php
-
-**GqlHelper**
-
-Redirect Manager uses `GqlHelper` for GraphQL schema permission checks, `site` / `siteId` argument resolution, virtual site fields, and empty string normalization. Redirect Manager still owns its query names, field list, matching behavior, and analytics side effects.
-
-**SettingsConfigTrait**
-
-Settings can be overridden via config/{plugin-handle}.php. Debug logging requires devMode.
-
-**SettingsDisplayNameTrait**
-
-Provides getDisplayName(), getFullName(), getPluralDisplayName(), etc.
-
-**SettingsPersistenceTrait**
-
-Settings are stored in database with automatic type conversion for boolean, integer, float, and JSON fields.
-
-**ColorHelper**
-
-Provides palette color lookups used to define color sets for request type, match type, and creation type badges registered via `PluginHelper::bootstrap()`
-
-**GeoHelper**
-
-ISO 3166-1 alpha-2 country code utilities
+- `PluginHelper::bootstrap()` initializes the base module, plugin-name Twig helpers, shared templates, and logging configuration.
+- `PluginHelper::applyPluginNameFromConfig()` lets `config/redirect-manager.php` override the Control Panel display name.
+- `GqlHelper` handles Craft GraphQL schema permission checks, `site` / `siteId` argument resolution, virtual site fields, and empty string normalization. Redirect Manager still owns its query names, field list, matching behavior, and analytics side effects.
+- `SettingsConfigTrait` detects config-file overrides so disabled Control Panel fields show the correct warning.
+- `SettingsDisplayNameTrait` provides display-name helpers such as `getDisplayName()`, `getFullName()`, and `getPluralDisplayName()`.
+- `SettingsPersistenceTrait` stores settings in the plugin database table with type conversion for boolean, integer, float, and JSON fields.
+- `ColorHelper` provides palette colors for request type, match type, and creation type badges registered through `PluginHelper::bootstrap()`.
+- `GeoHelper` provides ISO 3166-1 alpha-2 country code utilities.
 
 ---
 
@@ -61,14 +38,6 @@ ISO 3166-1 alpha-2 country code utilities
 
 ### Details
 
-**LoggingLibrary::configure()**
-
-Enables dedicated log files at storage/logs/{plugin-handle}-{date}.log
-
-**LoggingTrait**
-
-Provides standardized logging to dedicated plugin log files
-
-**LoggingLibrary::addLogsNav()**
-
-View plugin logs directly in the Control Panel
+- `LoggingLibrary::configure()` writes dedicated log files at `storage/logs/{plugin-handle}-{date}.log`.
+- `LoggingTrait` provides standardized plugin log methods such as `logInfo()`, `logWarning()`, `logError()`, and `logDebug()`.
+- `LoggingLibrary::addLogsNav()` adds the Logs section to the Redirect Manager Control Panel navigation.

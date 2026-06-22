@@ -34,6 +34,7 @@ This plugin is in active development and not yet available on the Craft Plugin S
 - **Plugin Integration** — pluggable architecture for other plugins to handle 404s
 - **Privacy-First** — salted IP hashing, optional subnet masking, GDPR-friendly
 - **Query String Control** — strip, preserve, or consolidate query strings
+- **URL Filtering** — exclude bot/scanner/system URLs with regex, plus one-click recommended, WordPress, and security-probe presets
 
 ## Requirements
 
@@ -45,29 +46,29 @@ This plugin is in active development and not yet available on the Craft Plugin S
 
 ### Via Composer
 
-```bash
+```bash title="Composer"
 composer require lindemannrock/craft-redirect-manager
 ```
 
-```bash
+```bash title="PHP"
 php craft plugin/install redirect-manager
 ```
 
-```bash
+```bash title="PHP"
 php craft redirect-manager/security/generate-salt
 ```
 
 ### Using DDEV
 
-```bash
+```bash title="DDEV"
 ddev composer require lindemannrock/craft-redirect-manager
 ```
 
-```bash
+```bash title="DDEV"
 ddev craft plugin/install redirect-manager
 ```
 
-```bash
+```bash title="DDEV"
 ddev craft redirect-manager/security/generate-salt
 ```
 

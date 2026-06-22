@@ -1,4 +1,4 @@
-# Installation & Setup
+# Installation and setup
 
 > [!NOTE]
 > Redirect Manager is in active development and not yet available on the Craft Plugin Store. Install via Composer for now.
@@ -9,7 +9,7 @@ Add the package to your project using Composer and the command line.
 
 1. Open your terminal and go to your Craft project:
 
-```bash
+```bash title="Terminal"
 cd /path/to/project
 ```
 
@@ -38,7 +38,7 @@ ddev craft plugin/install logging-library
 
 Or via the Control Panel: **Settings → Plugins → Logging Library → Install**
 
-## Post-Install: Generate IP Hash Salt
+## Post-install: generate IP hash salt
 
 After installation, generate the IP hash salt so analytics can properly track and anonymize visitors:
 
@@ -55,16 +55,16 @@ This command automatically adds `REDIRECT_MANAGER_IP_SALT` to your `.env` file. 
 > [!TIP]
 > Skipping this step won't break anything — redirects work normally without it. Analytics still tracks 404s, devices, and referrers, but IP hashing and geo-location won't be available. You can generate the salt later and full tracking resumes immediately.
 
-## Copy Config File (Optional)
+## Copy config file
 
 For advanced configuration, copy the config file to your project:
 
-```bash
+```bash title="PHP"
 cp vendor/lindemannrock/craft-redirect-manager/src/config.php config/redirect-manager.php
 ```
 
 This gives you full control over analytics, caching, geo-detection, and all plugin settings. See [Configuration](configuration.md) for details.
 
-## Quick Start
+## Quick start
 
 See [Quickstart](quickstart.md) for the fastest path from install to first result.

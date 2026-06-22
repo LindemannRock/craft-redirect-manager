@@ -19,6 +19,7 @@
             "feature-tour/auto-redirects",
             "feature-tour/analytics",
             "feature-tour/query-strings",
+            "feature-tour/url-filtering",
             "feature-tour/import-export",
             "feature-tour/backups",
             "feature-tour/plugin-integration",

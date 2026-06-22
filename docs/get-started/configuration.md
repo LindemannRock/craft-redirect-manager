@@ -1,6 +1,6 @@
 # Configuration
 
-Configure Redirect Manager by creating a config file at `config/redirect-manager.php`.
+Configure Redirect Manager from the Control Panel or by creating `config/redirect-manager.php`. Config-file values override the matching Control Panel fields, which is useful when production behavior needs to stay locked across deploys.
 
 ## General
 
@@ -10,7 +10,41 @@ Configure Redirect Manager by creating a config file at `config/redirect-manager
 | `autoCreateRedirects` | `bool` | `true` | Automatically create redirects when entry URIs change |
 | `undoWindowMinutes` | `int` | `60` | Time window in minutes for detecting immediate undo (`0`, `30`, `60`, `120`, `240`). `0` = unlimited (always undo, no time limit) |
 | `redirectSrcMatch` | `string` | `'pathonly'` | Match legacy URL by path (`pathonly`) or full URL (`fullurl`) |
-| `itemsPerPage` | `int` | `100` | Items per page in list views (10-500) |
+
+## Interface
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `refreshIntervalSecs` | `?int` | `null` | Dashboard auto-refresh interval in seconds (`0` / `null` = disabled; CP options include 15, 30, 60, and 120 seconds) |
+| `itemsPerPage` | `int` | `100` | Items per page in redirect and analytics list views (10-500) |
+
+Redirect Manager also exposes base-owned display settings from the Interface settings page. Leave these unset to inherit from `config/lindemannrock-base.php`; set them in `config/redirect-manager.php` only when this plugin should behave differently.
+
+### Date and time display
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `timeFormat` | `?string` | `null` | Time display override: `12` or `24` |
+| `monthFormat` | `?string` | `null` | Month display override: `numeric`, `short`, or `long` |
+| `dateOrder` | `?string` | `null` | Date order override: `dmy`, `mdy`, or `ymd` |
+| `dateSeparator` | `?string` | `null` | Date separator override: `/`, `-`, or `.` |
+| `showSeconds` | `?bool` | `null` | Whether timestamps include seconds |
+
+### Default date range
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `defaultDateRange` | `?string` | `null` | Default date range for dashboard, analytics, logs, and other date-filtered views |
+
+Common values include `today`, `yesterday`, `last7days`, `last30days`, `last90days`, `thisMonth`, `lastMonth`, `thisYear`, `lastYear`, and `all`.
+
+### Export formats
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `exports.csv` | `?bool` | `null` | Enable CSV export for this plugin |
+| `exports.json` | `?bool` | `null` | Enable JSON export for this plugin |
+| `exports.excel` | `?bool` | `null` | Enable Excel export for this plugin |
 
 ## Query String Handling
 
@@ -46,7 +80,6 @@ When enabled and token-configured, test the endpoint from **Redirect Manager →
 | `analyticsLimit` | `int` | `1000` | Maximum number of unique 404 records to retain |
 | `analyticsRetention` | `int` | `30` | Days to retain analytics (`0` = keep forever) |
 | `autoTrimAnalytics` | `bool` | `true` | Automatically trim analytics beyond retention |
-| `refreshIntervalSecs` | `?int` | `null` | Dashboard auto-refresh interval in seconds (`null` = disabled) |
 
 ## Geographic Detection
 
@@ -81,14 +114,14 @@ When enabled and token-configured, test the endpoint from **Redirect Manager →
 | `backupOnImport` | `bool` | `true` | Create backup before CSV import |
 | `backupSchedule` | `string` | `'disabled'` | Schedule (`disabled`, `daily`, `weekly`, `monthly`) |
 | `backupRetentionDays` | `int` | `30` | Days to keep backups (`0` = keep forever, max 365) |
-| `backupPath` @since(5.0.0) | `string` | `'@storage/redirect-manager/backups'` | Local filesystem path for backups. Supports `@storage`, `@root` subfolders, or `$VARIABLE` env vars that resolve inside those roots. |
-| `backupVolumeUid` @since(5.0.0) | `?string` | `null` | Optional asset volume UID for storing backups. Local volumes inside `@webroot` are rejected; remote volume access must be restricted in the storage provider. |
+| `backupPath` | `string` | `'@storage/redirect-manager/backups'` | Local filesystem path for backups. Supports `@storage`, `@root` subfolders, or `$VARIABLE` env vars that resolve inside those roots. |
+| `backupVolumeUid` @since(5.32.0) | `?string` | `null` | Optional asset volume UID for storing backups. Local volumes inside `@webroot` are rejected; remote volume access must be restricted in the storage provider. |
 
 ## Advanced
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `excludePatterns` | `array` | `[]` | Regex patterns to exclude URLs from redirect handling |
+| `excludePatterns` | `array` | `[]` | Regex patterns for URLs to exclude from both redirect handling and analytics. See [URL Filtering](../feature-tour/url-filtering.md) |
 | `logLevel` | `string` | `'error'` | Log level (`debug`, `info`, `warning`, `error`). Debug requires devMode |
 
 ## Environment Variables
@@ -157,6 +190,16 @@ return [
 
         // Logging
         'logLevel' => 'error',
+
+        // Optional base-setting overrides for this plugin only
+        // Leave unset to inherit from config/lindemannrock-base.php
+        // 'timeFormat' => '24',
+        // 'defaultDateRange' => 'last30days',
+        // 'exports' => [
+        //     'csv' => true,
+        //     'json' => true,
+        //     'excel' => true,
+        // ],
     ],
 ];
 ```

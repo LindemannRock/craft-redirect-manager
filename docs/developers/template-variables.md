@@ -1,6 +1,6 @@
-# Template Variables
+# Template variables
 
-Redirect Manager provides Twig variables for use in your templates.
+Use these variables when a frontend template needs Redirect Manager settings or analytics data. Most sites do not need them for normal redirect handling; the plugin catches 404s automatically before Twig renders.
 
 ## `craft.redirectManager`
 

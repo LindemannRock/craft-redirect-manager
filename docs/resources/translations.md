@@ -2,7 +2,7 @@
 
 Redirect Manager includes full translations for 12 languages out of the box.
 
-## Supported Languages
+## Supported languages
 
 | Language | Code |
 |----------|------|
@@ -21,7 +21,7 @@ Redirect Manager includes full translations for 12 languages out of the box.
 
 Translations are automatically applied based on the user's preferred language in Craft's Control Panel settings.
 
-## Overriding Translations
+## Overriding translations
 
 You can override any translation string by creating a static translation file in your project:
 
@@ -52,7 +52,7 @@ If you have [Translation Manager](https://github.com/LindemannRock/craft-transla
 
 Available languages are based on the site languages active in your Craft installation.
 
-## Contributing Translations
+## Contributing translations
 
 If you find a translation error or want to improve a translation, please [open an issue](https://github.com/LindemannRock/craft-redirect-manager/issues) with:
 

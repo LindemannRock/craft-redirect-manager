@@ -1,6 +1,8 @@
 # Requirements
 
-## System Requirements
+Redirect Manager runs on Craft 5 projects and installs its shared LindemannRock dependencies through Composer. Use this page to check the platform requirements before installing or troubleshooting a missing feature.
+
+## System requirements
 
 | Requirement | Version |
 |-------------|---------|

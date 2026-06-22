@@ -2,6 +2,8 @@
 
 Redirect Manager supports bulk redirect management through CSV import and export. Import hundreds of redirects at once with a guided column-mapping workflow. Export your full redirect library for backup or migration.
 
+![The CSV import wizard showing the column-mapping step with a preview of parsed rows](images/import-export-wizard.webp)
+
 ## Importing Redirects
 
 Navigate to **Redirect Manager > Import/Export** to start an import.

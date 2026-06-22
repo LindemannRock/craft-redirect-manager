@@ -2,6 +2,8 @@
 
 Redirect Manager can automatically create a redirect whenever a Craft entry's URI changes. This keeps old URLs alive without any manual work, preventing broken links when content is reorganized.
 
+![An auto-created redirect in the Redirect Manager list, tagged with its entry-change creation type](images/auto-redirects-list.webp)
+
 ## How It Works
 
 When an entry is saved with a changed URI, the plugin runs a two-step process:
@@ -9,7 +11,7 @@ When an entry is saved with a changed URI, the plugin runs a two-step process:
 1. **`stashElementUri`** — Before the save, the plugin captures the element's current URI and stores it temporarily.
 2. **`handleElementUriChange`** — After the save completes, the plugin compares the stored URI with the new URI. If they differ, a redirect is created from the old URI to the new one.
 
-The resulting redirect uses match type `exact`, status code `301`, and the priority configured in settings (default `0` for auto-created rules).
+The resulting redirect uses match type `exact`, status code `301`, and a fixed priority of `0`.
 
 ### When Auto-Redirects Are Created
 

@@ -9,6 +9,8 @@ Redirect Manager is a comprehensive redirect and 404 management plugin for Craft
 
 At its core, Redirect Manager intercepts every 404 response on your site, checks it against a library of redirect rules, and either fires the redirect or records the miss as an analytics entry. Every 404 — whether it came from a renamed entry, a deleted page, or an external link pointing at the wrong URL — is captured and actionable.
 
+![The Redirect Manager redirects list in the Control Panel showing source, destination, match type, and hit-count columns](images/overview-redirects-list.webp)
+
 ## Core Capabilities
 
 - **[Redirects](redirects.md)** — Create and manage redirects with four match types: exact, regex, wildcard, and prefix. Assign priority to control which rule wins when multiple patterns match. Supports all common status codes (301, 302, 303, 307, 308, 410) and full multi-site configuration.
@@ -22,6 +24,8 @@ At its core, Redirect Manager intercepts every 404 response on your site, checks
 - **[Backups](backups.md) @since(5.23.0)** — Automatic backups before imports, scheduled backups (daily, weekly, monthly), and manual backups from the CP or CLI. Restore from any saved backup file. Store locally or in a Craft asset volume.
 
 - **[Query String Handling](query-strings.md)** — Three independent settings control query strings at matching time, at redirect time, and in analytics grouping. Configure independently for e-commerce, API, or standard content sites.
+
+- **[URL Filtering](url-filtering.md)** — Exclude bot, scanner, and system URLs from both redirect handling and analytics with regex patterns. One-click presets apply recommended Craft exclusions, WordPress migration filters, and security-probe filters. Add custom headers (e.g. `X-Robots-Tag`) to redirect responses.
 
 - **[GraphQL](../developers/graphql.md) @since(5.33.0)** — Resolve redirects and list enabled redirects for headless/SPAs. Resolution uses the same matching path as normal 404 handling and records handled or unhandled analytics.
 

@@ -1,6 +1,6 @@
-# Twig Globals
+# Twig globals
 
-Redirect Manager provides the following global variables in your Twig templates.
+Use the `redirectHelper` global when plugin-owned templates need the configured Redirect Manager display name. It is mainly useful for custom Control Panel templates or integrations that mirror the plugin's labels.
 
 ## `redirectHelper` @since(5.0.0)
 

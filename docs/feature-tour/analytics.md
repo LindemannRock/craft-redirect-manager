@@ -2,6 +2,8 @@
 
 Redirect Manager tracks every 404 that hits your site — whether it was handled by a redirect or went unmatched. The analytics dashboard gives you device breakdowns, geographic data, bot identification, and charts over time. Unhandled 404s can be turned into redirects with a single click.
 
+![The Redirect Manager analytics dashboard with summary cards, device breakdown, and a 404 activity chart](images/analytics-dashboard.webp)
+
 ## What Gets Tracked
 
 Every 404 event records:
@@ -92,7 +94,7 @@ producer.
 The dashboard can refresh automatically at a configurable interval:
 
 ```php
-'refreshIntervalSecs' => 30, // 5, 15, 30, or 60 seconds; null = disabled
+'refreshIntervalSecs' => 30, // 15, 30, 60, or 120 seconds; null = disabled
 ```
 
 When a user interacts with the page (hover, click, scroll), auto-refresh pauses to avoid disrupting their workflow. It resumes when interaction stops.
@@ -136,7 +138,7 @@ Private IP addresses (127.0.0.1, 192.168.x.x, 10.x.x.x) cannot be geolocated. In
 
 Alternatively, use environment variables:
 
-```bash
+```dotenv title=".env"
 # .env
 REDIRECT_MANAGER_DEFAULT_COUNTRY=US
 REDIRECT_MANAGER_DEFAULT_CITY=New York

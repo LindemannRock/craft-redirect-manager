@@ -48,14 +48,14 @@ You can test this endpoint from **Redirect Manager → Settings → Test** after
 
 With a token:
 
-```bash
+```bash title="Bearer token"
 curl -H "Authorization: Bearer $REDIRECT_MANAGER_API_TOKEN" \
   "https://example.com/actions/redirect-manager/api/get-redirects"
 ```
 
 You can also send the token in the plugin-specific header:
 
-```bash
+```bash title="Plugin header"
 curl -H "X-Redirect-Manager-Key: $REDIRECT_MANAGER_API_TOKEN" \
   "https://example.com/actions/redirect-manager/api/get-redirects"
 ```

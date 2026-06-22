@@ -29,6 +29,8 @@ This adds `REDIRECT_MANAGER_IP_SALT` to your `.env` file automatically.
 5. Leave **Match Type** as `exact` and **Status Code** as `301`
 6. Save
 
+![The Redirect Manager new redirect form with source and destination URLs filled in](images/quickstart-new-redirect.webp)
+
 ## 4. Test It
 
 Visit `/old-page` in your browser — you should be redirected to `/new-page`.

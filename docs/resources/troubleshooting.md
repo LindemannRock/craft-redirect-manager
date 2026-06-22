@@ -1,8 +1,8 @@
 # Troubleshooting
 
-Common issues and solutions for Redirect Manager.
+Start here when redirects, analytics, scheduled jobs, or settings behave differently than expected. Each section gives quick checks first, then the likely cause.
 
-## Redirects Not Working
+## Redirects not working
 
 A redirect exists in the CP but visiting the URL does not redirect.
 
@@ -57,7 +57,7 @@ A redirect exists in the CP but visiting the URL does not redirect.
 
 ---
 
-## Analytics Not Recording
+## Analytics not recording
 
 404s are happening but nothing appears in the analytics dashboard.
 
@@ -91,7 +91,7 @@ A redirect exists in the CP but visiting the URL does not redirect.
 
 ---
 
-## Scheduled Cleanup or Backups Do Not Reappear
+## Scheduled cleanup or backups do not reappear
 
 Redirect Manager schedules recurring queue jobs for analytics cleanup and automatic backups. If the queue is empty after one of those jobs runs:
 
@@ -102,7 +102,7 @@ Redirect Manager schedules recurring queue jobs for analytics cleanup and automa
 
 The queued job description shows when that specific queued row is due to run. Craft stores that description when the row is queued, so date/time format changes apply to newly queued rows. Existing delayed rows keep their old label until they run or are requeued. Queue labels stay compact: numeric months render numerically, while short and long month settings both render as short month names.
 
-## Duplicate Scheduled Backup Jobs Keep Appearing
+## Duplicate scheduled backup jobs keep appearing
 
 Scheduled backups and analytics cleanup should normally have one delayed queue row per next run. Redirect Manager checks for existing pending rows during bootstrap, collapses duplicate pending rows automatically, and keeps one row for the next scheduled run.
 
@@ -110,7 +110,7 @@ If duplicates keep returning after a deployment, check whether multiple app inst
 
 ---
 
-## Settings Save Shows a Validation Error
+## Settings save shows a validation error
 
 Numeric settings such as cache duration, analytics limits, and backup retention must be whole numbers within the field's allowed range. If a value is invalid, Redirect Manager keeps you on the same settings page and shows the field error inline.
 
@@ -118,7 +118,7 @@ When a setting is overridden in `config/redirect-manager.php`, the Control Panel
 
 ---
 
-## Auto-Redirects Not Being Created
+## Auto-redirects not being created
 
 Entry URIs change but no redirects appear in the redirect list.
 

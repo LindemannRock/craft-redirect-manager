@@ -2,6 +2,8 @@
 
 Redirect Manager matches incoming 404 requests against a library of redirect rules and issues the appropriate HTTP redirect. Rules support four match types, priority ordering, all standard redirect status codes, and multi-site scoping.
 
+![The Redirect Manager redirect editor showing the source URL, destination, match type, status code, and priority fields](images/redirects-edit-form.webp)
+
 ## Creating Redirects
 
 ### Via the Control Panel
@@ -169,6 +171,10 @@ Each redirect tracks how many times it has fired. Hit counts are visible in the 
 ### Bulk Operations
 
 The redirect list supports bulk enable, bulk disable, and bulk delete. Select rows using the checkboxes and choose an action from the bulk action menu.
+
+### Testing a Redirect
+
+To check what a given URL resolves to, go to **Settings → Test** and enter a URL. The tester lists **every** enabled rule that matches — not just the first — along with the resolved destination, with any regex capture groups already applied. This is the fastest way to confirm a new pattern (especially a regex with captures) behaves the way you expect, or to see why two rules overlap before adjusting their [priority](#priority).
 
 ## Caching
 
