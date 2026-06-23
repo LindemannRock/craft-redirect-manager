@@ -15,7 +15,7 @@ use lindemannrock\redirectmanager\RedirectManager;
 /**
  * Redirect Manager Analytics Summary Widget
  *
- * @since 5.1.0
+ * @since 5.33.0
  */
 class AnalyticsSummaryWidget extends Widget
 {

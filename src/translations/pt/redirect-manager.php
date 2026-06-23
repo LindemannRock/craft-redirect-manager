@@ -184,6 +184,10 @@ return [
     'User does not have permission to export redirects.' => 'O utilizador não tem permissão para exportar redirecionamentos.',
     'User does not have permission to clear import history.' => 'O utilizador não tem permissão para limpar o histórico de importações.',
     'User does not have permission to view analytics for this site.' => 'O utilizador não tem permissão para ver as análises deste site.',
+    '{count, number} {count, plural, =1{outdated automatic redirect removed} other{outdated automatic redirects removed}} because the entry returned to a previous URL.' => '{count, number} {count, plural, =1{redirecionamento automático desatualizado removido} other{redirecionamentos automáticos desatualizados removidos}} porque a entrada voltou a um URL anterior.',
+    'Entry saved, but automatic redirect was not created because it would create a circular redirect loop. Please create a different redirect manually or change the slug.' => 'Entrada guardada, mas o redirecionamento automático não foi criado porque criaria um ciclo de redirecionamento circular. Crie outro redirecionamento manualmente ou altere o slug.',
+    'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Não é possível criar o redirecionamento: isto criaria um ciclo de redirecionamento circular. O destino acaba por redirecionar de volta para a origem.',
+    'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Não é possível atualizar o redirecionamento: isto criaria um ciclo de redirecionamento circular. O destino acaba por redirecionar de volta para a origem.',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{erro encontrado} other{erros encontrados}}',

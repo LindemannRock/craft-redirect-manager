@@ -563,7 +563,9 @@ class RedirectsService extends Component
                 }
 
                 Craft::$app->getSession()->setNotice(
-                    count($conflictingRedirects) . ' outdated automatic redirect(s) removed because entry returned to a previous URL.'
+                    Craft::t('redirect-manager', '{count, number} {count, plural, =1{outdated automatic redirect removed} other{outdated automatic redirects removed}} because the entry returned to a previous URL.', [
+                        'count' => count($conflictingRedirects),
+                    ])
                 );
             }
 
@@ -580,8 +582,7 @@ class RedirectsService extends Component
 
                 // Show error message in CP
                 Craft::$app->getSession()->setError(
-                    'Entry saved, but automatic redirect was not created because it would create a circular redirect loop. ' .
-                    'Please create a different redirect manually or change the slug.'
+                    Craft::t('redirect-manager', 'Entry saved, but automatic redirect was not created because it would create a circular redirect loop. Please create a different redirect manually or change the slug.')
                 );
 
                 // Clear stashed URI and exit
@@ -739,7 +740,7 @@ class RedirectsService extends Component
 
             // Show specific error message to user
             Craft::$app->getSession()->setError(
-                'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.'
+                Craft::t('redirect-manager', 'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.')
             );
 
             return false;
@@ -847,7 +848,7 @@ class RedirectsService extends Component
 
                 // Show specific error message to user
                 Craft::$app->getSession()->setError(
-                    'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.'
+                    Craft::t('redirect-manager', 'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.')
                 );
 
                 return false;

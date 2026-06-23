@@ -184,6 +184,10 @@ return [
     'User does not have permission to export redirects.' => 'ユーザーにリダイレクトをエクスポートする権限がありません。',
     'User does not have permission to clear import history.' => 'ユーザーにインポート履歴を削除する権限がありません。',
     'User does not have permission to view analytics for this site.' => 'ユーザーにこのサイトのアナリティクスを表示する権限がありません。',
+    '{count, number} {count, plural, =1{outdated automatic redirect removed} other{outdated automatic redirects removed}} because the entry returned to a previous URL.' => 'エントリーが以前の URL に戻ったため、{count, number} 件の古い自動{count, plural, =1{リダイレクト} other{リダイレクト}}を削除しました。',
+    'Entry saved, but automatic redirect was not created because it would create a circular redirect loop. Please create a different redirect manually or change the slug.' => 'エントリーを保存しましたが、循環リダイレクトループが発生するため、自動リダイレクトは作成されませんでした。手動で別のリダイレクトを作成するか、スラッグを変更してください。',
+    'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'リダイレクトを作成できません：循環リダイレクトループが発生します。転送先は最終的にソースへ戻ります。',
+    'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'リダイレクトを更新できません：循環リダイレクトループが発生します。転送先は最終的にソースへ戻ります。',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} 件の{count, plural, =1{エラー} other{エラー}}が見つかりました',

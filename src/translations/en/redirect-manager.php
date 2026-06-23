@@ -184,6 +184,10 @@ return [
     'User does not have permission to export redirects.' => 'User does not have permission to export redirects.',
     'User does not have permission to clear import history.' => 'User does not have permission to clear import history.',
     'User does not have permission to view analytics for this site.' => 'User does not have permission to view analytics for this site.',
+    '{count, number} {count, plural, =1{outdated automatic redirect removed} other{outdated automatic redirects removed}} because the entry returned to a previous URL.' => '{count, number} {count, plural, =1{outdated automatic redirect removed} other{outdated automatic redirects removed}} because the entry returned to a previous URL.',
+    'Entry saved, but automatic redirect was not created because it would create a circular redirect loop. Please create a different redirect manually or change the slug.' => 'Entry saved, but automatic redirect was not created because it would create a circular redirect loop. Please create a different redirect manually or change the slug.',
+    'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.',
+    'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => 'Found {count, number} {count, plural, =1{error} other{errors}}',

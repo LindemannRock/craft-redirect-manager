@@ -8,6 +8,7 @@
 
 namespace lindemannrock\redirectmanager\services;
 
+use Craft;
 use craft\base\Component;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
@@ -311,10 +312,10 @@ class MatchingService extends Component
     public function getMatchTypes(): array
     {
         return [
-            'exact' => 'Exact Match',
-            'regex' => 'RegEx Match',
-            'wildcard' => 'Wildcard Match',
-            'prefix' => 'Prefix Match',
+            'exact' => Craft::t('redirect-manager', 'Exact Match'),
+            'regex' => Craft::t('redirect-manager', 'RegEx Match'),
+            'wildcard' => Craft::t('redirect-manager', 'Wildcard Match'),
+            'prefix' => Craft::t('redirect-manager', 'Prefix Match'),
         ];
     }
 }

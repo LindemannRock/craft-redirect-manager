@@ -184,6 +184,10 @@ return [
     'User does not have permission to export redirects.' => 'De gebruiker heeft geen toestemming om redirects te exporteren.',
     'User does not have permission to clear import history.' => 'De gebruiker heeft geen toestemming om de importgeschiedenis te wissen.',
     'User does not have permission to view analytics for this site.' => 'De gebruiker heeft geen toestemming om analyses voor deze site te bekijken.',
+    '{count, number} {count, plural, =1{outdated automatic redirect removed} other{outdated automatic redirects removed}} because the entry returned to a previous URL.' => '{count, number} {count, plural, =1{verouderde automatische redirect verwijderd} other{verouderde automatische redirects verwijderd}} omdat de invoer naar een vorige URL is teruggekeerd.',
+    'Entry saved, but automatic redirect was not created because it would create a circular redirect loop. Please create a different redirect manually or change the slug.' => 'Invoer opgeslagen, maar er is geen automatische redirect aangemaakt omdat dit een circulaire redirectlus zou veroorzaken. Maak handmatig een andere redirect aan of wijzig de slug.',
+    'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Kan redirect niet aanmaken: dit zou een circulaire redirectlus veroorzaken. De bestemming verwijst uiteindelijk terug naar de bron.',
+    'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Kan redirect niet bijwerken: dit zou een circulaire redirectlus veroorzaken. De bestemming verwijst uiteindelijk terug naar de bron.',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{fout} other{fouten}} gevonden',

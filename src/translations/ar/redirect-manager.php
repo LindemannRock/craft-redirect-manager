@@ -184,6 +184,10 @@ return [
     'User does not have permission to export redirects.' => 'ليس لدى المستخدم صلاحية لتصدير عمليات إعادة التوجيه.',
     'User does not have permission to clear import history.' => 'ليس لدى المستخدم صلاحية لمسح سجل الاستيراد.',
     'User does not have permission to view analytics for this site.' => 'ليس لدى المستخدم صلاحية لعرض تحليلات هذا الموقع.',
+    '{count, number} {count, plural, =1{outdated automatic redirect removed} other{outdated automatic redirects removed}} because the entry returned to a previous URL.' => 'تمت إزالة {count, number} {count, plural, =1{عملية إعادة توجيه تلقائية قديمة} other{عمليات إعادة توجيه تلقائية قديمة}} لأن المقالة عادت إلى URL سابق.',
+    'Entry saved, but automatic redirect was not created because it would create a circular redirect loop. Please create a different redirect manually or change the slug.' => 'تم حفظ المقالة، لكن لم يتم إنشاء إعادة توجيه تلقائية لأنها ستنشئ حلقة إعادة توجيه دائرية. يرجى إنشاء إعادة توجيه أخرى يدوياً أو تغيير الـ slug.',
+    'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'تعذّر إنشاء إعادة التوجيه: سيؤدي ذلك إلى إنشاء حلقة إعادة توجيه دائرية. تعيد الوجهة التوجيه في النهاية إلى المصدر.',
+    'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'تعذّر تحديث إعادة التوجيه: سيؤدي ذلك إلى إنشاء حلقة إعادة توجيه دائرية. تعيد الوجهة التوجيه في النهاية إلى المصدر.',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => 'تم العثور على {count, number} {count, plural, =1{خطأ} other{أخطاء}}',

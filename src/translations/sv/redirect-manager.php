@@ -184,6 +184,10 @@ return [
     'User does not have permission to export redirects.' => 'Användaren har inte behörighet att exportera omdirigeringar.',
     'User does not have permission to clear import history.' => 'Användaren har inte behörighet att rensa importhistoriken.',
     'User does not have permission to view analytics for this site.' => 'Användaren har inte behörighet att visa analys för den här webbplatsen.',
+    '{count, number} {count, plural, =1{outdated automatic redirect removed} other{outdated automatic redirects removed}} because the entry returned to a previous URL.' => '{count, number} {count, plural, =1{inaktuell automatisk omdirigering borttagen} other{inaktuella automatiska omdirigeringar borttagna}} eftersom posten återgick till en tidigare URL.',
+    'Entry saved, but automatic redirect was not created because it would create a circular redirect loop. Please create a different redirect manually or change the slug.' => 'Posten sparades, men ingen automatisk omdirigering skapades eftersom det skulle skapa en cirkulär omdirigeringsloop. Skapa en annan omdirigering manuellt eller ändra slug.',
+    'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Det går inte att skapa omdirigeringen: detta skulle skapa en cirkulär omdirigeringsloop. Målet omdirigerar till slut tillbaka till källan.',
+    'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Det går inte att uppdatera omdirigeringen: detta skulle skapa en cirkulär omdirigeringsloop. Målet omdirigerar till slut tillbaka till källan.',
 
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{fel} other{fel}} hittades',
