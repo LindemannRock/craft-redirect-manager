@@ -323,7 +323,9 @@ return [
     'JSON API' => 'JSON API',
     'Enable JSON API Endpoint' => 'Aktiver JSON API-endpoint',
     'JSON API Token' => 'JSON API-token',
+    'API Rate Limit' => 'API-hastighedsgrænse',
     'Expose enabled redirects as read-only JSON for SPAs, static builds, edge workers, or backend integrations. REDIRECT_MANAGER_API_TOKEN is required.' => 'Eksponer aktiverede omdirigeringer som skrivebeskyttet JSON til SPA\'er, statiske builds, edge workers eller backend-integrationer. REDIRECT_MANAGER_API_TOKEN er påkrævet.',
+    'Maximum requests per minute for the JSON API endpoint. Set to 0 to disable rate limiting.' => 'Maksimalt antal forespørgsler pr. minut for JSON API-endepunktet. Angiv 0 for at deaktivere hastighedsgrænsen.',
     'Endpoint: {endpoint}' => 'Endpoint: {endpoint}',
     'URL Filtering' => 'URL-filtrering',
     'Exclude Patterns' => 'Ekskluderingsmønstre',
@@ -760,4 +762,5 @@ return [
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne indstilling tilsidesættes af <code>excludePatterns</code> i <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne indstilling tilsidesættes af <code>additionalHeaders</code> i <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>apiEndpointEnabled</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne indstilling tilsidesættes af <code>apiEndpointEnabled</code> i <code>config/redirect-manager.php</code>.',
+    'This is being overridden by the <code>apiEndpointRateLimit</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne indstilling tilsidesættes af <code>apiEndpointRateLimit</code> i <code>config/redirect-manager.php</code>.',
 ];

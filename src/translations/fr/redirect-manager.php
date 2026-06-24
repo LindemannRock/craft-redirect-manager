@@ -323,7 +323,9 @@ return [
     'JSON API' => 'API JSON',
     'Enable JSON API Endpoint' => 'Activer le point de terminaison API JSON',
     'JSON API Token' => 'Jeton API JSON',
+    'API Rate Limit' => 'Limite de débit de l\'API',
     'Expose enabled redirects as read-only JSON for SPAs, static builds, edge workers, or backend integrations. REDIRECT_MANAGER_API_TOKEN is required.' => 'Exposer les redirections activées en JSON en lecture seule pour les SPA, les builds statiques, les edge workers ou les intégrations backend. REDIRECT_MANAGER_API_TOKEN est requis.',
+    'Maximum requests per minute for the JSON API endpoint. Set to 0 to disable rate limiting.' => 'Nombre maximal de requêtes par minute pour le point de terminaison API JSON. Définissez sur 0 pour désactiver la limite de débit.',
     'Endpoint: {endpoint}' => 'Point de terminaison : {endpoint}',
     'URL Filtering' => 'Filtrage des URL',
     'Exclude Patterns' => 'Modèles d\'exclusion',
@@ -760,4 +762,5 @@ return [
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => 'Ce paramètre est remplacé par le paramètre <code>excludePatterns</code> dans <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => 'Ce paramètre est remplacé par le paramètre <code>additionalHeaders</code> dans <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>apiEndpointEnabled</code> setting in <code>config/redirect-manager.php</code>.' => 'Ce paramètre est remplacé par le paramètre <code>apiEndpointEnabled</code> dans <code>config/redirect-manager.php</code>.',
+    'This is being overridden by the <code>apiEndpointRateLimit</code> setting in <code>config/redirect-manager.php</code>.' => 'Ce paramètre est remplacé par le paramètre <code>apiEndpointRateLimit</code> dans <code>config/redirect-manager.php</code>.',
 ];

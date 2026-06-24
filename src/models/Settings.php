@@ -187,6 +187,12 @@ class Settings extends Model
     public bool $apiEndpointEnabled = false;
 
     /**
+     * @var int Maximum JSON API requests per minute (0 = disabled)
+     * @since 5.35.0
+     */
+    public int $apiEndpointRateLimit = 60;
+
+    /**
      * @var string|null Optional bearer/header token for the JSON redirects API endpoint
      * @since 5.33.0
      */
@@ -359,6 +365,7 @@ class Settings extends Model
             'undoWindowMinutes',
             'deviceDetectionCacheDuration',
             'backupRetentionDays',
+            'apiEndpointRateLimit',
         ];
     }
 
@@ -444,6 +451,8 @@ class Settings extends Model
             ],
             ['apiEndpointEnabled', 'boolean'],
             ['apiEndpointEnabled', 'default', 'value' => false],
+            ['apiEndpointRateLimit', 'integer', 'min' => 0, 'max' => 100000],
+            ['apiEndpointRateLimit', 'default', 'value' => 60],
             ['apiEndpointToken', 'string', 'max' => 255],
             ['enableRedirectCache', 'boolean'],
             ['enableRedirectCache', 'default', 'value' => true],
@@ -497,6 +506,7 @@ class Settings extends Model
             'excludePatterns' => Craft::t('redirect-manager', 'Exclude Patterns'),
             'additionalHeaders' => Craft::t('redirect-manager', 'Additional Headers'),
             'apiEndpointEnabled' => Craft::t('redirect-manager', 'Enable JSON API Endpoint'),
+            'apiEndpointRateLimit' => Craft::t('redirect-manager', 'API Rate Limit'),
             'apiEndpointToken' => Craft::t('redirect-manager', 'JSON API Token'),
             // Redirect cache
             'enableRedirectCache' => Craft::t('redirect-manager', 'Enable Redirect Cache'),

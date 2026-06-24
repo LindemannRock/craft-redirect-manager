@@ -42,17 +42,36 @@
             id: 'apiEndpointEnabled',
             name: 'settings[apiEndpointEnabled]',
             on: settings.apiEndpointEnabled,
+            toggle: 'api-endpoint-settings',
             errors: settings.getErrors('apiEndpointEnabled'),
             disabled: settings.isOverriddenByConfig('apiEndpointEnabled'),
             warning: settings.isOverriddenByConfig('apiEndpointEnabled') ?
                 "This is being overridden by the <code>apiEndpointEnabled</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
 
-		<p class="light">
-			{{ "Endpoint: {endpoint}"|t('redirect-manager', {
-                endpoint: '<code>/actions/redirect-manager/api/get-redirects</code>'
-            })|raw }}
-		</p>
+		<div id="api-endpoint-settings" class="{{ not settings.apiEndpointEnabled ? 'hidden' }}">
+			{{ forms.textField({
+	            label: 'API Rate Limit'|t('redirect-manager'),
+	            instructions: 'Maximum requests per minute for the JSON API endpoint. Set to 0 to disable rate limiting.'|t('redirect-manager'),
+	            id: 'apiEndpointRateLimit',
+	            name: 'settings[apiEndpointRateLimit]',
+	            type: 'number',
+	            min: 0,
+	            step: 1,
+	            value: settings.apiEndpointRateLimit,
+	            errors: settings.getErrors('apiEndpointRateLimit'),
+	            disabled: settings.isOverriddenByConfig('apiEndpointRateLimit'),
+	            warning: settings.isOverriddenByConfig('apiEndpointRateLimit') ?
+	                "This is being overridden by the <code>apiEndpointRateLimit</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
+	        }) }}
+
+			{% include 'lindemannrock-base/_components/info-box' with {
+				message: "Endpoint: {endpoint}"|t('redirect-manager', {
+	                endpoint: '<code>/actions/redirect-manager/api/get-redirects</code>'
+	            }),
+				type: 'info'
+			} %}
+		</div>
 
 		<hr class="lr-mt-30 lr-mb-30">
 

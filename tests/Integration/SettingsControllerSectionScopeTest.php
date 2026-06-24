@@ -70,6 +70,7 @@ final class SettingsControllerSectionScopeTest extends TestCase
             ],
             'advanced' => [
                 'apiEndpointEnabled',
+                'apiEndpointRateLimit',
                 'excludePatterns',
                 'additionalHeaders',
             ],

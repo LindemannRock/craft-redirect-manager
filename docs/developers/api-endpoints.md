@@ -15,6 +15,7 @@ use craft\helpers\App;
 return [
     '*' => [
         'apiEndpointEnabled' => true,
+        'apiEndpointRateLimit' => 60,
         'apiEndpointToken' => App::env('REDIRECT_MANAGER_API_TOKEN'),
     ],
 ];
@@ -38,6 +39,8 @@ REDIRECT_MANAGER_API_TOKEN="use-a-long-random-token"
 
 If `apiEndpointEnabled` is true and `apiEndpointToken` is empty, requests are rejected with `401`.
 
+`apiEndpointRateLimit` defaults to `60` requests per minute for the configured token. Set it to `0` to disable rate limiting.
+
 ## List redirects
 
 ```http
@@ -50,6 +53,7 @@ With a token:
 
 ```bash title="Bearer token"
 curl -H "Authorization: Bearer $REDIRECT_MANAGER_API_TOKEN" \
+  -H "Accept: application/json" \
   "https://example.com/actions/redirect-manager/api/get-redirects"
 ```
 
@@ -57,6 +61,7 @@ You can also send the token in the plugin-specific header:
 
 ```bash title="Plugin header"
 curl -H "X-Redirect-Manager-Key: $REDIRECT_MANAGER_API_TOKEN" \
+  -H "Accept: application/json" \
   "https://example.com/actions/redirect-manager/api/get-redirects"
 ```
 

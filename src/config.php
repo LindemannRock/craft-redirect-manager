@@ -195,6 +195,9 @@ return [
         // integration needs to fetch redirects outside Craft's normal request flow.
         'apiEndpointEnabled' => false,
 
+        // Maximum JSON API requests per minute. Set to 0 to disable rate limiting.
+        'apiEndpointRateLimit' => 60,
+
         // Required JSON API token
         // Callers must send either:
         // Authorization: Bearer <token>

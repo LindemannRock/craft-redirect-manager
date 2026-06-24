@@ -323,7 +323,9 @@ return [
     'JSON API' => 'JSON API',
     'Enable JSON API Endpoint' => 'JSON API エンドポイントを有効にする',
     'JSON API Token' => 'JSON API トークン',
+    'API Rate Limit' => 'API レート制限',
     'Expose enabled redirects as read-only JSON for SPAs, static builds, edge workers, or backend integrations. REDIRECT_MANAGER_API_TOKEN is required.' => '有効なリダイレクトを SPA、静的ビルド、エッジワーカー、バックエンド統合向けの読み取り専用 JSON として公開します。REDIRECT_MANAGER_API_TOKEN が必要です。',
+    'Maximum requests per minute for the JSON API endpoint. Set to 0 to disable rate limiting.' => 'JSON API エンドポイントの 1 分あたりの最大リクエスト数。レート制限を無効にするには 0 に設定してください。',
     'Endpoint: {endpoint}' => 'エンドポイント: {endpoint}',
     'URL Filtering' => 'URL フィルタリング',
     'Exclude Patterns' => '除外パターン',
@@ -760,4 +762,5 @@ return [
     'This is being overridden by the <code>excludePatterns</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>excludePatterns</code> 設定によって上書きされています。',
     'This is being overridden by the <code>additionalHeaders</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>additionalHeaders</code> 設定によって上書きされています。',
     'This is being overridden by the <code>apiEndpointEnabled</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>apiEndpointEnabled</code> 設定によって上書きされています。',
+    'This is being overridden by the <code>apiEndpointRateLimit</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>apiEndpointRateLimit</code> 設定によって上書きされています。',
 ];

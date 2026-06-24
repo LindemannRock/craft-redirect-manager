@@ -885,6 +885,7 @@ class SettingsController extends Controller
             ],
             'advanced' => [
                 'apiEndpointEnabled',
+                'apiEndpointRateLimit',
                 'excludePatterns',
                 'additionalHeaders',
             ],

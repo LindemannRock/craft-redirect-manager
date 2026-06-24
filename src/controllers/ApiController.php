@@ -13,6 +13,7 @@ use craft\web\Controller;
 use lindemannrock\redirectmanager\RedirectManager;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\TooManyRequestsHttpException;
 use yii\web\UnauthorizedHttpException;
 
 /**
@@ -28,6 +29,16 @@ class ApiController extends Controller
      * Header accepted for token-protected JSON API requests.
      */
     public const TOKEN_HEADER = 'X-Redirect-Manager-Key';
+
+    /**
+     * Cache key prefix for token-scoped JSON API rate-limit counters.
+     */
+    private const RATE_LIMIT_CACHE_PREFIX = 'redirectmanager:api-rate-limit:';
+
+    /**
+     * Fixed rate-limit window duration, in seconds.
+     */
+    private const RATE_LIMIT_WINDOW_SECONDS = 60;
 
     /**
      * @inheritdoc
@@ -56,6 +67,8 @@ class ApiController extends Controller
             throw new UnauthorizedHttpException('Invalid or missing API token.');
         }
 
+        $this->enforceRateLimit($token, $settings->apiEndpointRateLimit);
+
         return parent::beforeAction($action);
     }
 
@@ -64,6 +77,8 @@ class ApiController extends Controller
      */
     public function actionGetRedirects(): Response
     {
+        $this->requireAcceptsJson();
+
         $siteId = $this->requestedSiteId();
         if ($siteId === false) {
             return $this->asJson([]);
@@ -91,6 +106,37 @@ class ApiController extends Controller
 
         return is_string($providedToken)
             && hash_equals($expectedToken, trim($providedToken));
+    }
+
+    /**
+     * Enforce the configured fixed-window request limit for the configured API token.
+     */
+    private function enforceRateLimit(string $token, int $limit): void
+    {
+        if ($limit <= 0) {
+            return;
+        }
+
+        $now = time();
+        $window = intdiv($now, self::RATE_LIMIT_WINDOW_SECONDS);
+        $retryAfter = self::RATE_LIMIT_WINDOW_SECONDS - ($now % self::RATE_LIMIT_WINDOW_SECONDS);
+
+        $cacheKey = self::RATE_LIMIT_CACHE_PREFIX . hash('sha256', $token) . ':' . $window;
+        $cache = Craft::$app->getCache();
+        $count = (int) $cache->get($cacheKey);
+
+        $headers = Craft::$app->getResponse()->getHeaders();
+        $headers->set('X-RateLimit-Limit', (string) $limit);
+        $headers->set('X-RateLimit-Remaining', (string) max(0, $limit - $count - 1));
+        $headers->set('X-RateLimit-Reset', (string) ($now + $retryAfter));
+
+        if ($count >= $limit) {
+            $headers->set('Retry-After', (string) $retryAfter);
+
+            throw new TooManyRequestsHttpException('API rate limit exceeded. Try again in a moment.');
+        }
+
+        $cache->set($cacheKey, $count + 1, $retryAfter);
     }
 
     /**

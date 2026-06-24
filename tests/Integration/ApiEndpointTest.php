@@ -15,8 +15,10 @@ use lindemannrock\redirectmanager\controllers\ApiController;
 use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\tests\TestCase;
 use yii\base\Action;
+use yii\web\BadRequestHttpException;
 use yii\web\HeaderCollection;
 use yii\web\NotFoundHttpException;
+use yii\web\TooManyRequestsHttpException;
 use yii\web\UnauthorizedHttpException;
 
 /**
@@ -30,6 +32,8 @@ final class ApiEndpointTest extends TestCase
 
     private ?string $savedApiEndpointToken = null;
 
+    private int $savedApiEndpointRateLimit = 60;
+
     private ?object $savedRequest = null;
 
     private ?object $savedResponse = null;
@@ -41,11 +45,13 @@ final class ApiEndpointTest extends TestCase
         $settings = $this->settings();
         $this->savedApiEndpointEnabled = $settings->apiEndpointEnabled;
         $this->savedApiEndpointToken = $settings->apiEndpointToken;
+        $this->savedApiEndpointRateLimit = $settings->apiEndpointRateLimit;
         $this->savedRequest = Craft::$app->getRequest();
         $this->savedResponse = Craft::$app->getResponse();
 
         $settings->apiEndpointEnabled = false;
         $settings->apiEndpointToken = null;
+        $settings->apiEndpointRateLimit = 60;
 
         Craft::$app->set('response', new \craft\web\Response());
     }
@@ -55,6 +61,7 @@ final class ApiEndpointTest extends TestCase
         $settings = $this->settings();
         $settings->apiEndpointEnabled = $this->savedApiEndpointEnabled;
         $settings->apiEndpointToken = $this->savedApiEndpointToken;
+        $settings->apiEndpointRateLimit = $this->savedApiEndpointRateLimit;
 
         if ($this->savedRequest !== null) {
             Craft::$app->set('request', $this->savedRequest);
@@ -108,6 +115,51 @@ final class ApiEndpointTest extends TestCase
         $this->settings()->apiEndpointToken = 'test-token';
         $this->installRequest(headers: ['Authorization' => 'Bearer test-token']);
 
+        self::assertTrue($this->runApiBeforeAction());
+    }
+
+    public function testListEndpointRequiresJsonAcceptHeader(): void
+    {
+        $this->settings()->apiEndpointEnabled = true;
+        $this->settings()->apiEndpointToken = 'test-token-accept';
+        $this->installRequest(
+            headers: [ApiController::TOKEN_HEADER => 'test-token-accept'],
+            acceptJson: false,
+        );
+
+        $this->runApiBeforeAction();
+
+        $this->expectException(BadRequestHttpException::class);
+        $this->apiController()->actionGetRedirects();
+    }
+
+    public function testRateLimitRejectsAfterConfiguredLimit(): void
+    {
+        $token = 'test-token-limit-' . uniqid('', true);
+        $this->settings()->apiEndpointEnabled = true;
+        $this->settings()->apiEndpointToken = $token;
+        $this->settings()->apiEndpointRateLimit = 1;
+        $this->installRequest(headers: [ApiController::TOKEN_HEADER => $token]);
+
+        self::assertTrue($this->runApiBeforeAction());
+
+        $this->installRequest(headers: [ApiController::TOKEN_HEADER => $token]);
+
+        $this->expectException(TooManyRequestsHttpException::class);
+        $this->runApiBeforeAction();
+    }
+
+    public function testRateLimitCanBeDisabled(): void
+    {
+        $token = 'test-token-unlimited-' . uniqid('', true);
+        $this->settings()->apiEndpointEnabled = true;
+        $this->settings()->apiEndpointToken = $token;
+        $this->settings()->apiEndpointRateLimit = 0;
+
+        $this->installRequest(headers: [ApiController::TOKEN_HEADER => $token]);
+        self::assertTrue($this->runApiBeforeAction());
+
+        $this->installRequest(headers: [ApiController::TOKEN_HEADER => $token]);
         self::assertTrue($this->runApiBeforeAction());
     }
 
@@ -179,16 +231,20 @@ final class ApiEndpointTest extends TestCase
      * @param array<string, string> $params
      * @param array<string, string> $headers
      */
-    private function installRequest(array $params = [], array $headers = []): void
+    private function installRequest(array $params = [], array $headers = [], bool $acceptJson = true): void
     {
-        Craft::$app->set('request', new class($params, $headers) extends \craft\console\Request {
+        if ($acceptJson && !isset($headers['Accept'])) {
+            $headers['Accept'] = 'application/json';
+        }
+
+        Craft::$app->set('request', new class($params, $headers, $acceptJson) extends \craft\console\Request {
             private HeaderCollection $headers;
 
             /**
              * @param array<string, string> $params
              * @param array<string, string> $headers
              */
-            public function __construct(private readonly array $params, array $headers)
+            public function __construct(private readonly array $params, array $headers, private readonly bool $acceptJson)
             {
                 parent::__construct();
                 $this->headers = new HeaderCollection();
@@ -200,6 +256,16 @@ final class ApiEndpointTest extends TestCase
             public function getHeaders(): HeaderCollection
             {
                 return $this->headers;
+            }
+
+            public function getAcceptsJson(): bool
+            {
+                return $this->acceptJson;
+            }
+
+            public function getIsOptions(): bool
+            {
+                return false;
             }
 
             public function getParam($name, $defaultValue = null): mixed
