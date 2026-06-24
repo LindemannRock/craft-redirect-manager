@@ -58,6 +58,8 @@ class ApiController extends Controller
             throw new NotFoundHttpException('API endpoint not found.');
         }
 
+        $this->requireAcceptsJson();
+
         $token = trim((string)($settings->apiEndpointToken ?? ''));
         if ($token === '') {
             throw new UnauthorizedHttpException('API token is not configured.');
@@ -77,8 +79,6 @@ class ApiController extends Controller
      */
     public function actionGetRedirects(): Response
     {
-        $this->requireAcceptsJson();
-
         $siteId = $this->requestedSiteId();
         if ($siteId === false) {
             return $this->asJson([]);

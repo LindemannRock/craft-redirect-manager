@@ -127,10 +127,8 @@ final class ApiEndpointTest extends TestCase
             acceptJson: false,
         );
 
-        $this->runApiBeforeAction();
-
         $this->expectException(BadRequestHttpException::class);
-        $this->apiController()->actionGetRedirects();
+        $this->runApiBeforeAction();
     }
 
     public function testRateLimitRejectsAfterConfiguredLimit(): void
