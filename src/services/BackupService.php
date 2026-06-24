@@ -275,6 +275,8 @@ class BackupService extends Component
 
     /**
      * Validate backup name for volume storage operations.
+     *
+     * @since 5.32.0
      */
     public function validateVolumeBackupName(?string $dirname): ?string
     {
@@ -287,6 +289,8 @@ class BackupService extends Component
 
     /**
      * Return whether backups are configured to use a Craft volume.
+     *
+     * @since 5.32.0
      */
     public function isUsingVolumeStorage(): bool
     {
@@ -300,6 +304,8 @@ class BackupService extends Component
 
     /**
      * Read a file from a volume backup.
+     *
+     * @since 5.32.0
      */
     public function readVolumeBackupFile(string $backupName, string $filename): ?string
     {
@@ -323,6 +329,8 @@ class BackupService extends Component
 
     /**
      * Delete a backup from volume storage.
+     *
+     * @since 5.32.0
      */
     public function deleteVolumeBackup(string $backupName): bool
     {
@@ -361,6 +369,7 @@ class BackupService extends Component
      *
      * @param string $backupDir
      * @return string
+     * @since 5.32.0
      */
     public function getRelativeBackupName(string $backupDir): string
     {
@@ -472,6 +481,11 @@ class BackupService extends Component
         return $metadata;
     }
 
+    /**
+     * Validate backup checksum metadata against redirects content.
+     *
+     * @since 5.32.0
+     */
     public function validateBackupIntegrity(string $metadataContent, string $redirectsContent, string $backupName): bool
     {
         $metadata = Json::decode($metadataContent);
