@@ -11,6 +11,7 @@ namespace lindemannrock\redirectmanager\controllers;
 use Craft;
 use craft\helpers\Json;
 use craft\web\Controller;
+use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\base\helpers\SettingsPostHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
@@ -603,6 +604,35 @@ class SettingsController extends Controller
         } catch (\Throwable $e) {
             return $this->asJson(['error' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Download the bundled Postman collection and environment template.
+     *
+     * @since 5.35.0
+     */
+    public function actionDownloadPostmanCollection(): Response
+    {
+        $this->requirePermission('redirectManager:manageSettings');
+
+        $postmanPath = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'postman';
+        $files = [];
+
+        foreach ([
+            'Redirect-Manager.postman_collection.json',
+            'Redirect-Manager.postman_environment.json',
+            'README.md',
+        ] as $filename) {
+            $path = $postmanPath . DIRECTORY_SEPARATOR . $filename;
+            if (is_file($path)) {
+                $content = file_get_contents($path);
+                if ($content !== false) {
+                    $files[$filename] = $content;
+                }
+            }
+        }
+
+        return ExportHelper::toZip($files, 'redirect-manager-postman.zip');
     }
 
     /**

@@ -1,0 +1,361 @@
+{
+  "info": {
+    "_postman_id": "rm-collection-2026-06-24",
+    "name": "Redirect Manager",
+    "description": "Read-only JSON API examples for the LindemannRock Redirect Manager plugin.\n\n**Setup:**\n1. Import this collection and the `Redirect Manager API` environment file.\n2. Set `base_url` in the environment to your site URL (for example `https://yoursite.com`, no trailing slash).\n3. Set `api_token` to the value configured as `REDIRECT_MANAGER_API_TOKEN`.\n4. Pick the environment from Postman's top-right dropdown and run any request.\n\nThe collection uses `X-Redirect-Manager-Key` and `Accept: application/json` on normal API requests. See the bundled README for rate-limit and enforcement-check flows.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-Redirect-Manager-Key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{api_token}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Redirects API",
+      "item": [
+        {
+          "name": "List redirects - all sites",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is JSON', function () { pm.response.to.be.json; });",
+                  "const json = pm.response.json();",
+                  "pm.test('data is an array', function () { pm.expect(json).to.be.an('array'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/actions/redirect-manager/api/get-redirects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "actions",
+                "redirect-manager",
+                "api",
+                "get-redirects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List redirects - by siteId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is JSON', function () { pm.response.to.be.json; });",
+                  "const json = pm.response.json();",
+                  "pm.test('data is an array', function () { pm.expect(json).to.be.an('array'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/actions/redirect-manager/api/get-redirects?siteId={{site_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "actions",
+                "redirect-manager",
+                "api",
+                "get-redirects"
+              ],
+              "query": [
+                {
+                  "key": "siteId",
+                  "value": "{{site_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List redirects - by site handle",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is JSON', function () { pm.response.to.be.json; });",
+                  "const json = pm.response.json();",
+                  "pm.test('data is an array', function () { pm.expect(json).to.be.an('array'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/actions/redirect-manager/api/get-redirects?site={{site_handle}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "actions",
+                "redirect-manager",
+                "api",
+                "get-redirects"
+              ],
+              "query": [
+                {
+                  "key": "site",
+                  "value": "{{site_handle}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List redirects - unknown siteId returns empty array",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is JSON', function () { pm.response.to.be.json; });",
+                  "const json = pm.response.json();",
+                  "pm.test('data is an empty array', function () { pm.expect(json).to.be.an('array').that.is.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/actions/redirect-manager/api/get-redirects?siteId={{unknown_site_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "actions",
+                "redirect-manager",
+                "api",
+                "get-redirects"
+              ],
+              "query": [
+                {
+                  "key": "siteId",
+                  "value": "{{unknown_site_id}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Enforcement Checks",
+      "item": [
+        {
+          "name": "Missing token - 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/actions/redirect-manager/api/get-redirects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "actions",
+                "redirect-manager",
+                "api",
+                "get-redirects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Invalid token - 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Redirect-Manager-Key",
+                "value": "{{invalid_api_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/actions/redirect-manager/api/get-redirects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "actions",
+                "redirect-manager",
+                "api",
+                "get-redirects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Missing Accept header - 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actions/redirect-manager/api/get-redirects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "actions",
+                "redirect-manager",
+                "api",
+                "get-redirects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Rate limit probe - repeat with Runner",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 or 429', function () { pm.expect([200, 429]).to.include(pm.response.code); });",
+                  "if (pm.response.code === 429) {",
+                  "    pm.test('Retry-After header is present', function () { pm.response.to.have.header('Retry-After'); });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/actions/redirect-manager/api/get-redirects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "actions",
+                "redirect-manager",
+                "api",
+                "get-redirects"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

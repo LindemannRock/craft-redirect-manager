@@ -425,6 +425,7 @@ class RedirectManager extends Plugin
 
             // Settings routes
             'redirect-manager/settings' => 'redirect-manager/settings/index',
+            'redirect-manager/settings/download-postman-collection' => 'redirect-manager/settings/download-postman-collection',
             'redirect-manager/settings/<section:\w+>' => 'redirect-manager/settings/<section>',
         ];
     }
