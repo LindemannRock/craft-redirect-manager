@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "rm-collection-2026-06-24",
     "name": "Redirect Manager",
-    "description": "Read-only JSON API examples for the LindemannRock Redirect Manager plugin.\n\n**Setup:**\n1. Import this collection and the `Redirect Manager API` environment file.\n2. Set `base_url` in the environment to your site URL (for example `https://yoursite.com`, no trailing slash).\n3. Set `api_token` to the value configured as `REDIRECT_MANAGER_API_TOKEN`.\n4. Pick the environment from Postman's top-right dropdown and run any request.\n\nThe collection uses `X-Redirect-Manager-Key` and `Accept: application/json` on normal API requests. See the bundled README for rate-limit and enforcement-check flows.",
+    "description": "Read-only JSON API examples for the LindemannRock Redirect Manager plugin.\n\nSource: https://github.com/LindemannRock/craft-redirect-manager\n\n**Setup:**\n1. Import this collection and the `Redirect Manager API` environment file.\n2. Set `base_url` in the environment to your site URL (for example `https://yoursite.com`, no trailing slash).\n3. Set `api_token` to the value configured as `REDIRECT_MANAGER_API_TOKEN`.\n4. Pick the environment from Postman's top-right dropdown and run any request.\n\nThe collection uses `X-Redirect-Manager-Key` and `Accept: application/json` on normal API requests. See the bundled README for rate-limit and enforcement-check flows.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
