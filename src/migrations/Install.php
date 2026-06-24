@@ -34,6 +34,7 @@ class Install extends Migration
                 'siteId' => $this->integer(),
                 'sourceUrl' => $this->string(255)->notNull(),
                 'sourceUrlParsed' => $this->string(255)->notNull(),
+                'siteIdKey' => $this->integer()->notNull()->defaultValue(0),
                 'destinationUrl' => $this->string(500)->notNull(),
                 'redirectSrcMatch' => $this->string(20)->notNull()->defaultValue('pathonly'),
                 'matchType' => $this->enum('matchType', ['exact', 'regex', 'wildcard', 'prefix'])->notNull()->defaultValue('exact'),
@@ -52,6 +53,7 @@ class Install extends Migration
 
             // Add indexes for performance
             $this->createIndex(null, '{{%redirectmanager_redirects}}', ['sourceUrlParsed'], false);
+            $this->createIndex('idx_redirectmanager_redirects_source_sitekey_unq', '{{%redirectmanager_redirects}}', ['sourceUrlParsed', 'siteIdKey'], true);
             $this->createIndex(null, '{{%redirectmanager_redirects}}', ['matchType'], false);
             $this->createIndex(null, '{{%redirectmanager_redirects}}', ['siteId'], false);
             $this->createIndex(null, '{{%redirectmanager_redirects}}', ['enabled'], false);

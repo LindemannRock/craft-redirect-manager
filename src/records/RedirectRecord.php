@@ -20,6 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property int|null $siteId
  * @property string $sourceUrl
  * @property string $sourceUrlParsed
+ * @property int $siteIdKey
  * @property string $destinationUrl
  * @property string $redirectSrcMatch
  * @property string $matchType
@@ -68,6 +69,29 @@ class RedirectRecord extends ActiveRecord
         $rules[] = [['destinationUrl'], 'validateCaptureReferences'];
 
         return $rules;
+    }
+
+    /**
+     * Return the normalized site key used for redirect uniqueness.
+     *
+     * Global redirects use `0` so the database can enforce one global redirect
+     * per parsed source URL even though `siteId` itself remains nullable.
+     *
+     * @since 5.34.0
+     */
+    public static function siteIdKey(?int $siteId): int
+    {
+        return $siteId ?? 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSave($insert): bool
+    {
+        $this->siteIdKey = self::siteIdKey($this->siteId ? (int)$this->siteId : null);
+
+        return parent::beforeSave($insert);
     }
 
     /**

@@ -890,6 +890,7 @@ class ImportExportController extends Controller
                     'siteId' => $redirectData['siteId'],
                     'sourceUrl' => $redirectData['sourceUrl'],
                     'sourceUrlParsed' => $sourceUrlParsed,
+                    'siteIdKey' => RedirectRecord::siteIdKey($redirectData['siteId'] ? (int)$redirectData['siteId'] : null),
                     'destinationUrl' => $redirectData['destinationUrl'],
                     'redirectSrcMatch' => $redirectData['redirectSrcMatch'],
                     'matchType' => $redirectData['matchType'],
@@ -1115,6 +1116,7 @@ class ImportExportController extends Controller
                 foreach ($redirects as $redirect) {
                     // Remove id to let database auto-generate new IDs
                     unset($redirect['id']);
+                    $redirect['siteIdKey'] = RedirectRecord::siteIdKey(isset($redirect['siteId']) && $redirect['siteId'] !== null ? (int)$redirect['siteId'] : null);
     
                     $db->createCommand()->insert('{{%redirectmanager_redirects}}', $redirect)->execute();
                     $restored++;

@@ -68,13 +68,15 @@ final class SettingsTestUrlSiteScopeTest extends TestCase
             'priority' => 1,
         ]);
         $globalRedirect = $this->seedRedirect([
-            'sourceUrl' => '/' . self::MARKER . 'site-scope/*',
-            'sourceUrlParsed' => '/' . self::MARKER . 'site-scope/*',
+            'sourceUrl' => '/' . self::MARKER . 'site-scope-global/*',
+            'sourceUrlParsed' => '/' . self::MARKER . 'site-scope-global/*',
             'matchType' => 'wildcard',
             'destinationUrl' => '/global',
             'priority' => 2,
         ]);
         $globalRedirect->siteId = null;
+        $globalRedirect->sourceUrl = '/' . self::MARKER . 'site-scope/*';
+        $globalRedirect->sourceUrlParsed = '/' . self::MARKER . 'site-scope/*';
         self::assertTrue($globalRedirect->save(false));
 
         Craft::$app->set('sites', new class() extends Sites {

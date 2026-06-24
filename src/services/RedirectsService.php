@@ -19,6 +19,7 @@ use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\events\RedirectEvent;
 use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\RedirectManager;
+use yii\db\IntegrityException;
 use yii\web\NotFoundHttpException;
 
 /**
@@ -793,8 +794,17 @@ class RedirectsService extends Component
         $record->setAttributes($attributes, false);
         $record->hitCount = 0;
 
-        if (!$record->save()) {
-            $this->logError('Failed to save redirect', ['errors' => $record->getErrors()]);
+        try {
+            if (!$record->save()) {
+                $this->logError('Failed to save redirect', ['errors' => $record->getErrors()]);
+                return false;
+            }
+        } catch (IntegrityException $e) {
+            if ($this->handleDuplicateRedirectIntegrityException($e, $attributes['sourceUrl'], $attributes['destinationUrl'])) {
+                return false;
+            }
+
+            $this->logError('Failed to save redirect', ['error' => $e->getMessage()]);
             return false;
         }
 
@@ -873,8 +883,17 @@ class RedirectsService extends Component
 
         $record->setAttributes($attributes, false);
 
-        if (!$record->save()) {
-            $this->logError('Failed to update redirect', ['id' => $id, 'errors' => $record->getErrors()]);
+        try {
+            if (!$record->save()) {
+                $this->logError('Failed to update redirect', ['id' => $id, 'errors' => $record->getErrors()]);
+                return false;
+            }
+        } catch (IntegrityException $e) {
+            if ($this->handleDuplicateRedirectIntegrityException($e, (string)$record->sourceUrl, (string)$record->destinationUrl)) {
+                return false;
+            }
+
+            $this->logError('Failed to update redirect', ['id' => $id, 'error' => $e->getMessage()]);
             return false;
         }
 
@@ -1396,5 +1415,22 @@ class RedirectsService extends Component
         }
 
         return null;
+    }
+
+    private function handleDuplicateRedirectIntegrityException(IntegrityException $e, string $sourceUrl, string $destinationUrl): bool
+    {
+        if (!str_contains($e->getMessage(), 'idx_redirectmanager_redirects_source_sitekey_unq')) {
+            return false;
+        }
+
+        $this->logWarning('Redirect already exists', ['sourceUrl' => $sourceUrl]);
+        Craft::$app->getSession()->setNotice(
+            Craft::t('redirect-manager', 'Redirect already exists: {source} → {dest}', [
+                'source' => $sourceUrl,
+                'dest' => $destinationUrl,
+            ])
+        );
+
+        return true;
     }
 }
