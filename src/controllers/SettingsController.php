@@ -861,7 +861,7 @@ class SettingsController extends Controller
      */
     private function _validSettingsSection(string $section): string
     {
-        $allowed = ['general', 'analytics', 'interface', 'cache', 'advanced', 'backup', 'test'];
+        $allowed = ['general', 'analytics', 'interface', 'cache', 'advanced', 'backup'];
 
         return in_array($section, $allowed, true) ? $section : 'general';
     }
