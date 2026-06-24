@@ -114,16 +114,11 @@ class Unhandled404sWidget extends Widget
             return '<p class="light">' . Craft::t('redirect-manager', 'Analytics are disabled in plugin settings.') . '</p>';
         }
 
-        $analytics = RedirectManager::$plugin->analytics->getAllAnalytics($this->effectiveSiteId(), $this->limit);
-
-        // Filter only unhandled ones
-        $unhandled404s = array_filter($analytics, function($stat) {
-            return !$stat['handled'];
-        });
+        $unhandled404s = RedirectManager::$plugin->analytics->getUnhandled404s($this->effectiveSiteId(), $this->limit);
 
         return Craft::$app->getView()->renderTemplate('redirect-manager/widgets/unhandled-404s/body', [
             'widget' => $this,
-            'stats' => array_slice($unhandled404s, 0, $this->limit),
+            'stats' => $unhandled404s,
         ]);
     }
 }
