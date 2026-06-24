@@ -204,6 +204,7 @@ class RedirectsService extends Component
         // Use fullUrl as cache key to properly handle both pathonly and fullurl matching modes
         $redirect = $this->getFromCache($fullUrl, $siteId);
         if ($redirect) {
+            $redirect['_requestSiteId'] = $siteId;
             $this->incrementHitCount($redirect['id']);
             return $redirect;
         }
@@ -221,6 +222,7 @@ class RedirectsService extends Component
                 // Cache the matched redirect (without captures - they're URL-specific)
                 // Use fullUrl as cache key to properly handle both pathonly and fullurl matching modes
                 $this->saveToCache($fullUrl, $redirect, $siteId);
+                $redirect['_requestSiteId'] = $siteId;
                 $this->incrementHitCount($redirect['id']);
 
                 return $redirect;
@@ -391,7 +393,10 @@ class RedirectsService extends Component
 
         // Resolve redirect chains to get final destination
         try {
-            $destination = $this->resolveRedirectChain($destination);
+            $siteId = isset($redirect['_requestSiteId']) && is_numeric($redirect['_requestSiteId'])
+                ? (int)$redirect['_requestSiteId']
+                : null;
+            $destination = $this->resolveRedirectChain($destination, $siteId);
         } catch (\Exception $e) {
             $this->logError('Failed to resolve redirect chain', ['error' => $e->getMessage()]);
         }
@@ -573,7 +578,7 @@ class RedirectsService extends Component
             // Just keep existing redirects and add new one (default behavior)
 
             // FINALLY: Check if this would create a circular redirect (after cleanup)
-            if ($this->wouldCreateLoop($oldUrl, $newUrl)) {
+            if ($this->wouldCreateLoop($oldUrl, $newUrl, null, $siteId)) {
                 $this->logError('Cannot create redirect: would create circular loop', [
                     'elementId' => $element->id,
                     'oldUri' => $oldUri,
@@ -731,8 +736,10 @@ class RedirectsService extends Component
             $attributes['sourcePlugin'] = 'redirect-manager';
         }
 
+        $siteId = isset($attributes['siteId']) ? (int)$attributes['siteId'] : null;
+
         // Check for circular redirects
-        if ($this->wouldCreateLoop($attributes['sourceUrl'], $attributes['destinationUrl'])) {
+        if ($this->wouldCreateLoop($attributes['sourceUrl'], $attributes['destinationUrl'], null, $siteId)) {
             $this->logError('Cannot create redirect: would create circular loop', [
                 'sourceUrl' => $attributes['sourceUrl'],
                 'destinationUrl' => $attributes['destinationUrl'],
@@ -838,8 +845,9 @@ class RedirectsService extends Component
         if (isset($attributes['destinationUrl'])) {
             $sourceUrl = $attributes['sourceUrl'] ?? $record->sourceUrl;
             $destinationUrl = $attributes['destinationUrl'];
+            $siteId = isset($attributes['siteId']) ? (int)$attributes['siteId'] : ($record->siteId ? (int)$record->siteId : null);
 
-            if ($this->wouldCreateLoop($sourceUrl, $destinationUrl, $id)) {
+            if ($this->wouldCreateLoop($sourceUrl, $destinationUrl, $id, $siteId)) {
                 $this->logError('Cannot update redirect: would create circular loop', [
                     'id' => $id,
                     'sourceUrl' => $sourceUrl,
@@ -1231,10 +1239,11 @@ class RedirectsService extends Component
      * Resolve redirect chain to get final destination
      *
      * @param string $url
+     * @param int|null $siteId
      * @param int $maxDepth Maximum chain depth to prevent infinite loops
      * @return string Final destination URL
      */
-    private function resolveRedirectChain(string $url, int $maxDepth = 10): string
+    private function resolveRedirectChain(string $url, ?int $siteId = null, int $maxDepth = 10): string
     {
         $visited = [];
         $currentUrl = $url;
@@ -1266,11 +1275,7 @@ class RedirectsService extends Component
             ]);
 
             // Check if this URL is a source for another redirect
-            $nextRedirect = (new Query())
-                ->from(RedirectRecord::tableName())
-                ->where(['enabled' => true])
-                ->andWhere(['sourceUrlParsed' => $parsedUrl])
-                ->one();
+            $nextRedirect = $this->findNextRedirectInChain($parsedUrl, $siteId);
 
             if (!$nextRedirect) {
                 $this->logInfo('No more redirects in chain', ['stoppedAt' => $currentUrl]);
@@ -1305,9 +1310,10 @@ class RedirectsService extends Component
      * @param string $sourceUrl The source URL (what we're redirecting FROM)
      * @param string $destinationUrl The destination URL (what we're redirecting TO)
      * @param int|null $excludeId Redirect ID to exclude from check (when updating)
+     * @param int|null $siteId Site ID to scope chain checks to; null checks global redirects only
      * @return bool True if this would create a loop
      */
-    private function wouldCreateLoop(string $sourceUrl, string $destinationUrl, ?int $excludeId = null): bool
+    private function wouldCreateLoop(string $sourceUrl, string $destinationUrl, ?int $excludeId = null, ?int $siteId = null): bool
     {
         // Parse and clean URLs
         $sourceParsed = $this->parseUrl($sourceUrl);
@@ -1332,17 +1338,7 @@ class RedirectsService extends Component
             $visited[] = $currentUrl;
 
             // Check if this URL is a source for another redirect
-            $query = (new Query())
-                ->from(RedirectRecord::tableName())
-                ->where(['enabled' => true])
-                ->andWhere(['sourceUrlParsed' => $currentUrl]);
-
-            // Exclude the redirect we're updating
-            if ($excludeId !== null) {
-                $query->andWhere(['!=', 'id', $excludeId]);
-            }
-
-            $nextRedirect = $query->one();
+            $nextRedirect = $this->findNextRedirectInChain($currentUrl, $siteId, $excludeId);
 
             if (!$nextRedirect) {
                 // Chain ends here, no loop
@@ -1367,5 +1363,38 @@ class RedirectsService extends Component
         }
 
         return false;
+    }
+
+    /**
+     * Find the next redirect in a chain for the active site scope.
+     *
+     * Site-specific redirects win over global redirects when both define the
+     * same source URL, matching normal redirect resolution.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function findNextRedirectInChain(string $sourceUrlParsed, ?int $siteId, ?int $excludeId = null): ?array
+    {
+        $candidateSiteIds = $siteId === null ? [null] : [$siteId, null];
+
+        foreach ($candidateSiteIds as $candidateSiteId) {
+            $query = (new Query())
+                ->from(RedirectRecord::tableName())
+                ->where(['enabled' => true])
+                ->andWhere(['sourceUrlParsed' => $sourceUrlParsed])
+                ->andWhere(['siteId' => $candidateSiteId])
+                ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC]);
+
+            if ($excludeId !== null) {
+                $query->andWhere(['!=', 'id', $excludeId]);
+            }
+
+            $redirect = $query->one();
+            if (is_array($redirect)) {
+                return $redirect;
+            }
+        }
+
+        return null;
     }
 }

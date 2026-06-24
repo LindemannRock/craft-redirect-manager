@@ -86,7 +86,11 @@ final class RedirectChainAnalyticsTest extends TestCase
         ]);
 
         $method = new ReflectionMethod($this->redirects, 'resolveRedirectChain');
-        $resolvedUrl = $method->invoke($this->redirects, $intermediate);
+        $resolvedUrl = $method->invoke(
+            $this->redirects,
+            $intermediate,
+            Craft::$app->getSites()->getPrimarySite()->id,
+        );
 
         $this->assertSame($final, $resolvedUrl);
         $this->assertSame(
