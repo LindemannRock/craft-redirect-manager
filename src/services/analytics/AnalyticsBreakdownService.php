@@ -211,7 +211,6 @@ class AnalyticsBreakdownService
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.9.0
      */
     public function getTopCountries(int|array|null $siteId = null, int $days = 30, int $limit = 15, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -252,7 +251,6 @@ class AnalyticsBreakdownService
      * @param \DateTime|null $startDate Start date for filtering
      * @param \DateTime|null $endDate End date for filtering
      * @return array
-     * @since 5.9.0
      */
     public function getTopCities(int|array|null $siteId = null, int $days = 30, int $limit = 15, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
@@ -290,7 +288,6 @@ class AnalyticsBreakdownService
      *
      * @param string $ip
      * @return array|null
-     * @since 5.9.0
      */
     public function getLocationFromIp(string $ip): ?array
     {
@@ -321,7 +318,6 @@ class AnalyticsBreakdownService
      * Get geo config from plugin settings
      *
      * @return array<string, mixed>
-     * @since 5.9.0
      */
     public function getGeoConfig(): array
     {
