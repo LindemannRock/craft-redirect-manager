@@ -351,6 +351,9 @@ return [
     // Settings: Test
     'Test Redirects' => 'Testa omdirigeringar',
     'Test JSON API Endpoint' => 'Testa JSON-API-slutpunkt',
+    'Developer resources' => 'Utvecklarresurser',
+    'Download the Postman collection and environment to test the Redirect Manager API outside Craft.' => 'Ladda ner Postman-samlingen och miljön för att testa Redirect Manager API utanför Craft.',
+    'Download Postman collection' => 'Ladda ner Postman-samling',
     'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.' => 'JSON-API-slutpunkten är inaktiverad. Aktivera den i avancerade inställningar innan du kör slutpunktstester.',
     'REDIRECT_MANAGER_API_TOKEN is configured. Endpoint tests will use it automatically.' => 'REDIRECT_MANAGER_API_TOKEN är konfigurerad. Slutpunktstester använder den automatiskt.',
     'REDIRECT_MANAGER_API_TOKEN is not configured. Add it to your environment before running endpoint tests.' => 'REDIRECT_MANAGER_API_TOKEN är inte konfigurerad. Lägg till den i din miljö innan du kör slutpunktstester.',

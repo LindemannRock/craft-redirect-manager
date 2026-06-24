@@ -47,7 +47,7 @@ If `apiEndpointEnabled` is true and `apiEndpointToken` is empty, requests are re
 GET /actions/redirect-manager/api/get-redirects
 ```
 
-You can test this endpoint from **Redirect Manager → Settings → Test** after `apiEndpointEnabled` is on and `REDIRECT_MANAGER_API_TOKEN` is configured. The test page uses the configured token server-side and never asks you to paste it into the browser.
+You can test this endpoint from **Redirect Manager → Settings → Test** after `apiEndpointEnabled` is on and `REDIRECT_MANAGER_API_TOKEN` is configured. The test page uses the configured token server-side and never asks you to paste it into the browser. It also includes a downloadable Postman collection and environment template for testing outside Craft.
 
 With a token:
 

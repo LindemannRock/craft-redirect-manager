@@ -7,6 +7,13 @@
 
 <h2 class="first">{{ "Test JSON API Endpoint"|t('redirect-manager') }}</h2>
 
+{% include 'lindemannrock-base/_components/info-box' with {
+    type: 'info',
+    variant: 'colored',
+    margin: 'bottom',
+    message: '<strong>' ~ 'Developer resources'|t('redirect-manager') ~ '</strong><br>' ~ 'Download the Postman collection and environment to test the Redirect Manager API outside Craft.'|t('redirect-manager') ~ '<br><br><a href="' ~ actionUrl('redirect-manager/settings/download-postman-collection') ~ '" class="btn" data-icon="download">' ~ 'Download Postman collection'|t('redirect-manager') ~ '</a>',
+} only %}
+
 {% if not settings.apiEndpointEnabled %}
     {% include 'lindemannrock-base/_components/info-box' with {
         type: 'warning',

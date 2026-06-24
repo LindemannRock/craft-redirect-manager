@@ -351,6 +351,9 @@ return [
     // Settings: Test
     'Test Redirects' => 'اختبار عمليات إعادة التوجيه',
     'Test JSON API Endpoint' => 'اختبار نقطة نهاية JSON API',
+    'Developer resources' => 'موارد المطورين',
+    'Download the Postman collection and environment to test the Redirect Manager API outside Craft.' => 'نزّل مجموعة Postman والبيئة الخاصة بها لاختبار Redirect Manager API خارج Craft.',
+    'Download Postman collection' => 'تنزيل مجموعة Postman',
     'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.' => 'نقطة نهاية JSON API معطلة. قم بتفعيلها في الإعدادات المتقدمة قبل تشغيل اختبارات نقطة النهاية.',
     'REDIRECT_MANAGER_API_TOKEN is configured. Endpoint tests will use it automatically.' => 'تم إعداد REDIRECT_MANAGER_API_TOKEN. ستستخدمه اختبارات نقطة النهاية تلقائياً.',
     'REDIRECT_MANAGER_API_TOKEN is not configured. Add it to your environment before running endpoint tests.' => 'لم يتم إعداد REDIRECT_MANAGER_API_TOKEN. أضفه إلى بيئتك قبل تشغيل اختبارات نقطة النهاية.',
