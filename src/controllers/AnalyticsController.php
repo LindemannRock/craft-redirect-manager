@@ -713,7 +713,7 @@ class AnalyticsController extends Controller
         $dateRange = $request->getBodyParam('dateRange', DateRangeHelper::getDefaultDateRange(RedirectManager::$plugin->id));
         $type = $request->getBodyParam('type', 'summary');
 
-        $validTypes = ['summary', 'chart', 'devices', 'browsers', 'os', 'bots', 'bot-stats', 'countries', 'cities', 'recent-handled', 'recent-unhandled'];
+        $validTypes = ['summary', 'chart', 'devices', 'browsers', 'os', 'bots', 'countries', 'cities', 'recent-handled', 'recent-unhandled'];
         if (!in_array($type, $validTypes, true)) {
             throw new \yii\web\BadRequestHttpException(Craft::t('redirect-manager', 'Invalid data type.'));
         }
@@ -763,10 +763,6 @@ class AnalyticsController extends Controller
                 break;
 
             case 'bots':
-                $data = RedirectManager::$plugin->analytics->getBotStats($effectiveSiteId, $days, $startDate, $endDate);
-                break;
-
-            case 'bot-stats':
                 $data = RedirectManager::$plugin->analytics->getBotStats($effectiveSiteId, $days, $startDate, $endDate);
                 break;
 
