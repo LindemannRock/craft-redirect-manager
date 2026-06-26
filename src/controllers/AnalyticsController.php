@@ -172,7 +172,7 @@ class AnalyticsController extends Controller
             $search = mb_substr($search, 0, 64);
         }
 
-        $validSortFields = ['url', 'count', 'lastHit', 'siteId', 'handled', 'deviceType', 'browser', 'botName', 'requestType'];
+        $validSortFields = ['url', 'count', 'lastHit', 'siteId', 'referrer', 'handled', 'deviceType', 'browser', 'botName', 'requestType'];
         $sort = (string) $request->getQueryParam('sort', 'lastHit');
         if (!in_array($sort, $validSortFields, true)) {
             $sort = 'lastHit';

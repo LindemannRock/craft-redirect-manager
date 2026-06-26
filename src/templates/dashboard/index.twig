@@ -77,7 +77,7 @@
         columns: [
             {key: 'url', label: 'URL'|t('redirect-manager'), sortable: true},
             {key: 'siteId', label: 'Site'|t('redirect-manager'), sortable: true},
-            {key: 'referrer', label: 'Referrer'|t('redirect-manager')},
+            {key: 'referrer', label: 'Referrer'|t('redirect-manager'), sortable: true, hideable: true},
             {key: 'count', label: 'Hits'|t('redirect-manager'), sortable: true, hideable: true},
             {key: 'lastHit', label: 'Last Hit'|t('redirect-manager'), sortable: true},
             {key: 'handled', label: 'Handled'|t('redirect-manager'), sortable: true},
@@ -132,7 +132,7 @@
     </td>
 
     {# Referrer column #}
-    <td data-column="referrer" class="lr-break-word" style="max-width: 30%;">
+    <td data-column="referrer" class="lr-hideable-column lr-break-word" style="max-width: 30%;">
         {{ item.referrer ?: '-' }}
     </td>
 
@@ -450,7 +450,7 @@
                     }
                 </td>
                 <td data-column="siteId"><span class="light">${Craft.escapeHtml(stat.siteName)}</span></td>
-                <td data-column="referrer" class="lr-break-word" style="max-width: 30%;">${stat.referrer ? Craft.escapeHtml(stat.referrer) : '-'}</td>
+                <td data-column="referrer" class="lr-hideable-column lr-break-word" style="max-width: 30%;">${stat.referrer ? Craft.escapeHtml(stat.referrer) : '-'}</td>
                 <td data-column="count" class="lr-hideable-column">${stat.count}</td>
                 <td data-column="lastHit" class="lr-nowrap">${stat.lastHit}</td>
                 <td data-column="handled">${handledCell}</td>
