@@ -210,7 +210,7 @@
     const importForm = document.getElementById('importForm');
     if (importForm) {
         importForm.addEventListener('submit', function(e) {
-            const count = {{ summary.validRows }};
+            const count = {{ summary.validRows|json_encode|raw }};
             let message = {{ 'Import {count} redirect(s)?'|t('redirect-manager')|json_encode|raw }}.replace('{count}', count);
             {% if createBackup %}
                 message += ' ' + {{ 'A backup will be created first.'|t('redirect-manager')|json_encode|raw }};
