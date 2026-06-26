@@ -8,6 +8,7 @@
 
 namespace lindemannrock\redirectmanager\services\analytics;
 
+use Craft;
 use craft\db\Query;
 use craft\helpers\App;
 use lindemannrock\base\helpers\GeoHelper;
@@ -333,13 +334,17 @@ class AnalyticsBreakdownService
     /**
      * Get default location for private/local IPs
      *
-     * @return array<string, mixed>
+     * @return array<string, mixed>|null
      */
-    private function getDefaultLocation(): array
+    private function getDefaultLocation(): ?array
     {
         $settings = RedirectManager::$plugin->getSettings();
-        $defaultCountry = $settings->defaultCountry ?: (App::env('REDIRECT_MANAGER_DEFAULT_COUNTRY') ?: 'AE');
-        $defaultCity = $settings->defaultCity ?: (App::env('REDIRECT_MANAGER_DEFAULT_CITY') ?: 'Dubai');
+        $defaultCountry = $settings->defaultCountry ?: App::env('REDIRECT_MANAGER_DEFAULT_COUNTRY');
+        $defaultCity = $settings->defaultCity ?: App::env('REDIRECT_MANAGER_DEFAULT_CITY');
+
+        if (!$defaultCountry || !$defaultCity) {
+            return null;
+        }
 
         // Predefined locations for common cities worldwide
         $locations = [
@@ -393,7 +398,11 @@ class AnalyticsBreakdownService
             return $locations[$defaultCountry][$defaultCity];
         }
 
-        // Fallback to Dubai if configuration not found
-        return $locations['AE']['Dubai'];
+        Craft::warning('Configured default analytics location was not found; leaving local/private IP geo fields empty. | ' . json_encode([
+            'configuredCountry' => $defaultCountry,
+            'configuredCity' => $defaultCity,
+        ]), RedirectManager::$plugin->id);
+
+        return null;
     }
 }

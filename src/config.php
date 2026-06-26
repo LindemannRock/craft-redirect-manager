@@ -97,8 +97,9 @@ return [
 
         // Default location for local development
         // Used when IP address is private/local (127.0.0.1, 192.168.x.x, etc.)
-        // 'defaultCountry' => App::env('REDIRECT_MANAGER_DEFAULT_COUNTRY') ?: 'AE', // 2-letter country code (US, GB, AE, etc.)
-        // 'defaultCity' => App::env('REDIRECT_MANAGER_DEFAULT_CITY') ?: 'Dubai', // Must match a city in the predefined locations list
+        // Both values must be configured explicitly; otherwise private/local IP geo fields stay empty.
+        // 'defaultCountry' => App::env('REDIRECT_MANAGER_DEFAULT_COUNTRY'), // 2-letter country code (US, GB, AE, etc.)
+        // 'defaultCity' => App::env('REDIRECT_MANAGER_DEFAULT_CITY'), // Must match a city in the predefined locations list
 
         // Strip Query String From Stats
         // Should query strings be stripped from analytics URLs

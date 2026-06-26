@@ -177,13 +177,15 @@ A redirect fires but the browser reports "Too many redirects" or the destination
 
 All 404s show the same country or show "Unknown" in the geographic breakdown.
 
-**In local development:** Private IP addresses (127.0.0.1, 192.168.x.x, 10.x.x.x) cannot be geolocated. Set a development default:
+**In local development:** Private IP addresses (127.0.0.1, 192.168.x.x, 10.x.x.x) cannot be geolocated automatically. Redirect Manager leaves geo fields empty unless you set both defaults:
 
 ```php
 // config/redirect-manager.php
 'defaultCountry' => 'US',
 'defaultCity'    => 'New York',
 ```
+
+If either value is missing or does not match a supported location, Redirect Manager leaves the geo fields empty instead of inventing a fallback location.
 
 **In production:** Verify that:
 

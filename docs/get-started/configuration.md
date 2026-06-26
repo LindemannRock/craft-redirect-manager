@@ -89,8 +89,8 @@ When enabled and token-configured, test the endpoint from **Redirect Manager →
 | `enableGeoDetection` | `bool` | `false` | Enable geographic detection from IP addresses |
 | `geoProvider` | `string` | `'ip-api.com'` | Geo IP provider (`ip-api.com`, `ipapi.co`, `ipinfo.io`) |
 | `geoApiKey` | `?string` | `null` | API key for paid provider tiers (enables HTTPS for ip-api.com). Use `App::env('YOUR_VAR')` in your config file to load from an environment variable |
-| `defaultCountry` | `?string` | `null` | Default country for local dev. Falls back to `REDIRECT_MANAGER_DEFAULT_COUNTRY` env var |
-| `defaultCity` | `?string` | `null` | Default city for local dev. Falls back to `REDIRECT_MANAGER_DEFAULT_CITY` env var |
+| `defaultCountry` | `?string` | `null` | Default country for local dev. Falls back to `REDIRECT_MANAGER_DEFAULT_COUNTRY` env var. Requires `defaultCity`; otherwise private/local IP geo fields stay empty |
+| `defaultCity` | `?string` | `null` | Default city for local dev. Falls back to `REDIRECT_MANAGER_DEFAULT_CITY` env var. Requires `defaultCountry`; otherwise private/local IP geo fields stay empty |
 
 ## Device Detection
 

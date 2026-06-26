@@ -128,7 +128,7 @@ The `geoApiKey` enables HTTPS for `ip-api.com` and unlocks higher rate limits on
 
 ### Local Development Override
 
-Private IP addresses (127.0.0.1, 192.168.x.x, 10.x.x.x) cannot be geolocated. In development, set a default location to get realistic data:
+Private IP addresses (127.0.0.1, 192.168.x.x, 10.x.x.x) cannot be geolocated automatically. In development, set both defaults to record a local test location:
 
 ```php
 // config/redirect-manager.php
@@ -144,9 +144,9 @@ REDIRECT_MANAGER_DEFAULT_COUNTRY=US
 REDIRECT_MANAGER_DEFAULT_CITY=New York
 ```
 
-These settings only affect private/local IPs. In production, real visitor IPs use actual geolocation.
+These settings only affect private/local IPs. In production, real visitor IPs use actual geolocation. If either default is missing or unsupported, private/local IP geo fields stay empty instead of using a fallback location.
 
-**Supported default locations include:** US (New York, Los Angeles, Chicago, San Francisco), GB (London, Manchester), DE (Berlin, Munich), FR (Paris), CA (Toronto, Vancouver), AU (Sydney, Melbourne), JP (Tokyo), SG (Singapore), IN (Mumbai, Delhi), AE (Dubai — the hardcoded fallback when no default is configured).
+**Supported default locations include:** US (New York, Los Angeles, Chicago, San Francisco), GB (London, Manchester), DE (Berlin, Munich), FR (Paris), CA (Toronto, Vancouver), AU (Sydney, Melbourne), JP (Tokyo), SG (Singapore), IN (Mumbai, Delhi), AE (Dubai, Abu Dhabi), and SA (Riyadh, Jeddah).
 
 ## Privacy
 
