@@ -13,6 +13,12 @@
 
 {% set hasAnyActions = canCreate or canEdit or canClearAnalytics %}
 
+{% set handledFilterLabels = {
+    all: 'All'|t('redirect-manager'),
+    handled: 'Handled'|t('redirect-manager'),
+    unhandled: 'Unhandled'|t('redirect-manager'),
+} %}
+
 {% set tableConfig = {
     plugin: {
         handle: 'redirect-manager',
@@ -31,7 +37,7 @@
             type: 'status',
             param: 'handled',
             current: handledFilter,
-            label: handledFilter == 'all' ? 'All'|t('redirect-manager') : handledFilter|capitalize,
+            label: handledFilterLabels[handledFilter] ?? handledFilter,
             groups: [
                 {
                     param: 'handled',

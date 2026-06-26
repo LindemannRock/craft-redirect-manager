@@ -11,6 +11,19 @@
 
 {% extends 'lindemannrock-base/_layouts/cp-table' %}
 
+{% set statusFilterLabels = {
+    all: 'All'|t('redirect-manager'),
+    enabled: 'Enabled'|t('redirect-manager'),
+    disabled: 'Disabled'|t('redirect-manager'),
+} %}
+
+{% set matchTypeLabels = {
+    exact: 'Exact Match'|t('redirect-manager'),
+    regex: 'RegEx Match'|t('redirect-manager'),
+    wildcard: 'Wildcard Match'|t('redirect-manager'),
+    prefix: 'Prefix Match'|t('redirect-manager'),
+} %}
+
 {% set tableConfig = {
     plugin: {
         handle: 'redirect-manager',
@@ -29,7 +42,7 @@
             type: 'status',
             param: 'status',
             current: statusFilter,
-            label: statusFilter == 'all' ? 'All'|t('redirect-manager') : statusFilter|capitalize,
+            label: statusFilterLabels[statusFilter] ?? statusFilter,
             groups: [
                 {
                     param: 'status',
@@ -123,7 +136,7 @@
     {# Match Type column #}
     <td data-column="matchType" class="lr-hideable-column">
         {% include 'lindemannrock-base/_components/badge' with {
-            label: item.matchType|capitalize,
+            label: matchTypeLabels[item.matchType] ?? item.matchType,
             value: item.matchType,
             colorSet: 'matchType',
         } only %}
