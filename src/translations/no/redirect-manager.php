@@ -223,7 +223,6 @@ return [
     'Preserve Query String' => 'Bevar spørringsstreng',
     'Preserve and pass query string to destination URL' => 'Bevar og send spørringsstrengen til destinasjons-URL-en',
     '<strong>How this affects the destination URL:</strong><br>• <strong>ON:</strong> User visits <code>/old?ref=email</code> → redirects to <code>/new?ref=email</code><br>• <strong>OFF:</strong> User visits <code>/old?ref=email</code> → redirects to <code>/new</code> (query dropped)' => '<strong>Slik påvirker det destinasjons-URL-en:</strong><br>• <strong>PÅ:</strong> brukeren besøker <code>/old?ref=email</code> → omdirigerer til <code>/new?ref=email</code><br>• <strong>AV:</strong> brukeren besøker <code>/old?ref=email</code> → omdirigerer til <code>/new</code> (spørring fjernet)',
-    '<strong>Common Configurations:</strong><br>• <strong>E-commerce/Marketing:</strong> Strip ON, Preserve ON (match any UTM params, keep tracking)<br>• <strong>API/Exact URLs:</strong> Strip OFF, Preserve OFF (exact matching, canonical URLs)<br>• <strong>Flexible with tracking:</strong> Strip ON, Preserve OFF (ignore params in matching and destination)' => '<strong>Vanlige konfigurasjoner:</strong><br>• <strong>E-handel/Markedsføring:</strong> Fjern PÅ, Bevar PÅ (match alle UTM-parametere, behold sporing)<br>• <strong>API/Eksakte URL-er:</strong> Fjern AV, Bevar AV (eksakt matching, kanoniske URL-er)<br>• <strong>Fleksibelt med sporing:</strong> Fjern PÅ, Bevar AV (ignorer parametere i matching og destinasjon)',
     'HTTP Headers' => 'HTTP-headere',
     'Set No-Cache Headers' => 'Angi No-Cache-headere',
     'Set no-cache headers on redirect responses' => 'Angi no-cache-headere på omdirigeringssvar',
@@ -245,7 +244,8 @@ return [
     'Additional Settings' => 'Ytterligere innstillinger',
     'Strip Query String From Stats' => 'Fjern spørringsstreng fra statistikk',
     'Strip query strings from analytics URLs to consolidate similar requests' => 'Fjern spørringsstrenger fra analyse-URL-er for å konsolidere lignende forespørsler',
-    '<strong>How analytics grouping works:</strong><br>• <strong>ON (Consolidate):</strong> <code>/page?source=email</code>, <code>/page?source=facebook</code>, <code>/page?source=google</code> → grouped as one record with count: 3 (shows latest query string)<br>• <strong>OFF (Separate):</strong> Each unique URL+query creates its own record → 3 separate rows, each with count: 1<br><br><strong>Best for:</strong><br>• <strong>ON:</strong> Marketing sites with UTM/tracking parameters<br>• <strong>OFF:</strong> APIs or applications where query parameters matter<br><br><strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in General Settings.' => '<strong>Slik fungerer analysegruppering:</strong><br>• <strong>PÅ (Konsolider):</strong> <code>/page?source=email</code>, <code>/page?source=facebook</code>, <code>/page?source=google</code> → grupperes som én post med antall: 3 (viser nyeste spørringsstreng)<br>• <strong>AV (Separat):</strong> hver unik URL+spørring oppretter sin egen post → 3 separate rader, hver med antall: 1<br><br><strong>Best for:</strong><br>• <strong>PÅ:</strong> markedsføringssider med UTM-/sporingsparametere<br>• <strong>AV:</strong> API-er eller applikasjoner der spørringsparametere er viktige<br><br><strong>Merk:</strong> denne innstillingen påvirker bare analysevisningen. For omdirigeringsmatching, se <strong>Håndtering av spørringsstreng</strong> i generelle innstillinger.',
+    '<strong>How analytics grouping works:</strong><br>• <strong>ON (Consolidate):</strong> <code>/page?source=email</code>, <code>/page?source=facebook</code>, and <code>/page?source=google</code> are grouped as one analytics record with count 3.<br>• <strong>OFF (Separate):</strong> Each unique URL and query string creates its own analytics record.' => '<strong>Slik fungerer analysegruppering:</strong><br>• <strong>PÅ (Konsolider):</strong> <code>/page?source=email</code>, <code>/page?source=facebook</code> og <code>/page?source=google</code> grupperes som én analysepost med antall 3.<br>• <strong>AV (Separat):</strong> hver unik URL og spørringsstreng oppretter sin egen analysepost.',
+    '<strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in <a href="{url}">General Settings</a>.' => '<strong>Merk:</strong> denne innstillingen påvirker bare analysevisningen. For omdirigeringsmatching, se <strong>Håndtering av spørringsstreng</strong> i <a href="{url}">generelle innstillinger</a>.',
     'Data Retention' => 'Datalagring',
     'Analytics Retention (Days)' => 'Analyselagring (dager)',
     'Number of days to retain analytics (0 = keep forever)' => 'Antall dager å beholde analyse (0 = behold alltid)',
@@ -253,9 +253,6 @@ return [
     'Maximum number of unique 404 records to retain' => 'Maksimalt antall unike 404-poster å beholde',
     'Auto Trim Analytics' => 'Trim analyse automatisk',
     'Automatically trim analytics to respect the limit' => 'Trim automatisk analyse for å overholde grensen',
-    'Performance & Caching' => 'Ytelse og caching',
-    'Configure device detection and redirect caching for better performance.' => 'Konfigurer enhetsregistrering og omdirigeringscaching for bedre ytelse.',
-    'Go to Cache Settings' => 'Gå til cache-innstillinger',
 
     // Settings: Backup
     'Backup Settings' => 'Innstillinger for sikkerhetskopi',

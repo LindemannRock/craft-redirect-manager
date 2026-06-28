@@ -88,11 +88,11 @@
                     "This is being overridden by the <code>anonymizeIpAddress</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
             }) }}
 
-            <div class="field">
-                <p class="light">
-                    {{ '<strong>Privacy Levels:</strong><br>• <strong>Disabled</strong> (default): Full IP hashed with salt (accurate unique visitors)<br>• <strong>Enabled</strong>: Subnet masked + hashed with salt (maximum privacy, less accurate)'|t('redirect-manager')|raw }}
-                </p>
-            </div>
+            {% include 'lindemannrock-base/_components/info-box' with {
+                message: '<strong>Privacy Levels:</strong><br>• <strong>Disabled</strong> (default): Full IP hashed with salt (accurate unique visitors)<br>• <strong>Enabled</strong>: Subnet masked + hashed with salt (maximum privacy, less accurate)'|t('redirect-manager'),
+                type: 'info',
+                margin: 'both',
+            } %}
 
             <hr>
 
@@ -110,11 +110,19 @@
                     "This is being overridden by the <code>stripQueryStringFromStats</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
             }) }}
 
-            <div class="field">
-                <p class="light">
-                    {{ '<strong>How analytics grouping works:</strong><br>• <strong>ON (Consolidate):</strong> <code>/page?source=email</code>, <code>/page?source=facebook</code>, <code>/page?source=google</code> → grouped as one record with count: 3 (shows latest query string)<br>• <strong>OFF (Separate):</strong> Each unique URL+query creates its own record → 3 separate rows, each with count: 1<br><br><strong>Best for:</strong><br>• <strong>ON:</strong> Marketing sites with UTM/tracking parameters<br>• <strong>OFF:</strong> APIs or applications where query parameters matter<br><br><strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in General Settings.'|t('redirect-manager')|raw }}
-                </p>
-            </div>
+            {% include 'lindemannrock-base/_components/info-box' with {
+                message: '<strong>How analytics grouping works:</strong><br>• <strong>ON (Consolidate):</strong> <code>/page?source=email</code>, <code>/page?source=facebook</code>, and <code>/page?source=google</code> are grouped as one analytics record with count 3.<br>• <strong>OFF (Separate):</strong> Each unique URL and query string creates its own analytics record.'|t('redirect-manager'),
+                type: 'info',
+                margin: 'both',
+            } %}
+
+            {% include 'lindemannrock-base/_components/info-box' with {
+                message: '<strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in <a href="{url}">General Settings</a>.'|t('redirect-manager', {
+                    url: url('redirect-manager/settings/general'),
+                }),
+                type: 'info',
+                margin: 'bottom',
+            } %}
 
             <hr>
 
@@ -163,17 +171,6 @@
                 warning: settings.isOverriddenByConfig('autoTrimAnalytics') ?
                     "This is being overridden by the <code>autoTrimAnalytics</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
             }) }}
-
-            <hr>
-
-            <h2>{{ "Performance & Caching"|t('redirect-manager') }}</h2>
-
-            <div class="field">
-                <p class="light">
-                    {{ "Configure device detection and redirect caching for better performance."|t('redirect-manager') }}
-                    <a href="{{ url('redirect-manager/settings/cache') }}">{{ "Go to Cache Settings"|t('redirect-manager') }}</a>
-                </p>
-            </div>
 
         </div>{# end #analytics-settings #}
 

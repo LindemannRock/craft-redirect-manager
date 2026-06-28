@@ -223,7 +223,6 @@ return [
     'Preserve Query String' => 'Preserve Query String',
     'Preserve and pass query string to destination URL' => 'Preserve and pass query string to destination URL',
     '<strong>How this affects the destination URL:</strong><br>• <strong>ON:</strong> User visits <code>/old?ref=email</code> → redirects to <code>/new?ref=email</code><br>• <strong>OFF:</strong> User visits <code>/old?ref=email</code> → redirects to <code>/new</code> (query dropped)' => '<strong>How this affects the destination URL:</strong><br>• <strong>ON:</strong> User visits <code>/old?ref=email</code> → redirects to <code>/new?ref=email</code><br>• <strong>OFF:</strong> User visits <code>/old?ref=email</code> → redirects to <code>/new</code> (query dropped)',
-    '<strong>Common Configurations:</strong><br>• <strong>E-commerce/Marketing:</strong> Strip ON, Preserve ON (match any UTM params, keep tracking)<br>• <strong>API/Exact URLs:</strong> Strip OFF, Preserve OFF (exact matching, canonical URLs)<br>• <strong>Flexible with tracking:</strong> Strip ON, Preserve OFF (ignore params in matching and destination)' => '<strong>Common Configurations:</strong><br>• <strong>E-commerce/Marketing:</strong> Strip ON, Preserve ON (match any UTM params, keep tracking)<br>• <strong>API/Exact URLs:</strong> Strip OFF, Preserve OFF (exact matching, canonical URLs)<br>• <strong>Flexible with tracking:</strong> Strip ON, Preserve OFF (ignore params in matching and destination)',
     'HTTP Headers' => 'HTTP Headers',
     'Set No-Cache Headers' => 'Set No-Cache Headers',
     'Set no-cache headers on redirect responses' => 'Set no-cache headers on redirect responses',
@@ -245,7 +244,8 @@ return [
     'Additional Settings' => 'Additional Settings',
     'Strip Query String From Stats' => 'Strip Query String From Stats',
     'Strip query strings from analytics URLs to consolidate similar requests' => 'Strip query strings from analytics URLs to consolidate similar requests',
-    '<strong>How analytics grouping works:</strong><br>• <strong>ON (Consolidate):</strong> <code>/page?source=email</code>, <code>/page?source=facebook</code>, <code>/page?source=google</code> → grouped as one record with count: 3 (shows latest query string)<br>• <strong>OFF (Separate):</strong> Each unique URL+query creates its own record → 3 separate rows, each with count: 1<br><br><strong>Best for:</strong><br>• <strong>ON:</strong> Marketing sites with UTM/tracking parameters<br>• <strong>OFF:</strong> APIs or applications where query parameters matter<br><br><strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in General Settings.' => '<strong>How analytics grouping works:</strong><br>• <strong>ON (Consolidate):</strong> <code>/page?source=email</code>, <code>/page?source=facebook</code>, <code>/page?source=google</code> → grouped as one record with count: 3 (shows latest query string)<br>• <strong>OFF (Separate):</strong> Each unique URL+query creates its own record → 3 separate rows, each with count: 1<br><br><strong>Best for:</strong><br>• <strong>ON:</strong> Marketing sites with UTM/tracking parameters<br>• <strong>OFF:</strong> APIs or applications where query parameters matter<br><br><strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in General Settings.',
+    '<strong>How analytics grouping works:</strong><br>• <strong>ON (Consolidate):</strong> <code>/page?source=email</code>, <code>/page?source=facebook</code>, and <code>/page?source=google</code> are grouped as one analytics record with count 3.<br>• <strong>OFF (Separate):</strong> Each unique URL and query string creates its own analytics record.' => '<strong>How analytics grouping works:</strong><br>• <strong>ON (Consolidate):</strong> <code>/page?source=email</code>, <code>/page?source=facebook</code>, and <code>/page?source=google</code> are grouped as one analytics record with count 3.<br>• <strong>OFF (Separate):</strong> Each unique URL and query string creates its own analytics record.',
+    '<strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in <a href="{url}">General Settings</a>.' => '<strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in <a href="{url}">General Settings</a>.',
     'Data Retention' => 'Data Retention',
     'Analytics Retention (Days)' => 'Analytics Retention (Days)',
     'Number of days to retain analytics (0 = keep forever)' => 'Number of days to retain analytics (0 = keep forever)',
@@ -253,9 +253,6 @@ return [
     'Maximum number of unique 404 records to retain' => 'Maximum number of unique 404 records to retain',
     'Auto Trim Analytics' => 'Auto Trim Analytics',
     'Automatically trim analytics to respect the limit' => 'Automatically trim analytics to respect the limit',
-    'Performance & Caching' => 'Performance & Caching',
-    'Configure device detection and redirect caching for better performance.' => 'Configure device detection and redirect caching for better performance.',
-    'Go to Cache Settings' => 'Go to Cache Settings',
 
     // Settings: Backup
     'Backup Settings' => 'Backup Settings',

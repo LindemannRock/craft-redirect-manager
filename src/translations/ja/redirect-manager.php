@@ -223,7 +223,6 @@ return [
     'Preserve Query String' => 'クエリ文字列を保持する',
     'Preserve and pass query string to destination URL' => 'クエリ文字列を保持して転送先 URL に渡す',
     '<strong>How this affects the destination URL:</strong><br>• <strong>ON:</strong> User visits <code>/old?ref=email</code> → redirects to <code>/new?ref=email</code><br>• <strong>OFF:</strong> User visits <code>/old?ref=email</code> → redirects to <code>/new</code> (query dropped)' => '<strong>転送先 URL への影響:</strong><br>• <strong>オン:</strong> ユーザーが <code>/old?ref=email</code> にアクセス → <code>/new?ref=email</code> にリダイレクト<br>• <strong>オフ:</strong> ユーザーが <code>/old?ref=email</code> にアクセス → <code>/new</code> にリダイレクト（クエリは削除）',
-    '<strong>Common Configurations:</strong><br>• <strong>E-commerce/Marketing:</strong> Strip ON, Preserve ON (match any UTM params, keep tracking)<br>• <strong>API/Exact URLs:</strong> Strip OFF, Preserve OFF (exact matching, canonical URLs)<br>• <strong>Flexible with tracking:</strong> Strip ON, Preserve OFF (ignore params in matching and destination)' => '<strong>一般的な設定:</strong><br>• <strong>E コマース/マーケティング:</strong> 削除オン、保持オン（任意の UTM パラメータに一致し、トラッキングを保持）<br>• <strong>API/完全 URL:</strong> 削除オフ、保持オフ（完全一致、正規 URL）<br>• <strong>トラッキングに柔軟:</strong> 削除オン、保持オフ（一致と転送先でパラメータを無視）',
     'HTTP Headers' => 'HTTP ヘッダー',
     'Set No-Cache Headers' => 'No-Cache ヘッダーを設定する',
     'Set no-cache headers on redirect responses' => 'リダイレクト応答に no-cache ヘッダーを設定する',
@@ -245,7 +244,8 @@ return [
     'Additional Settings' => '追加設定',
     'Strip Query String From Stats' => '統計からクエリ文字列を削除する',
     'Strip query strings from analytics URLs to consolidate similar requests' => 'アナリティクス URL からクエリ文字列を削除して類似リクエストを統合する',
-    '<strong>How analytics grouping works:</strong><br>• <strong>ON (Consolidate):</strong> <code>/page?source=email</code>, <code>/page?source=facebook</code>, <code>/page?source=google</code> → grouped as one record with count: 3 (shows latest query string)<br>• <strong>OFF (Separate):</strong> Each unique URL+query creates its own record → 3 separate rows, each with count: 1<br><br><strong>Best for:</strong><br>• <strong>ON:</strong> Marketing sites with UTM/tracking parameters<br>• <strong>OFF:</strong> APIs or applications where query parameters matter<br><br><strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in General Settings.' => '<strong>アナリティクスのグループ化の仕組み:</strong><br>• <strong>オン（統合）:</strong> <code>/page?source=email</code>、<code>/page?source=facebook</code>、<code>/page?source=google</code> → カウント 3 の 1 レコードとしてグループ化（最新のクエリ文字列を表示）<br>• <strong>オフ（分離）:</strong> 一意の URL+クエリごとに独自のレコードを作成 → 3 つの別々の行、それぞれカウント 1<br><br><strong>最適な用途:</strong><br>• <strong>オン:</strong> UTM/トラッキングパラメータを持つマーケティングサイト<br>• <strong>オフ:</strong> クエリパラメータが重要な API またはアプリケーション<br><br><strong>注意:</strong> この設定はアナリティクス表示にのみ影響します。リダイレクト一致の動作については、一般設定の <strong>クエリ文字列の処理</strong> を参照してください。',
+    '<strong>How analytics grouping works:</strong><br>• <strong>ON (Consolidate):</strong> <code>/page?source=email</code>, <code>/page?source=facebook</code>, and <code>/page?source=google</code> are grouped as one analytics record with count 3.<br>• <strong>OFF (Separate):</strong> Each unique URL and query string creates its own analytics record.' => '<strong>アナリティクスのグループ化の仕組み:</strong><br>• <strong>オン（統合）:</strong> <code>/page?source=email</code>、<code>/page?source=facebook</code>、<code>/page?source=google</code> は、カウント 3 の 1 つのアナリティクスレコードとしてグループ化されます。<br>• <strong>オフ（分離）:</strong> 一意の URL とクエリ文字列ごとに、独自のアナリティクスレコードが作成されます。',
+    '<strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in <a href="{url}">General Settings</a>.' => '<strong>注意:</strong> この設定はアナリティクス表示にのみ影響します。リダイレクト一致の動作については、<a href="{url}">一般設定</a>の <strong>クエリ文字列の処理</strong> を参照してください。',
     'Data Retention' => 'データ保持期間',
     'Analytics Retention (Days)' => 'アナリティクスの保持期間（日）',
     'Number of days to retain analytics (0 = keep forever)' => 'アナリティクスを保持する日数（0 = 永久に保持）',
@@ -253,9 +253,6 @@ return [
     'Maximum number of unique 404 records to retain' => '保持するユニーク 404 レコードの最大数',
     'Auto Trim Analytics' => 'アナリティクスを自動削減する',
     'Automatically trim analytics to respect the limit' => '上限を守るためにアナリティクスを自動的に削減する',
-    'Performance & Caching' => 'パフォーマンスとキャッシュ',
-    'Configure device detection and redirect caching for better performance.' => 'パフォーマンス向上のためにデバイス検出とリダイレクトキャッシュを設定してください。',
-    'Go to Cache Settings' => 'キャッシュ設定へ',
 
     // Settings: Backup
     'Backup Settings' => 'バックアップ設定',

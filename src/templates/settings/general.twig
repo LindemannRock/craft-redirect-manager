@@ -98,11 +98,11 @@
                 "This is being overridden by the <code>stripQueryString</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
 
-		<div class="field">
-			<p class="light">
-				{{ '<strong>How this affects redirect matching:</strong><br>• <strong>ON:</strong> <code>/old-page?foo=bar</code> matches redirect rule <code>/old-page</code><br>• <strong>OFF:</strong> <code>/old-page?foo=bar</code> only matches rule <code>/old-page?foo=bar</code> (exact match required)'|t('redirect-manager')|raw }}
-			</p>
-		</div>
+		{% include 'lindemannrock-base/_components/info-box' with {
+			message: '<strong>How this affects redirect matching:</strong><br>• <strong>ON:</strong> <code>/old-page?foo=bar</code> matches redirect rule <code>/old-page</code><br>• <strong>OFF:</strong> <code>/old-page?foo=bar</code> only matches rule <code>/old-page?foo=bar</code> (exact match required)'|t('redirect-manager'),
+			type: 'info',
+			margin: 'both',
+		} %}
 
 		{{ forms.lightswitchField({
             label: 'Preserve Query String'|t('redirect-manager'),
@@ -116,17 +116,11 @@
                 "This is being overridden by the <code>preserveQueryString</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
 
-		<div class="field">
-			<p class="light">
-				{{ '<strong>How this affects the destination URL:</strong><br>• <strong>ON:</strong> User visits <code>/old?ref=email</code> → redirects to <code>/new?ref=email</code><br>• <strong>OFF:</strong> User visits <code>/old?ref=email</code> → redirects to <code>/new</code> (query dropped)'|t('redirect-manager')|raw }}
-			</p>
-		</div>
-
-		<div class="field">
-			<p class="light">
-				{{ '<strong>Common Configurations:</strong><br>• <strong>E-commerce/Marketing:</strong> Strip ON, Preserve ON (match any UTM params, keep tracking)<br>• <strong>API/Exact URLs:</strong> Strip OFF, Preserve OFF (exact matching, canonical URLs)<br>• <strong>Flexible with tracking:</strong> Strip ON, Preserve OFF (ignore params in matching and destination)'|t('redirect-manager')|raw }}
-			</p>
-		</div>
+		{% include 'lindemannrock-base/_components/info-box' with {
+			message: '<strong>How this affects the destination URL:</strong><br>• <strong>ON:</strong> User visits <code>/old?ref=email</code> → redirects to <code>/new?ref=email</code><br>• <strong>OFF:</strong> User visits <code>/old?ref=email</code> → redirects to <code>/new</code> (query dropped)'|t('redirect-manager'),
+			type: 'info',
+			margin: 'both',
+		} %}
 
 		<hr>
 
@@ -135,7 +129,6 @@
 		{{ forms.lightswitchField({
             label: 'Set No-Cache Headers'|t('redirect-manager'),
             instructions: 'Set no-cache headers on redirect responses'|t('redirect-manager'),
-            tip: 'To add additional custom headers, visit <a href="' ~ url('redirect-manager/settings/advanced') ~ '">Advanced Settings</a>.'|t('redirect-manager')|raw,
             id: 'setNoCacheHeaders',
             name: 'settings[setNoCacheHeaders]',
             on: settings.setNoCacheHeaders,
@@ -144,6 +137,14 @@
             warning: settings.isOverriddenByConfig('setNoCacheHeaders') ?
                 "This is being overridden by the <code>setNoCacheHeaders</code> setting in <code>config/redirect-manager.php</code>."|t('redirect-manager')|raw : null,
         }) }}
+
+		{% include 'lindemannrock-base/_components/info-box' with {
+			message: 'To add additional custom headers, visit <a href="{url}">Advanced Settings</a>.'|t('redirect-manager', {
+                url: url('redirect-manager/settings/advanced'),
+            }),
+			type: 'info',
+            margin: 'bottom',
+		} %}
 
 		<hr>
 

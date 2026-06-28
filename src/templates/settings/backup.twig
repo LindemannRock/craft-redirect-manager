@@ -56,7 +56,7 @@
 
             {{ forms.selectField({
                 label: "Backup Schedule"|t('redirect-manager'),
-                instructions: "How often to create automatic backups. Uses Craft's queue if running, or set up a cron job:"|t('redirect-manager') ~ '<br><code style="display: inline-block; margin-top: 4px;">craft redirect-manager/backup/scheduled</code>',
+                instructions: "How often to create automatic backups. Uses Craft's queue if running, or set up a cron job:"|t('redirect-manager') ~ ' <code>craft redirect-manager/backup/scheduled</code>',
                 id: 'backupSchedule',
                 name: 'settings[backupSchedule]',
                 value: settings.getEffectiveBackupSchedule(),
