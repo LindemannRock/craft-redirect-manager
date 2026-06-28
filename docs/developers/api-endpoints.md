@@ -47,7 +47,7 @@ If `apiEndpointEnabled` is true and `apiEndpointToken` is empty, requests are re
 GET /actions/redirect-manager/api/get-redirects
 ```
 
-You can test this endpoint from **Redirect Manager → Settings → Test** after `apiEndpointEnabled` is on and `REDIRECT_MANAGER_API_TOKEN` is configured. The test page uses the configured token server-side and never asks you to paste it into the browser. It also includes a downloadable Postman collection and environment template for testing outside Craft.
+You can test this endpoint from **Redirect Manager → Settings → Test** after `apiEndpointEnabled` is on and `REDIRECT_MANAGER_API_TOKEN` is configured. The test page uses the configured token server-side and never asks you to paste it into the browser. It also offers a downloadable [Postman collection](postman.md) for testing outside Craft.
 
 With a token:
 
@@ -108,13 +108,37 @@ GET /actions/redirect-manager/api/get-redirects?site=en
 
 If both `site` and `siteId` are present, `site` is used. Invalid explicit sites return an empty array.
 
+## Rate limiting @since(5.35.0)
+
+Requests are rate limited per configured token using a fixed 60-second window. `apiEndpointRateLimit` sets the maximum number of requests allowed in each window (default `60`; maximum `100000`; set `0` to disable).
+
+Every response carries the current limit state:
+
+| Header | Meaning |
+|--------|---------|
+| `X-RateLimit-Limit` | The configured per-minute limit |
+| `X-RateLimit-Remaining` | Requests left in the current window |
+| `X-RateLimit-Reset` | Unix timestamp when the window resets |
+
+When the limit is exceeded the endpoint returns `429 Too Many Requests` with a `Retry-After` header (seconds until the window resets):
+
+```bash
+curl -i -H "Authorization: Bearer $REDIRECT_MANAGER_API_TOKEN" \
+  -H "Accept: application/json" \
+  "https://example.com/actions/redirect-manager/api/get-redirects"
+# HTTP/1.1 429 Too Many Requests
+# Retry-After: 42
+```
+
 ## Status codes
 
 | Status | Meaning |
 |--------|---------|
 | `200` | Endpoint enabled and request accepted |
+| `400` | Request did not send `Accept: application/json` |
 | `401` | Token is configured but missing or invalid |
 | `404` | Endpoint is disabled |
+| `429` | Rate limit exceeded — retry after the window resets |
 
 ## JSON API vs GraphQL
 

@@ -65,7 +65,7 @@ Common values include `today`, `yesterday`, `last7days`, `last30days`, `last90da
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `apiEndpointEnabled` | `bool` | `false` | Enable the read-only JSON redirects endpoint at `/actions/redirect-manager/api/get-redirects` |
-| `apiEndpointRateLimit` | `int` | `60` | Maximum JSON API requests per minute for the configured token. Set to `0` to disable rate limiting |
+| `apiEndpointRateLimit` @since(5.35.0) | `int` | `60` | Maximum JSON API requests per minute for the configured token (max `100000`). Set to `0` to disable rate limiting |
 | `apiEndpointToken` | `?string` | `null` | Token for the JSON endpoint. Falls back to `REDIRECT_MANAGER_API_TOKEN`; callers must send a bearer token or `X-Redirect-Manager-Key` header |
 
 When enabled and token-configured, test the endpoint from **Redirect Manager → Settings → Test**.

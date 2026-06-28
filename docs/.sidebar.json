@@ -45,6 +45,7 @@
             "developers/console-commands",
             "developers/events",
             "developers/api-endpoints",
+            "developers/postman",
             "developers/graphql",
             "developers/template-variables",
             "developers/twig-globals",

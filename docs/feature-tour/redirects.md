@@ -102,7 +102,7 @@ The destination is where matched requests are sent. Valid destinations:
 
 - A relative path — `/new-page` (not protocol-relative `//host`)
 - A full `http(s)://` URL **with a host** — `https://example.com/new-page`
-- A contact/app link — `mailto:`, `tel:`, `whatsapp:`, `sms:`, `fax:`, `skype://`, `msteams:`
+- A contact/app link — `mailto:`, `tel:`, `whatsapp:`, `sms:`, `fax:`, `skype://`, `slack:`, `msteams:`
 - A capture reference — `$1`, `$2` (etc.), substituted from the matched source (see [Match Types](#match-types))
 
 Bare schemes (`https://` with no host), protocol-relative URLs (`//host`), and executable schemes (`javascript:`, `data:`, …) are rejected. The same rule applies to the Control Panel form and CSV import.

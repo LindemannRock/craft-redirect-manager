@@ -217,7 +217,7 @@ Saving a redirect or importing a row fails with an invalid destination/source UR
 1. **Use a complete URL.** A bare scheme like `https://` (no host) is rejected — enter a full URL with a host (`https://example.com/page`) or a relative path (`/page`).
 2. **Avoid protocol-relative URLs.** `//host` is rejected because the browser resolves it to an external origin. Use a path (`/host`) or a full `https://` URL.
 3. **Check capture references.** `$1`, `$2` only work where the match type produces captures: Wildcard (one per `*`), Prefix (`$1` = the part after the prefix), and Regex (one per capturing group). `$1` under Exact Match, or referencing more captures than the source defines, is rejected. See [Match Types](../feature-tour/redirects.md#match-types).
-4. **Contact links are allowed.** `mailto:`, `tel:`, `whatsapp:`, `sms:`, `fax:`, `skype://`, and `msteams:` destinations are valid; executable schemes (`javascript:`, `data:`) are not.
+4. **Contact links are allowed.** `mailto:`, `tel:`, `whatsapp:`, `sms:`, `fax:`, `skype://`, `slack:`, and `msteams:` destinations are valid; executable schemes (`javascript:`, `data:`) are not.
 
 ---
 

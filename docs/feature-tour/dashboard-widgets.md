@@ -1,4 +1,4 @@
-# Dashboard Widgets @since(5.1.0)
+# Dashboard Widgets @since(5.33.0)
 
 Redirect Manager provides two Craft dashboard widgets for at-a-glance visibility into your site's redirect health and 404 activity.
 
