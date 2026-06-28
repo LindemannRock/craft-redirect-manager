@@ -1,8 +1,5 @@
 # Installation and setup
 
-> [!NOTE]
-> Redirect Manager is in active development and not yet available on the Craft Plugin Store. Install via Composer for now.
-
 ## Composer
 
 Add the package to your project using Composer and the command line.

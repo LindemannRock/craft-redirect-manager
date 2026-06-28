@@ -11,6 +11,7 @@ Every 404 event records:
 | Data | Description |
 |------|-------------|
 | URL | The path (and optionally query string) that returned 404 |
+| Referrer | The referring URL from the HTTP `Referer` header, when the browser sent one — useful for finding which page links to the broken URL |
 | Handled | Whether a matching redirect was found and fired |
 | Source plugin | Which plugin reported the 404 (e.g., `redirect-manager`, `shortlink-manager`) |
 | Device type | Desktop, mobile, or tablet (via Matomo DeviceDetector) |
@@ -40,7 +41,7 @@ When disabled, no 404 data is recorded and the Analytics CP section is hidden. D
 
 Navigate to **Redirect Manager > Analytics** to see:
 
-### 404 Overview
+### 404 Trend
 
 Charts showing 404 volume over time, split by handled vs. unhandled. Use the date range filter to zoom in or compare periods.
 
@@ -48,6 +49,7 @@ Charts showing 404 volume over time, split by handled vs. unhandled. Use the dat
 
 A table of the top 404 URLs ranked by hit count. Each row shows:
 - The URL
+- The referrer that linked to it, when one was sent (a sortable, hideable column)
 - Total hit count
 - Whether it was handled (redirected) or unhandled
 - Request type: normal, system, bot, or security probe
@@ -55,7 +57,7 @@ A table of the top 404 URLs ranked by hit count. Each row shows:
 - Last seen timestamp
 - A "Create Redirect" action button for unhandled entries
 
-### Recent 404s
+### Recent Unhandled 404s
 
 The most recent unhandled 404 events in reverse chronological order. The table
 includes request type and agent columns so system warmups, public bots, and
@@ -84,8 +86,8 @@ as **System** traffic. They stay separate from human visitors, public crawler
 bots, and security probes in both the analytics charts and the dashboard
 request-type filter.
 
-Analytics exports include the same enriched request metadata, including device
-brand/model, browser version and engine, OS version, detected language, user
+Analytics exports include the same enriched request metadata, including referrer,
+device brand/model, browser version and engine, OS version, detected language, user
 agent, traffic type, system-agent flag, bot flag, bot category, and bot
 producer.
 
@@ -187,7 +189,7 @@ ddev craft queue/run
 
 ## Exporting Analytics
 
-Export 404 analytics as CSV from **Redirect Manager > Analytics > Export CSV**. The export includes all tracked fields: URL, hit count, handled status, request type, traffic type, system-agent flag, bot name, bot category, bot producer, device, browser, OS, country, city, and timestamps.
+Export 404 analytics as CSV from **Redirect Manager > Analytics > Export CSV**. The export includes every tracked field — URL, referrer, site, hit count, handled status, the full request-type, traffic-type, device, browser, OS, and bot metadata, geographic country and city, the salted IP hash, user agent, and timestamps.
 
 The `redirectManager:exportAnalytics` permission is required to access the export button.
 

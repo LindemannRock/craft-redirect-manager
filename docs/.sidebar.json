@@ -27,16 +27,6 @@
         ]
     },
     {
-        "title": "Resources",
-        "collapsable": true,
-        "open": false,
-        "children": [
-            "resources/troubleshooting",
-            "resources/logging",
-            "resources/translations"
-        ]
-    },
-    {
         "title": "Developers",
         "collapsable": true,
         "open": false,
@@ -50,6 +40,16 @@
             "developers/template-variables",
             "developers/twig-globals",
             "developers/shared-features"
+        ]
+    },
+    {
+        "title": "Resources",
+        "collapsable": true,
+        "open": false,
+        "children": [
+            "resources/troubleshooting",
+            "resources/logging",
+            "resources/translations"
         ]
     }
 ]

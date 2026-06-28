@@ -115,9 +115,11 @@ When multiple redirect rules could match the same URL, priority determines which
 |----------|-------------|-----------------|
 | 0 | Highest | Specific patterns, exceptions |
 | 1–4 | High | Important or frequent redirects |
-| 5 | Normal | Standard redirects (default) |
+| 5 | Normal | Standard redirects |
 | 6–8 | Low | Broad patterns |
 | 9 | Lowest | Catch-all patterns |
+
+New redirects default to priority `0` (highest) — raise the number for broader, fall-through patterns that should only match when nothing more specific does.
 
 **Example:** You have `/blog/featured-post` set to priority 0 and `/blog/*` set to priority 9. Visitors to `/blog/featured-post` hit the exact rule; all other `/blog/` paths fall through to the wildcard.
 
