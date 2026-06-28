@@ -1,5 +1,34 @@
 # Changelog
 
+## [5.35.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.34.0...v5.35.0) (2026-06-28)
+
+
+### Added
+
+* add smoke test scripts for Craft compatibility checks ([8df71a7](https://github.com/LindemannRock/craft-redirect-manager/commit/8df71a7f00150cfdd03f51b7b94ac44474113be0))
+* **api:** add rate limiting for JSON API requests ([39b93a4](https://github.com/LindemannRock/craft-redirect-manager/commit/39b93a4713c1f71a3e8396cc5fd8f7a3cfe3b4b1))
+* document backup validation methods and integrity check ([9cf2b1a](https://github.com/LindemannRock/craft-redirect-manager/commit/9cf2b1a94dea119b014a71e90d9c503bd592004c))
+* **i18n:** add developer resources translations across multiple locales ([7b3ec1e](https://github.com/LindemannRock/craft-redirect-manager/commit/7b3ec1e03e24db5c9e3b9b49a85fa84fb8ff0214))
+* **i18n:** add filter labels for redirects and dashboard templates ([2c876d4](https://github.com/LindemannRock/craft-redirect-manager/commit/2c876d4647474e326b8c527aa13a47fc341b26b0))
+* **redirects:** add site ID handling for redirect resolution ([5fbf152](https://github.com/LindemannRock/craft-redirect-manager/commit/5fbf1520c5d564d7b6fc723e1145e2763ae3bcf6))
+* **redirects:** add siteIdKey for redirect uniqueness handling ([a4ad1c6](https://github.com/LindemannRock/craft-redirect-manager/commit/a4ad1c608f9384c218c00a6efe4fa863a53221ef))
+* **redirects:** get enabled redirects for editable site IDs ([db13ddb](https://github.com/LindemannRock/craft-redirect-manager/commit/db13ddba0580d7e003300dcddb07b4de5067bb7f))
+* **settings:** add action to download Postman collection and environment template ([f0e6d32](https://github.com/LindemannRock/craft-redirect-manager/commit/f0e6d322f94b5eb98a57d386767177abb361432d))
+
+
+### Fixed
+
+* **analytics:** correct country and city count aggregation logic ([cab1a40](https://github.com/LindemannRock/craft-redirect-manager/commit/cab1a40d49b2f1d71664cea38157276e870d0e77))
+* **analytics:** make referrer column sortable and hideable in dashboard ([bf083c1](https://github.com/LindemannRock/craft-redirect-manager/commit/bf083c18242aaac5f33a56f51f12757713e317d8))
+* **analytics:** remove 'bot-stats' type from valid request types ([d6c7214](https://github.com/LindemannRock/craft-redirect-manager/commit/d6c7214130cdab7c76d802b8e39a2e2b050f4419))
+* **backups:** correct backup location display in info box ([2c6633c](https://github.com/LindemannRock/craft-redirect-manager/commit/2c6633cb2780a80c1a8e3587892d0a01809a5cf9))
+* encode validRows count in import form submission confirmation ([1d4cfaf](https://github.com/LindemannRock/craft-redirect-manager/commit/1d4cfafef3baefca7a5beffc2b5a5b57ef2215aa))
+* **i18n:** correct redirect messages for user notifications ([348f91d](https://github.com/LindemannRock/craft-redirect-manager/commit/348f91db84961885ee3dcdadb1a8968cef7d6421))
+* **i18n:** correct translations across multiple locales ([d98cba6](https://github.com/LindemannRock/craft-redirect-manager/commit/d98cba67abe7a52039c56f62d6102e64e576c6e2))
+* require explicit local geo defaults ([4211bd3](https://github.com/LindemannRock/craft-redirect-manager/commit/4211bd3d2d90ddb85772c54622d9464a16256aa7))
+* update widget version annotation to 5.33.0 ([2e8b2d9](https://github.com/LindemannRock/craft-redirect-manager/commit/2e8b2d925a69086fa538d7bcc16764e094104ccb))
+* **widget:** replace analytics retrieval with unhandled 404s method ([e6ceb53](https://github.com/LindemannRock/craft-redirect-manager/commit/e6ceb53171a13f581de0c02f7258dffc6994a58b))
+
 ## [5.34.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.33.0...v5.34.0) - 2026-06-20
 
 
