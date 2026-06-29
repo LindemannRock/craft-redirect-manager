@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.35.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.35.0...v5.35.1) (2026-06-29)
+
+
+### Fixed
+
+* **widgets:** pass dynamic chart ID to stats summary widget ([f798f59](https://github.com/LindemannRock/craft-redirect-manager/commit/f798f5956534144bde1547b6407d131ce091221a))
+
 ## [5.35.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.34.0...v5.35.0) - 2026-06-28
 
 
