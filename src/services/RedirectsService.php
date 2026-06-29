@@ -317,7 +317,7 @@ class RedirectsService extends Component
                 }
             }
 
-            $this->logInfo('External 404 matched redirect', [
+            $this->logDebug('External 404 matched redirect', [
                 'source' => $context['source'] ?? 'unknown',
                 'url' => $pathOnly,
                 'destination' => $redirect['destinationUrl'],
@@ -464,7 +464,7 @@ class RedirectsService extends Component
                 'siteId' => $element->siteId,
             ];
 
-            $this->logInfo('Stashed element URI from database', [
+            $this->logDebug('Stashed element URI from database', [
                 'elementId' => $element->id,
                 'elementType' => get_class($element),
                 'oldUri' => $oldElement->uri,
@@ -502,7 +502,7 @@ class RedirectsService extends Component
         $newUri = $element->uri;
         $siteId = $element->siteId;
 
-        $this->logInfo('Checking URI change', [
+        $this->logDebug('Checking URI change', [
             'elementId' => $element->id,
             'siteId' => $siteId,
             'oldUri' => $oldUri,
@@ -1287,7 +1287,7 @@ class RedirectsService extends Component
 
             $parsedUrl = $this->parseUrl($searchUrl);
 
-            $this->logInfo('Checking for next redirect in chain', [
+            $this->logDebug('Checking for next redirect in chain', [
                 'currentUrl' => $currentUrl,
                 'searchUrl' => $searchUrl,
                 'parsedUrl' => $parsedUrl,
@@ -1297,12 +1297,12 @@ class RedirectsService extends Component
             $nextRedirect = $this->findNextRedirectInChain($parsedUrl, $siteId);
 
             if (!$nextRedirect) {
-                $this->logInfo('No more redirects in chain', ['stoppedAt' => $currentUrl]);
+                $this->logDebug('No more redirects in chain', ['stoppedAt' => $currentUrl]);
                 // No more redirects in chain
                 break;
             }
 
-            $this->logInfo('Found next redirect in chain', [
+            $this->logDebug('Found next redirect in chain', [
                 'from' => $nextRedirect['sourceUrlParsed'],
                 'to' => $nextRedirect['destinationUrl'],
             ]);
@@ -1312,7 +1312,7 @@ class RedirectsService extends Component
         }
 
         if (count($chain) > 1) {
-            $this->logInfo('Resolved redirect chain', [
+            $this->logDebug('Resolved redirect chain', [
                 'originalUrl' => $url,
                 'finalUrl' => $currentUrl,
                 'chain' => $chain,
