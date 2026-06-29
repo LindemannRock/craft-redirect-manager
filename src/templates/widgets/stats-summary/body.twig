@@ -1,7 +1,7 @@
 <div class="redirect-manager-widget">
     {% if total > 0 %}
         {% include 'lindemannrock-base/_components/chart-container' with {
-            id: 'redirect-stats-chart',
+            id: chartId,
             type: 'doughnut',
             height: 250,
             center: true,
@@ -27,9 +27,9 @@
                     legend: {
                         position: 'bottom',
                         labels: {
-                            padding: 15,
+                            padding: 10,
                             font: {
-                                size: 12,
+                                size: 11,
                             },
                         },
                     },

@@ -124,6 +124,7 @@ class AnalyticsSummaryWidget extends Widget
 
         return Craft::$app->getView()->renderTemplate('redirect-manager/widgets/stats-summary/body', [
             'widget' => $this,
+            'chartId' => 'redirect-manager-stats-widget-chart-' . ($this->id ?: spl_object_id($this)),
             'totalHandled' => $totalHandled,
             'totalUnhandled' => $totalUnhandled,
             'total' => $total,
