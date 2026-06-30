@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.35.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.35.1...v5.35.2) - 2026-06-30
+
+
+### Documentation
+
+* align plugin store name with composer metadata ([98970ca](https://github.com/LindemannRock/craft-redirect-manager/commit/98970ca326e087826eb43a1e0510e6b6b0ef438c))
+
 ## [5.35.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.35.0...v5.35.1) - 2026-06-29
 
 
