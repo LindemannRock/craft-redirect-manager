@@ -730,8 +730,10 @@ return [
     'Could not delete analytics record' => 'アナリティクスレコードを削除できませんでした',
     'Delete {count} analytics record?' => '{count} 件のアナリティクスレコードを削除しますか？',
     'Delete {count} analytics records?' => '{count} 件のアナリティクスレコードを削除しますか？',
-    'Deleted {count} analytics record(s)' => '{count} 件のアナリティクスレコードを削除しました',
-    'Cleared {count} analytics record(s)' => '{count} 件のアナリティクスレコードを削除しました',
+    'Deleted {count} analytics record' => '{count} 件のアナリティクスレコードを削除しました',
+    'Deleted {count} analytics records' => '{count} 件のアナリティクスレコードを削除しました',
+    'Cleared {count} analytics record' => '{count} 件のアナリティクスレコードを削除しました',
+    'Cleared {count} analytics records' => '{count} 件のアナリティクスレコードを削除しました',
     'Failed to clear analytics' => 'アナリティクスの削除に失敗しました',
     // Config overrides
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>autoCreateRedirects</code> 設定によって上書きされています。',

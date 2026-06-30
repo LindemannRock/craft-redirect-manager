@@ -730,8 +730,10 @@ return [
     'Could not delete analytics record' => 'Impossibile eliminare il record di analisi',
     'Delete {count} analytics record?' => 'Eliminare {count} record analisi?',
     'Delete {count} analytics records?' => 'Eliminare {count} record analisi?',
-    'Deleted {count} analytics record(s)' => '{count} record di analisi eliminati',
-    'Cleared {count} analytics record(s)' => '{count} record di analisi cancellati',
+    'Deleted {count} analytics record' => '{count} record di analisi eliminato',
+    'Deleted {count} analytics records' => '{count} record di analisi eliminati',
+    'Cleared {count} analytics record' => '{count} record di analisi cancellato',
+    'Cleared {count} analytics records' => '{count} record di analisi cancellati',
     'Failed to clear analytics' => 'Impossibile cancellare le analisi',
     // Config overrides
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'Questa impostazione viene sovrascritta da <code>autoCreateRedirects</code> in <code>config/redirect-manager.php</code>.',

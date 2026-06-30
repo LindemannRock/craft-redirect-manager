@@ -730,8 +730,10 @@ return [
     'Could not delete analytics record' => 'Analyserecord kon niet worden verwijderd',
     'Delete {count} analytics record?' => '{count} analyserecord verwijderen?',
     'Delete {count} analytics records?' => '{count} analyserecords verwijderen?',
-    'Deleted {count} analytics record(s)' => '{count} analyserecords verwijderd',
-    'Cleared {count} analytics record(s)' => '{count} analyserecords gewist',
+    'Deleted {count} analytics record' => '{count} analyserecord verwijderd',
+    'Deleted {count} analytics records' => '{count} analyserecords verwijderd',
+    'Cleared {count} analytics record' => '{count} analyserecord gewist',
+    'Cleared {count} analytics records' => '{count} analyserecords gewist',
     'Failed to clear analytics' => 'Analysegegevens konden niet worden gewist',
     // Config overrides
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'Deze instelling wordt overschreven door de instelling <code>autoCreateRedirects</code> in <code>config/redirect-manager.php</code>.',

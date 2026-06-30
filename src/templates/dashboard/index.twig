@@ -275,9 +275,11 @@
         deleteFailed: {{ 'Could not delete analytics record'|t('redirect-manager')|json_encode|raw }},
         bulkDeleteConfirmSingular: {{ 'Delete {count} analytics record?'|t('redirect-manager')|json_encode|raw }},
         bulkDeleteConfirmPlural: {{ 'Delete {count} analytics records?'|t('redirect-manager')|json_encode|raw }},
-        bulkDeletedTemplate: {{ 'Deleted {count} analytics record(s)'|t('redirect-manager')|json_encode|raw }},
+        bulkDeletedSingular: {{ 'Deleted {count} analytics record'|t('redirect-manager')|json_encode|raw }},
+        bulkDeletedPlural: {{ 'Deleted {count} analytics records'|t('redirect-manager')|json_encode|raw }},
         clearAllConfirm: {{ 'Are you sure you want to clear ALL analytics? This cannot be undone.'|t('redirect-manager')|json_encode|raw }},
-        clearedTemplate: {{ 'Cleared {count} analytics record(s)'|t('redirect-manager')|json_encode|raw }},
+        clearedSingular: {{ 'Cleared {count} analytics record'|t('redirect-manager')|json_encode|raw }},
+        clearedPlural: {{ 'Cleared {count} analytics records'|t('redirect-manager')|json_encode|raw }},
         clearAllFailed: {{ 'Failed to clear analytics'|t('redirect-manager')|json_encode|raw }},
         visitUrl: {{ 'Visit URL'|t('redirect-manager')|json_encode|raw }},
         yes: {{ 'Yes'|t('redirect-manager')|json_encode|raw }},
@@ -360,7 +362,8 @@
             });
 
             Promise.all(deletePromises).then(function() {
-                Craft.cp.displayNotice(T.bulkDeletedTemplate.replace('{count}', ids.length));
+                const deletedTemplate = ids.length === 1 ? T.bulkDeletedSingular : T.bulkDeletedPlural;
+                Craft.cp.displayNotice(deletedTemplate.replace('{count}', ids.length));
                 setTimeout(function() { window.location.reload(); }, 1000);
             }).catch(function() {
                 Craft.cp.displayError(T.deleteFailed);
@@ -376,7 +379,8 @@
         Craft.sendActionRequest('POST', 'redirect-manager/analytics/clear-all', { data: {} })
             .then(function(response) {
                 if (response.data.success) {
-                    Craft.cp.displayNotice(T.clearedTemplate.replace('{count}', response.data.deleted));
+                    const clearedTemplate = response.data.deleted === 1 ? T.clearedSingular : T.clearedPlural;
+                    Craft.cp.displayNotice(clearedTemplate.replace('{count}', response.data.deleted));
                     setTimeout(function() { window.location.reload(); }, 1000);
                 } else {
                     Craft.cp.displayError(T.clearAllFailed);

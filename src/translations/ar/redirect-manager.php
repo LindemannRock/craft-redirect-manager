@@ -730,8 +730,10 @@ return [
     'Could not delete analytics record' => 'تعذر حذف السجل التحليلي',
     'Delete {count} analytics record?' => 'حذف {count} سجل تحليلي؟',
     'Delete {count} analytics records?' => 'حذف {count} سجلات تحليلية؟',
-    'Deleted {count} analytics record(s)' => 'تم حذف {count} سجلات تحليلية',
-    'Cleared {count} analytics record(s)' => 'تم مسح {count} سجلات تحليلية',
+    'Deleted {count} analytics record' => 'تم حذف {count} سجل تحليلي',
+    'Deleted {count} analytics records' => 'تم حذف {count} سجلات تحليلية',
+    'Cleared {count} analytics record' => 'تم مسح {count} سجل تحليلي',
+    'Cleared {count} analytics records' => 'تم مسح {count} سجلات تحليلية',
     'Failed to clear analytics' => 'فشل مسح التحليلات',
     // Config overrides
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>autoCreateRedirects</code> في <code>config/redirect-manager.php</code>.',

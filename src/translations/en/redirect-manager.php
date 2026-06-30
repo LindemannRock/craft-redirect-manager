@@ -730,8 +730,10 @@ return [
     'Could not delete analytics record' => 'Could not delete analytics record',
     'Delete {count} analytics record?' => 'Delete {count} analytics record?',
     'Delete {count} analytics records?' => 'Delete {count} analytics records?',
-    'Deleted {count} analytics record(s)' => 'Deleted {count} analytics record(s)',
-    'Cleared {count} analytics record(s)' => 'Cleared {count} analytics record(s)',
+    'Deleted {count} analytics record' => 'Deleted {count} analytics record',
+    'Deleted {count} analytics records' => 'Deleted {count} analytics records',
+    'Cleared {count} analytics record' => 'Cleared {count} analytics record',
+    'Cleared {count} analytics records' => 'Cleared {count} analytics records',
     'Failed to clear analytics' => 'Failed to clear analytics',
     // Config overrides
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.',
