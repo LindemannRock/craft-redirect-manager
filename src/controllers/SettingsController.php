@@ -763,7 +763,7 @@ class SettingsController extends Controller
 
             return $this->asJson([
                 'success' => true,
-                'message' => Craft::t('redirect-manager', 'Deleted {count} analytics records.', ['count' => $count]),
+                'message' => Craft::t('redirect-manager', 'Cleared {count, plural, =1{# analytics record} other{# analytics records}}.', ['count' => $count]),
             ]);
         } catch (\Exception $e) {
             return $this->asJson(['success' => false, 'error' => $e->getMessage()]);

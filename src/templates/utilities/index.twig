@@ -154,7 +154,7 @@
         {% if canClearAnalytics %}
             {% include 'lindemannrock-base/_layouts/cp-utilities/_action-section' with {
                 title: 'Analytics Data Management'|t('redirect-manager'),
-                description: 'Permanently delete all analytics tracking data. This action cannot be undone!'|t('redirect-manager'),
+                description: 'Permanently clear all analytics tracking data. This action cannot be undone!'|t('redirect-manager'),
                 showSeparator: hasNavigation or canClearCache,
                 buttons: [
                     {id: 'clear-all-analytics', label: 'Clear All Analytics'|t('redirect-manager'), class: 'btn secondary', count: analyticsCount},
@@ -195,7 +195,7 @@
 {% include 'lindemannrock-base/_layouts/cp-utilities/_ajax-button' with {
     id: 'clear-all-analytics',
     action: actionUrl('redirect-manager/settings/clear-all-analytics'),
-    confirm: 'Are you sure you want to permanently delete ALL analytics data? This action cannot be undone!'|t('redirect-manager'),
+    confirm: 'Are you sure you want to permanently clear ALL analytics data? This action cannot be undone!'|t('redirect-manager'),
     confirmSecond: 'This will delete all 404 tracking data. Are you absolutely sure?'|t('redirect-manager'),
     errorMessage: 'Failed'|t('redirect-manager'),
     reloadDelay: 2000,

@@ -484,14 +484,14 @@ class AnalyticsController extends Controller
         );
 
         if ($record === null) {
-            return $this->asJson(['success' => false, 'error' => Craft::t('redirect-manager', 'Could not delete analytics record')]);
+            return $this->asJson(['success' => false, 'error' => Craft::t('redirect-manager', 'Could not clear analytics record')]);
         }
 
         if (RedirectManager::$plugin->analytics->deleteAnalytic((int)$record->id)) {
             return $this->asJson(['success' => true]);
         }
 
-        return $this->asJson(['success' => false, 'error' => Craft::t('redirect-manager', 'Could not delete analytics record')]);
+        return $this->asJson(['success' => false, 'error' => Craft::t('redirect-manager', 'Could not clear analytics record')]);
     }
 
     /**
@@ -533,7 +533,7 @@ class AnalyticsController extends Controller
         $deleted = RedirectManager::$plugin->analytics->clearAnalytics($effectiveSiteId);
 
         Craft::$app->getSession()->setNotice(
-            Craft::t('redirect-manager', '{count} analytics cleared', ['count' => $deleted])
+            Craft::t('redirect-manager', 'Cleared {count, plural, =1{# analytics record} other{# analytics records}}.', ['count' => $deleted])
         );
 
         return $this->asJson([

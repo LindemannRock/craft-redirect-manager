@@ -215,7 +215,7 @@
             {% set actionItems = actionItems|merge([{type: 'divider'}]) %}
         {% endif %}
         {% set actionItems = actionItems|merge([{
-            label: 'Delete'|t('redirect-manager'),
+            label: 'Clear'|t('redirect-manager'),
             class: 'error',
             jsAction: 'delete',
         }]) %}
@@ -270,13 +270,11 @@
     // Pre-translated strings — keep |t() in Twig (translatable) and emit as
     // JSON-encoded JS literals via |json_encode|raw. Avoids the |e('js') trap.
     const T = {
-        deleteAnalyticConfirm: {{ 'Delete this analytics record?'|t('redirect-manager')|json_encode|raw }},
-        analyticDeleted: {{ 'Analytics record deleted'|t('redirect-manager')|json_encode|raw }},
-        deleteFailed: {{ 'Could not delete analytics record'|t('redirect-manager')|json_encode|raw }},
-        bulkDeleteConfirmSingular: {{ 'Delete {count} analytics record?'|t('redirect-manager')|json_encode|raw }},
-        bulkDeleteConfirmPlural: {{ 'Delete {count} analytics records?'|t('redirect-manager')|json_encode|raw }},
-        bulkDeletedSingular: {{ 'Deleted {count} analytics record'|t('redirect-manager')|json_encode|raw }},
-        bulkDeletedPlural: {{ 'Deleted {count} analytics records'|t('redirect-manager')|json_encode|raw }},
+        clearAnalyticConfirm: {{ 'Clear this analytics record?'|t('redirect-manager')|json_encode|raw }},
+        analyticCleared: {{ 'Analytics record cleared'|t('redirect-manager')|json_encode|raw }},
+        clearFailed: {{ 'Could not clear analytics record'|t('redirect-manager')|json_encode|raw }},
+        bulkClearConfirmSingular: {{ 'Clear {count} analytics record?'|t('redirect-manager')|json_encode|raw }},
+        bulkClearConfirmPlural: {{ 'Clear {count} analytics records?'|t('redirect-manager')|json_encode|raw }},
         clearAllConfirm: {{ 'Are you sure you want to clear ALL analytics? This cannot be undone.'|t('redirect-manager')|json_encode|raw }},
         clearedSingular: {{ 'Cleared {count} analytics record'|t('redirect-manager')|json_encode|raw }},
         clearedPlural: {{ 'Cleared {count} analytics records'|t('redirect-manager')|json_encode|raw }},
@@ -293,7 +291,7 @@
         normalTitle: {{ 'Regular browser request'|t('redirect-manager')|json_encode|raw }},
         editItemTemplate: {{ 'Edit {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|json_encode|raw }},
         createItemTemplate: {{ 'Create {item}'|t('redirect-manager', {item: redirectHelper.lowerDisplayName})|json_encode|raw }},
-        delete: {{ 'Delete'|t('redirect-manager')|json_encode|raw }},
+        clear: {{ 'Clear'|t('redirect-manager')|json_encode|raw }},
         actions: {{ 'Actions'|t('redirect-manager')|json_encode|raw }},
         select: {{ 'Select'|t('redirect-manager')|json_encode|raw }},
         all: {{ 'All'|t('redirect-manager')|json_encode|raw }},
@@ -330,18 +328,18 @@
         if (!analyticId) return;
         e.preventDefault();
 
-        if (!confirm(T.deleteAnalyticConfirm)) return;
+        if (!confirm(T.clearAnalyticConfirm)) return;
         Craft.sendActionRequest('POST', 'redirect-manager/analytics/delete', {
             data: { analyticId: analyticId },
         }).then(function(response) {
             if (response.data.success) {
-                Craft.cp.displayNotice(T.analyticDeleted);
+                Craft.cp.displayNotice(T.analyticCleared);
                 setTimeout(function() { window.location.reload(); }, 500);
             } else {
-                Craft.cp.displayError(response.data.error || T.deleteFailed);
+                Craft.cp.displayError(response.data.error || T.clearFailed);
             }
         }).catch(function() {
-            Craft.cp.displayError(T.deleteFailed);
+            Craft.cp.displayError(T.clearFailed);
         });
     });
 
@@ -352,7 +350,7 @@
         const ids = selectedIdArray();
 
         if (ids.length > 0) {
-            const confirmTemplate = ids.length === 1 ? T.bulkDeleteConfirmSingular : T.bulkDeleteConfirmPlural;
+            const confirmTemplate = ids.length === 1 ? T.bulkClearConfirmSingular : T.bulkClearConfirmPlural;
             if (!confirm(confirmTemplate.replace('{count}', ids.length))) return;
 
             const deletePromises = ids.map(function(id) {
@@ -362,11 +360,11 @@
             });
 
             Promise.all(deletePromises).then(function() {
-                const deletedTemplate = ids.length === 1 ? T.bulkDeletedSingular : T.bulkDeletedPlural;
-                Craft.cp.displayNotice(deletedTemplate.replace('{count}', ids.length));
+                const clearedTemplate = ids.length === 1 ? T.clearedSingular : T.clearedPlural;
+                Craft.cp.displayNotice(clearedTemplate.replace('{count}', ids.length));
                 setTimeout(function() { window.location.reload(); }, 1000);
             }).catch(function() {
-                Craft.cp.displayError(T.deleteFailed);
+                Craft.cp.displayError(T.clearFailed);
             });
         }
     });
@@ -472,7 +470,7 @@
                     <div class="menu">
                         <ul>
                             ${actionMenuItem}
-                            ${canClearAnalytics ? `${actionMenuItem ? '<li><hr class="padded"></li>' : ''}<li><a class="error" data-action="delete" data-id="${stat.id}">${T.delete}</a></li>` : ''}
+                            ${canClearAnalytics ? `${actionMenuItem ? '<li><hr class="padded"></li>' : ''}<li><a class="error" data-action="delete" data-id="${stat.id}">${T.clear}</a></li>` : ''}
                         </ul>
                     </div>
                 </td>
