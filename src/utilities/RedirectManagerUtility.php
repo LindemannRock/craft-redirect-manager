@@ -10,7 +10,6 @@ namespace lindemannrock\redirectmanager\utilities;
 
 use Craft;
 use craft\base\Utility;
-use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\redirectmanager\RedirectManager;
 
 /**
@@ -90,17 +89,11 @@ class RedirectManagerUtility extends Utility
         // Only count files when using file storage (Redis counts are not displayed)
         if ($user->getIdentity() && $user->checkPermission('redirectManager:clearCache') && $settings->cacheStorageMethod === 'file') {
             if ($settings->cacheDeviceDetection) {
-                $devicePath = PluginHelper::getCachePath(RedirectManager::$plugin, 'device');
-                if (is_dir($devicePath)) {
-                    $deviceCacheFiles = count(glob($devicePath . '*.cache'));
-                }
+                $deviceCacheFiles = RedirectManager::$plugin->localCache->countDeviceCacheFiles();
             }
 
             if ($settings->enableRedirectCache) {
-                $redirectPath = PluginHelper::getCachePath(RedirectManager::$plugin, 'redirects');
-                if (is_dir($redirectPath)) {
-                    $redirectCacheFiles = count(glob($redirectPath . '*.cache'));
-                }
+                $redirectCacheFiles = RedirectManager::$plugin->localCache->countRedirectCacheFiles();
             }
         }
 

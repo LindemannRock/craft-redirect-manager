@@ -48,6 +48,7 @@ use lindemannrock\redirectmanager\models\Settings;
 use lindemannrock\redirectmanager\services\AnalyticsService;
 use lindemannrock\redirectmanager\services\BackupService;
 use lindemannrock\redirectmanager\services\DeviceDetectionService;
+use lindemannrock\redirectmanager\services\LocalCacheService;
 use lindemannrock\redirectmanager\services\MatchingService;
 use lindemannrock\redirectmanager\services\RedirectsService;
 use lindemannrock\redirectmanager\utilities\RedirectManagerUtility;
@@ -68,6 +69,7 @@ use yii\base\Event;
  * @property-read MatchingService $matching
  * @property-read DeviceDetectionService $deviceDetection
  * @property-read BackupService $backup
+ * @property-read LocalCacheService $localCache
  * @property-read Settings $settings
  * @method Settings getSettings()
  */
@@ -152,6 +154,7 @@ class RedirectManager extends Plugin
             'matching' => MatchingService::class,
             'deviceDetection' => DeviceDetectionService::class,
             'backup' => BackupService::class,
+            'localCache' => LocalCacheService::class,
         ]);
 
         // Schedule analytics cleanup if retention is enabled
@@ -228,7 +231,7 @@ class RedirectManager extends Plugin
                 $event->options[] = [
                     'key' => 'redirect-manager-cache',
                     'label' => Craft::t('redirect-manager', '{displayName} caches', ['displayName' => $displayName]),
-                    'action' => [$this->redirects, 'invalidateCaches'],
+                    'action' => fn() => $this->localCache->clearAllCaches(),
                 ];
             }
         );

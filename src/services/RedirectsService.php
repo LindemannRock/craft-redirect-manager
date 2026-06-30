@@ -1097,42 +1097,7 @@ class RedirectsService extends Component
      */
     public function invalidateCaches(): void
     {
-        $settings = RedirectManager::$plugin->getSettings();
-
-        if ($settings->cacheStorageMethod === 'redis') {
-            // Clear Redis cache
-            $cache = PluginHelper::getRedisCacheOrLog(RedirectManager::$plugin->id);
-            if ($cache !== null) {
-                $redis = $cache->redis;
-
-                // Get all redirect cache keys from tracking set
-                $keys = $redis->executeCommand('SMEMBERS', [PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'redirect')]) ?: [];
-
-                // Delete redirect cache keys using Craft's cache component
-                foreach ($keys as $key) {
-                    $cache->delete($key);
-                }
-
-                // Clear the tracking set
-                $redis->executeCommand('DEL', [PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'redirect')]);
-
-                $this->logDebug('Redirect caches invalidated (Redis)', ['count' => count($keys)]);
-            }
-        } else {
-            // Clear file cache
-            $cachePath = $this->getCachePath();
-
-            if (is_dir($cachePath)) {
-                $files = glob($cachePath . '*.cache');
-                $count = 0;
-                foreach ($files as $file) {
-                    if (@unlink($file)) {
-                        $count++;
-                    }
-                }
-                $this->logDebug('Redirect caches invalidated (File)', ['count' => $count]);
-            }
-        }
+        RedirectManager::$plugin->localCache->clearRedirectCache();
     }
 
     /**
