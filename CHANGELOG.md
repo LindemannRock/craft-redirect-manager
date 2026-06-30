@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.36.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.35.2...v5.36.0) - 2026-06-30
+
+
+### Added
+
+* **local-cache:** add LocalCacheService for managing local caches ([b667186](https://github.com/LindemannRock/craft-redirect-manager/commit/b667186a7b13a6bc5fb54bf97e6493c4a0c7e856))
+
+
+### Fixed
+
+* **i18n:** correct bulk delete and clear analytics messages for singular and plural forms ([6a454f8](https://github.com/LindemannRock/craft-redirect-manager/commit/6a454f849f58bd985aca0797c795f3dceb3b659f))
+* **i18n:** correct translations across multiple locales for analytics records management ([4e4b494](https://github.com/LindemannRock/craft-redirect-manager/commit/4e4b494f8de2f5b59df1bae1e025c57c9aff6a9f))
+
 ## [5.35.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.35.1...v5.35.2) - 2026-06-30
 
 
