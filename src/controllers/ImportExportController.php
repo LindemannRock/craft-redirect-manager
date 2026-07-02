@@ -455,7 +455,10 @@ class ImportExportController extends Controller
             return $this->redirect('redirect-manager/import-export/map');
         } catch (\Exception $e) {
             $this->logError('Failed to parse CSV', ['error' => $e->getMessage()]);
-            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to parse CSV: {error}', ['error' => $e->getMessage()]));
+            $error = Craft::$app->getConfig()->getGeneral()->devMode
+                ? $e->getMessage()
+                : Craft::t('redirect-manager', 'An unexpected error occurred.');
+            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Failed to parse CSV: {error}', ['error' => $error]));
             return $this->redirect('redirect-manager/import-export');
         }
     }
