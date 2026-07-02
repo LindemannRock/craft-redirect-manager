@@ -103,10 +103,10 @@
                 {% set navButtons = navButtons|merge([{type: 'link', label: 'Manage Redirects'|t('redirect-manager'), url: url('redirect-manager/redirects')}]) %}
             {% endif %}
             {% if hasSettingsAccess %}
-                {% set navButtons = navButtons|merge([{type: 'link', label: 'Manage settings'|t('redirect-manager'), url: url('redirect-manager/settings')}]) %}
+                {% set navButtons = navButtons|merge([{type: 'link', label: 'Manage Settings'|t('redirect-manager'), url: url('redirect-manager/settings')}]) %}
             {% endif %}
             {% if hasAnalyticsAccess %}
-                {% set navButtons = navButtons|merge([{type: 'link', label: 'View analytics'|t('redirect-manager'), url: url('redirect-manager/analytics')}]) %}
+                {% set navButtons = navButtons|merge([{type: 'link', label: 'View Analytics'|t('redirect-manager'), url: url('redirect-manager/analytics')}]) %}
             {% endif %}
 
             {% include 'lindemannrock-base/_layouts/cp-utilities/_action-section' with {
