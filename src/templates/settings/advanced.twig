@@ -33,6 +33,7 @@
 		{{ csrfInput() }}
 		{{ redirectInput('redirect-manager/settings/advanced') }}
 		{{ hiddenInput('section', 'advanced') }}
+        {% set redirectFullNameHtml = redirectHelper.fullName|e %}
 
 		<h2 class="first">{{ "JSON API"|t('redirect-manager') }}</h2>
 
@@ -77,9 +78,9 @@
 
 		<h2>{{ "URL Filtering"|t('redirect-manager') }}</h2>
 
-		{{ forms.editableTableField({
+        {{ forms.editableTableField({
             label: 'Exclude Patterns'|t('redirect-manager'),
-            instructions: '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.'|t('redirect-manager', {pluginName: redirectHelper.fullName}),
+            instructions: '[Regular expressions](https://regexr.com/) to match URIs that should be excluded from {pluginName}.'|t('redirect-manager', {pluginName: redirectFullNameHtml}),
             id: 'excludePatterns',
             name: 'settings[excludePatterns]',
             required: false,

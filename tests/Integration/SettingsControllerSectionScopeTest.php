@@ -88,4 +88,15 @@ final class SettingsControllerSectionScopeTest extends TestCase
             self::assertSame($attributes, $method->invoke($controller, $section), "Unexpected {$section} settings scope.");
         }
     }
+
+    public function testInstructionPlaceholdersEscapeConfiguredPluginName(): void
+    {
+        $pluginRoot = dirname(__DIR__, 2);
+        $source = file_get_contents($pluginRoot . '/src/templates/settings/advanced.twig');
+        self::assertIsString($source);
+
+        self::assertStringContainsString('{% set redirectFullNameHtml = redirectHelper.fullName|e %}', $source);
+        self::assertStringContainsString('pluginName: redirectFullNameHtml', $source);
+        self::assertDoesNotMatchRegularExpression('/instructions:.*redirectHelper\\.(?:lowerDisplayName|pluralLowerDisplayName|fullName|displayName)/', $source);
+    }
 }
