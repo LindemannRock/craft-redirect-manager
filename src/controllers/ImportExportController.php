@@ -834,7 +834,11 @@ class ImportExportController extends Controller
             return $this->redirect('redirect-manager/import-export');
         }
 
-        $validRows = $validatedData['validRows'];
+        $validRows = is_array($validatedData['validRows'] ?? null) ? $validatedData['validRows'] : [];
+        [$validRows, $siteScopeFailures] = $this->filterImportRowsForEditableSites(
+            $validRows,
+            Craft::$app->getSites()->getEditableSiteIds()
+        );
         $settings = RedirectManager::$plugin->getSettings();
         $createBackup = $validatedData['createBackup'] && $settings->backupEnabled && $settings->backupOnImport;
 
@@ -856,7 +860,7 @@ class ImportExportController extends Controller
 
         // Import redirects
         $imported = 0;
-        $failed = 0;
+        $failed = $siteScopeFailures;
         $db = Craft::$app->getDb();
 
         foreach ($validRows as $redirectData) {
@@ -949,6 +953,36 @@ class ImportExportController extends Controller
 
         Craft::$app->getSession()->setNotice($message);
         return $this->redirect('redirect-manager/import-export');
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $rows
+     * @param array<int> $editableSiteIds
+     * @return array{0: array<int, array<string, mixed>>, 1: int}
+     */
+    private function filterImportRowsForEditableSites(array $rows, array $editableSiteIds): array
+    {
+        $filtered = [];
+        $skipped = 0;
+
+        foreach ($rows as $row) {
+            $siteId = $row['siteId'] ?? null;
+            if ($siteId === null || $siteId === '') {
+                $filtered[] = $row;
+                continue;
+            }
+
+            $siteId = (int)$siteId;
+            if (!in_array($siteId, $editableSiteIds, true)) {
+                $skipped++;
+                continue;
+            }
+
+            $row['siteId'] = $siteId;
+            $filtered[] = $row;
+        }
+
+        return [$filtered, $skipped];
     }
 
     /**
