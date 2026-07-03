@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.37.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.36.0...v5.37.0) - 2026-07-03
+
+
+### Added
+
+* **import-export:** filter import rows for editable sites and handle failures ([4a6e0a3](https://github.com/LindemannRock/craft-redirect-manager/commit/4a6e0a325a1e67508185ab544e26c7fd36a72974))
+
+
+### Fixed
+
+* **import-export:** handle CSV parse errors with user-friendly messages ([906b3af](https://github.com/LindemannRock/craft-redirect-manager/commit/906b3af03bd3a4839ea91bfb9b040022e126faed))
+
 ## [5.36.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.35.2...v5.36.0) - 2026-06-30
 
 
