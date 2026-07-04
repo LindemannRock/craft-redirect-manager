@@ -4,33 +4,77 @@ Use these commands for setup tasks, backup maintenance, and operator discovery. 
 
 ## Console help
 
-Use the plugin-level help command to see the available Redirect Manager commands and focused guidance for each workflow:
+Use the plugin-level help command to see the available Redirect Manager commands:
 
 ```bash title="PHP"
 php craft redirect-manager/help
-php craft redirect-manager/help backup/create
-php craft redirect-manager/help security/generate-salt
-php craft redirect-manager/help security/generate-api-token
 ```
 
 ```bash title="DDEV"
 ddev craft redirect-manager/help
+```
+
+Pass a command name when you want focused guidance for one workflow:
+
+Create a backup:
+
+```bash title="PHP"
+php craft redirect-manager/help backup/create
+```
+
+```bash title="DDEV"
 ddev craft redirect-manager/help backup/create
+```
+
+Generate the analytics salt:
+
+```bash title="PHP"
+php craft redirect-manager/help security/generate-salt
+```
+
+```bash title="DDEV"
 ddev craft redirect-manager/help security/generate-salt
+```
+
+Generate an API token:
+
+```bash title="PHP"
+php craft redirect-manager/help security/generate-api-token
+```
+
+```bash title="DDEV"
 ddev craft redirect-manager/help security/generate-api-token
 ```
 
 Craft's native command help is still available when you need the exact Yii option signature:
 
+Create a backup:
+
 ```bash title="PHP"
 php craft help redirect-manager/backup/create
-php craft help redirect-manager/security/generate-salt
-php craft help redirect-manager/security/generate-api-token
 ```
 
 ```bash title="DDEV"
 ddev craft help redirect-manager/backup/create
+```
+
+Generate the analytics salt:
+
+```bash title="PHP"
+php craft help redirect-manager/security/generate-salt
+```
+
+```bash title="DDEV"
 ddev craft help redirect-manager/security/generate-salt
+```
+
+Generate an API token:
+
+```bash title="PHP"
+php craft help redirect-manager/security/generate-api-token
+```
+
+```bash title="DDEV"
 ddev craft help redirect-manager/security/generate-api-token
 ```
 
