@@ -11,6 +11,11 @@
 
 {% extends 'lindemannrock-base/_layouts/cp-table' %}
 
+{% set setupIncompleteSummary = include('redirect-manager/_partials/setup-incomplete-summary', {
+    selectedSubnavItem: 'redirects',
+}, false)|trim %}
+{% set errorSummary = (setupIncompleteSummary ~ (errorSummary ?? ''))|trim %}
+
 {% set statusFilterLabels = {
     all: 'All'|t('redirect-manager'),
     enabled: 'Enabled'|t('redirect-manager'),

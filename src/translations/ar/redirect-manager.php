@@ -12,6 +12,7 @@ return [
     'Redirect Manager' => 'Redirect Manager',
     'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.' => 'أنشئ عمليات إعادة التوجيه، وراقب أخطاء 404، وحافظ على تدفق الزيارات بسلاسة من مساحة عمل واحدة في لوحة التحكم.',
     'Open Redirect Manager' => 'فتح Redirect Manager',
+    'Complete setup' => 'إكمال الإعداد',
 
     // Navigation
     'Dashboard' => 'لوحة المعلومات',
@@ -27,6 +28,7 @@ return [
     'Cache' => 'Cache',
     'Advanced' => 'متقدم',
     'Test' => 'اختبار',
+    'Setup' => 'الإعداد',
 
     // Permissions
     'Manage {plural}' => 'إدارة {plural}',
@@ -735,6 +737,21 @@ return [
     'Cleared {count} analytics record' => 'تم مسح {count} سجل تحليلي',
     'Cleared {count} analytics records' => 'تم مسح {count} سجلات تحليلية',
     'Failed to clear analytics' => 'فشل مسح التحليلات',
+    // Setup
+    'Set up Redirect Manager' => 'إعداد Redirect Manager',
+    'Complete this step before tracking redirect analytics.' => 'أكمل هذه الخطوة قبل تتبع تحليلات إعادة التوجيه.',
+    'Ready' => 'جاهز',
+    'v{version}' => 'v{version}',
+    'IP salt' => 'Salt IP',
+    'Analytics needs a privacy salt before redirect tracking is ready.' => 'تحتاج التحليلات إلى salt خصوصية قبل أن يصبح تتبع إعادة التوجيه جاهزاً.',
+    'Analytics privacy salt is ready for redirect tracking.' => 'Salt خصوصية التحليلات جاهز لتتبع إعادة التوجيه.',
+    'IP hash salt is configured.' => 'تم تكوين salt تجزئة IP.',
+    'Setup incomplete' => 'الإعداد غير مكتمل',
+    'Finish setup before tracking redirect analytics.' => 'أكمل الإعداد قبل تتبع تحليلات إعادة التوجيه.',
+    'Open setup' => 'فتح الإعداد',
+    'Setup complete.' => 'اكتمل الإعداد.',
+    'Redirect Manager is ready to track redirect analytics.' => 'Redirect Manager جاهز لتتبع تحليلات إعادة التوجيه.',
+
     // Config overrides
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>autoCreateRedirects</code> في <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>undoWindowMinutes</code> setting in <code>config/redirect-manager.php</code>.' => 'يتم تجاوز هذا الإعداد بواسطة إعداد <code>undoWindowMinutes</code> في <code>config/redirect-manager.php</code>.',

@@ -51,6 +51,7 @@ use lindemannrock\redirectmanager\services\DeviceDetectionService;
 use lindemannrock\redirectmanager\services\LocalCacheService;
 use lindemannrock\redirectmanager\services\MatchingService;
 use lindemannrock\redirectmanager\services\RedirectsService;
+use lindemannrock\redirectmanager\services\SetupService;
 use lindemannrock\redirectmanager\utilities\RedirectManagerUtility;
 use lindemannrock\redirectmanager\variables\RedirectManagerVariable;
 use lindemannrock\redirectmanager\widgets\AnalyticsSummaryWidget;
@@ -70,6 +71,7 @@ use yii\base\Event;
  * @property-read DeviceDetectionService $deviceDetection
  * @property-read BackupService $backup
  * @property-read LocalCacheService $localCache
+ * @property-read SetupService $setup
  * @property-read Settings $settings
  * @method Settings getSettings()
  */
@@ -138,9 +140,9 @@ class RedirectManager extends Plugin
                 'installExperience' => [
                     'headline' => Craft::t('redirect-manager', 'Redirect Manager'),
                     'body' => Craft::t('redirect-manager', 'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.'),
-                    'ctaLabel' => Craft::t('redirect-manager', 'Open Redirect Manager'),
-                    'ctaUrl' => 'redirect-manager',
-                    'redirectUri' => 'redirect-manager',
+                    'ctaLabel' => Craft::t('redirect-manager', 'Complete setup'),
+                    'ctaUrl' => 'redirect-manager/setup',
+                    'redirectUri' => 'redirect-manager/setup',
                     'confettiPreset' => 'surprise',
                 ],
             ]
@@ -155,6 +157,7 @@ class RedirectManager extends Plugin
             'deviceDetection' => DeviceDetectionService::class,
             'backup' => BackupService::class,
             'localCache' => LocalCacheService::class,
+            'setup' => SetupService::class,
         ]);
 
         // Schedule analytics cleanup if retention is enabled
@@ -345,6 +348,13 @@ class RedirectManager extends Plugin
         }
 
         $sections[] = [
+            'key' => 'setup',
+            'label' => Craft::t('redirect-manager', 'Setup'),
+            'url' => 'redirect-manager/setup',
+            'permissionsAll' => ['redirectManager:manageSettings'],
+        ];
+
+        $sections[] = [
             'key' => 'settings',
             'label' => Craft::t('redirect-manager', 'Settings'),
             'url' => 'redirect-manager/settings',
@@ -425,6 +435,7 @@ class RedirectManager extends Plugin
             'redirect-manager/import-export/export' => 'redirect-manager/import-export/export',
             'redirect-manager/import-export/clear-logs' => 'redirect-manager/import-export/clear-logs',
             'redirect-manager/backups' => 'redirect-manager/import-export/backups',
+            'redirect-manager/setup' => 'redirect-manager/settings/setup',
 
             // Settings routes
             'redirect-manager/settings' => 'redirect-manager/settings/index',

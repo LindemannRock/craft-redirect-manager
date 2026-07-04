@@ -12,6 +12,7 @@ return [
     'Redirect Manager' => 'Redirect Manager',
     'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.' => 'Cree redirecciones, supervise los errores 404 y mantenga el tráfico fluyendo limpiamente desde un único espacio de trabajo del panel de control.',
     'Open Redirect Manager' => 'Abrir Redirect Manager',
+    'Complete setup' => 'Completar configuración',
 
     // Navigation
     'Dashboard' => 'Panel',
@@ -27,6 +28,7 @@ return [
     'Cache' => 'Caché',
     'Advanced' => 'Avanzado',
     'Test' => 'Probar',
+    'Setup' => 'Configuración',
 
     // Permissions
     'Manage {plural}' => 'Gestionar {plural}',
@@ -735,6 +737,21 @@ return [
     'Cleared {count} analytics record' => '{count} registro analítico borrado',
     'Cleared {count} analytics records' => '{count} registros analíticos borrados',
     'Failed to clear analytics' => 'No se pudieron borrar las analíticas',
+    // Setup
+    'Set up Redirect Manager' => 'Configurar Redirect Manager',
+    'Complete this step before tracking redirect analytics.' => 'Complete este paso antes de hacer seguimiento de las analíticas de redirección.',
+    'Ready' => 'Listo',
+    'v{version}' => 'v{version}',
+    'IP salt' => 'Salt IP',
+    'Analytics needs a privacy salt before redirect tracking is ready.' => 'Las analíticas necesitan un salt de privacidad antes de que el seguimiento de redirecciones esté listo.',
+    'Analytics privacy salt is ready for redirect tracking.' => 'El salt de privacidad de analíticas está listo para el seguimiento de redirecciones.',
+    'IP hash salt is configured.' => 'El salt de hash IP está configurado.',
+    'Setup incomplete' => 'Configuración incompleta',
+    'Finish setup before tracking redirect analytics.' => 'Termine la configuración antes de hacer seguimiento de las analíticas de redirección.',
+    'Open setup' => 'Abrir configuración',
+    'Setup complete.' => 'Configuración completada.',
+    'Redirect Manager is ready to track redirect analytics.' => 'Redirect Manager está listo para hacer seguimiento de las analíticas de redirección.',
+
     // Config overrides
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta configuración está siendo sobreescrita por el ajuste <code>autoCreateRedirects</code> en <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>undoWindowMinutes</code> setting in <code>config/redirect-manager.php</code>.' => 'Esta configuración está siendo sobreescrita por el ajuste <code>undoWindowMinutes</code> en <code>config/redirect-manager.php</code>.',

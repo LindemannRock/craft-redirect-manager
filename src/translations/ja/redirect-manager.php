@@ -12,6 +12,7 @@ return [
     'Redirect Manager' => 'Redirect Manager',
     'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.' => 'リダイレクトを作成し、404 エラーを監視して、1 つのコントロールパネルのワークスペースからトラフィックをスムーズに保つことができます。',
     'Open Redirect Manager' => 'Redirect Manager を開く',
+    'Complete setup' => 'セットアップを完了する',
 
     // Navigation
     'Dashboard' => 'ダッシュボード',
@@ -27,6 +28,7 @@ return [
     'Cache' => 'キャッシュ',
     'Advanced' => '詳細設定',
     'Test' => 'テスト',
+    'Setup' => 'セットアップ',
 
     // Permissions
     'Manage {plural}' => '{plural} を管理する',
@@ -735,6 +737,21 @@ return [
     'Cleared {count} analytics record' => '{count} 件のアナリティクスレコードを削除しました',
     'Cleared {count} analytics records' => '{count} 件のアナリティクスレコードを削除しました',
     'Failed to clear analytics' => 'アナリティクスの削除に失敗しました',
+    // Setup
+    'Set up Redirect Manager' => 'Redirect Manager をセットアップする',
+    'Complete this step before tracking redirect analytics.' => 'リダイレクトのアナリティクスをトラッキングする前に、この手順を完了してください。',
+    'Ready' => '準備完了',
+    'v{version}' => 'v{version}',
+    'IP salt' => 'IP ソルト',
+    'Analytics needs a privacy salt before redirect tracking is ready.' => 'リダイレクトのトラッキングを準備するには、アナリティクスにプライバシーソルトが必要です。',
+    'Analytics privacy salt is ready for redirect tracking.' => 'アナリティクスのプライバシーソルトは、リダイレクトのトラッキングに使用できます。',
+    'IP hash salt is configured.' => 'IP ハッシュソルトが設定されています。',
+    'Setup incomplete' => 'セットアップ未完了',
+    'Finish setup before tracking redirect analytics.' => 'リダイレクトのアナリティクスをトラッキングする前に、セットアップを完了してください。',
+    'Open setup' => 'セットアップを開く',
+    'Setup complete.' => 'セットアップが完了しました。',
+    'Redirect Manager is ready to track redirect analytics.' => 'Redirect Manager はリダイレクトのアナリティクスをトラッキングする準備ができています。',
+
     // Config overrides
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>autoCreateRedirects</code> 設定によって上書きされています。',
     'This is being overridden by the <code>undoWindowMinutes</code> setting in <code>config/redirect-manager.php</code>.' => '<code>config/redirect-manager.php</code> の <code>undoWindowMinutes</code> 設定によって上書きされています。',

@@ -29,6 +29,12 @@
     },
 } %}
 
+{% block notices %}
+    {% include 'redirect-manager/_partials/setup-incomplete-summary' with {
+        selectedSubnavItem: 'utilities',
+    } only %}
+{% endblock %}
+
 {% block overview %}
     {# Redirects Status Card #}
     {% if hasRedirectsAccess %}

@@ -12,6 +12,7 @@ return [
     'Redirect Manager' => 'Redirect Manager',
     'Create redirects, monitor 404s, and keep traffic flowing cleanly from one control panel workspace.' => 'Opprett omdirigeringer, overvåk 404-feil og hold trafikken flytende fra ett kontrollpanel-arbeidsområde.',
     'Open Redirect Manager' => 'Åpne Redirect Manager',
+    'Complete setup' => 'Fullfør oppsett',
 
     // Navigation
     'Dashboard' => 'Oversikt',
@@ -27,6 +28,7 @@ return [
     'Cache' => 'Cache',
     'Advanced' => 'Avansert',
     'Test' => 'Test',
+    'Setup' => 'Oppsett',
 
     // Permissions
     'Manage {plural}' => 'Administrer {plural}',
@@ -735,6 +737,21 @@ return [
     'Cleared {count} analytics record' => '{count} analysepost fjernet',
     'Cleared {count} analytics records' => '{count} analyseposter fjernet',
     'Failed to clear analytics' => 'Kunne ikke fjerne analysene',
+    // Setup
+    'Set up Redirect Manager' => 'Sett opp Redirect Manager',
+    'Complete this step before tracking redirect analytics.' => 'Fullfør dette trinnet før du sporer redirect-analyse.',
+    'Ready' => 'Klar',
+    'v{version}' => 'v{version}',
+    'IP salt' => 'IP-salt',
+    'Analytics needs a privacy salt before redirect tracking is ready.' => 'Analyse trenger et personvernsalt før redirect-sporing er klar.',
+    'Analytics privacy salt is ready for redirect tracking.' => 'Personvernsaltet for analyse er klart for redirect-sporing.',
+    'IP hash salt is configured.' => 'IP-hashsalt er konfigurert.',
+    'Setup incomplete' => 'Oppsettet er ikke fullført',
+    'Finish setup before tracking redirect analytics.' => 'Fullfør oppsettet før du sporer redirect-analyse.',
+    'Open setup' => 'Åpne oppsett',
+    'Setup complete.' => 'Oppsettet er fullført.',
+    'Redirect Manager is ready to track redirect analytics.' => 'Redirect Manager er klar til å spore redirect-analyse.',
+
     // Config overrides
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne innstillingen overstyres av <code>autoCreateRedirects</code> i <code>config/redirect-manager.php</code>.',
     'This is being overridden by the <code>undoWindowMinutes</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne innstillingen overstyres av <code>undoWindowMinutes</code> i <code>config/redirect-manager.php</code>.',

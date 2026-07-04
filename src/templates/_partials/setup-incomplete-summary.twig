@@ -1,0 +1,12 @@
+{% set currentSubnavItem = selectedSubnavItem ?? '' %}
+{% set setupStatus = setupStatus ?? craft.app.plugins.getPlugin('redirect-manager').setup.getStatus() %}
+
+{% if currentSubnavItem != 'setup' %}
+    {% include 'lindemannrock-base/_components/setup-incomplete' with {
+        complete: setupStatus.complete,
+        setupUrl: setupStatus.setupUrl,
+        heading: 'Setup incomplete'|t('redirect-manager'),
+        message: 'Finish setup before tracking redirect analytics.'|t('redirect-manager'),
+        actionLabel: 'Open setup'|t('redirect-manager'),
+    } only %}
+{% endif %}

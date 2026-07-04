@@ -8,6 +8,10 @@
 
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
 {% set settings = plugin.settings %}
+{% set setupIncompleteSummary = include('redirect-manager/_partials/setup-incomplete-summary', {
+    selectedSubnavItem: 'analytics',
+}, false)|trim %}
+{% set errorSummary = (setupIncompleteSummary ~ (errorSummary ?? ''))|trim %}
 
 {# Define tabs - Geographic only if geo detection enabled #}
 {% set tabsConfig = {

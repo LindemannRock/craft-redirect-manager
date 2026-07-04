@@ -11,6 +11,11 @@
 
 {% extends 'lindemannrock-base/_layouts/cp-table' %}
 
+{% set setupIncompleteSummary = include('redirect-manager/_partials/setup-incomplete-summary', {
+    selectedSubnavItem: 'dashboard',
+}, false)|trim %}
+{% set errorSummary = (setupIncompleteSummary ~ (errorSummary ?? ''))|trim %}
+
 {% set hasAnyActions = canCreate or canEdit or canClearAnalytics %}
 
 {% set handledFilterLabels = {

@@ -2,6 +2,10 @@
 {% set title = "Backups"|t('redirect-manager') %}
 {% set fullPageForm = false %}
 {% set selectedSubnavItem = 'backups' %}
+{% set setupIncompleteSummary = include('redirect-manager/_partials/setup-incomplete-summary', {
+    selectedSubnavItem: selectedSubnavItem,
+}, false)|trim %}
+{% set errorSummary = (setupIncompleteSummary ~ (errorSummary ?? ''))|trim %}
 
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
 {% set crumbs = [

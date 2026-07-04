@@ -4,9 +4,10 @@
 {% set selectedSettingsItem = selectedSettingsItem ?? 'general' %}
 {% set selectedSubnavItem = 'settings' %}
 
-{% set errorSummary = include('lindemannrock-base/_partials/ip-salt-error', {
-    pluginHandle: 'redirect-manager'
-})|trim %}
+{% set errorSummary = include('redirect-manager/_partials/setup-incomplete-summary', {
+    selectedSubnavItem: selectedSubnavItem,
+    setupStatus: setupStatus ?? null,
+}, false)|trim %}
 {% if settings is defined and settings.apiEndpointEnabled and not settings.apiEndpointToken %}
     {% set apiTokenSummary = include('lindemannrock-base/_partials/env-command-error', {
         pluginHandle: 'redirect-manager',

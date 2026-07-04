@@ -2,7 +2,10 @@
 {% set title = "Map CSV Columns"|t('redirect-manager') %}
 {% set fullPageForm = false %}
 {% set selectedSubnavItem = 'import-export' %}
-
+{% set setupIncompleteSummary = include('redirect-manager/_partials/setup-incomplete-summary', {
+    selectedSubnavItem: selectedSubnavItem,
+}, false)|trim %}
+{% set errorSummary = (setupIncompleteSummary ~ (errorSummary ?? ''))|trim %}
 
 {% set plugin = craft.app.plugins.getPlugin('redirect-manager') %}
 {% set crumbs = [
