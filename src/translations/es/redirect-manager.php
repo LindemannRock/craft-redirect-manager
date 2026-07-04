@@ -191,6 +191,9 @@ return [
     'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'No se puede crear la redirección: esto crearía un bucle de redirección circular. El destino acaba redirigiendo de vuelta al origen.',
     'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'No se puede actualizar la redirección: esto crearía un bucle de redirección circular. El destino acaba redirigiendo de vuelta al origen.',
 
+    'Slug change undone - previous redirect removed.' => 'Cambio de slug deshecho, redirección anterior eliminada.',
+    'Redirect already exists: {source} → {dest}' => 'Redirección ya existe: {source} → {dest}',
+    'Redirect created: {source} → {dest}' => 'Redirección creada: {source} → {dest}',
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{error encontrado} other{errores encontrados}}',
     'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'El patrón RegEx debe contener caracteres especiales de RegEx (p. ej., ^, $, .*, +, [], etc.). Para coincidencia exacta, use Coincidencia exacta.',
@@ -205,6 +208,7 @@ return [
     "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'La Coincidencia exacta no produce capturas, por lo que el destino no puede usar $1, $2, etc. Elija Comodín, Prefijo o RegEx, o elimine la referencia de captura.',
     "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'El destino hace referencia a {ref}, pero el patrón de origen no proporciona tantas capturas.',
 
+    'When using @root, include a subfolder (for example: @root/backups/redirect-manager).' => 'Al usar @root, incluya una subcarpeta (por ejemplo: @root/backups/redirect-manager).',
     // Settings: General
     'General Settings' => 'Configuración general',
     'Auto Create Redirects' => 'Crear redirecciones automáticamente',

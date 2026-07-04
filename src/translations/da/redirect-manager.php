@@ -191,6 +191,9 @@ return [
     'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Det er ikke muligt at oprette omdirigeringen: dette ville skabe en cirkulær omdirigeringsløkke. Destinationen omdirigerer i sidste ende tilbage til kilden.',
     'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Det er ikke muligt at opdatere omdirigeringen: dette ville skabe en cirkulær omdirigeringsløkke. Destinationen omdirigerer i sidste ende tilbage til kilden.',
 
+    'Slug change undone - previous redirect removed.' => 'Slug-ændring fortrudt, tidligere omdirigering fjernet.',
+    'Redirect already exists: {source} → {dest}' => 'Omdirigering findes allerede: {source} → {dest}',
+    'Redirect created: {source} → {dest}' => 'Omdirigering oprettet: {source} → {dest}',
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{fejl} other{fejl}} fundet',
     'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'Regex-mønstret skal indeholde regex-specialtegn (f.eks. ^, $, .*, +, [], osv.). Brug Præcis matchning til præcis matchning.',
@@ -205,6 +208,7 @@ return [
     "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'Præcis matchning giver ingen captures, så målet kan ikke bruge $1, $2 osv. Vælg Wildcard, Præfiks eller RegEx, eller fjern capture-referencen.',
     "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'Målet refererer til {ref}, men kildemønstret leverer ikke så mange captures.',
 
+    'When using @root, include a subfolder (for example: @root/backups/redirect-manager).' => 'Inkluder en undermappe, når du bruger @root (for eksempel: @root/backups/redirect-manager).',
     // Settings: General
     'General Settings' => 'Generelle indstillinger',
     'Auto Create Redirects' => 'Opret omdirigeringer automatisk',

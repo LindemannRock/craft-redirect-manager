@@ -191,6 +191,9 @@ return [
     'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Impossibile creare il redirect: questo creerebbe un loop di redirect circolare. La destinazione reindirizza infine alla sorgente.',
     'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Impossibile aggiornare il redirect: questo creerebbe un loop di redirect circolare. La destinazione reindirizza infine alla sorgente.',
 
+    'Slug change undone - previous redirect removed.' => 'Modifica dello slug annullata, redirect precedente rimosso.',
+    'Redirect already exists: {source} → {dest}' => 'Redirect esiste già: {source} → {dest}',
+    'Redirect created: {source} → {dest}' => 'Redirect creato: {source} → {dest}',
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{errore trovato} other{errori trovati}}',
     'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'Il pattern regex deve contenere caratteri speciali regex (ad es. ^, $, .*, +, [], ecc.). Per la corrispondenza esatta, usare Corrispondenza esatta.',
@@ -205,6 +208,7 @@ return [
     "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'La Corrispondenza esatta non produce catture, quindi la destinazione non può usare $1, $2, ecc. Scegliere Jolly, Prefisso o RegEx, oppure rimuovere il riferimento di cattura.',
     "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'La destinazione fa riferimento a {ref}, ma il pattern sorgente non fornisce così tante catture.',
 
+    'When using @root, include a subfolder (for example: @root/backups/redirect-manager).' => 'Quando si utilizza @root, includere una sottocartella (ad esempio: @root/backups/redirect-manager).',
     // Settings: General
     'General Settings' => 'Impostazioni generali',
     'Auto Create Redirects' => 'Creazione automatica redirect',

@@ -191,6 +191,9 @@ return [
     'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'リダイレクトを作成できません：循環リダイレクトループが発生します。転送先は最終的にソースへ戻ります。',
     'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'リダイレクトを更新できません：循環リダイレクトループが発生します。転送先は最終的にソースへ戻ります。',
 
+    'Slug change undone - previous redirect removed.' => 'スラッグ変更を取り消し、以前のリダイレクトを削除しました。',
+    'Redirect already exists: {source} → {dest}' => 'リダイレクトはすでに存在します: {source} → {dest}',
+    'Redirect created: {source} → {dest}' => 'リダイレクトを作成しました: {source} → {dest}',
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} 件の{count, plural, =1{エラー} other{エラー}}が見つかりました',
     'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'Regex パターンには正規表現の特殊文字（例: ^、$、.*、+、[] など）が必要です。完全一致には「完全一致」を使用してください。',
@@ -205,6 +208,7 @@ return [
     "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => '完全一致ではキャプチャが生成されないため、転送先で $1、$2 などは使用できません。ワイルドカード、プレフィックス、または RegEx を選択するか、キャプチャ参照を削除してください。',
     "The destination references {ref}, but the source pattern doesn't provide that many captures." => '転送先が {ref} を参照していますが、ソースパターンにはそれほど多くのキャプチャがありません。',
 
+    'When using @root, include a subfolder (for example: @root/backups/redirect-manager).' => '@root を使用する場合は、サブフォルダを含めてください（例: @root/backups/redirect-manager）。',
     // Settings: General
     'General Settings' => '一般設定',
     'Auto Create Redirects' => 'リダイレクトを自動作成する',

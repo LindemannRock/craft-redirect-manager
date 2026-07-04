@@ -191,6 +191,9 @@ return [
     'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Não é possível criar o redirecionamento: isto criaria um ciclo de redirecionamento circular. O destino acaba por redirecionar de volta para a origem.',
     'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Não é possível atualizar o redirecionamento: isto criaria um ciclo de redirecionamento circular. O destino acaba por redirecionar de volta para a origem.',
 
+    'Slug change undone - previous redirect removed.' => 'Alteração de slug anulada, redirecionamento anterior removido.',
+    'Redirect already exists: {source} → {dest}' => 'Redirecionamento já existe: {source} → {dest}',
+    'Redirect created: {source} → {dest}' => 'Redirecionamento criado: {source} → {dest}',
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{erro encontrado} other{erros encontrados}}',
     'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'O padrão regex deve conter caracteres especiais regex (por ex., ^, $, .*, +, [], etc.). Para correspondência exata, use Correspondência exata.',
@@ -205,6 +208,7 @@ return [
     "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'A Correspondência exata não produz capturas, por isso o destino não pode usar $1, $2, etc. Escolha Curinga, Prefixo ou RegEx, ou remova a referência de captura.',
     "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'O destino faz referência a {ref}, mas o padrão de origem não fornece tantas capturas.',
 
+    'When using @root, include a subfolder (for example: @root/backups/redirect-manager).' => 'Ao usar @root, inclua uma subpasta (por exemplo: @root/backups/redirect-manager).',
     // Settings: General
     'General Settings' => 'Definições gerais',
     'Auto Create Redirects' => 'Criar redirecionamentos automaticamente',

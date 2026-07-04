@@ -191,6 +191,9 @@ return [
     'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'تعذّر إنشاء إعادة التوجيه: سيؤدي ذلك إلى إنشاء حلقة إعادة توجيه دائرية. تعيد الوجهة التوجيه في النهاية إلى المصدر.',
     'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'تعذّر تحديث إعادة التوجيه: سيؤدي ذلك إلى إنشاء حلقة إعادة توجيه دائرية. تعيد الوجهة التوجيه في النهاية إلى المصدر.',
 
+    'Slug change undone - previous redirect removed.' => 'تم التراجع عن تغيير الـ slug، وتمت إزالة إعادة التوجيه السابقة.',
+    'Redirect already exists: {source} → {dest}' => 'إعادة التوجيه موجودة بالفعل: {source} → {dest}',
+    'Redirect created: {source} → {dest}' => 'تم إنشاء إعادة التوجيه: {source} → {dest}',
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => 'تم العثور على {count, number} {count, plural, =1{خطأ} other{أخطاء}}',
     'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'يجب أن يحتوي نمط RegEx على أحرف خاصة بـ RegEx (مثل ^، $، .*، +، []، إلخ). للمطابقة التامة، استخدم المطابقة التامة عوضاً عن ذلك.',
@@ -205,6 +208,7 @@ return [
     "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'المطابقة التامة لا تنتج أي التقاطات، لذا لا يمكن للوجهة استخدام $1 و$2 وغيرها. اختر أحرف البدل أو البادئة أو RegEx، أو أزل مرجع الالتقاط.',
     "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'تشير الوجهة إلى {ref}، لكن نمط المصدر لا يوفر هذا العدد من الالتقاطات.',
 
+    'When using @root, include a subfolder (for example: @root/backups/redirect-manager).' => 'عند استخدام @root، قم بتضمين مجلد فرعي (على سبيل المثال: @root/backups/redirect-manager).',
     // Settings: General
     'General Settings' => 'الإعدادات العامة',
     'Auto Create Redirects' => 'إنشاء عمليات إعادة التوجيه تلقائياً',

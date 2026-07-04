@@ -191,6 +191,9 @@ return [
     'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Det er ikke mulig å opprette omdirigeringen: dette ville skape en sirkulær omdirigeringssløyfe. Destinasjonen omdirigerer til slutt tilbake til kilden.',
     'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Det er ikke mulig å oppdatere omdirigeringen: dette ville skape en sirkulær omdirigeringssløyfe. Destinasjonen omdirigerer til slutt tilbake til kilden.',
 
+    'Slug change undone - previous redirect removed.' => 'Slug-endring angret, tidligere omdirigering fjernet.',
+    'Redirect already exists: {source} → {dest}' => 'Omdirigering eksisterer allerede: {source} → {dest}',
+    'Redirect created: {source} → {dest}' => 'Omdirigering opprettet: {source} → {dest}',
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{feil} other{feil}} funnet',
     'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'Regex-mønsteret må inneholde regex-spesialtegn (f.eks. ^, $, .*, +, [], osv.). Bruk Eksakt match for eksakt matching.',
@@ -205,6 +208,7 @@ return [
     "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'Eksakt match gir ingen captures, så målet kan ikke bruke $1, $2 osv. Velg Wildcard, Prefiks eller RegEx, eller fjern capture-referansen.',
     "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'Målet refererer til {ref}, men kildemønsteret gir ikke så mange captures.',
 
+    'When using @root, include a subfolder (for example: @root/backups/redirect-manager).' => 'Inkluder en undermappe når du bruker @root (for eksempel: @root/backups/redirect-manager).',
     // Settings: General
     'General Settings' => 'Generelle innstillinger',
     'Auto Create Redirects' => 'Opprett omdirigeringer automatisk',

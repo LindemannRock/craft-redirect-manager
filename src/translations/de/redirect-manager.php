@@ -191,6 +191,9 @@ return [
     'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Weiterleitung kann nicht erstellt werden: Dies würde eine zirkuläre Weiterleitungsschleife erzeugen. Das Ziel leitet letztlich zurück zur Quelle.',
     'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Weiterleitung kann nicht aktualisiert werden: Dies würde eine zirkuläre Weiterleitungsschleife erzeugen. Das Ziel leitet letztlich zurück zur Quelle.',
 
+    'Slug change undone - previous redirect removed.' => 'Slug-Änderung rückgängig gemacht: vorherige Weiterleitung entfernt.',
+    'Redirect already exists: {source} → {dest}' => 'Weiterleitung existiert bereits: {source} → {dest}',
+    'Redirect created: {source} → {dest}' => 'Weiterleitung erstellt: {source} → {dest}',
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => 'Es wurde {count, number} {count, plural, =1{Fehler} other{Fehler}} gefunden',
     'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'RegEx-Muster muss spezielle RegEx-Zeichen enthalten (z.B. ^, $, .*, +, [] usw.). Verwenden Sie stattdessen den exakten Abgleich für präzise Übereinstimmungen.',
@@ -205,6 +208,7 @@ return [
     "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'Exakter Abgleich erzeugt keine Erfassungen, daher kann das Ziel $1, $2 usw. nicht verwenden. Wählen Sie Platzhalter, Präfix oder RegEx, oder entfernen Sie den Erfassungsverweis.',
     "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'Das Ziel verweist auf {ref}, aber das Quellmuster stellt nicht so viele Erfassungen bereit.',
 
+    'When using @root, include a subfolder (for example: @root/backups/redirect-manager).' => 'Wenn Sie @root verwenden, geben Sie einen Unterordner an (zum Beispiel: @root/backups/redirect-manager).',
     // Settings: General
     'General Settings' => 'Allgemeine Einstellungen',
     'Auto Create Redirects' => 'Weiterleitungen automatisch erstellen',

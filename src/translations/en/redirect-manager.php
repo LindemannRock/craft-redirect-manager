@@ -191,6 +191,9 @@ return [
     'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.',
     'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.',
 
+    'Slug change undone - previous redirect removed.' => 'Slug change undone - previous redirect removed.',
+    'Redirect already exists: {source} → {dest}' => 'Redirect already exists: {source} → {dest}',
+    'Redirect created: {source} → {dest}' => 'Redirect created: {source} → {dest}',
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => 'Found {count, number} {count, plural, =1{error} other{errors}}',
     'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.',
@@ -205,6 +208,7 @@ return [
     "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference.",
     "The destination references {ref}, but the source pattern doesn't provide that many captures." => "The destination references {ref}, but the source pattern doesn't provide that many captures.",
 
+    'When using @root, include a subfolder (for example: @root/backups/redirect-manager).' => 'When using @root, include a subfolder (for example: @root/backups/redirect-manager).',
     // Settings: General
     'General Settings' => 'General Settings',
     'Auto Create Redirects' => 'Auto Create Redirects',

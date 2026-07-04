@@ -191,6 +191,9 @@ return [
     'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Kan redirect niet aanmaken: dit zou een circulaire redirectlus veroorzaken. De bestemming verwijst uiteindelijk terug naar de bron.',
     'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.' => 'Kan redirect niet bijwerken: dit zou een circulaire redirectlus veroorzaken. De bestemming verwijst uiteindelijk terug naar de bron.',
 
+    'Slug change undone - previous redirect removed.' => 'Slug-wijziging ongedaan gemaakt, vorige redirect verwijderd.',
+    'Redirect already exists: {source} → {dest}' => 'Redirect bestaat al: {source} → {dest}',
+    'Redirect created: {source} → {dest}' => 'Redirect aangemaakt: {source} → {dest}',
     // Validation messages
     'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{fout} other{fouten}} gevonden',
     'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'Het RegEx-patroon moet speciale RegEx-tekens bevatten (bijv. ^, $, .*, +, [], etc.). Gebruik Exacte overeenkomst voor exacte matching.',
@@ -205,6 +208,7 @@ return [
     "Exact Match produces no captures, so the destination can't use $1, $2, etc. Choose Wildcard, Prefix, or RegEx, or remove the capture reference." => 'Exacte overeenkomst levert geen captures op, dus de bestemming kan $1, $2, enz. niet gebruiken. Kies Jokerteken, Voorvoegsel of RegEx, of verwijder de captureverwijzing.',
     "The destination references {ref}, but the source pattern doesn't provide that many captures." => 'De bestemming verwijst naar {ref}, maar het bronpatroon levert niet zoveel captures op.',
 
+    'When using @root, include a subfolder (for example: @root/backups/redirect-manager).' => 'Gebruik bij @root een submap (bijvoorbeeld: @root/backups/redirect-manager).',
     // Settings: General
     'General Settings' => 'Algemene instellingen',
     'Auto Create Redirects' => 'Redirects automatisch aanmaken',
