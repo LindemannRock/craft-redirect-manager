@@ -238,8 +238,7 @@ return [
     // Settings: Analytics
     'Analytics Settings' => 'Paramètres analytiques',
     'Enable Analytics' => 'Activer les analytiques',
-    'Track 404 analytics and visitor data' => 'Suivre les analytiques 404 et les données des visiteurs',
-    'When enabled, {pluginName} will track 404 errors including device types, browsers, geographic data, and bot traffic.' => 'Lorsqu\'activé, {pluginName} suivra les erreurs 404 incluant les types d\'appareils, les navigateurs, les données géographiques et le trafic de bots.',
+    'Track 404 analytics and visitor data. When enabled, {pluginName} will track 404 errors including device types, browsers, geographic data, and bot traffic.' => 'Suivre les analytiques 404 et les données des visiteurs. Lorsqu\'activé, {pluginName} suivra les erreurs 404 incluant les types d\'appareils, les navigateurs, les données géographiques et le trafic de bots.',
     'Geographic Detection' => 'Détection géographique',
     'Enable Geographic Detection' => 'Activer la détection géographique',
     'Detect visitor location for analytics' => 'Détecter la localisation des visiteurs pour les analytiques',

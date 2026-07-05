@@ -22,7 +22,7 @@
 {% import "_includes/forms" as forms %}
 
 {% block content %}
-    {% set pluginName = redirectHelper.fullName %}
+    {% set pluginName = redirectHelper.fullName|e %}
 
     {{ actionInput('redirect-manager/settings/save') }}
     {{ redirectInput('redirect-manager/settings/analytics') }}
@@ -32,7 +32,7 @@
 
         {{ forms.lightswitchField({
             label: "Enable Analytics"|t('redirect-manager'),
-            instructions: "Track 404 analytics and visitor data"|t('redirect-manager'),
+            instructions: "Track 404 analytics and visitor data. When enabled, {pluginName} will track 404 errors including device types, browsers, geographic data, and bot traffic."|t('redirect-manager', {pluginName: pluginName}),
             id: 'enableAnalytics',
             name: 'settings[enableAnalytics]',
             on: settings.enableAnalytics ?? true,
@@ -44,10 +44,6 @@
         }) }}
 
         <div id="analytics-settings" class="{{ not (settings.enableAnalytics ?? true) ? 'hidden' }}">
-            <div class="field">
-                <p class="light">{{ "When enabled, {pluginName} will track 404 errors including device types, browsers, geographic data, and bot traffic."|t('redirect-manager', {pluginName: redirectHelper.fullName}) }}</p>
-            </div>
-
             <hr>
 
             <h2>{{ "Geographic Detection"|t('redirect-manager') }}</h2>

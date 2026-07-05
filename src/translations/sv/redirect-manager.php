@@ -238,8 +238,7 @@ return [
     // Settings: Analytics
     'Analytics Settings' => 'Analysinställningar',
     'Enable Analytics' => 'Aktivera analys',
-    'Track 404 analytics and visitor data' => 'Spåra 404-analys och besöksdata',
-    'When enabled, {pluginName} will track 404 errors including device types, browsers, geographic data, and bot traffic.' => 'När det är aktiverat spårar {pluginName} 404-fel inklusive enhetstyper, webbläsare, geografiska data och bottrafik.',
+    'Track 404 analytics and visitor data. When enabled, {pluginName} will track 404 errors including device types, browsers, geographic data, and bot traffic.' => 'Spåra 404-analys och besöksdata. När det är aktiverat spårar {pluginName} 404-fel inklusive enhetstyper, webbläsare, geografiska data och bottrafik.',
     'Geographic Detection' => 'Geografisk identifiering',
     'Enable Geographic Detection' => 'Aktivera geografisk identifiering',
     'Detect visitor location for analytics' => 'Identifiera besökarens plats för analys',

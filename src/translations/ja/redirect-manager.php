@@ -238,8 +238,7 @@ return [
     // Settings: Analytics
     'Analytics Settings' => 'アナリティクス設定',
     'Enable Analytics' => 'アナリティクスを有効にする',
-    'Track 404 analytics and visitor data' => '404 アナリティクスと訪問者データを記録する',
-    'When enabled, {pluginName} will track 404 errors including device types, browsers, geographic data, and bot traffic.' => '有効にすると、{pluginName} はデバイスタイプ、ブラウザ、地理データ、ボットトラフィックを含む 404 エラーを記録します。',
+    'Track 404 analytics and visitor data. When enabled, {pluginName} will track 404 errors including device types, browsers, geographic data, and bot traffic.' => '404 アナリティクスと訪問者データを記録する。有効にすると、{pluginName} はデバイスタイプ、ブラウザ、地理データ、ボットトラフィックを含む 404 エラーを記録します。',
     'Geographic Detection' => '地理的検出',
     'Enable Geographic Detection' => '地理的検出を有効にする',
     'Detect visitor location for analytics' => 'アナリティクスのために訪問者の位置を検出する',

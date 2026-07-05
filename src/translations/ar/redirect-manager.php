@@ -238,8 +238,7 @@ return [
     // Settings: Analytics
     'Analytics Settings' => 'إعدادات التحليلات',
     'Enable Analytics' => 'تفعيل التحليلات',
-    'Track 404 analytics and visitor data' => 'تتبع تحليلات 404 وبيانات الزوار',
-    'When enabled, {pluginName} will track 404 errors including device types, browsers, geographic data, and bot traffic.' => 'عند التفعيل، سيتتبع {pluginName} أخطاء 404 بما في ذلك أنواع الأجهزة والمتصفحات والبيانات الجغرافية وحركة مرور الروبوتات.',
+    'Track 404 analytics and visitor data. When enabled, {pluginName} will track 404 errors including device types, browsers, geographic data, and bot traffic.' => 'تتبع تحليلات 404 وبيانات الزوار. عند التفعيل، سيتتبع {pluginName} أخطاء 404 بما في ذلك أنواع الأجهزة والمتصفحات والبيانات الجغرافية وحركة مرور الروبوتات.',
     'Geographic Detection' => 'الكشف الجغرافي',
     'Enable Geographic Detection' => 'تفعيل الكشف الجغرافي',
     'Detect visitor location for analytics' => 'تحديد موقع الزائر لأغراض التحليلات',

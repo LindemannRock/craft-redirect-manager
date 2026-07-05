@@ -238,8 +238,7 @@ return [
     // Settings: Analytics
     'Analytics Settings' => 'Analyse-instellingen',
     'Enable Analytics' => 'Analyses inschakelen',
-    'Track 404 analytics and visitor data' => '404-analyses en bezoekersgegevens bijhouden',
-    'When enabled, {pluginName} will track 404 errors including device types, browsers, geographic data, and bot traffic.' => 'Indien ingeschakeld zal {pluginName} 404-fouten bijhouden inclusief apparaattypen, browsers, geografische gegevens en botverkeer.',
+    'Track 404 analytics and visitor data. When enabled, {pluginName} will track 404 errors including device types, browsers, geographic data, and bot traffic.' => '404-analyses en bezoekersgegevens bijhouden. Indien ingeschakeld zal {pluginName} 404-fouten bijhouden inclusief apparaattypen, browsers, geografische gegevens en botverkeer.',
     'Geographic Detection' => 'Geografische detectie',
     'Enable Geographic Detection' => 'Geografische detectie inschakelen',
     'Detect visitor location for analytics' => 'Bezoekerslocatie detecteren voor analyses',
