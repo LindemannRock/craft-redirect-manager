@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.38.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.37.0...v5.38.0) - 2026-07-05
+
+
+### Added
+
+* **i18n:** add new redirect messages across multiple locales ([4d3b427](https://github.com/LindemannRock/craft-redirect-manager/commit/4d3b427c452f46e4a689b927b1039675fea6c8e0))
+* **setup:** add setup checklist and service for readiness verification ([2e9b2c0](https://github.com/LindemannRock/craft-redirect-manager/commit/2e9b2c0c14aa2da86dcbd5c2ff4000e932f72d23))
+
 ## [5.37.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.36.0...v5.37.0) - 2026-07-03
 
 
