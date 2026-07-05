@@ -71,7 +71,7 @@ A redirect exists in the CP but visiting the URL does not redirect.
    'analyticsLimit' => 1000, // increase if needed
    ```
 
-3. **Is the IP hash salt configured?** An error banner appears in settings when the salt is missing. Generate one:
+3. **Is the IP hash salt configured?** An error banner appears in settings when the salt is missing. Open **Redirect Manager → Setup**, or generate one from the terminal:
 
    ```bash title="PHP"
    php craft redirect-manager/security/generate-salt

@@ -2,6 +2,10 @@
 
 Configure Redirect Manager from the Control Panel or by creating `config/redirect-manager.php`. Config-file values override the matching Control Panel fields, which is useful when production behavior needs to stay locked across deploys.
 
+```bash title="PHP"
+cp vendor/lindemannrock/craft-redirect-manager/src/config.php config/redirect-manager.php
+```
+
 ## General
 
 | Option | Type | Default | Description |

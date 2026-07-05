@@ -35,9 +35,13 @@ ddev craft plugin/install logging-library
 
 Or via the Control Panel: **Settings → Plugins → Logging Library → Install**
 
-## Post-install: generate IP hash salt
+## Post-Install Setup
 
-After installation, generate the IP hash salt so analytics can properly track and anonymize visitors:
+After installing, open **Redirect Manager → Setup** in the Control Panel before relying on analytics. The setup page checks the required privacy salt.
+
+### Generate an IP hash salt
+
+Generate a secure salt for analytics privacy and unique visitor tracking:
 
 ```bash title="PHP"
 php craft redirect-manager/security/generate-salt
@@ -47,20 +51,11 @@ php craft redirect-manager/security/generate-salt
 ddev craft redirect-manager/security/generate-salt
 ```
 
-This command automatically adds `REDIRECT_MANAGER_IP_SALT` to your `.env` file. Copy this value to your staging and production `.env` files manually.
+This writes `REDIRECT_MANAGER_IP_SALT` to your `.env` file. Keep the same salt across all environments — changing it resets unique visitor tracking.
 
-> [!TIP]
-> Skipping this step won't break anything — redirects work normally without it. Analytics still tracks 404s, devices, and referrers, but IP hashing and geo-location won't be available. You can generate the salt later and full tracking resumes immediately.
+### Review configuration
 
-## Copy config file
-
-For advanced configuration, copy the config file to your project:
-
-```bash title="PHP"
-cp vendor/lindemannrock/craft-redirect-manager/src/config.php config/redirect-manager.php
-```
-
-This gives you full control over analytics, caching, geo-detection, and all plugin settings. See [Configuration](configuration.md) for details.
+See [Configuration](configuration.md) for all available settings. Most can be managed from **Redirect Manager → Settings** without a config file.
 
 ## Quick start
 

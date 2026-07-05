@@ -2,25 +2,11 @@
 
 Get Redirect Manager running in under 5 minutes. By the end of this guide you'll have redirects catching 404s automatically.
 
-## 1. Install the Plugin
+## Before you start
 
-See [Installation](installation.md) for full details including DDEV and Composer options.
+Complete [Installation and setup](installation.md#post-install-setup) first. The setup page should show that the IP hash salt is configured before you rely on analytics.
 
-## 2. Generate IP Salt
-
-Run the security command to set up privacy-focused IP hashing for analytics:
-
-```bash title="PHP"
-php craft redirect-manager/security/generate-salt
-```
-
-```bash title="DDEV"
-ddev craft redirect-manager/security/generate-salt
-```
-
-This adds `REDIRECT_MANAGER_IP_SALT` to your `.env` file automatically.
-
-## 3. Create Your First Redirect
+## 1. Create your first redirect
 
 1. Go to **Redirect Manager > Redirects**
 2. Click **New Redirect**
@@ -31,15 +17,15 @@ This adds `REDIRECT_MANAGER_IP_SALT` to your `.env` file automatically.
 
 ![The Redirect Manager new redirect form with source and destination URLs filled in](images/quickstart-new-redirect.webp)
 
-## 4. Test It
+## 2. Test it
 
 Visit `/old-page` in your browser — you should be redirected to `/new-page`.
 
-## 5. Enable Auto-Redirects
+## 3. Enable auto-redirects
 
 Auto-redirect creation is enabled by default. When you change an entry's slug, the plugin automatically creates a redirect from the old URL to the new one.
 
-## What's Next
+## What's next
 
 - [Configuration](configuration.md) — tune analytics, caching, query string handling, and backups
 - Check **Redirect Manager > Analytics** to monitor 404s across your site
