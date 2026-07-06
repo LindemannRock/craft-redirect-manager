@@ -99,4 +99,16 @@ final class SettingsControllerSectionScopeTest extends TestCase
         self::assertStringContainsString('pluginName: redirectFullNameHtml', $source);
         self::assertDoesNotMatchRegularExpression('/instructions:.*redirectHelper\\.(?:lowerDisplayName|pluralLowerDisplayName|fullName|displayName)/', $source);
     }
+
+    public function testSetupCompleteInfoBoxUsesConfiguredPluginName(): void
+    {
+        $source = file_get_contents(dirname(__DIR__, 2) . '/src/templates/setup.twig');
+        self::assertIsString($source);
+
+        self::assertStringContainsString('{% set redirectFullNameHtml = redirectHelper.fullName|e %}', $source);
+        self::assertStringContainsString('redirectFullNameHtml: redirectFullNameHtml,', $source);
+        self::assertStringContainsString("'{pluginName} is ready to track redirect analytics.'|t('redirect-manager', {", $source);
+        self::assertStringContainsString('pluginName: redirectFullNameHtml', $source);
+        self::assertStringNotContainsString("'Redirect Manager is ready to track redirect analytics.'|t('redirect-manager')", $source);
+    }
 }

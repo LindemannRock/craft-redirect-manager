@@ -3,6 +3,7 @@
 {% set selectedSubnavItem = 'setup' %}
 {% set title = "Set up Redirect Manager"|t('redirect-manager') %}
 {% set allComplete = ipSaltConfigured %}
+{% set redirectFullNameHtml = redirectHelper.fullName|e %}
 
 {% set ipSaltIncompleteBody %}
     <p>
@@ -77,11 +78,14 @@
         pluginIconSvg: pluginIconSvg,
         pluginHeroStyle: pluginHeroStyle,
         logoPaths: logoPaths,
+        redirectFullNameHtml: redirectFullNameHtml,
     } only %}
         {% block summary %}
             {% if allComplete %}
                 {% include 'lindemannrock-base/_components/info-box' with {
-                    message: '<strong>' ~ 'Setup complete.'|t('redirect-manager') ~ '</strong> ' ~ 'Redirect Manager is ready to track redirect analytics.'|t('redirect-manager'),
+                    message: '<strong>' ~ 'Setup complete.'|t('redirect-manager') ~ '</strong> ' ~ '{pluginName} is ready to track redirect analytics.'|t('redirect-manager', {
+                        pluginName: redirectFullNameHtml,
+                    }),
                     type: 'success',
                     variant: 'colored',
                     margin: 'none',

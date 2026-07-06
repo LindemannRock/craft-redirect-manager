@@ -753,7 +753,7 @@ return [
     'Finish setup before tracking redirect analytics.' => 'Fuldfør opsætningen, før du sporer redirect-analyser.',
     'Open setup' => 'Åbn opsætning',
     'Setup complete.' => 'Opsætning fuldført.',
-    'Redirect Manager is ready to track redirect analytics.' => 'Redirect Manager er klar til at spore redirect-analyser.',
+    '{pluginName} is ready to track redirect analytics.' => '{pluginName} er klar til at spore redirect-analyser.',
 
     // Config overrides
     'This is being overridden by the <code>autoCreateRedirects</code> setting in <code>config/redirect-manager.php</code>.' => 'Denne indstilling tilsidesættes af <code>autoCreateRedirects</code> i <code>config/redirect-manager.php</code>.',
