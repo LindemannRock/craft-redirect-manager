@@ -9,7 +9,7 @@ Redirect Manager is a comprehensive redirect and 404 management plugin for Craft
 
 At its core, Redirect Manager intercepts every 404 response on your site, checks it against a library of redirect rules, and either fires the redirect or records the miss as an analytics entry. Every 404 — whether it came from a renamed entry, a deleted page, or an external link pointing at the wrong URL — is captured and actionable.
 
-![The Redirect Manager redirects list in the Control Panel showing source, destination, match type, and hit-count columns](images/overview-redirects-list.webp)
+![The Redirect Manager redirects list in the Control Panel showing source, destination, match type, and hit-count columns](../images/overview-redirects-list.webp)
 
 ## Core Capabilities
 

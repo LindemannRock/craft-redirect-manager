@@ -2,7 +2,7 @@
 
 Redirect Manager can automatically back up your redirect library before imports and on a scheduled basis. Backups are stored locally or in a Craft asset volume, and can be restored from the CP or CLI.
 
-![The Backups section listing saved backups with create, restore, download, and delete actions](images/backups-list.webp)
+![The Backups section listing saved backups with create, restore, download, and delete actions](../images/backups-list.webp)
 
 ## How Backups Work
 

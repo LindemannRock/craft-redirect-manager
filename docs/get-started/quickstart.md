@@ -15,7 +15,7 @@ Complete [Installation and setup](installation.md#post-install-setup) first. The
 5. Leave **Match Type** as `exact` and **Status Code** as `301`
 6. Save
 
-![The Redirect Manager new redirect form with source and destination URLs filled in](images/quickstart-new-redirect.webp)
+![The Redirect Manager new redirect form with source and destination URLs filled in](../images/quickstart-new-redirect.webp)
 
 ## 2. Test it
 

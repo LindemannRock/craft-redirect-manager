@@ -2,7 +2,7 @@
 
 Redirect Manager tracks every 404 that hits your site — whether it was handled by a redirect or went unmatched. The analytics dashboard gives you device breakdowns, geographic data, bot identification, and charts over time. Unhandled 404s can be turned into redirects with a single click.
 
-![The Redirect Manager analytics dashboard with summary cards, device breakdown, and a 404 activity chart](images/analytics-dashboard.webp)
+![The Redirect Manager analytics dashboard with summary cards, device breakdown, and a 404 activity chart](../images/analytics-dashboard.webp)
 
 ## What Gets Tracked
 

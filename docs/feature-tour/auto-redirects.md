@@ -2,7 +2,7 @@
 
 Redirect Manager can automatically create a redirect whenever a Craft entry's URI changes. This keeps old URLs alive without any manual work, preventing broken links when content is reorganized.
 
-![An auto-created redirect in the Redirect Manager list, tagged with its entry-change creation type](images/auto-redirects-list.webp)
+![An auto-created redirect in the Redirect Manager list, tagged with its entry-change creation type](../images/auto-redirects-list.webp)
 
 ## How It Works
 

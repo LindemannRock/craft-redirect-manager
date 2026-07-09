@@ -2,7 +2,7 @@
 
 Redirect Manager matches incoming 404 requests against a library of redirect rules and issues the appropriate HTTP redirect. Rules support four match types, priority ordering, all standard redirect status codes, and multi-site scoping.
 
-![The Redirect Manager redirect editor showing the source URL, destination, match type, status code, and priority fields](images/redirects-edit-form.webp)
+![The Redirect Manager redirect editor showing the source URL, destination, match type, status code, and priority fields](../images/redirects-edit-form.webp)
 
 ## Creating Redirects
 

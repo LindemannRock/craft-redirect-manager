@@ -2,7 +2,7 @@
 
 Not every 404 deserves your attention. Bots probe for `/wp-login.php`, vulnerability scanners hammer `.env` and `.git`, and Craft's own `/admin`, `/cpresources`, and `/actions` URLs can all surface as misses. URL Filtering lets you tell Redirect Manager which paths to ignore completely — and it ships one-click presets for the most common cases so you don't have to write the regex yourself.
 
-![The URL Filtering section on the Advanced settings screen with exclude patterns and the Quick Setup preset buttons](images/url-filtering-quick-setup.webp)
+![The URL Filtering section on the Advanced settings screen with exclude patterns and the Quick Setup preset buttons](../images/url-filtering-quick-setup.webp)
 
 ## What you'll use it for
 
