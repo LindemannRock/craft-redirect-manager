@@ -22,33 +22,21 @@ cp vendor/lindemannrock/craft-redirect-manager/src/config.php config/redirect-ma
 | `refreshIntervalSecs` | `?int` | `null` | Dashboard auto-refresh interval in seconds (`0` / `null` = disabled; CP options include 15, 30, 60, and 120 seconds) |
 | `itemsPerPage` | `int` | `100` | Items per page in redirect and analytics list views (10-500) |
 
-Redirect Manager also exposes base-owned display settings from the Interface settings page. Leave these unset to inherit from `config/lindemannrock-base.php`; set them in `config/redirect-manager.php` only when this plugin should behave differently.
+## Base display and export overrides
 
-### Date and time display
+The **Settings → Interface** screen also includes base-owned display and export controls after **Dashboard Refresh Interval**. Leave these unset to inherit from `config/lindemannrock-base.php`; set them in `config/redirect-manager.php` only when Redirect Manager should override the global base value.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `timeFormat` | `?string` | `null` | Time display override: `12` or `24` |
-| `monthFormat` | `?string` | `null` | Month display override: `numeric`, `short`, or `long` |
-| `dateOrder` | `?string` | `null` | Date order override: `dmy`, `mdy`, or `ymd` |
-| `dateSeparator` | `?string` | `null` | Date separator override: `/`, `-`, or `.` |
-| `showSeconds` | `?bool` | `null` | Whether timestamps include seconds |
-
-### Default date range
+When the Control Panel value is **Use global default**, the setting cascades from `config/lindemannrock-base.php`. A value in `config/redirect-manager.php` locks the plugin-specific value and disables the matching CP field.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `defaultDateRange` | `?string` | `null` | Default date range for dashboard, analytics, logs, and other date-filtered views |
-
-Common values include `today`, `yesterday`, `last7days`, `last30days`, `last90days`, `thisMonth`, `lastMonth`, `thisYear`, `lastYear`, and `all`.
-
-### Export formats
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `exports.csv` | `?bool` | `null` | Enable CSV export for this plugin |
-| `exports.json` | `?bool` | `null` | Enable JSON export for this plugin |
-| `exports.excel` | `?bool` | `null` | Enable Excel export for this plugin |
+| `timeFormat` | `string\|null` | `null` | Time display override: `'12'` (AM/PM) or `'24'` |
+| `monthFormat` | `string\|null` | `null` | Month display override: `'numeric'`, `'short'`, or `'long'` |
+| `dateOrder` | `string\|null` | `null` | Date order override: `'dmy'`, `'mdy'`, or `'ymd'` |
+| `dateSeparator` | `string\|null` | `null` | Date separator override: `'/'`, `'-'`, or `'.'` |
+| `showSeconds` | `bool\|null` | `null` | Whether timestamps include seconds |
+| `defaultDateRange` | `string\|null` | `null` | Default date range for dashboard, analytics, logs, and other date-filtered views. Common values: `today`, `yesterday`, `last7days`, `last30days`, `last90days`, `thisMonth`, `lastMonth`, `thisYear`, `lastYear`, `all` |
+| `exports` | `array\|null` | `null` | Export format overrides, e.g. `['csv' => true, 'json' => true, 'excel' => true]` |
 
 ## Query String Handling
 
@@ -198,9 +186,13 @@ return [
         'logLevel' => 'error',
 
         // Optional base-setting overrides for this plugin only
-        // Leave unset to inherit from config/lindemannrock-base.php
+        // Leave unset to inherit from config/lindemannrock-base.php.
         // 'timeFormat' => '24',
-        // 'defaultDateRange' => 'last30days',
+        // 'monthFormat' => 'short',
+        // 'dateOrder' => 'dmy',
+        // 'dateSeparator' => '/',
+        // 'showSeconds' => false,
+        // 'defaultDateRange' => 'last7days',
         // 'exports' => [
         //     'csv' => true,
         //     'json' => true,

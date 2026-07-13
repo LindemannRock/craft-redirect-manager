@@ -37,7 +37,11 @@ Or via the Control Panel: **Settings → Plugins → Logging Library → Install
 
 ## Post-Install Setup
 
-After installing, open **Redirect Manager → Setup** in the Control Panel before relying on analytics. The setup page checks the required privacy salt.
+After installing, open **Redirect Manager → Setup** in the Control Panel. The Setup page is a short readiness checklist that confirms the plugin is configured before you rely on analytics. It shows a **Setup** badge while a step is outstanding and a **Ready** badge once everything is in place.
+
+Until setup is complete, every Redirect Manager screen shows a **Setup incomplete** notice with an **Open setup** button — that's expected, not an error. The notice disappears everywhere at once once the checklist is finished.
+
+The only required step is the IP hash salt below — redirect matching works without it, but 404 analytics tracking waits until the salt is set.
 
 ### Generate an IP hash salt
 

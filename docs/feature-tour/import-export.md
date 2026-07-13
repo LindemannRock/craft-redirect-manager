@@ -44,6 +44,9 @@ Optional fields (defaults are used when omitted):
 | Enabled | `true` | `true` or `false` |
 | Site ID | `null` | Numeric site ID, or blank for all sites |
 
+> [!NOTE]
+> Rows are imported only for sites you can edit. If a row names a **Site ID** that your account has no editing permission for, that row is skipped and counted toward the failed total in the import summary. Rows left blank (all sites) always import.
+
 ### Row Validation
 
 Each row is validated before import; problems are flagged in the **Preview** errors bucket and those rows are skipped. A row is rejected when:

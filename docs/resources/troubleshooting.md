@@ -204,7 +204,8 @@ A CSV import completed but some redirects are wrong or missing.
 1. **Check the import count.** The import summary shows how many rows succeeded vs. failed.
 2. **Review the CSV format.** Column mapping happens during the import wizard — verify the mapping was correct.
 3. **Check for rows over the limit.** Maximum 4000 rows per import. Rows beyond this limit are silently skipped.
-4. **Restore from backup.** If `backupOnImport` is `true` (default), a backup was created before the import. Go to **Redirect Manager > Backups** and restore the pre-import snapshot.
+4. **Check site permissions.** Rows whose **Site ID** points at a site your account cannot edit are skipped and counted as failures. Ask an admin to grant edit access to those sites, or import as a user who has it. Rows with a blank Site ID (all sites) are unaffected.
+5. **Restore from backup.** If `backupOnImport` is `true` (default), a backup was created before the import. Go to **Redirect Manager > Backups** and restore the pre-import snapshot.
 
 ---
 

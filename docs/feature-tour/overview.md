@@ -39,7 +39,7 @@ At its core, Redirect Manager intercepts every 404 response on your site, checks
 
 ## Privacy by Default
 
-Redirect Manager never stores plain IP addresses. Visitor IPs are hashed with a salted SHA256 before storage. Optional subnet masking adds a second anonymization layer. See [Analytics](analytics.md) for details on the IP salt setup.
+Redirect Manager never stores plain IP addresses. Visitor IPs are hashed with a salted SHA256 before storage. Optional subnet masking adds a second anonymization layer. Because analytics depends on this salt, the **Redirect Manager → Setup** checklist confirms it is configured — see [Post-Install Setup](../get-started/installation.md#post-install-setup). See [Analytics](analytics.md) for details on the IP salt setup.
 
 ## Multi-Site Support
 
