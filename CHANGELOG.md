@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.39.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.38.0...v5.39.0) - 2026-07-13
+
+
+### Added
+
+* **setup:** include full name in setup completion message include ([7c453aa](https://github.com/LindemannRock/craft-redirect-manager/commit/7c453aa579ba36417a1d21ae171d810d703a1283))
+
+
+### Fixed
+
+* update default export format to enable CSV and Excel only ([6978a35](https://github.com/LindemannRock/craft-redirect-manager/commit/6978a35b90aaa8c264d8240fe6fc1b55f912ee5a))
+
 ## [5.38.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.37.0...v5.38.0) - 2026-07-05
 
 
