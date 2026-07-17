@@ -21,7 +21,6 @@
     {% set validationSummary = include('lindemannrock-base/_partials/error-summary', {
         errors: settings.getErrors(),
         linkMode: 'field-id',
-        translationCategory: 'redirect-manager'
     })|trim %}
     {% set errorSummary = (errorSummary ~ validationSummary)|trim %}
 {% endif %}

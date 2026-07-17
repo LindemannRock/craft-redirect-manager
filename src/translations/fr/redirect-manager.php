@@ -195,7 +195,6 @@ return [
     'Redirect already exists: {source} → {dest}' => 'Redirection existe déjà : {source} → {dest}',
     'Redirect created: {source} → {dest}' => 'Redirection créée : {source} → {dest}',
     // Validation messages
-    'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{erreur trouvée} other{erreurs trouvées}}',
     'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'Le modèle RegEx doit contenir des caractères spéciaux RegEx (par ex. ^, $, .*, +, [], etc.). Pour une correspondance exacte, utilisez Correspondance exacte.',
     'Regex pattern must contain a path (e.g., ^/blog/.* or /category/[^/]+) when using Path Only mode.' => 'Le modèle RegEx doit contenir un chemin (par ex. ^/blog/.* ou /category/[^/]+) en mode Chemin uniquement.',
     'Regex pattern must contain a full URL with https:// or http:// (e.g., ^https://example.com/blog/.*) when using Full URL mode.' => 'Le modèle RegEx doit contenir une URL complète avec https:// ou http:// (par ex. ^https://example.com/blog/.*) en mode URL complète.',
@@ -353,7 +352,7 @@ return [
     // Settings: Test
     'Test Redirects' => 'Tester les redirections',
     'Test JSON API Endpoint' => 'Tester le point de terminaison API JSON',
-    'Developer resources' => 'Ressources développeur',
+    'Developer Resources' => 'Ressources développeur',
     'Download the Postman collection and environment to test the Redirect Manager API outside Craft.' => 'Téléchargez la collection et l\'environnement Postman pour tester l\'API Redirect Manager en dehors de Craft.',
     'Download Postman collection' => 'Télécharger la collection Postman',
     'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.' => 'Le point de terminaison API JSON est désactivé. Activez-le dans les paramètres avancés avant d’exécuter des tests de point de terminaison.',

@@ -195,7 +195,6 @@ return [
     'Redirect already exists: {source} → {dest}' => 'إعادة التوجيه موجودة بالفعل: {source} → {dest}',
     'Redirect created: {source} → {dest}' => 'تم إنشاء إعادة التوجيه: {source} → {dest}',
     // Validation messages
-    'Found {count, number} {count, plural, =1{error} other{errors}}' => 'تم العثور على {count, number} {count, plural, =1{خطأ} other{أخطاء}}',
     'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'يجب أن يحتوي نمط RegEx على أحرف خاصة بـ RegEx (مثل ^، $، .*، +، []، إلخ). للمطابقة التامة، استخدم المطابقة التامة عوضاً عن ذلك.',
     'Regex pattern must contain a path (e.g., ^/blog/.* or /category/[^/]+) when using Path Only mode.' => 'يجب أن يحتوي نمط RegEx على مسار (مثل ^/blog/.* أو /category/[^/]+) عند استخدام وضع المسار فقط.',
     'Regex pattern must contain a full URL with https:// or http:// (e.g., ^https://example.com/blog/.*) when using Full URL mode.' => 'يجب أن يحتوي نمط RegEx على URL كامل مع https:// أو http:// (مثل ^https://example.com/blog/.*) عند استخدام وضع URL الكامل.',
@@ -353,7 +352,7 @@ return [
     // Settings: Test
     'Test Redirects' => 'اختبار عمليات إعادة التوجيه',
     'Test JSON API Endpoint' => 'اختبار نقطة نهاية JSON API',
-    'Developer resources' => 'موارد المطورين',
+    'Developer Resources' => 'موارد المطورين',
     'Download the Postman collection and environment to test the Redirect Manager API outside Craft.' => 'نزّل مجموعة Postman والبيئة الخاصة بها لاختبار Redirect Manager API خارج Craft.',
     'Download Postman collection' => 'تنزيل مجموعة Postman',
     'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.' => 'نقطة نهاية JSON API معطلة. قم بتفعيلها في الإعدادات المتقدمة قبل تشغيل اختبارات نقطة النهاية.',

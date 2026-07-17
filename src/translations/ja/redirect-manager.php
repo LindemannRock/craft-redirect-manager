@@ -195,7 +195,6 @@ return [
     'Redirect already exists: {source} → {dest}' => 'リダイレクトはすでに存在します: {source} → {dest}',
     'Redirect created: {source} → {dest}' => 'リダイレクトを作成しました: {source} → {dest}',
     // Validation messages
-    'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} 件の{count, plural, =1{エラー} other{エラー}}が見つかりました',
     'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'Regex パターンには正規表現の特殊文字（例: ^、$、.*、+、[] など）が必要です。完全一致には「完全一致」を使用してください。',
     'Regex pattern must contain a path (e.g., ^/blog/.* or /category/[^/]+) when using Path Only mode.' => '「パスのみ」モードでは、Regex パターンにパス（例: ^/blog/.* または /category/[^/]+）が必要です。',
     'Regex pattern must contain a full URL with https:// or http:// (e.g., ^https://example.com/blog/.*) when using Full URL mode.' => '「完全 URL」モードでは、Regex パターンに https:// または http:// で始まる完全な URL（例: ^https://example.com/blog/.*）が必要です。',
@@ -353,7 +352,7 @@ return [
     // Settings: Test
     'Test Redirects' => 'リダイレクトをテストする',
     'Test JSON API Endpoint' => 'JSON API エンドポイントをテスト',
-    'Developer resources' => '開発者向けリソース',
+    'Developer Resources' => '開発者向けリソース',
     'Download the Postman collection and environment to test the Redirect Manager API outside Craft.' => 'Redirect Manager API を Craft の外部でテストするために、Postman コレクションと環境をダウンロードします。',
     'Download Postman collection' => 'Postman コレクションをダウンロードする',
     'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.' => 'JSON API エンドポイントは無効です。エンドポイントテストを実行する前に、詳細設定で有効にしてください。',

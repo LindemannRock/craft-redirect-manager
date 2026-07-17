@@ -195,7 +195,6 @@ return [
     'Redirect already exists: {source} → {dest}' => 'Omdirigering findes allerede: {source} → {dest}',
     'Redirect created: {source} → {dest}' => 'Omdirigering oprettet: {source} → {dest}',
     // Validation messages
-    'Found {count, number} {count, plural, =1{error} other{errors}}' => '{count, number} {count, plural, =1{fejl} other{fejl}} fundet',
     'Regex pattern must contain regex special characters (e.g., ^, $, .*, +, [], etc.). For exact matching, use Exact Match instead.' => 'Regex-mønstret skal indeholde regex-specialtegn (f.eks. ^, $, .*, +, [], osv.). Brug Præcis matchning til præcis matchning.',
     'Regex pattern must contain a path (e.g., ^/blog/.* or /category/[^/]+) when using Path Only mode.' => 'Regex-mønstret skal indeholde en sti (f.eks. ^/blog/.* eller /category/[^/]+) i tilstanden Kun sti.',
     'Regex pattern must contain a full URL with https:// or http:// (e.g., ^https://example.com/blog/.*) when using Full URL mode.' => 'Regex-mønstret skal indeholde en fuld URL med https:// eller http:// (f.eks. ^https://example.com/blog/.*) i tilstanden Fuld URL.',
@@ -353,7 +352,7 @@ return [
     // Settings: Test
     'Test Redirects' => 'Test omdirigeringer',
     'Test JSON API Endpoint' => 'Test JSON API-endepunkt',
-    'Developer resources' => 'Udviklerressourcer',
+    'Developer Resources' => 'Udviklerressourcer',
     'Download the Postman collection and environment to test the Redirect Manager API outside Craft.' => 'Download Postman-samlingen og -miljøet for at teste Redirect Manager API uden for Craft.',
     'Download Postman collection' => 'Download Postman-samling',
     'The JSON API endpoint is disabled. Enable it in Advanced settings before running endpoint tests.' => 'JSON API-endepunktet er deaktiveret. Aktiver det i avancerede indstillinger, før du kører endepunktstests.',
