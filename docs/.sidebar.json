@@ -48,6 +48,7 @@
         "open": false,
         "children": [
             "resources/troubleshooting",
+            "resources/testing-tools",
             "resources/logging",
             "resources/translations"
         ]

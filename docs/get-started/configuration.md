@@ -60,7 +60,7 @@ When the Control Panel value is **Use global default**, the setting cascades fro
 | `apiEndpointRateLimit` @since(5.35.0) | `int` | `60` | Maximum JSON API requests per minute for the configured token (max `100000`). Set to `0` to disable rate limiting |
 | `apiEndpointToken` | `?string` | `null` | Token for the JSON endpoint. Falls back to `REDIRECT_MANAGER_API_TOKEN`; callers must send a bearer token or `X-Redirect-Manager-Key` header |
 
-When enabled and token-configured, test the endpoint from **Redirect Manager → Settings → Test**.
+When enabled and token-configured, test the endpoint from **Redirect Manager → Settings → Test**. See [Testing tools](../resources/testing-tools.md) for the full Control Panel workflow and Postman download.
 
 ## Analytics
 

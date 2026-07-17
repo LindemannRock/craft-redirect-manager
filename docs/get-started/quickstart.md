@@ -19,7 +19,7 @@ Complete [Installation and setup](installation.md#post-install-setup) first. The
 
 ## 2. Test it
 
-Visit `/old-page` in your browser — you should be redirected to `/new-page`.
+Open **Redirect Manager → Settings → Test**, enter `/old-page`, and click **Test URL**. You should see **Match Found!** with `/new-page` as the resolved destination. You can also visit `/old-page` in your browser to confirm the live redirect.
 
 ## 3. Enable auto-redirects
 
@@ -28,4 +28,5 @@ Auto-redirect creation is enabled by default. When you change an entry's slug, t
 ## What's next
 
 - [Configuration](configuration.md) — tune analytics, caching, query string handling, and backups
+- [Testing tools](../resources/testing-tools.md) — validate redirect matches and the JSON API from the Control Panel
 - Check **Redirect Manager > Analytics** to monitor 404s across your site

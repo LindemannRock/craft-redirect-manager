@@ -2,6 +2,8 @@
 
 Start here when redirects, analytics, scheduled jobs, or settings behave differently than expected. Each section gives quick checks first, then the likely cause.
 
+For redirect matching and JSON API checks, start with [Testing tools](testing-tools.md). **Redirect Manager → Settings → Test** shows which redirect wins, which lower-priority rules also match, whether the JSON API is ready, and the exact API response body and headers.
+
 ## Redirects not working
 
 A redirect exists in the CP but visiting the URL does not redirect.

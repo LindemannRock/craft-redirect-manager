@@ -6,7 +6,7 @@ Redirect Manager ships a ready-made Postman collection and environment template 
 
 Two ways to obtain the collection:
 
-- **From the Control Panel** — go to **Redirect Manager → Settings → Test** and click **Download Postman collection**. You get a zip containing both files.
+- **From the Control Panel** — go to **Redirect Manager → Settings → Test** and click **Download Postman collection**. You get a zip containing both files. See [Testing tools](../resources/testing-tools.md) for the full CP testing workflow.
 - **From the plugin package** — they live in the plugin's `postman/` folder:
   - `Redirect-Manager.postman_collection.json` — example requests for the redirects endpoint plus token, JSON, and rate-limit checks.
   - `Redirect-Manager.postman_environment.json` — a reusable environment template with placeholders only (no real token ships in the file).

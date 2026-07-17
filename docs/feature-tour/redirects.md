@@ -176,7 +176,7 @@ The redirect list supports bulk enable, bulk disable, and bulk delete. Select ro
 
 ### Testing a Redirect
 
-To check what a given URL resolves to, go to **Settings → Test** and enter a URL. The tester lists **every** enabled rule that matches — not just the first — along with the resolved destination, with any regex capture groups already applied. This is the fastest way to confirm a new pattern (especially a regex with captures) behaves the way you expect, or to see why two rules overlap before adjusting their [priority](#priority).
+To check what a given URL resolves to, go to **Settings → Test** and enter a URL. The tester lists **every** enabled rule that matches — not just the first — along with the resolved destination, with any regex capture groups already applied. This is the fastest way to confirm a new pattern (especially a regex with captures) behaves the way you expect, or to see why two rules overlap before adjusting their [priority](#priority). See [Testing tools](../resources/testing-tools.md) for the full redirect tester and JSON API tester workflow.
 
 ## Caching
 
