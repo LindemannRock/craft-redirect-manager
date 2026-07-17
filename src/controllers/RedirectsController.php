@@ -127,10 +127,13 @@ class RedirectsController extends Controller
         }
 
         if ($search !== '') {
+            // LOWER both sides so the search stays case-insensitive on
+            // PostgreSQL too (MySQL's ci collation already ignores case).
+            $searchLower = mb_strtolower($search);
             $query->andWhere([
                 'or',
-                ['like', 'sourceUrl', $search],
-                ['like', 'destinationUrl', $search],
+                ['like', 'LOWER([[sourceUrl]])', $searchLower],
+                ['like', 'LOWER([[destinationUrl]])', $searchLower],
             ]);
         }
 
