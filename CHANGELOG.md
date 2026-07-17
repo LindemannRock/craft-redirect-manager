@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.39.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.39.0...v5.39.1) (2026-07-17)
+
+
+### Fixed
+
+* require logging library 5.15.1 ([8bfb4e0](https://github.com/LindemannRock/craft-redirect-manager/commit/8bfb4e09f8b0c00b3a92e470d7e6519d17081721))
+
 ## [5.39.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.38.0...v5.39.0) - 2026-07-13
 
 
