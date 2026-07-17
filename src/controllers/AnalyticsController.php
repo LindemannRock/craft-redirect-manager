@@ -225,7 +225,9 @@ class AnalyticsController extends Controller
         }
 
         if ($params['search'] !== '') {
-            $query->andWhere(['like', 'url', $params['search']]);
+            // LOWER both sides so the search stays case-insensitive on
+            // PostgreSQL too (MySQL's ci collation already ignores case).
+            $query->andWhere(['like', 'LOWER([[url]])', mb_strtolower($params['search'])]);
         }
 
         $sortDirection = $params['dir'] === 'asc' ? SORT_ASC : SORT_DESC;

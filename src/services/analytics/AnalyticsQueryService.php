@@ -13,6 +13,7 @@ use craft\db\Query;
 use craft\helpers\Db;
 use lindemannrock\base\helpers\DateFormatHelper;
 use lindemannrock\base\helpers\DateRangeHelper;
+use lindemannrock\base\helpers\DbHelper;
 use lindemannrock\base\helpers\GeoHelper;
 use lindemannrock\redirectmanager\records\AnalyticsRecord;
 
@@ -239,8 +240,8 @@ class AnalyticsQueryService
             ->select([
                 'date' => $localDate,
                 'COUNT(*) as total',
-                'SUM(CASE WHEN handled = 1 THEN 1 ELSE 0 END) as handled',
-                'SUM(CASE WHEN handled = 0 THEN 1 ELSE 0 END) as unhandled',
+                'SUM(' . DbHelper::boolToInt('handled') . ') as handled',
+                'SUM(CASE WHEN [[handled]] THEN 0 ELSE 1 END) as unhandled',
             ])
             ->from(AnalyticsRecord::tableName())
             ->groupBy($localDate)

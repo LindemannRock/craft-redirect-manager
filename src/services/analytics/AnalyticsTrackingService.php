@@ -12,6 +12,7 @@ use Craft;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use lindemannrock\base\helpers\AnalyticsIpHelper;
+use lindemannrock\base\helpers\DbHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\helpers\AnalyticsRequestTypeHelper;
 use lindemannrock\redirectmanager\records\AnalyticsRecord;
@@ -157,7 +158,9 @@ class AnalyticsTrackingService
                     AnalyticsRecord::tableName(),
                     $analyticsData,
                     $this->filterAnalyticsColumns([
-                        'count' => new Expression('[[count]] + 1'),
+                        // Existing-row reference must be table-qualified — bare [[count]]
+                        // is ambiguous in PostgreSQL's ON CONFLICT DO UPDATE (42702).
+                        'count' => new Expression(DbHelper::existingColumn('redirectmanager_analytics', 'count') . ' + 1'),
                         'url' => $url, // Update to latest URL (preserves most recent query string)
                         'handled' => $handled,
                         'redirectId' => $redirectId,
