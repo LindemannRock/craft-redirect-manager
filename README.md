@@ -5,7 +5,7 @@
 [![Latest Version](https://img.shields.io/packagist/v/lindemannrock/craft-redirect-manager.svg)](https://packagist.org/packages/lindemannrock/craft-redirect-manager)
 [![Craft CMS](https://img.shields.io/badge/Craft%20CMS-5.10+-orange.svg)](https://craftcms.com/)
 [![PHP](https://img.shields.io/badge/PHP-8.2+-blue.svg)](https://php.net/)
-[![Logging Library](https://img.shields.io/badge/Logging%20Library-5.15%2B-green.svg)](https://github.com/LindemannRock/craft-logging-library)
+[![Logging Library](https://img.shields.io/badge/Logging%20Library-5.15.1%2B-green.svg)](https://github.com/LindemannRock/craft-logging-library)
 [![License](https://img.shields.io/packagist/l/lindemannrock/craft-redirect-manager.svg)](LICENSE.md)
 
 Intelligent redirect management and 404 handling for Craft CMS.
@@ -33,7 +33,7 @@ Intelligent redirect management and 404 handling for Craft CMS.
 
 - Craft CMS 5.10+
 - PHP 8.2+
-- [Logging Library](https://github.com/LindemannRock/craft-logging-library) 5.15+ (installed automatically)
+- [Logging Library](https://github.com/LindemannRock/craft-logging-library) 5.15.1+ (required by Composer; install in CP for log viewing)
 
 ## Installation
 
