@@ -229,3 +229,14 @@ Saving a redirect or importing a row fails with an invalid destination/source UR
 - Enable debug logging and check **Redirect Manager > Logs**
 - Check Craft's general log at `storage/logs/web.log`
 - For persistent issues, include your Redirect Manager version, Craft version, and relevant log entries
+
+## SQL Errors on PostgreSQL (Column Does Not Exist / Ambiguous)
+
+```text
+SQLSTATE[42703]: column "..." does not exist
+SQLSTATE[42702]: column reference "..." is ambiguous
+```
+
+Either of these on a PostgreSQL install — in analytics pages, dashboards, or tracking — means you're on a version whose SQL was only exercised on MySQL. PostgreSQL folds unquoted identifiers to lowercase and resolves upsert column references differently; MySQL surfaces neither, so the issues were invisible there.
+
+**Fix:** Update to the latest version. All plugin SQL is now dialect-safe on both MySQL and PostgreSQL.

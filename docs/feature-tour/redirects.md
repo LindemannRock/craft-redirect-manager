@@ -40,6 +40,8 @@ Four match types give you precise control over how source URLs are compared.
 | `prefix` | URL starts with the pattern | `/old-` | `/old-page`, `/old-blog`, `/old-anything` |
 | `regex` | Full regular expression | `^/blog/(\d+)/(.*)$` | `/blog/123/my-post` |
 
+Matching is case-insensitive for every match type, on every database engine. `exact` and `prefix` rules also store their matching URL lowercased, so duplicate detection and uniqueness behave case-insensitively everywhere (query-string values included). Pattern rules (`regex`/`wildcard`) keep engine-native uniqueness: PostgreSQL permits deliberate case-variant functional duplicates (harmless — matching is case-insensitive either way), while MySQL additionally rejects some legitimately distinct escape-differing patterns (`\W` vs `\w`) as a known collation quirk. Neither affects which redirects fire.
+
 ### Exact Match
 
 The simplest and most performant match type. Comparison is case-insensitive.
