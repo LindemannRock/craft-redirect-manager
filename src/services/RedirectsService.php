@@ -542,7 +542,7 @@ class RedirectsService extends Component
             // If new URL already exists as a source, we're going back
             $goingBackwards = (new Query())
                 ->from(RedirectRecord::tableName())
-                ->where(['sourceUrlParsed' => $newUrl])
+                ->where(['sourceUrlParsed' => strtolower($newUrl)])
                 ->andWhere(['elementId' => $element->id])
                 ->andWhere(['siteId' => $siteId])
                 ->andWhere(['creationType' => 'entry-change'])
@@ -762,10 +762,15 @@ class RedirectsService extends Component
             return false;
         }
 
-        // Check for duplicate
+        // Check for duplicate. Stored exact/prefix parsed URLs are lowercase
+        // (RedirectRecord::beforeSave), so lowercase the probe for those types;
+        // pattern rows (regex/wildcard) compare verbatim — engine-native.
+        $duplicateProbe = in_array($attributes['matchType'] ?? 'exact', ['exact', 'prefix'], true)
+            ? strtolower($attributes['sourceUrlParsed'])
+            : $attributes['sourceUrlParsed'];
         $existing = (new Query())
             ->from(RedirectRecord::tableName())
-            ->where(['sourceUrlParsed' => $attributes['sourceUrlParsed']])
+            ->where(['sourceUrlParsed' => $duplicateProbe])
             ->andWhere(['siteId' => $attributes['siteId'] ?? null])
             ->one();
 
@@ -1359,6 +1364,9 @@ class RedirectsService extends Component
      */
     private function findNextRedirectInChain(string $sourceUrlParsed, ?int $siteId, ?int $excludeId = null): ?array
     {
+        // Stored exact/prefix parsed URLs are lowercase (RedirectRecord::beforeSave);
+        // lowercase the probe so chain lookups stay case-insensitive on PostgreSQL.
+        $sourceUrlParsed = strtolower($sourceUrlParsed);
         $candidateSiteIds = $siteId === null ? [null] : [$siteId, null];
 
         foreach ($candidateSiteIds as $candidateSiteId) {
