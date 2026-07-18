@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.40.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.39.1...v5.40.0) - 2026-07-18
+
+
+### Added
+
+* **redirects:** make URL search case-insensitive for PostgreSQL ([c2a64e7](https://github.com/LindemannRock/craft-redirect-manager/commit/c2a64e70c30e62ddf427e48e60ca7241802a23f4))
+* store sourceUrlParsed in lowercase for case-insensitive matching ([79a03e3](https://github.com/LindemannRock/craft-redirect-manager/commit/79a03e3c70db39580617c90bf6795f328eb74e3b))
+
+
+### Fixed
+
+* **analytics:** lowercase cleaned URL for case-insensitive matching in PostgreSQL ([b53ad42](https://github.com/LindemannRock/craft-redirect-manager/commit/b53ad423676bca28ef75511d0121aed2da996139))
+* **analytics:** make URL search case-insensitive for PostgreSQL ([76cc932](https://github.com/LindemannRock/craft-redirect-manager/commit/76cc9325b67d3020a101b409aabd272c2761c944))
+* **redirects:** make source URL matching case-insensitive for PostgreSQL ([b9b67d1](https://github.com/LindemannRock/craft-redirect-manager/commit/b9b67d1920ee6a7c580807da841554f4a872162f))
+* require PostgreSQL-compatible shared dependencies ([aeb75b0](https://github.com/LindemannRock/craft-redirect-manager/commit/aeb75b0816bc3370760c4db5da6fe6663dc05691))
+
 ## [5.39.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.39.0...v5.39.1) - 2026-07-17
 
 
