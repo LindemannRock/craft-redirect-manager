@@ -91,6 +91,19 @@ class RedirectRecord extends ActiveRecord
     {
         $this->siteIdKey = self::siteIdKey($this->siteId ? (int)$this->siteId : null);
 
+        // Equality-matched rows store sourceUrlParsed lowercase so bookkeeping
+        // (duplicate checks, unique index, loop detection) behaves
+        // case-insensitively on MySQL AND PostgreSQL — MySQL's ci collation did
+        // this implicitly; PostgreSQL compares case-sensitively. Pattern rows
+        // (regex/wildcard) stay verbatim: lowercasing a pattern corrupts it
+        // (\W would become \w, inverting its meaning). Runtime matchers are
+        // case-blind for all types (strcasecmp/stripos/PCRE i), so storage
+        // casing never affects matching; ASCII strtolower matches strcasecmp's
+        // ASCII-only case folding.
+        if (in_array($this->matchType, ['exact', 'prefix'], true) && is_string($this->sourceUrlParsed)) {
+            $this->sourceUrlParsed = strtolower($this->sourceUrlParsed);
+        }
+
         return parent::beforeSave($insert);
     }
 
