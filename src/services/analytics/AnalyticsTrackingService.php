@@ -74,8 +74,11 @@ class AnalyticsTrackingService
             ? strtok($url, '?')
             : $url;
 
-        // Clean the URL
-        $urlParsed = $this->cleanUrl($urlParsed);
+        // Clean the URL. Lowercased so case-variant hits merge into one
+        // analytics row on PostgreSQL the same way MySQL's ci collation always
+        // merged them (query-string values flatten too — status quo on MySQL).
+        // The raw `url` column keeps original casing for display.
+        $urlParsed = strtolower($this->cleanUrl($urlParsed));
 
         // Get referrer, IP, and user agent
         $request = Craft::$app->getRequest();
