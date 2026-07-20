@@ -740,7 +740,7 @@ return [
     'Cleared {count} analytics records' => '{count} analyserecords gewist',
     'Failed to clear analytics' => 'Analysegegevens konden niet worden gewist',
     // Setup
-    'Set up Redirect Manager' => 'Redirect Manager instellen',
+    'Set up {pluginName}' => '{pluginName} instellen',
     'Complete this step before tracking redirect analytics.' => 'Voltooi deze stap voordat redirect-analyses worden bijgehouden.',
     'Ready' => 'Gereed',
     'v{version}' => 'v{version}',

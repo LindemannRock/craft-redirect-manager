@@ -105,6 +105,9 @@ final class SettingsControllerSectionScopeTest extends TestCase
         $source = file_get_contents(dirname(__DIR__, 2) . '/src/templates/setup.twig');
         self::assertIsString($source);
 
+        self::assertStringContainsString("{% set title = 'Set up {pluginName}'|t('redirect-manager', {", $source);
+        self::assertStringContainsString('pluginName: redirectHelper.fullName', $source);
+        self::assertStringNotContainsString('Set up Redirect Manager', $source);
         self::assertStringContainsString('{% set redirectFullNameHtml = redirectHelper.fullName|e %}', $source);
         self::assertStringContainsString('redirectFullNameHtml: redirectFullNameHtml,', $source);
         self::assertStringContainsString("'{pluginName} is ready to track redirect analytics.'|t('redirect-manager', {", $source);

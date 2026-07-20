@@ -741,7 +741,7 @@ return [
     'Failed to clear analytics' => 'Failed to clear analytics',
 
     // Setup
-    'Set up Redirect Manager' => 'Set up Redirect Manager',
+    'Set up {pluginName}' => 'Set up {pluginName}',
     'Complete this step before tracking redirect analytics.' => 'Complete this step before tracking redirect analytics.',
     'Ready' => 'Ready',
     'v{version}' => 'v{version}',

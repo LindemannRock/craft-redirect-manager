@@ -740,7 +740,7 @@ return [
     'Cleared {count} analytics records' => '{count} enregistrements analytiques effacés',
     'Failed to clear analytics' => 'Échec de l\'effacement des analytiques',
     // Setup
-    'Set up Redirect Manager' => 'Configurer Redirect Manager',
+    'Set up {pluginName}' => 'Configurer {pluginName}',
     'Complete this step before tracking redirect analytics.' => 'Terminez cette étape avant de suivre les analytiques de redirection.',
     'Ready' => 'Prêt',
     'v{version}' => 'v{version}',

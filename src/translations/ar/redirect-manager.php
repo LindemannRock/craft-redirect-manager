@@ -740,7 +740,7 @@ return [
     'Cleared {count} analytics records' => 'تم مسح {count} سجلات تحليلية',
     'Failed to clear analytics' => 'فشل مسح التحليلات',
     // Setup
-    'Set up Redirect Manager' => 'إعداد Redirect Manager',
+    'Set up {pluginName}' => 'إعداد {pluginName}',
     'Complete this step before tracking redirect analytics.' => 'أكمل هذه الخطوة قبل تتبع تحليلات إعادة التوجيه.',
     'Ready' => 'جاهز',
     'v{version}' => 'v{version}',

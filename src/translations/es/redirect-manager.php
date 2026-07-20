@@ -740,7 +740,7 @@ return [
     'Cleared {count} analytics records' => '{count} registros analíticos borrados',
     'Failed to clear analytics' => 'No se pudieron borrar las analíticas',
     // Setup
-    'Set up Redirect Manager' => 'Configurar Redirect Manager',
+    'Set up {pluginName}' => 'Configurar {pluginName}',
     'Complete this step before tracking redirect analytics.' => 'Complete este paso antes de hacer seguimiento de las analíticas de redirección.',
     'Ready' => 'Listo',
     'v{version}' => 'v{version}',

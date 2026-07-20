@@ -740,7 +740,7 @@ return [
     'Cleared {count} analytics records' => '{count} analysposter har rensats',
     'Failed to clear analytics' => 'Det gick inte att rensa analyserna',
     // Setup
-    'Set up Redirect Manager' => 'Konfigurera Redirect Manager',
+    'Set up {pluginName}' => 'Konfigurera {pluginName}',
     'Complete this step before tracking redirect analytics.' => 'Slutför det här steget innan du spårar omdirigeringsanalys.',
     'Ready' => 'Klar',
     'v{version}' => 'v{version}',

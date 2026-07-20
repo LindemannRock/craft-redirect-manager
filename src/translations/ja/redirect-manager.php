@@ -740,7 +740,7 @@ return [
     'Cleared {count} analytics records' => '{count} 件のアナリティクスレコードを削除しました',
     'Failed to clear analytics' => 'アナリティクスの削除に失敗しました',
     // Setup
-    'Set up Redirect Manager' => 'Redirect Manager をセットアップする',
+    'Set up {pluginName}' => '{pluginName} をセットアップする',
     'Complete this step before tracking redirect analytics.' => 'リダイレクトのアナリティクスをトラッキングする前に、この手順を完了してください。',
     'Ready' => '準備完了',
     'v{version}' => 'v{version}',
