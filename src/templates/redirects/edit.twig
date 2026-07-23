@@ -40,7 +40,6 @@
 {% if redirect and redirect.hasErrors() %}
     {% set validationSummary = include('lindemannrock-base/_partials/error-summary', {
         errors: redirect.getErrors(),
-        linkMode: 'field-id',
     })|trim %}
     {% set errorSummary = (errorSummary ~ validationSummary)|trim %}
 {% endif %}
