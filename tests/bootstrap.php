@@ -1,25 +1,29 @@
 <?php
-
 /**
- * PHPUnit bootstrap for the redirect-manager plugin.
+ * PHPUnit bootstrap for Redirect Manager's disposable Craft project.
  *
- * Delegates to the shared base-plugin bootstrap, which initialises Craft as a
- * console application. Tests run against the live DDEV database — there is no
- * transactional rollback. Cleanup is by marker (see `tests/TestCase.php`).
- *
- * @since 5.31.0
+ * @since 5.41.0
  */
 
 declare(strict_types=1);
 
-$baseBootstrap = dirname(__DIR__, 3) . '/vendor/lindemannrock/craft-plugin-base/src/testing/bootstrap.php';
+use lindemannrock\redirectmanager\tests\Support\TestProjectBoundary;
 
-if (!file_exists($baseBootstrap)) {
-    fwrite(STDERR, "Base plugin testing bootstrap not found at {$baseBootstrap}\n");
-    fwrite(STDERR, "Run `composer install` and ensure lindemannrock/craft-plugin-base ^5.x is present.\n");
+$autoloadCandidates = [
+    dirname(__DIR__) . '/vendor/autoload.php',
+    dirname(__DIR__, 3) . '/vendor/autoload.php',
+];
+foreach ($autoloadCandidates as $autoload) {
+    if (is_file($autoload)) {
+        require_once $autoload;
+        break;
+    }
+}
+if (!class_exists(TestProjectBoundary::class)) {
+    fwrite(STDERR, "Redirect Manager test autoload is unavailable.\n");
     exit(1);
 }
 
-require_once $baseBootstrap;
-
-\lindemannrock\base\testing\bootstrap();
+$boundary = TestProjectBoundary::resolve();
+require_once $boundary->baseBootstrap();
+\lindemannrock\base\testing\bootstrap($boundary->projectRoot);

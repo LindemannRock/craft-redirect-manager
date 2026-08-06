@@ -85,9 +85,7 @@ final class SettingsTestUrlSiteScopeTest extends TestCase
                 return [];
             }
         });
-        Craft::$app->set('request', new class([
-            'testUrl' => '/' . TestCase::MARKER . 'site-scope/page',
-        ]) extends ConsoleRequest {
+        Craft::$app->set('request', new class([ 'testUrl' => '/' . TestCase::MARKER . 'site-scope/page', ]) extends ConsoleRequest {
             /**
              * @param array<string, mixed> $bodyParams
              */

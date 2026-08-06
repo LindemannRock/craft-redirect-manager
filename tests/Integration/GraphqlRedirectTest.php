@@ -15,7 +15,6 @@ use GraphQL\Type\Definition\ResolveInfo;
 use lindemannrock\base\testing\StubConsoleRequest;
 use lindemannrock\redirectmanager\gql\queries\RedirectQuery;
 use lindemannrock\redirectmanager\gql\resolvers\RedirectResolver;
-use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\tests\TestCase;
 use yii\base\Request as YiiRequest;
 

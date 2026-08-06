@@ -11,8 +11,8 @@ declare(strict_types=1);
 namespace lindemannrock\redirectmanager\tests\Integration;
 
 use Craft;
-use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\controllers\ImportExportController;
+use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\tests\TestCase;
 use ReflectionMethod;

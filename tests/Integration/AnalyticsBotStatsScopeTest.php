@@ -40,7 +40,7 @@ final class AnalyticsBotStatsScopeTest extends TestCase
         $siteId = Craft::$app->getSites()->getPrimarySite()->id;
         $start = new \DateTime('+10 years');
         $end = (clone $start)->modify('+1 day');
-        $lastHit = $start->format('Y-m-d H:i:s');
+        $lastHit = (clone $start)->modify('+12 hours')->format('Y-m-d H:i:s');
 
         $this->seedBotAnalyticsRecord($siteId, '', 'normal', false, 7, null, null, null, 'desktop', 'Chrome', 'macOS', $lastHit);
         $this->seedBotAnalyticsRecord($siteId, 'Cache Manager', 'system', true, 5, 'Service Agent', 'LindemannRock', null, 'system', null, null, $lastHit);
@@ -87,8 +87,7 @@ final class AnalyticsBotStatsScopeTest extends TestCase
         ?string $browser = null,
         ?string $osName = null,
         ?string $lastHit = null,
-    ): AnalyticsRecord
-    {
+    ): AnalyticsRecord {
         $url = '/' . self::MARKER . 'bot_stats_' . substr(uniqid('', true), -8);
 
         $record = new AnalyticsRecord();

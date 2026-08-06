@@ -10,8 +10,6 @@ declare(strict_types=1);
 
 namespace lindemannrock\redirectmanager\tests\Integration;
 
-use Craft;
-use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\tests\TestCase;
 
 /**
@@ -45,12 +43,6 @@ final class RedirectResolutionTest extends TestCase
     protected function tearDown(): void
     {
         $this->settings()->enableRedirectCache = $this->savedCacheEnabled;
-        // fullurl + regex rows store a full URL / `^…`-anchored pattern in
-        // sourceUrlParsed, which the prefix-anchored marker purge misses.
-        // Drain anything carrying the marker anywhere in the column.
-        Craft::$app->getDb()->createCommand()
-            ->delete(RedirectRecord::tableName(), ['like', 'sourceUrlParsed', '%' . self::MARKER . '%', false])
-            ->execute();
         parent::tearDown();
     }
 

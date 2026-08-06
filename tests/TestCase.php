@@ -11,6 +11,10 @@ declare(strict_types=1);
 namespace lindemannrock\redirectmanager\tests;
 
 use Craft;
+use craft\cache\FileCache;
+use craft\db\Query;
+use craft\queue\BaseJob;
+use craft\queue\Queue;
 use lindemannrock\base\testing\IntegrationTestCase;
 use lindemannrock\redirectmanager\models\Settings;
 use lindemannrock\redirectmanager\records\RedirectRecord;
@@ -18,88 +22,107 @@ use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\services\AnalyticsService;
 use lindemannrock\redirectmanager\services\MatchingService;
 use lindemannrock\redirectmanager\services\RedirectsService;
+use Throwable;
+use yii\db\Transaction;
 
 /**
- * Base test case for redirect-manager integration tests.
+ * Redirect Manager integration boundary with exact per-test ownership.
  *
- * Extends the shared {@see IntegrationTestCase} for component snapshot/restore
- * and generic Query helpers, and layers plugin-specific shorthand on top:
- *  - direct accessors for `matching` / `redirects` / `analytics` services
- *  - per-test marker prefix + DB purge helpers covering both the redirects
- *    table and the analytics table (no FK linkage — both are purged directly
- *    by LIKE on their parsed-URL columns)
- *  - {@see seedRedirect()} convenience for inserting a marker-tagged row
- *    via the raw `RedirectRecord` (the service's `createRedirect()` runs full
- *    validation + duplicate + loop checks, which several tests want to drive
- *    explicitly rather than implicitly)
- *
- * Subclasses can override `setUp()` for additional fixture work but should
- * call `parent::setUp()` to keep marker-based isolation working.
+ * Every test receives a database transaction, a connection-local temporary
+ * queue table, and owned runtime/cache directories. Cleanup is idempotent and
+ * is also invoked by PHPUnit's finished-test subscriber if child teardown
+ * fails before reaching its parent.
  *
  * @since 5.30.0
  */
 abstract class TestCase extends IntegrationTestCase
 {
     /**
-     * Marker prefix used for every test-seeded redirect source URL.
+     * Prefix used to identify Redirect Manager test data.
      *
-     * The redirect's `sourceUrlParsed` column is the natural cleanup hook —
-     * every match path (cache key, dedup index, `findRedirect()` query) goes
-     * through it, and the marker can ride along as a path segment so the row
-     * still satisfies `RedirectRecord::validateSourceUrl()` for `pathonly`
-     * mode (which requires a leading `/`). The same marker travels onto the
-     * analytics table's `urlParsed` column whenever a 404 is recorded against
-     * a marker URL, so a single LIKE prefix drains both tables.
+     * @since 5.41.0
      */
-    protected const MARKER = '__rdr_test_';
+    public const MARKER = '__rdr_test_';
+
+    private static ?self $activeTest = null;
 
     protected MatchingService $matching;
-
     protected RedirectsService $redirects;
-
     protected AnalyticsService $analytics;
 
     private int $seedCounter = 0;
+    /** @var array<string, mixed>|null */
+    private ?array $settingsSnapshot = null;
+    /** @var array<string, object> */
+    private array $appComponentSnapshots = [];
+    private ?Transaction $transaction = null;
+    private ?object $originalQueue = null;
+    private ?object $originalCache = null;
+    private ?string $originalRuntimePath = null;
+    private ?string $queueRawTable = null;
+    private ?string $queueShadowTable = null;
+    /** @var list<int> */
+    private array $ownedRedirectIds = [];
+    /** @var list<int> */
+    private array $ownedAnalyticsIds = [];
+    /** @var list<int> */
+    private array $ownedQueueIds = [];
+    private bool $isolationFinished = false;
+    private bool $baseStateInitialised = false;
 
     protected function setUp(): void
     {
-        parent::setUp();
-        $this->matching = RedirectManager::$plugin->matching;
-        $this->redirects = RedirectManager::$plugin->redirects;
-        $this->analytics = RedirectManager::$plugin->analytics;
-        $this->seedCounter = 0;
-        $this->purgeTestRows();
+        self::$activeTest = $this;
+        $this->isolationFinished = false;
+        try {
+            parent::setUp();
+            $this->baseStateInitialised = true;
+            $this->snapshotAppComponents();
+            $this->settingsSnapshot = RedirectManager::$plugin->getSettings()->getAttributes();
+            $this->isolateRuntimeAndCache();
+            $this->isolateQueue();
+            $this->transaction = Craft::$app->getDb()->beginTransaction();
+
+            $this->matching = RedirectManager::$plugin->matching;
+            $this->redirects = RedirectManager::$plugin->redirects;
+            $this->analytics = RedirectManager::$plugin->analytics;
+            $this->seedCounter = 0;
+        } catch (Throwable $exception) {
+            try {
+                $this->finishIsolation();
+            } catch (Throwable $cleanupException) {
+                fwrite(STDERR, 'Redirect Manager setup cleanup failed: ' . $cleanupException->getMessage() . PHP_EOL);
+            }
+            throw $exception;
+        }
     }
 
     protected function tearDown(): void
     {
-        $this->purgeTestRows();
-        parent::tearDown();
+        $this->finishIsolation();
     }
 
     /**
-     * Override hook called from `IntegrationTestCase::tearDown()` BEFORE
-     * component restoration. Invalidate the file/Redis redirect cache so
-     * stale matches from one test never bleed into the next.
+     * Runner fallback when child teardown exits before parent cleanup.
+     *
+     * @since 5.41.0
      */
-    protected function cleanupExternalState(): void
+    public static function finishActiveTestIsolation(): void
     {
-        $this->redirects->invalidateCaches();
+        self::$activeTest?->finishIsolation();
     }
 
     /**
-     * Seed a saved {@see RedirectRecord} tagged with a marker so cleanup can
-     * find it. Built directly (not via `RedirectsService::createRedirect()`)
-     * because the service runs duplicate + loop guards that several tests
-     * want to drive explicitly. Defaults match the `pathonly` + `exact`
-     * shape that covers the vast majority of redirects in the wild.
+     * Seed and track one exact redirect row.
      *
      * @param array<string, mixed> $overrides
      */
     protected function seedRedirect(array $overrides = []): RedirectRecord
     {
         $this->seedCounter++;
-        $marker = '/' . self::MARKER . $this->seedCounter . '_' . substr(uniqid('', true), -8);
+        $runId = \craft\helpers\App::env('REDIRECT_MANAGER_TEST_RUN_ID');
+        $runMarker = is_string($runId) ? substr($runId, 0, 8) : bin2hex(random_bytes(4));
+        $marker = '/' . self::MARKER . $runMarker . '_' . $this->seedCounter . '_' . bin2hex(random_bytes(4));
 
         $record = new RedirectRecord();
         $record->sourceUrl = $overrides['sourceUrl'] ?? $marker;
@@ -116,31 +139,27 @@ abstract class TestCase extends IntegrationTestCase
         $record->elementId = $overrides['elementId'] ?? null;
         $record->hitCount = $overrides['hitCount'] ?? 0;
 
-        $this->assertTrue(
-            $record->save(false),
-            'Seeded redirect must save — errors: ' . json_encode($record->getErrors()),
-        );
+        $this->assertTrue($record->save(false), 'Seeded redirect must save: ' . json_encode($record->getErrors()));
+        $this->ownedRedirectIds[] = (int)$record->id;
 
         return $record;
     }
 
-    /**
-     * Reload a redirect from the DB and return the persisted `hitCount`.
-     * Bypasses any in-memory model state the service might hold.
-     */
+    /** Push and track a job in the test's connection-local queue. */
+    protected function pushOwnedJob(BaseJob $job, int $delay = 0): int
+    {
+        $id = (int)Craft::$app->getQueue()->delay($delay)->push($job);
+        $this->ownedQueueIds[] = $id;
+        return $id;
+    }
+
     protected function fetchHitCountFromDb(int $id): int
     {
         $row = $this->fetchRow(RedirectRecord::tableName(), ['id' => $id]);
         $this->assertNotNull($row, "Redirect row {$id} not found.");
-
-        return (int) $row['hitCount'];
+        return (int)$row['hitCount'];
     }
 
-    /**
-     * Plugin settings shorthand for tests that need to flip a setting on
-     * the in-memory model (no DB write required — `RedirectManager::$plugin`
-     * holds a single Settings instance and the services read from it live).
-     */
     protected function settings(): Settings
     {
         /** @var Settings $settings */
@@ -148,24 +167,179 @@ abstract class TestCase extends IntegrationTestCase
         return $settings;
     }
 
-    /**
-     * Wipe every redirect + analytics row that still carries the marker.
-     * The redirect table has no FK CASCADE into analytics, so we purge both
-     * directly. Analytics rows for marker URLs are matched on `urlParsed`,
-     * which is what `AnalyticsTrackingService::record404()` writes when given
-     * one of our test URLs.
-     */
-    protected function purgeTestRows(): void
+    protected function cleanupExternalState(): void
     {
-        $this->purgeRowsByMarker(
-            RedirectRecord::tableName(),
-            'sourceUrlParsed',
-            '/' . self::MARKER,
+        // Runtime and cache are isolated under an exact Base-tracked path.
+    }
+
+    private function snapshotAppComponents(): void
+    {
+        foreach (['request', 'response', 'sites', 'user', 'config', 'mutex', 'elements'] as $id) {
+            if (Craft::$app->has($id)) {
+                $component = Craft::$app->get($id);
+                if (is_object($component)) {
+                    $this->appComponentSnapshots[$id] = $component;
+                }
+            }
+        }
+    }
+
+    private function isolateRuntimeAndCache(): void
+    {
+        $this->originalRuntimePath = Craft::$app->getRuntimePath();
+        $this->originalCache = Craft::$app->getCache();
+        $runtimePath = $this->createTrackedTempDirectory('redirect-manager-runtime-');
+        Craft::$app->setRuntimePath($runtimePath);
+        Craft::$app->set('cache', new FileCache([
+            'cachePath' => $runtimePath . '/cache',
+            'keyPrefix' => 'redirect-manager-test-' . bin2hex(random_bytes(8)),
+        ]));
+    }
+
+    private function isolateQueue(): void
+    {
+        $queue = Craft::$app->getQueue();
+        if (!$queue instanceof Queue) {
+            throw new \RuntimeException('Redirect Manager tests require Craft\'s database queue.');
+        }
+        $this->originalQueue = $queue;
+        $db = Craft::$app->getDb();
+        if ($db->getDriverName() !== 'mysql') {
+            throw new \RuntimeException('The disposable Redirect Manager suite currently requires MySQL.');
+        }
+        $this->queueRawTable = $db->getSchema()->getRawTableName($queue->tableName);
+        $this->queueShadowTable = $this->queueRawTable . '_rm_' . bin2hex(random_bytes(8));
+        $db->createCommand(sprintf(
+            'CREATE TEMPORARY TABLE %s LIKE %s',
+            $db->quoteTableName($this->queueShadowTable),
+            $db->quoteTableName($this->queueRawTable),
+        ))->execute();
+        $db->createCommand(sprintf(
+            'ALTER TABLE %s RENAME TO %s',
+            $db->quoteTableName($this->queueShadowTable),
+            $db->quoteTableName($this->queueRawTable),
+        ))->execute();
+        $this->queueShadowTable = null;
+        Craft::$app->set('queue', new Queue([
+            'db' => $db,
+            'mutex' => $queue->mutex,
+            'tableName' => $queue->tableName,
+            'channel' => $queue->channel,
+            'mutexTimeout' => $queue->mutexTimeout,
+        ]));
+    }
+
+    private function captureOwnedIds(): void
+    {
+        $this->ownedRedirectIds = array_values(array_unique(array_merge(
+            $this->ownedRedirectIds,
+            array_map('intval', (new Query())->select(['id'])->from(RedirectRecord::tableName())->column()),
+        )));
+        $this->ownedAnalyticsIds = array_map(
+            'intval',
+            (new Query())->select(['id'])->from('{{%redirectmanager_analytics}}')->column(),
         );
-        $this->purgeRowsByMarker(
-            '{{%redirectmanager_analytics}}',
-            'urlParsed',
-            '/' . self::MARKER,
-        );
+        $this->ownedQueueIds = array_values(array_unique(array_merge(
+            $this->ownedQueueIds,
+            array_map('intval', (new Query())->select(['id'])->from('{{%queue}}')->column()),
+        )));
+    }
+
+    private function finishIsolation(): void
+    {
+        if ($this->isolationFinished) {
+            return;
+        }
+        $this->isolationFinished = true;
+        $errors = [];
+
+        $this->runCleanupStep($errors, fn() => $this->captureOwnedIds());
+        $this->runCleanupStep($errors, function(): void {
+            if ($this->transaction !== null && $this->transaction->getIsActive()) {
+                $this->transaction->rollBack();
+            }
+            $this->transaction = null;
+        });
+        $this->runCleanupStep($errors, fn() => $this->verifyOwnedRowsRemoved());
+        $this->runCleanupStep($errors, function(): void {
+            foreach ($this->appComponentSnapshots as $id => $component) {
+                Craft::$app->set($id, $component);
+            }
+            $this->appComponentSnapshots = [];
+        });
+        $this->runCleanupStep($errors, function(): void {
+            if ($this->settingsSnapshot !== null) {
+                RedirectManager::$plugin->getSettings()->setAttributes($this->settingsSnapshot, false);
+                $this->settingsSnapshot = null;
+            }
+        });
+        $this->runCleanupStep($errors, function(): void {
+            if ($this->originalQueue !== null) {
+                Craft::$app->set('queue', $this->originalQueue);
+                $this->originalQueue = null;
+            }
+            $db = Craft::$app->getDb();
+            foreach ([$this->queueRawTable, $this->queueShadowTable] as $table) {
+                if ($table !== null) {
+                    $db->createCommand('DROP TEMPORARY TABLE IF EXISTS ' . $db->quoteTableName($table))->execute();
+                }
+            }
+            $this->queueRawTable = null;
+            $this->queueShadowTable = null;
+        });
+        $this->runCleanupStep($errors, function(): void {
+            if ($this->originalCache !== null) {
+                Craft::$app->set('cache', $this->originalCache);
+                $this->originalCache = null;
+            }
+            if ($this->originalRuntimePath !== null) {
+                Craft::$app->setRuntimePath($this->originalRuntimePath);
+                $this->originalRuntimePath = null;
+            }
+        });
+
+        if ($this->baseStateInitialised) {
+            $this->runCleanupStep($errors, fn() => parent::tearDown());
+            $this->baseStateInitialised = false;
+        }
+        self::$activeTest = null;
+
+        if ($errors !== []) {
+            $messages = array_map(
+                static fn(Throwable $error): string => $error::class . ': ' . $error->getMessage(),
+                $errors,
+            );
+            throw new \RuntimeException(
+                'Redirect Manager test isolation cleanup failed: ' . implode(' | ', $messages),
+                0,
+                $errors[0],
+            );
+        }
+    }
+
+    /** @param list<Throwable> $errors */
+    private function runCleanupStep(array &$errors, callable $cleanup): void
+    {
+        try {
+            $cleanup();
+        } catch (Throwable $exception) {
+            $errors[] = $exception;
+        }
+    }
+
+    private function verifyOwnedRowsRemoved(): void
+    {
+        foreach ([
+            [RedirectRecord::tableName(), $this->ownedRedirectIds],
+            ['{{%redirectmanager_analytics}}', $this->ownedAnalyticsIds],
+            ['{{%queue}}', $this->ownedQueueIds],
+        ] as [$table, $ids]) {
+            if ($ids !== [] && (new Query())->from($table)->where(['id' => $ids])->exists()) {
+                throw new \RuntimeException("Exact test-owned rows remain in {$table} after rollback.");
+            }
+        }
+        $this->ownedRedirectIds = [];
+        $this->ownedAnalyticsIds = [];
+        $this->ownedQueueIds = [];
     }
 }

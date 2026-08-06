@@ -26,18 +26,6 @@ use ReflectionMethod;
  */
 final class SchedulerPatternTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->deleteRedirectManagerQueueRows();
-    }
-
-    protected function tearDown(): void
-    {
-        $this->deleteRedirectManagerQueueRows();
-        parent::tearDown();
-    }
-
     public function testAnalyticsCleanupReschedulesWhenExistingCleanupRowExists(): void
     {
         $this->settings()->enableAnalytics = true;
@@ -240,20 +228,5 @@ final class SchedulerPatternTest extends TestCase
             false,
             pluginHandle: 'redirect-manager',
         );
-    }
-
-    private function deleteRedirectManagerQueueRows(): void
-    {
-        Craft::$app->getDb()->createCommand()
-            ->delete('{{%queue}}', [
-                'and',
-                ['like', 'job', 'redirectmanager'],
-                [
-                    'or',
-                    ['like', 'job', 'CleanupAnalyticsJob'],
-                    ['like', 'job', 'CreateBackupJob'],
-                ],
-            ])
-            ->execute();
     }
 }

@@ -30,13 +30,10 @@ final class LocalCacheServiceTest extends TestCase
         parent::setUp();
         $this->originalCacheStorageMethod = RedirectManager::$plugin->getSettings()->cacheStorageMethod;
         RedirectManager::$plugin->getSettings()->cacheStorageMethod = 'file';
-        $this->clearLocalCacheFiles();
     }
 
     protected function tearDown(): void
     {
-        RedirectManager::$plugin->getSettings()->cacheStorageMethod = 'file';
-        $this->clearLocalCacheFiles();
         RedirectManager::$plugin->getSettings()->cacheStorageMethod = $this->originalCacheStorageMethod;
         parent::tearDown();
     }
@@ -85,13 +82,6 @@ final class LocalCacheServiceTest extends TestCase
 
         self::assertFileDoesNotExist($redirectCache);
         self::assertFileExists($deviceCache);
-    }
-
-    private function clearLocalCacheFiles(): void
-    {
-        RedirectManager::$plugin->localCache->clearAllCaches();
-        @unlink($this->cacheFile('redirects', 'keep.txt'));
-        @unlink($this->cacheFile('device', 'keep.txt'));
     }
 
     private function cacheFile(string $type, string $filename): string
