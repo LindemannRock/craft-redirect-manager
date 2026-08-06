@@ -93,7 +93,7 @@ Matches and redirects:
 Capture group substitution is processed by `MatchingService::applyCaptures()` @since(5.10.0).
 
 > [!NOTE]
-> Capture substitution works for **Wildcard**, **Prefix**, and **Regex** matches (Exact produces no captures). A destination that references more captures than the match type can produce — `$1` under Exact Match, or `$2` when the source has only one `*` / one capturing group — is rejected when you save or import.
+> Capture substitution works for **Wildcard**, **Prefix**, and **Regex** matches. Exact Match supports `$0` for the full matched URL but has no numbered groups such as `$1`. A destination that references more captures than the match type can produce — `$1` under Exact Match, or `$2` when the source has only one `*` / one capturing group — is rejected when you save or import.
 
 > [!NOTE]
 > Regex patterns are matched against the full path (or full URL, depending on [Source Match Mode](#source-match-mode)). Do not wrap patterns in delimiters.
@@ -105,9 +105,13 @@ The destination is where matched requests are sent. Valid destinations:
 - A relative path — `/new-page` (not protocol-relative `//host`)
 - A full `http(s)://` URL **with a host** — `https://example.com/new-page`
 - A contact/app link — `mailto:`, `tel:`, `whatsapp:`, `sms:`, `fax:`, `skype://`, `slack:`, `msteams:`
-- A capture reference — `$1`, `$2` (etc.), substituted from the matched source (see [Match Types](#match-types))
+- Any of those destination types with captures in their safe portion — `/new/$1`, `https://example.com/$1?from=$2`, or `mailto:$1@example.com`
 
-Bare schemes (`https://` with no host), protocol-relative URLs (`//host`), and executable schemes (`javascript:`, `data:`, …) are rejected. The same rule applies to the Control Panel form and CSV import.
+Bare schemes (`https://` with no host), protocol-relative URLs (`//host`), executable schemes (`javascript:`, `data:`, …), and a bare capture such as `$1` are rejected. The same rule applies to the Control Panel form and CSV import.
+
+Captures refine a destination; they do not choose where it is trusted to go. A relative template remains relative after substitution. An `http://` or `https://` template keeps the scheme and authority you entered, so captures can appear in its path, query, or fragment but not in its scheme, hostname, user information, or port. Contact and application templates likewise keep their entered scheme.
+
+Redirect Manager also applies this rule when a redirect runs. This protects older rows and records written by integrations that may have bypassed current validation. If the highest-priority matching rule resolves outside its template's trust boundary, Redirect Manager skips it and evaluates the next matching rule. If no matching rule resolves safely, the request remains unhandled. Only the eventual safe winner receives a hit, handled analytics, or a positive cache entry.
 
 ## Priority
 
@@ -124,6 +128,8 @@ When multiple redirect rules could match the same URL, priority determines which
 New redirects default to priority `0` (highest) — raise the number for broader, fall-through patterns that should only match when nothing more specific does.
 
 **Example:** You have `/blog/featured-post` set to priority 0 and `/blog/*` set to priority 9. Visitors to `/blog/featured-post` hit the exact rule; all other `/blog/` paths fall through to the wildcard.
+
+Priority is evaluated among eligible safe rules. A matching rule whose capture substitution would change its destination trust class, scheme, or HTTP authority is skipped rather than blocking a lower-priority safe rule.
 
 ## Status Codes
 
@@ -178,11 +184,11 @@ The redirect list supports bulk enable, bulk disable, and bulk delete. Select ro
 
 ### Testing a Redirect
 
-To check what a given URL resolves to, go to **Settings → Test** and enter a URL. The tester lists **every** enabled rule that matches — not just the first — along with the resolved destination, with any regex capture groups already applied. This is the fastest way to confirm a new pattern (especially a regex with captures) behaves the way you expect, or to see why two rules overlap before adjusting their [priority](#priority). See [Testing tools](../resources/testing-tools.md) for the full redirect tester and JSON API tester workflow.
+To check what a given URL resolves to, go to **Settings → Test** and enter a URL. The tester lists every enabled rule that matches and resolves safely — not just the first — along with the resolved destination, with any capture groups already applied. Unsafe matches are skipped by the same policy used for frontend requests, GraphQL, and plugin integrations, so the first result is the rule that would actually win. This is the fastest way to confirm a new pattern behaves as expected or to see why two rules overlap before adjusting their [priority](#priority). See [Testing tools](../resources/testing-tools.md) for the full redirect tester and JSON API tester workflow.
 
 ## Caching
 
-Redirect Manager caches the enabled redirect list for fast lookups. The cache is automatically invalidated when a redirect is created, updated, or deleted. Cache settings:
+Redirect Manager caches eligible resolved winners for fast lookups. An unsafe match is never stored as the winner, and cached entries are rechecked against the destination policy before use. The cache is automatically invalidated when a redirect is created, updated, or deleted. Cache settings:
 
 ```php
 'enableRedirectCache'    => true,

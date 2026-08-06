@@ -6,8 +6,8 @@ Use **Redirect Manager → Settings → Test** when you need to confirm what Red
 
 ## What you'll use it for
 
-- Checking which enabled redirect wins for a URL, including regex capture substitution
-- Seeing lower-priority redirects that also match the same URL
+- Checking which eligible safe redirect wins for a URL, including capture substitution
+- Seeing lower-priority safe redirects that also match the same URL
 - Creating a manual redirect from a no-match result
 - Verifying the JSON API is enabled, token-configured, and returning JSON
 - Downloading the bundled Postman collection and environment for API testing outside Craft
@@ -21,7 +21,7 @@ Open **Redirect Manager → Settings → Test**. The **Test URL Redirects** tab 
 
 The test accepts paths and full URLs. If you enter text without a leading slash or scheme, the page normalizes it for the test: dotted values become `https://...`, and other values become `/...`.
 
-When a redirect matches, the result shows **Match Found!**, the source URL, destination URL, resolved destination URL, match type, source match mode, status code, and priority. If more enabled redirects also match, they appear under **{count} other redirect(s) also match this URL** and are marked as skipped because of lower priority.
+When a redirect matches and resolves safely, the result shows **Match Found!**, the source URL, destination URL, resolved destination URL, match type, source match mode, status code, and priority. If more eligible safe redirects also match, they appear under **{count} other redirect(s) also match this URL** and are marked as skipped because of lower priority. Matches whose captures would change the destination trust class, scheme, or HTTP authority are omitted, just as they are during a live frontend, GraphQL, or plugin-integration lookup.
 
 When no redirect matches, the result shows **No Match Found** and offers **Create Redirect for This URL**. Full URLs prefill `redirectSrcMatch=fullurl`; paths create a normal path-only redirect draft.
 

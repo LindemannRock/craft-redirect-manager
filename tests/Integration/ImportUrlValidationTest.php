@@ -19,9 +19,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
  * {@see RedirectRecord::isValidDestination()} and
  * {@see RedirectRecord::captureReferenceError()} so the two surfaces can't drift.
  * The format rule rejects executable schemes and protocol-relative `//host`
- * while accepting the contact/app protocols and capture references redirects
- * legitimately use; the capture rule rejects references the match type / source
- * pattern can't produce.
+ * while accepting contact/app protocols and captures inside a fixed destination
+ * trust class; the capture rule rejects references the match type / source
+ * pattern cannot produce.
  *
  * @since 5.32.2
  */
@@ -47,8 +47,8 @@ final class ImportUrlValidationTest extends TestCase
         self::assertTrue(RedirectRecord::isValidDestination('whatsapp:+15551234567'));
         self::assertTrue(RedirectRecord::isValidDestination('slack://channel'));
         self::assertTrue(RedirectRecord::isValidDestination('msteams:chat'));
-        // Capture reference used by regex/wildcard/prefix redirects.
-        self::assertTrue(RedirectRecord::isValidDestination('$1'));
+        // A capture can refine a fixed relative/scheme/authority template.
+        self::assertTrue(RedirectRecord::isValidDestination('/captured/$1'));
     }
 
     public function testRejectsUnsupportedSchemes(): void
@@ -66,6 +66,18 @@ final class ImportUrlValidationTest extends TestCase
         // `//host` resolves to an external origin; rejected on both surfaces now.
         self::assertFalse(RedirectRecord::isValidDestination('//evil.com'));
         self::assertFalse(RedirectRecord::isValidDestination('//evil.com/phishing'));
+    }
+
+    public function testRejectsCaptureControlledTrustClassAndAuthority(): void
+    {
+        self::assertFalse(RedirectRecord::isValidDestination('$1'));
+        self::assertFalse(RedirectRecord::isValidDestination('$0'));
+        self::assertFalse(RedirectRecord::isValidDestination('https://$1/path'));
+        self::assertFalse(RedirectRecord::isValidDestination('https://user:$1@example.com/path'));
+        self::assertFalse(RedirectRecord::isValidDestination('https://example.com:$1/path'));
+
+        self::assertTrue(RedirectRecord::isValidDestination('https://example.com/$1?query=$2#$0'));
+        self::assertTrue(RedirectRecord::isValidDestination('mailto:$1@example.com'));
     }
 
     public function testExactMatchRejectsCaptureReferences(): void
@@ -121,6 +133,15 @@ final class ImportUrlValidationTest extends TestCase
         $record->destinationUrl = '/new/$1';
         $record->redirectSrcMatch = 'pathonly';
         $record->matchType = 'exact';
+        self::assertFalse($record->validate(['destinationUrl']));
+        self::assertTrue($record->hasErrors('destinationUrl'));
+
+        // A capture-controlled HTTP authority is rejected by the CP save model.
+        $record = new RedirectRecord();
+        $record->sourceUrl = '/old-page/*';
+        $record->destinationUrl = 'https://$1/path';
+        $record->redirectSrcMatch = 'pathonly';
+        $record->matchType = 'wildcard';
         self::assertFalse($record->validate(['destinationUrl']));
         self::assertTrue($record->hasErrors('destinationUrl'));
 

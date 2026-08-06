@@ -136,7 +136,7 @@ class MyService extends Component
 | `$source` | `string` | Your plugin handle in kebab-case (e.g., `'shortlink-manager'`) |
 | `$context` | `array` | Optional metadata about the 404 (stored in analytics) |
 
-Returns the matching redirect as an array with `destinationUrl` and `statusCode` keys, or `null` if no match.
+Returns the first eligible safe matching redirect as an array with `destinationUrl` and `statusCode` keys, or `null` if no safe match remains. Capture substitution and destination trust checks use the same policy as frontend and GraphQL resolution: unsafe matches are skipped by priority, and only the eventual safe winner receives hit and handled-analytics updates.
 
 ### `createRedirectRule(array $attributes, bool $showNotification = false): bool`
 

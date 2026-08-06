@@ -155,6 +155,52 @@ final class GraphqlRedirectTest extends TestCase
         self::assertSame('graphql', $analytics['sourcePlugin']);
     }
 
+    public function testResolveQuerySkipsUnsafeHigherPriorityRuleForSafeWinner(): void
+    {
+        $site = Craft::$app->getSites()->getPrimarySite();
+        $token = bin2hex(random_bytes(4));
+        $prefix = '/' . self::MARKER . 'graphql_trust_' . $token . '/';
+        $uri = $prefix . 'https://evil.example/path';
+        $unsafe = $this->seedRedirect([
+            'sourceUrl' => $prefix . '*',
+            'sourceUrlParsed' => $prefix . '*',
+            'destinationUrl' => '$1',
+            'matchType' => 'wildcard',
+            'priority' => 0,
+            'siteId' => $site->id,
+        ]);
+        $safe = $this->seedRedirect([
+            'sourceUrl' => $prefix . 'https://*',
+            'sourceUrlParsed' => $prefix . 'https://*',
+            'destinationUrl' => 'https://safe.example/$1',
+            'matchType' => 'wildcard',
+            'priority' => 1,
+            'siteId' => $site->id,
+        ]);
+
+        $result = RedirectResolver::resolve(
+            null,
+            ['uri' => $uri, 'siteId' => $site->id],
+            null,
+            $this->createMock(ResolveInfo::class),
+        );
+
+        self::assertIsArray($result);
+        self::assertSame($safe->id, (int)$result['id']);
+        self::assertSame('https://safe.example/evil.example/path', $result['destinationUrl']);
+        self::assertSame(0, $this->fetchHitCountFromDb($unsafe->id));
+        self::assertSame(1, $this->fetchHitCountFromDb($safe->id));
+
+        $analytics = $this->fetchRow('{{%redirectmanager_analytics}}', [
+            'urlParsed' => $uri,
+            'siteId' => $site->id,
+        ]);
+        self::assertNotNull($analytics);
+        self::assertSame(1, (int)$analytics['handled']);
+        self::assertSame($safe->id, (int)$analytics['redirectId']);
+        self::assertSame(1, (int)$analytics['count']);
+    }
+
     public function testRedirectListQueryIsReadOnly(): void
     {
         $site = Craft::$app->getSites()->getPrimarySite();

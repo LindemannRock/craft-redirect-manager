@@ -134,12 +134,12 @@ Example response:
 
 ### Resolver behavior
 
-Resolution uses Redirect Manager's normal matching path, including path-only vs full-URL mode, requested-site base-path stripping, priority ordering, global redirects, wildcard/prefix/RegEx captures, and query-string stripping when that setting is enabled.
+Resolution uses Redirect Manager's normal matching path, including path-only vs full-URL mode, requested-site base-path stripping, priority ordering, global redirects, wildcard/prefix/RegEx captures, destination trust checks, and query-string stripping when that setting is enabled. If a matched rule resolves outside its editor-authored destination trust class, scheme, or HTTP authority, it is skipped and resolution continues to the next eligible safe rule.
 
 This query behaves like a real 404 lookup:
 
-- A matched redirect increments `hitCount` and updates `lastHit`
-- A matched redirect records handled analytics with `sourcePlugin = graphql`
+- Only the final eligible safe redirect increments `hitCount` and updates `lastHit`
+- Only that winner records handled analytics with `sourcePlugin = graphql`
 - A miss records unhandled analytics with `sourcePlugin = graphql`
 - Analytics respects the requested `site` / `siteId`
 

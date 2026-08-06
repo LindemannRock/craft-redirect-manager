@@ -11,6 +11,7 @@ namespace lindemannrock\redirectmanager\records;
 use craft\db\ActiveRecord;
 use craft\records\Site;
 use lindemannrock\base\helpers\UrlSafetyHelper;
+use lindemannrock\redirectmanager\services\MatchingService;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -42,12 +43,6 @@ use yii\db\ActiveQueryInterface;
  */
 class RedirectRecord extends ActiveRecord
 {
-    /**
-     * Schemes accepted as redirect destinations in addition to relative paths
-     * and http(s) URLs. These back vanity action links (e.g. /call → tel:).
-     */
-    private const DESTINATION_SCHEMES = ['mailto', 'tel', 'whatsapp', 'sms', 'fax', 'skype', 'slack', 'msteams'];
-
     /**
      * @inheritdoc
      */
@@ -218,9 +213,10 @@ class RedirectRecord extends ActiveRecord
     }
 
     /**
-     * Whether a destination value is a valid redirect target: a relative path
-     * (not protocol-relative //host), an http(s) URL, a recognized contact/app
-     * scheme, or a capture reference ($1, $2, …).
+     * Whether a destination template has a fixed safe trust class: a relative
+     * path (not protocol-relative //host), an HTTP(S) URL with fixed authority,
+     * or a recognized contact/application scheme. Captures may refine the safe
+     * portion of those templates but cannot supply their trust boundary.
      *
      * Shared by the CP form and CSV import so the two surfaces can't drift.
      *
@@ -230,16 +226,7 @@ class RedirectRecord extends ActiveRecord
      */
     public static function isValidDestination(string $url): bool
     {
-        if (UrlSafetyHelper::hasDangerousScheme($url)) {
-            return false;
-        }
-
-        // Capture reference ($1, $2, …) resolved at redirect time.
-        if (preg_match('#^\$\d#', $url) === 1) {
-            return true;
-        }
-
-        return UrlSafetyHelper::isSafeRedirectUrl($url, self::DESTINATION_SCHEMES);
+        return MatchingService::isSafeDestinationTemplate($url);
     }
 
     /**

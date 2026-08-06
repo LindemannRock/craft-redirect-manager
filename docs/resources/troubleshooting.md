@@ -219,8 +219,11 @@ Saving a redirect or importing a row fails with an invalid destination/source UR
 
 1. **Use a complete URL.** A bare scheme like `https://` (no host) is rejected — enter a full URL with a host (`https://example.com/page`) or a relative path (`/page`).
 2. **Avoid protocol-relative URLs.** `//host` is rejected because the browser resolves it to an external origin. Use a path (`/host`) or a full `https://` URL.
-3. **Check capture references.** `$1`, `$2` only work where the match type produces captures: Wildcard (one per `*`), Prefix (`$1` = the part after the prefix), and Regex (one per capturing group). `$1` under Exact Match, or referencing more captures than the source defines, is rejected. See [Match Types](../feature-tour/redirects.md#match-types).
+3. **Check capture references.** `$1`, `$2` only work where the match type produces captures: Wildcard (one per `*`), Prefix (`$1` = the part after the prefix), and Regex (one per capturing group). Exact Match supports only `$0`, the full matched URL. Referencing more captures than the source defines is rejected. See [Match Types](../feature-tour/redirects.md#match-types).
 4. **Contact links are allowed.** `mailto:`, `tel:`, `whatsapp:`, `sms:`, `fax:`, `skype://`, `slack:`, and `msteams:` destinations are valid; executable schemes (`javascript:`, `data:`) are not.
+5. **Keep captures inside a fixed destination.** Use `/new/$1` or `https://example.com/$1?from=$2`. A bare `$1`, `https://$1/path`, or a capture in the user-info or port portion of an HTTP(S) URL is rejected because the request value would control the destination's trust boundary.
+
+If an older published redirect or an integration-created row contains an unsafe template, it remains in the database but cannot win resolution. Redirect Manager skips it and continues to the next matching safe rule by priority. If every matching rule is unsafe, no redirect is issued and the request is recorded as unhandled. Skipped rules do not receive hits, handled analytics, or positive cache entries. Edit or replace the unsafe row; do not raise its priority to work around the protection.
 
 ---
 

@@ -79,13 +79,6 @@ class RedirectResolver extends Resolver
 
         $redirect = self::reloadRedirectForResponse($redirect);
 
-        if (!empty($redirect['_captures'])) {
-            $redirect['destinationUrl'] = RedirectManager::$plugin->matching->applyCaptures(
-                $redirect['destinationUrl'],
-                $redirect['_captures'],
-            );
-        }
-
         return $redirect;
     }
 
@@ -102,7 +95,7 @@ class RedirectResolver extends Resolver
             return $redirect;
         }
 
-        $captures = $redirect['_captures'] ?? null;
+        $resolvedDestination = $redirect['destinationUrl'] ?? null;
         $fresh = (new Query())
             ->from(RedirectRecord::tableName())
             ->where(['id' => (int)$id])
@@ -112,8 +105,8 @@ class RedirectResolver extends Resolver
             return $redirect;
         }
 
-        if (!empty($captures)) {
-            $fresh['_captures'] = $captures;
+        if (is_string($resolvedDestination)) {
+            $fresh['destinationUrl'] = $resolvedDestination;
         }
 
         return $fresh;

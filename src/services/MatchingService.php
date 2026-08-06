@@ -10,6 +10,7 @@ namespace lindemannrock\redirectmanager\services;
 
 use Craft;
 use craft\base\Component;
+use lindemannrock\base\helpers\UrlSafetyHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
 
@@ -25,6 +26,11 @@ use lindemannrock\redirectmanager\RedirectManager;
 class MatchingService extends Component
 {
     use LoggingTrait;
+
+    /**
+     * Schemes supported by Redirect Manager in addition to relative and HTTP(S) destinations.
+     */
+    private const DESTINATION_SCHEMES = ['mailto', 'tel', 'whatsapp', 'sms', 'fax', 'skype', 'slack', 'msteams'];
 
     /**
      * @inheritdoc
@@ -88,10 +94,6 @@ class MatchingService extends Component
      */
     public function applyCaptures(string $destination, array $captures): string
     {
-        if (empty($captures)) {
-            return $destination;
-        }
-
         // Replace $0, $1, $2, etc. with captured values
         // Start from highest number to avoid $1 replacing part of $10
         $maxIndex = count($captures) - 1;
@@ -110,6 +112,114 @@ class MatchingService extends Component
         $destination = preg_replace('#(?<!:)//+#', '/', $destination);
 
         return $destination;
+    }
+
+    /**
+     * Whether a stored destination template has an editor-authored trust class.
+     *
+     * Captures may refine a relative path, an HTTP(S) path/query/fragment, or
+     * the payload of a supported contact/application scheme. They may not
+     * choose the trust class, scheme, or HTTP authority.
+     *
+     * @since 5.41.0
+     */
+    public static function isSafeDestinationTemplate(string $template): bool
+    {
+        return self::destinationTrustDescriptor($template, true) !== null;
+    }
+
+    /**
+     * Apply captures and return the destination only when its trust class,
+     * scheme, and authority still match the editor-authored template.
+     *
+     * @param array<int, string> $captures
+     * @since 5.41.0
+     */
+    public function resolveDestination(string $template, array $captures): ?string
+    {
+        $resolved = $this->applyCaptures($template, $captures);
+
+        return self::isResolvedDestinationSafe($template, $resolved) ? $resolved : null;
+    }
+
+    /**
+     * Whether a resolved destination retains its template's trust boundary.
+     *
+     * This also validates positive-cache entries before they can become a
+     * winner again on a later request.
+     *
+     * @since 5.41.0
+     */
+    public static function isResolvedDestinationSafe(string $template, string $resolved): bool
+    {
+        $templateTrust = self::destinationTrustDescriptor($template, true);
+        $resolvedTrust = self::destinationTrustDescriptor($resolved, false);
+
+        if ($templateTrust === null || $resolvedTrust === null || $templateTrust['class'] !== $resolvedTrust['class']) {
+            return false;
+        }
+
+        if ($templateTrust['class'] === 'relative') {
+            return true;
+        }
+
+        if (strcasecmp($templateTrust['scheme'], $resolvedTrust['scheme']) !== 0) {
+            return false;
+        }
+
+        return $templateTrust['class'] !== 'http'
+            || $templateTrust['authority'] === $resolvedTrust['authority'];
+    }
+
+    /**
+     * @return array{class: 'relative'|'http'|'application', scheme: string, authority: string}|null
+     */
+    private static function destinationTrustDescriptor(string $destination, bool $allowCaptures): ?array
+    {
+        if (
+            $destination === ''
+            || trim($destination) !== $destination
+            || preg_match('/[\x00-\x1F\x7F]/', $destination) === 1
+            || UrlSafetyHelper::hasDangerousScheme($destination)
+        ) {
+            return null;
+        }
+
+        if (!$allowCaptures && preg_match('/\$\d+/', $destination) === 1) {
+            return null;
+        }
+
+        if (str_starts_with($destination, '/')) {
+            if (str_starts_with($destination, '//')) {
+                return null;
+            }
+
+            return ['class' => 'relative', 'scheme' => '', 'authority' => ''];
+        }
+
+        if (preg_match('~^(https?)://([^/?#]+)~i', $destination, $matches) === 1) {
+            $authority = $matches[2];
+            if (($allowCaptures && preg_match('/\$\d+/', $authority) === 1) || !UrlSafetyHelper::isHttpUrlWithHost($destination)) {
+                return null;
+            }
+
+            return [
+                'class' => 'http',
+                'scheme' => $matches[1],
+                'authority' => $authority,
+            ];
+        }
+
+        if (preg_match('/^([a-z][a-z0-9+.-]*):/i', $destination, $matches) !== 1) {
+            return null;
+        }
+
+        $scheme = strtolower($matches[1]);
+        if (!in_array($scheme, self::DESTINATION_SCHEMES, true)) {
+            return null;
+        }
+
+        return ['class' => 'application', 'scheme' => $matches[1], 'authority' => ''];
     }
 
     /**

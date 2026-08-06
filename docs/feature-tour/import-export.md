@@ -51,9 +51,12 @@ Optional fields (defaults are used when omitted):
 
 Each row is validated before import; problems are flagged in the **Preview** errors bucket and those rows are skipped. A row is rejected when:
 
-- **Source or Destination URL is missing or malformed** — a bare scheme (`https://` with no host), an email-looking value, or a protocol-relative `//host` is rejected. A destination may be a path, a full `http(s)://` URL with a host, a contact link (`mailto:`, `tel:`, `whatsapp:`, `sms:`, `fax:`, `skype://`, `slack:`, `msteams:`), or a capture reference (`$1`, `$2`).
+- **Source or Destination URL is missing or malformed** — a bare scheme (`https://` with no host), an email-looking value, a protocol-relative `//host`, or a bare capture such as `$1` is rejected. A destination may be a path, a full `http(s)://` URL with a host, or a contact/application link (`mailto:`, `tel:`, `whatsapp:`, `sms:`, `fax:`, `skype://`, `slack:`, `msteams:`).
+- **A capture controls the destination trust boundary** — captures may refine a relative path, a fixed-host HTTP(S) path/query/fragment, or the payload of a contact/application link. They cannot supply the scheme or control an HTTP(S) hostname, user information, or port. For example, `https://example.com/$1?from=$2` is valid; `$1`, `https://$1/path`, and `https://example.com:$1/path` are not.
 - **A capture reference exceeds the match type** — e.g. `$1` under `exact`, or `$2` when the source has only one `*` / one capturing group. See [Match Types](redirects.md#match-types).
 - **Match type or status code is invalid**, the row duplicates an existing redirect, or the source and destination are identical (a loop).
+
+Validation prevents intrinsically unsafe new templates from being imported. Redirect Manager still checks substituted destinations at runtime so older published rows and records created through integrations cannot emit an unsafe redirect. An unsafe matching rule is skipped and the next eligible safe rule is considered.
 
 ### Import Limits
 
