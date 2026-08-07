@@ -15,6 +15,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 use lindemannrock\base\testing\StubConsoleRequest;
 use lindemannrock\redirectmanager\gql\queries\RedirectQuery;
 use lindemannrock\redirectmanager\gql\resolvers\RedirectResolver;
+use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\tests\TestCase;
 use yii\base\Request as YiiRequest;
 
@@ -153,6 +154,62 @@ final class GraphqlRedirectTest extends TestCase
         self::assertSame(0, (int)$analytics['handled']);
         self::assertNull($analytics['redirectId']);
         self::assertSame('graphql', $analytics['sourcePlugin']);
+    }
+
+    public function testCachedResolveMissStillRecordsEveryGraphqlRequest(): void
+    {
+        $this->settings()->enableRedirectCache = true;
+        $this->settings()->cacheStorageMethod = 'file';
+        $site = Craft::$app->getSites()->getPrimarySite();
+        $uri = '/' . self::MARKER . 'graphql_cached_missing_' . substr(uniqid('', true), -8);
+
+        for ($request = 0; $request < 2; $request++) {
+            self::assertNull(RedirectResolver::resolve(
+                null,
+                ['uri' => $uri, 'siteId' => $site->id],
+                null,
+                $this->createMock(ResolveInfo::class),
+            ));
+        }
+
+        $analytics = $this->fetchRow('{{%redirectmanager_analytics}}', [
+            'urlParsed' => $uri,
+            'siteId' => $site->id,
+        ]);
+        self::assertNotNull($analytics);
+        self::assertSame(0, (int)$analytics['handled']);
+        self::assertSame(2, (int)$analytics['count']);
+        self::assertSame('graphql', $analytics['sourcePlugin']);
+        self::assertSame(1, RedirectManager::$plugin->localCache->countRedirectCacheFiles());
+    }
+
+    public function testQueryStrippingUsesASeparateLookupIdentityFromAnExactQueryMiss(): void
+    {
+        $this->settings()->enableRedirectCache = true;
+        $this->settings()->cacheStorageMethod = 'file';
+        $this->settings()->stripQueryString = false;
+        $site = Craft::$app->getSites()->getPrimarySite();
+        $redirect = $this->seedRedirect(['siteId' => $site->id]);
+        $uri = (string)$redirect->sourceUrlParsed . '?campaign=summer';
+
+        self::assertNull(RedirectResolver::resolve(
+            null,
+            ['uri' => $uri, 'siteId' => $site->id],
+            null,
+            $this->createMock(ResolveInfo::class),
+        ));
+
+        $this->settings()->stripQueryString = true;
+        $result = RedirectResolver::resolve(
+            null,
+            ['uri' => $uri, 'siteId' => $site->id],
+            null,
+            $this->createMock(ResolveInfo::class),
+        );
+
+        self::assertIsArray($result);
+        self::assertSame($redirect->id, (int)$result['id']);
+        self::assertSame(2, RedirectManager::$plugin->localCache->countRedirectCacheFiles());
     }
 
     public function testResolveQuerySkipsUnsafeHigherPriorityRuleForSafeWinner(): void

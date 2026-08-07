@@ -219,6 +219,37 @@ final class DynamicDestinationTrustTest extends TestCase
         self::assertSame(1, (int)$analytics['count']);
     }
 
+    public function testCachedExternalMissesRetainPerRequestConsumerAnalytics(): void
+    {
+        $this->settings()->enableRedirectCache = true;
+        $this->settings()->cacheStorageMethod = 'file';
+        $shortlinkPath = '/' . self::MARKER . 'shortlink_missing_' . bin2hex(random_bytes(4));
+        $smartlinkPath = '/' . self::MARKER . 'smartlink_missing_' . bin2hex(random_bytes(4));
+
+        self::assertNull($this->redirects->handleExternal404($shortlinkPath, ['source' => 'shortlink-manager']));
+        self::assertNull($this->redirects->handleExternal404($shortlinkPath, ['source' => 'shortlink-manager']));
+        self::assertNull($this->redirects->handleExternal404($smartlinkPath, ['source' => 'smartlink-manager']));
+
+        $shortlinkAnalytics = $this->fetchRow('{{%redirectmanager_analytics}}', [
+            'urlParsed' => strtolower($shortlinkPath),
+            'siteId' => Craft::$app->getSites()->getCurrentSite()->id,
+        ]);
+        self::assertNotNull($shortlinkAnalytics);
+        self::assertSame(0, (int)$shortlinkAnalytics['handled']);
+        self::assertSame(2, (int)$shortlinkAnalytics['count']);
+        self::assertSame('shortlink-manager', $shortlinkAnalytics['sourcePlugin']);
+
+        $smartlinkAnalytics = $this->fetchRow('{{%redirectmanager_analytics}}', [
+            'urlParsed' => strtolower($smartlinkPath),
+            'siteId' => Craft::$app->getSites()->getCurrentSite()->id,
+        ]);
+        self::assertNotNull($smartlinkAnalytics);
+        self::assertSame(0, (int)$smartlinkAnalytics['handled']);
+        self::assertSame(1, (int)$smartlinkAnalytics['count']);
+        self::assertSame('smartlink-manager', $smartlinkAnalytics['sourcePlugin']);
+        self::assertSame(2, RedirectManager::$plugin->localCache->countRedirectCacheFiles());
+    }
+
     public function testPositiveCacheStoresOnlyTheEligibleSafeWinner(): void
     {
         $this->settings()->enableRedirectCache = true;
@@ -245,18 +276,25 @@ final class DynamicDestinationTrustTest extends TestCase
         $this->settings()->cacheStorageMethod = 'file';
         [$path, $unsafe, $safe] = $this->seedUnsafeAndSafeCandidates();
         $fullUrl = 'https://example.test' . $path;
-        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
-
         self::assertSame($safe->id, (int)$this->redirects->findRedirect($fullUrl, $path)['id']);
 
-        $cacheFile = PluginHelper::getCachePath(RedirectManager::$plugin, 'redirects')
-            . md5($fullUrl) . '_' . $siteId . '.cache';
+        $cachePath = PluginHelper::getCachePath(RedirectManager::$plugin, 'redirects');
+        $cacheFiles = array_values(array_filter(
+            scandir($cachePath) ?: [],
+            static fn(string $filename): bool => str_ends_with($filename, '.cache'),
+        ));
+        self::assertCount(1, $cacheFiles);
+        $cacheFile = $cachePath . $cacheFiles[0];
         $unsafeCachedWinner = [
-            'data' => array_merge($unsafe->toArray(), [
-                'destinationUrl' => 'https://evil.example/phish',
-                '_destinationTemplate' => '$1',
-                '_destinationPolicyVersion' => 1,
-            ]),
+            'result' => [
+                'version' => 2,
+                'state' => 'positive',
+                'redirect' => array_merge($unsafe->toArray(), [
+                    'destinationUrl' => 'https://evil.example/phish',
+                    '_destinationTemplate' => '$1',
+                    '_destinationPolicyVersion' => 1,
+                ]),
+            ],
             'expires' => time() + 3600,
         ];
         self::assertNotFalse(file_put_contents($cacheFile, json_encode($unsafeCachedWinner)));
@@ -269,7 +307,7 @@ final class DynamicDestinationTrustTest extends TestCase
         self::assertSame(2, $this->fetchHitCountFromDb($safe->id));
 
         $rewritten = json_decode((string)file_get_contents($cacheFile), true);
-        self::assertSame($safe->id, (int)$rewritten['data']['id']);
+        self::assertSame($safe->id, (int)$rewritten['result']['redirect']['id']);
     }
 
     public function testRedirectChainSkipsUnsafeCandidateAtResolutionSeam(): void

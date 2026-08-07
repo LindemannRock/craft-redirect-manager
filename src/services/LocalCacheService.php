@@ -8,11 +8,13 @@
 
 namespace lindemannrock\redirectmanager\services;
 
+use Craft;
 use craft\base\Component;
 use lindemannrock\base\helpers\CacheHelper;
 use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
+use yii\redis\Cache as RedisCache;
 
 /**
  * Clears Redirect Manager-owned local caches.
@@ -38,27 +40,30 @@ class LocalCacheService extends Component
     }
 
     /**
-     * Clear redirect lookup cache entries from the configured local backend.
+     * Clear Redirect Manager-owned redirect entries from every available backend.
+     *
+     * Clearing both namespaces prevents an entry from becoming current again
+     * after cache storage is switched between file and Redis.
      */
     public function clearRedirectCache(): int
     {
         $settings = RedirectManager::$plugin->getSettings();
+        $fileCount = CacheHelper::clearCacheFiles($this->redirectCacheDirectory());
+        $redisCount = 0;
 
-        if ($settings->cacheStorageMethod === 'redis') {
-            $count = CacheHelper::clearTrackedRedisKeys(
+        if (Craft::$app->getCache() instanceof RedisCache || $settings->cacheStorageMethod === 'redis') {
+            $redisCount = CacheHelper::clearTrackedRedisKeys(
                 RedirectManager::$plugin->id,
                 self::REDIRECT_CACHE_KEY_TYPE,
             );
-
-            $this->logDebug('Redirect caches invalidated (Redis)', ['count' => $count]);
-
-            return $count;
         }
 
-        $count = CacheHelper::clearCacheFiles($this->redirectCacheDirectory());
-        $this->logDebug('Redirect caches invalidated (File)', ['count' => $count]);
+        $this->logDebug('Redirect caches invalidated', [
+            'fileCount' => $fileCount,
+            'redisCount' => $redisCount,
+        ]);
 
-        return $count;
+        return $fileCount + $redisCount;
     }
 
     /**

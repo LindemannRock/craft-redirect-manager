@@ -55,6 +55,8 @@ abstract class TestCase extends IntegrationTestCase
     private ?array $settingsSnapshot = null;
     /** @var array<string, object> */
     private array $appComponentSnapshots = [];
+    /** @var array<string, object> */
+    private array $pluginComponentSnapshots = [];
     private ?Transaction $transaction = null;
     private ?object $originalQueue = null;
     private ?object $originalCache = null;
@@ -167,6 +169,20 @@ abstract class TestCase extends IntegrationTestCase
         return $settings;
     }
 
+    /** Replace a plugin component while retaining exact automatic restoration. */
+    protected function replacePluginComponent(string $id, object $component): void
+    {
+        if (!isset($this->pluginComponentSnapshots[$id])) {
+            $original = RedirectManager::$plugin->get($id);
+            if (!is_object($original)) {
+                throw new \RuntimeException("Redirect Manager component {$id} is not an object.");
+            }
+            $this->pluginComponentSnapshots[$id] = $original;
+        }
+
+        RedirectManager::$plugin->set($id, $component);
+    }
+
     protected function cleanupExternalState(): void
     {
         // Runtime and cache are isolated under an exact Base-tracked path.
@@ -261,6 +277,12 @@ abstract class TestCase extends IntegrationTestCase
             $this->transaction = null;
         });
         $this->runCleanupStep($errors, fn() => $this->verifyOwnedRowsRemoved());
+        $this->runCleanupStep($errors, function(): void {
+            foreach ($this->pluginComponentSnapshots as $id => $component) {
+                RedirectManager::$plugin->set($id, $component);
+            }
+            $this->pluginComponentSnapshots = [];
+        });
         $this->runCleanupStep($errors, function(): void {
             foreach ($this->appComponentSnapshots as $id => $component) {
                 Craft::$app->set($id, $component);

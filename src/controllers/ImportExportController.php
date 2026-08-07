@@ -923,6 +923,10 @@ class ImportExportController extends Controller
             }
         }
 
+        if ($imported > 0) {
+            RedirectManager::$plugin->redirects->invalidateCaches();
+        }
+
         // Clean up session data (no temp file to delete - data was stored in session)
         Craft::$app->getSession()->remove('redirect-import');
         Craft::$app->getSession()->remove('redirect-import-validated');

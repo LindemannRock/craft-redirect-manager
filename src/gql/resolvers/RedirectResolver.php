@@ -53,19 +53,11 @@ class RedirectResolver extends Resolver
         }
 
         $pathOnlyStripped = self::stripSiteBasePath($pathOnlyForMatching, $siteId);
-        $redirect = RedirectManager::$plugin->redirects->findRedirectForSite(
+        $redirect = RedirectManager::$plugin->redirects->findRedirectForSiteCandidates(
             $fullUrlForMatching,
-            $pathOnlyStripped,
+            [$pathOnlyStripped, $pathOnlyForMatching],
             $siteId,
         );
-
-        if ($redirect === null && $pathOnlyStripped !== $pathOnlyForMatching) {
-            $redirect = RedirectManager::$plugin->redirects->findRedirectForSite(
-                $fullUrlForMatching,
-                $pathOnlyForMatching,
-                $siteId,
-            );
-        }
 
         RedirectManager::$plugin->analytics->record404($pathOnly, $redirect !== null, [
             'redirectId' => $redirect['id'] ?? null,
