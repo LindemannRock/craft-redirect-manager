@@ -77,26 +77,15 @@ class CleanupAnalyticsJob extends BaseJob implements RetryableJobInterface
      */
     public function execute($queue): void
     {
-        $settings = RedirectManager::$plugin->getSettings();
+        $result = RedirectManager::$plugin->analytics->maintenance->runCleanup();
 
-        // Only run if retention is enabled
-        if ($settings->analyticsRetention <= 0) {
-            return;
-        }
+        $this->logInfo('Analytics cleanup completed', [
+            'retentionDeleted' => $result['retentionDeleted'],
+            'limitDeleted' => $result['limitDeleted'],
+        ]);
 
-        // Clean up old analytics
-        $deleted = RedirectManager::$plugin->analytics->cleanupOldAnalytics();
-
-        // Also trim if auto-trim is enabled
-        if ($settings->autoTrimAnalytics) {
-            RedirectManager::$plugin->analytics->trimAnalytics();
-        }
-
-        $this->logInfo('Analytics cleanup completed', ['deleted' => $deleted]);
-
-        // Reschedule if needed
         if ($this->reschedule) {
-            $this->scheduleNextCleanup();
+            RedirectManager::$plugin->analytics->maintenance->synchronizeRecurringCleanup();
         }
     }
 
@@ -115,42 +104,5 @@ class CleanupAnalyticsJob extends BaseJob implements RetryableJobInterface
         }
 
         return $description;
-    }
-
-    /**
-     * Schedule the next cleanup (runs every 24 hours)
-     */
-    private function scheduleNextCleanup(): void
-    {
-        $settings = RedirectManager::$plugin->getSettings();
-
-        // Only reschedule if analytics is enabled and retention is set
-        if (!$settings->enableAnalytics || $settings->analyticsRetention <= 0) {
-            return;
-        }
-
-        $nextRun = ScheduleHelper::calculateNext('daily');
-
-        if ($nextRun !== null) {
-            $delay = max(0, $nextRun->getTimestamp() - DateFormatHelper::now()->getTimestamp());
-            $nextRunTime = DateFormatHelper::formatCompactDatetimeFromSettings(
-                $nextRun,
-                $settings,
-                null,
-                false,
-                pluginHandle: 'redirect-manager',
-            );
-            $job = new self([
-                'reschedule' => true,
-                'nextRunTime' => $nextRunTime,
-            ]);
-
-            Craft::$app->getQueue()->delay($delay)->push($job);
-
-            $this->logDebug('Scheduled next analytics cleanup', [
-                'delay' => $delay,
-                'nextRun' => $nextRunTime,
-            ]);
-        }
     }
 }

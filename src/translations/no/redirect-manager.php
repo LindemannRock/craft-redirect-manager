@@ -252,11 +252,11 @@ return [
     '<strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in <a href="{url}">General Settings</a>.' => '<strong>Merk:</strong> denne innstillingen påvirker bare analysevisningen. For omdirigeringsmatching, se <strong>Håndtering av spørringsstreng</strong> i <a href="{url}">generelle innstillinger</a>.',
     'Data Retention' => 'Datalagring',
     'Analytics Retention (Days)' => 'Analyselagring (dager)',
-    'Number of days to retain analytics (0 = keep forever)' => 'Antall dager å beholde analyse (0 = behold alltid)',
+    'Number of days to retain analytics by age (0 = disable age-based deletion)' => 'Antall dager analyse beholdes basert på alder (0 = deaktiver aldersbasert sletting)',
     'Analytics Limit' => 'Analysegrense',
-    'Maximum number of unique 404 records to retain' => 'Maksimalt antall unike 404-poster å beholde',
+    'Target maximum number of unique 404 records after scheduled cleanup' => 'Målsatt maksimalt antall unike 404-poster etter planlagt opprydding',
     'Auto Trim Analytics' => 'Trim analyse automatisk',
-    'Automatically trim analytics to respect the limit' => 'Trim automatisk analyse for å overholde grensen',
+    'Enforce the analytics limit during scheduled cleanup' => 'Håndhev analysegrensen under planlagt opprydding',
 
     // Settings: Backup
     'Backup Settings' => 'Innstillinger for sikkerhetskopi',

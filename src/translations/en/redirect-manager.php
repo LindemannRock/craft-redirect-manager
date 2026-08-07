@@ -252,11 +252,11 @@ return [
     '<strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in <a href="{url}">General Settings</a>.' => '<strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in <a href="{url}">General Settings</a>.',
     'Data Retention' => 'Data Retention',
     'Analytics Retention (Days)' => 'Analytics Retention (Days)',
-    'Number of days to retain analytics (0 = keep forever)' => 'Number of days to retain analytics (0 = keep forever)',
+    'Number of days to retain analytics by age (0 = disable age-based deletion)' => 'Number of days to retain analytics by age (0 = disable age-based deletion)',
     'Analytics Limit' => 'Analytics Limit',
-    'Maximum number of unique 404 records to retain' => 'Maximum number of unique 404 records to retain',
+    'Target maximum number of unique 404 records after scheduled cleanup' => 'Target maximum number of unique 404 records after scheduled cleanup',
     'Auto Trim Analytics' => 'Auto Trim Analytics',
-    'Automatically trim analytics to respect the limit' => 'Automatically trim analytics to respect the limit',
+    'Enforce the analytics limit during scheduled cleanup' => 'Enforce the analytics limit during scheduled cleanup',
 
     // Settings: Backup
     'Backup Settings' => 'Backup Settings',

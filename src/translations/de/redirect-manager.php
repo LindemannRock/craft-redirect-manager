@@ -252,11 +252,11 @@ return [
     '<strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in <a href="{url}">General Settings</a>.' => '<strong>Hinweis:</strong> Diese Einstellung wirkt sich nur auf die Analytics-Anzeige aus. Für das Weiterleitungs-Abgleichverhalten siehe <strong>Query-String-Behandlung</strong> in den <a href="{url}">allgemeinen Einstellungen</a>.',
     'Data Retention' => 'Datenaufbewahrung',
     'Analytics Retention (Days)' => 'Analysedaten-Aufbewahrung (Tage)',
-    'Number of days to retain analytics (0 = keep forever)' => 'Anzahl der Tage, für die Analysedaten aufbewahrt werden (0 = für immer aufbewahren)',
+    'Number of days to retain analytics by age (0 = disable age-based deletion)' => 'Anzahl der Tage für die altersbasierte Aufbewahrung von Analysedaten (0 = altersbasierte Löschung deaktivieren)',
     'Analytics Limit' => 'Analysedaten-Limit',
-    'Maximum number of unique 404 records to retain' => 'Maximale Anzahl eindeutiger 404-Einträge, die aufbewahrt werden',
+    'Target maximum number of unique 404 records after scheduled cleanup' => 'Angestrebte maximale Anzahl eindeutiger 404-Einträge nach der geplanten Bereinigung',
     'Auto Trim Analytics' => 'Analysedaten automatisch kürzen',
-    'Automatically trim analytics to respect the limit' => 'Analysedaten automatisch kürzen, um das Limit einzuhalten',
+    'Enforce the analytics limit during scheduled cleanup' => 'Analysedaten-Limit während der geplanten Bereinigung durchsetzen',
 
     // Settings: Backup
     'Backup Settings' => 'Backup-Einstellungen',

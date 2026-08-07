@@ -151,12 +151,12 @@ class Settings extends Model
     public bool $stripQueryStringFromStats = true;
 
     /**
-     * @var int Maximum number of unique 404 records to retain
+     * @var int Target maximum number of unique 404 records after scheduled cleanup
      */
     public int $analyticsLimit = 1000;
 
     /**
-     * @var int Number of days to retain analytics (0 = keep forever)
+     * @var int Number of days to retain analytics by age (0 = disable age-based deletion)
      */
     public int $analyticsRetention = 30;
 

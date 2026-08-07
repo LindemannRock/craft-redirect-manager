@@ -167,17 +167,21 @@ Redirect Manager is designed to be GDPR-friendly:
 > [!WARNING]
 > Changing the IP hash salt in production will break unique visitor deduplication. All historical hashes will no longer match new hashes from the same IPs.
 
-## Retention and Cleanup
+## Retention and cleanup
 
-Analytics records are automatically trimmed based on these settings:
+Analytics recording stays on the request path so counts and metadata are available immediately. Retention and limit maintenance run separately in a scheduled queue job:
 
 ```php
-'analyticsRetention' => 30,   // Days to keep records (0 = keep forever)
-'analyticsLimit'     => 1000, // Max unique 404 URL records
-'autoTrimAnalytics'  => true, // Run cleanup automatically
+'analyticsRetention' => 30,   // Delete records older than 30 days; 0 disables age cleanup
+'analyticsLimit'     => 1000, // Target maximum after scheduled limit cleanup
+'autoTrimAnalytics'  => true, // Enforce analyticsLimit during scheduled cleanup
 ```
 
-When `autoTrimAnalytics` is `true`, cleanup runs as a queue job. To run it manually:
+Setting `analyticsRetention` to `0` does not disable limit cleanup when `autoTrimAnalytics` is `true`. Likewise, setting `autoTrimAnalytics` to `false` does not disable age-based deletion when retention is greater than `0`.
+
+The limit is a scheduled convergence target, not a hard request-time cap. New handled and unhandled events are recorded immediately, so a temporary overflow can exist until the next cleanup run. The job removes the oldest, lowest-hit records until the table reaches `analyticsLimit`.
+
+Keep Craft's queue processing active for automatic cleanup:
 
 ```bash title="PHP"
 php craft queue/run
@@ -187,6 +191,8 @@ php craft queue/run
 ddev craft queue/run
 ```
 
+Manual analytics clearing remains available from **Redirect Manager > Analytics** and the Redirect Manager Craft utility when you need to remove data before the scheduled job runs.
+
 ## Exporting Analytics
 
 Export 404 analytics as CSV from **Redirect Manager > Analytics > Export CSV**. The export includes every tracked field — URL, referrer, site, hit count, handled status, the full request-type, traffic-type, device, browser, OS, and bot metadata, geographic country and city, the salted IP hash, user agent, and timestamps.
@@ -195,7 +201,7 @@ The `redirectManager:exportAnalytics` permission is required to access the expor
 
 ## Analytics Services
 
-The `AnalyticsService` @since(5.7.0) is a facade that delegates to four focused sub-services:
+The `AnalyticsService` @since(5.7.0) is a facade that delegates to five focused sub-services:
 
 | Sub-service | Responsibility |
 |-------------|----------------|
@@ -203,3 +209,4 @@ The `AnalyticsService` @since(5.7.0) is a facade that delegates to four focused 
 | `AnalyticsTrackingService` | Recording 404 events |
 | `AnalyticsBreakdownService` | Computing device, browser, OS, geo breakdowns |
 | `AnalyticsExportService` | Generating CSV export data |
+| `AnalyticsMaintenanceService` | Cleanup eligibility, execution, and recurring scheduling |

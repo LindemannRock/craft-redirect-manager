@@ -308,7 +308,7 @@ class AnalyticsExportService
         $limit = $settings->analyticsLimit;
         $db = Craft::$app->getDb();
     
-        $deleted = $db->transaction(function() use ($db, $limit): int {
+        $deleted = $db->transaction(function() use ($limit): int {
             // Get current count
             $currentCount = (new Query())
                     ->from(AnalyticsRecord::tableName())
@@ -318,25 +318,51 @@ class AnalyticsExportService
                 return 0;
             }
     
-            // Get IDs to delete (oldest by lastHit, lowest count)
-            $idsToDelete = (new Query())
-                    ->select(['id'])
+            // Get candidates to delete (oldest by lastHit, lowest count)
+            $candidates = (new Query())
+                    ->select(['id', 'lastHit', 'count'])
                     ->from(AnalyticsRecord::tableName())
-                    ->orderBy(['lastHit' => SORT_ASC, 'count' => SORT_ASC])
+                    ->orderBy(['lastHit' => SORT_ASC, 'count' => SORT_ASC, 'id' => SORT_ASC])
                     ->limit($currentCount - $limit)
-                    ->column();
+                    ->all();
     
-            if (empty($idsToDelete)) {
+            if (empty($candidates)) {
                 return 0;
             }
     
-            // Delete the records
-            return $db->createCommand()
-                    ->delete(AnalyticsRecord::tableName(), ['in', 'id', $idsToDelete])
-                    ->execute();
+            return $this->deleteUnchangedTrimCandidates($candidates);
         });
     
         $this->logInfo('Trimmed analytics', ['deleted' => $deleted]);
+
+        return $deleted;
+    }
+
+    /**
+     * Delete selected trim candidates only while their accounting snapshot is unchanged.
+     *
+     * @param array<int, array<string, mixed>> $candidates
+     */
+    protected function deleteUnchangedTrimCandidates(array $candidates): int
+    {
+        $deleted = 0;
+        foreach (array_chunk($candidates, 500) as $candidateChunk) {
+            $unchangedCandidates = ['or'];
+            foreach ($candidateChunk as $candidate) {
+                $unchangedCandidates[] = [
+                    'and',
+                    ['id' => $candidate['id']],
+                    ['lastHit' => $candidate['lastHit']],
+                    ['count' => $candidate['count']],
+                ];
+            }
+
+            // A request upsert can refresh a candidate after selection.
+            // Delete only rows that are still exactly as observed.
+            $deleted += Craft::$app->getDb()->createCommand()
+                    ->delete(AnalyticsRecord::tableName(), $unchangedCandidates)
+                    ->execute();
+        }
 
         return $deleted;
     }

@@ -252,11 +252,11 @@ return [
     '<strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in <a href="{url}">General Settings</a>.' => '<strong>ملاحظة:</strong> يؤثر هذا الإعداد فقط على عرض التحليلات. لسلوك مطابقة إعادة التوجيه، راجع <strong>معالجة سلسلة الاستعلام</strong> في <a href="{url}">الإعدادات العامة</a>.',
     'Data Retention' => 'الاحتفاظ بالبيانات',
     'Analytics Retention (Days)' => 'مدة الاحتفاظ بالتحليلات (أيام)',
-    'Number of days to retain analytics (0 = keep forever)' => 'عدد الأيام للاحتفاظ بالتحليلات (0 = الاحتفاظ إلى الأبد)',
+    'Number of days to retain analytics by age (0 = disable age-based deletion)' => 'عدد الأيام للاحتفاظ بالتحليلات حسب عمر السجل (0 = تعطيل الحذف حسب العمر)',
     'Analytics Limit' => 'حد التحليلات',
-    'Maximum number of unique 404 records to retain' => 'الحد الأقصى لعدد سجلات 404 الفريدة للاحتفاظ بها',
+    'Target maximum number of unique 404 records after scheduled cleanup' => 'الحد الأقصى المستهدف لعدد سجلات 404 الفريدة بعد التنظيف المجدول',
     'Auto Trim Analytics' => 'تقليص التحليلات تلقائياً',
-    'Automatically trim analytics to respect the limit' => 'تقليص التحليلات تلقائياً للالتزام بالحد المحدد',
+    'Enforce the analytics limit during scheduled cleanup' => 'فرض حد التحليلات أثناء التنظيف المجدول',
 
     // Settings: Backup
     'Backup Settings' => 'إعدادات النسخ الاحتياطي',

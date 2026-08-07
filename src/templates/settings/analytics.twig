@@ -126,7 +126,7 @@
 
             {{ forms.textField({
                 label: 'Analytics Retention (Days)'|t('redirect-manager'),
-                instructions: 'Number of days to retain analytics (0 = keep forever)'|t('redirect-manager'),
+                instructions: 'Number of days to retain analytics by age (0 = disable age-based deletion)'|t('redirect-manager'),
                 id: 'analyticsRetention',
                 name: 'settings[analyticsRetention]',
                 type: 'number',
@@ -142,7 +142,7 @@
 
             {{ forms.textField({
                 label: 'Analytics Limit'|t('redirect-manager'),
-                instructions: 'Maximum number of unique 404 records to retain'|t('redirect-manager'),
+                instructions: 'Target maximum number of unique 404 records after scheduled cleanup'|t('redirect-manager'),
                 id: 'analyticsLimit',
                 name: 'settings[analyticsLimit]',
                 type: 'number',
@@ -158,7 +158,7 @@
 
             {{ forms.lightswitchField({
                 label: 'Auto Trim Analytics'|t('redirect-manager'),
-                instructions: 'Automatically trim analytics to respect the limit'|t('redirect-manager'),
+                instructions: 'Enforce the analytics limit during scheduled cleanup'|t('redirect-manager'),
                 id: 'autoTrimAnalytics',
                 name: 'settings[autoTrimAnalytics]',
                 on: settings.autoTrimAnalytics,

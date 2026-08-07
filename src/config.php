@@ -106,11 +106,11 @@ return [
         'stripQueryStringFromStats' => true,
 
         // Analytics Limit
-        // Maximum number of unique 404 records to retain
+        // Target maximum number of unique 404 records after scheduled cleanup
         'analyticsLimit' => 1000,
 
         // Analytics Retention
-        // Number of days to retain analytics (0 = keep forever)
+        // Number of days to retain analytics by age (0 = disable age-based deletion)
         'analyticsRetention' => 30,
 
         // Auto Trim Analytics

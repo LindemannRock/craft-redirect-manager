@@ -42,7 +42,6 @@ use lindemannrock\logginglibrary\LoggingLibrary;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\gql\queries\RedirectQuery;
 use lindemannrock\redirectmanager\gql\types\RedirectType;
-use lindemannrock\redirectmanager\jobs\CleanupAnalyticsJob;
 use lindemannrock\redirectmanager\jobs\CreateBackupJob;
 use lindemannrock\redirectmanager\models\Settings;
 use lindemannrock\redirectmanager\services\AnalyticsService;
@@ -160,7 +159,7 @@ class RedirectManager extends Plugin
             'setup' => SetupService::class,
         ]);
 
-        // Schedule analytics cleanup if retention is enabled
+        // Synchronize the recurring analytics cleanup family
         $this->scheduleAnalyticsCleanup();
         $this->scheduleBackupJob();
 
@@ -618,36 +617,18 @@ class RedirectManager extends Plugin
      */
     private function scheduleAnalyticsCleanup(): void
     {
-        $settings = $this->getSettings();
+        $this->analytics->maintenance->synchronizeRecurringCleanup();
+    }
 
-        // Only schedule cleanup if analytics is enabled and retention is set
-        if (!$settings->enableAnalytics || $settings->analyticsRetention <= 0) {
-            return;
-        }
-
-        $nextRun = ScheduleHelper::calculateNext('daily');
-        if ($nextRun === null) {
-            return;
-        }
-
-        $delay = max(0, $nextRun->getTimestamp() - DateFormatHelper::now()->getTimestamp());
-        $nextRunTime = DateFormatHelper::formatCompactDatetimeFromSettings(
-            $nextRun,
-            $settings,
-            null,
-            false,
-            pluginHandle: 'redirect-manager',
-        );
-
-        RecurringQueueHelper::ensurePending(
-            pluginToken: 'redirectmanager',
-            jobClass: CleanupAnalyticsJob::class,
-            delay: $delay,
-            jobFactory: fn() => new CleanupAnalyticsJob([
-                'reschedule' => true,
-                'nextRunTime' => $nextRunTime,
-            ]),
-        );
+    /**
+     * Synchronize analytics maintenance after relevant settings change.
+     *
+     * @since 5.41.0
+     */
+    public function handleAnalyticsMaintenanceChange(Settings $settings): void
+    {
+        PluginHelper::applyConfigOverridesToSettings($settings, 'redirect-manager');
+        $this->analytics->maintenance->synchronizeRecurringCleanup($settings);
     }
 
     /**

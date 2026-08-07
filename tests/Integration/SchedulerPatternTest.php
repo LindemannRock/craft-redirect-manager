@@ -26,22 +26,20 @@ use ReflectionMethod;
  */
 final class SchedulerPatternTest extends TestCase
 {
-    public function testAnalyticsCleanupReschedulesWhenExistingCleanupRowExists(): void
+    public function testAnalyticsCleanupSynchronizationKeepsOneExistingCleanupRow(): void
     {
         $this->settings()->enableAnalytics = true;
         $this->settings()->analyticsRetention = 30;
+        $this->settings()->autoTrimAnalytics = true;
 
-        Craft::$app->getQueue()->delay(300)->push(new CleanupAnalyticsJob([
+        $this->pushOwnedJob(new CleanupAnalyticsJob([
             'reschedule' => true,
-        ]));
+        ]), 300);
         $this->assertSame(1, $this->countQueueRows('CleanupAnalyticsJob'));
 
-        $job = new CleanupAnalyticsJob([
-            'reschedule' => true,
-        ]);
-        $this->invokePrivate($job, 'scheduleNextCleanup');
+        $this->analytics->maintenance->synchronizeRecurringCleanup();
 
-        $this->assertSame(2, $this->countQueueRows('CleanupAnalyticsJob'));
+        $this->assertSame(1, $this->countQueueRows('CleanupAnalyticsJob'));
     }
 
     public function testAnalyticsCleanupBootstrapUsesCanonicalDailyRun(): void
@@ -58,17 +56,150 @@ final class SchedulerPatternTest extends TestCase
         self::assertStringContainsString($this->expectedDailyRunTime(), (string) $row['description']);
     }
 
+    public function testAnalyticsCleanupSchedulesLimitMaintenanceWithoutRetention(): void
+    {
+        $this->settings()->enableAnalytics = true;
+        $this->settings()->analyticsRetention = 0;
+        $this->settings()->autoTrimAnalytics = true;
+
+        $this->invokePrivate(RedirectManager::getInstance(), 'scheduleAnalyticsCleanup');
+
+        $this->assertSame(1, $this->countQueueRows('CleanupAnalyticsJob'));
+    }
+
+    public function testAnalyticsCleanupSchedulesRetentionWithoutLimitMaintenance(): void
+    {
+        $this->settings()->enableAnalytics = true;
+        $this->settings()->analyticsRetention = 30;
+        $this->settings()->autoTrimAnalytics = false;
+
+        $this->analytics->maintenance->synchronizeRecurringCleanup();
+
+        $this->assertSame(1, $this->countQueueRows('CleanupAnalyticsJob'));
+    }
+
+    public function testAnalyticsCleanupSchedulesWhenRetentionAndLimitMaintenanceAreEnabled(): void
+    {
+        $this->settings()->enableAnalytics = true;
+        $this->settings()->analyticsRetention = 30;
+        $this->settings()->autoTrimAnalytics = true;
+
+        $this->analytics->maintenance->synchronizeRecurringCleanup();
+
+        $this->assertSame(1, $this->countQueueRows('CleanupAnalyticsJob'));
+    }
+
+    public function testAnalyticsCleanupCancelsOwnedRowsWhenAnalyticsIsDisabled(): void
+    {
+        $this->pushOwnedJob(new CleanupAnalyticsJob(['reschedule' => true]), 300);
+        $this->settings()->enableAnalytics = false;
+        $this->settings()->analyticsRetention = 30;
+        $this->settings()->autoTrimAnalytics = true;
+
+        $this->analytics->maintenance->synchronizeRecurringCleanup();
+
+        $this->assertSame(0, $this->countQueueRows('CleanupAnalyticsJob'));
+    }
+
+    public function testAnalyticsCleanupCancelsOwnedRowsWhenNoMaintenanceIsEnabled(): void
+    {
+        $this->pushOwnedJob(new CleanupAnalyticsJob(['reschedule' => true]), 300);
+        $this->settings()->enableAnalytics = true;
+        $this->settings()->analyticsRetention = 0;
+        $this->settings()->autoTrimAnalytics = false;
+
+        $this->analytics->maintenance->synchronizeRecurringCleanup();
+
+        $this->assertSame(0, $this->countQueueRows('CleanupAnalyticsJob'));
+    }
+
+    public function testAnalyticsCleanupHonorsSettingsChangedBetweenSynchronizations(): void
+    {
+        $this->settings()->enableAnalytics = true;
+        $this->settings()->analyticsRetention = 30;
+        $this->settings()->autoTrimAnalytics = true;
+        $this->analytics->maintenance->synchronizeRecurringCleanup();
+        $this->assertSame(1, $this->countQueueRows('CleanupAnalyticsJob'));
+
+        $this->settings()->analyticsRetention = 0;
+        $this->settings()->autoTrimAnalytics = false;
+        $this->analytics->maintenance->synchronizeRecurringCleanup();
+        $this->assertSame(0, $this->countQueueRows('CleanupAnalyticsJob'));
+
+        $this->settings()->autoTrimAnalytics = true;
+        $this->analytics->maintenance->synchronizeRecurringCleanup();
+        $this->assertSame(1, $this->countQueueRows('CleanupAnalyticsJob'));
+    }
+
+    public function testAnalyticsSettingsChangeUsesTheRecurringSynchronizationPath(): void
+    {
+        $settings = $this->settings();
+        $settings->enableAnalytics = true;
+        $settings->analyticsRetention = 0;
+        $settings->autoTrimAnalytics = true;
+
+        RedirectManager::getInstance()->handleAnalyticsMaintenanceChange($settings);
+        $this->assertSame(1, $this->countQueueRows('CleanupAnalyticsJob'));
+
+        $settings->autoTrimAnalytics = false;
+        RedirectManager::getInstance()->handleAnalyticsMaintenanceChange($settings);
+        $this->assertSame(0, $this->countQueueRows('CleanupAnalyticsJob'));
+    }
+
+    public function testSuccessfulAnalyticsCleanupReschedulesOneRecurringJob(): void
+    {
+        $this->settings()->enableAnalytics = true;
+        $this->settings()->analyticsRetention = 0;
+        $this->settings()->autoTrimAnalytics = true;
+
+        (new CleanupAnalyticsJob(['reschedule' => true]))->execute(Craft::$app->getQueue());
+
+        $this->assertSame(1, $this->countQueueRows('CleanupAnalyticsJob'));
+    }
+
+    public function testIneligibleAnalyticsCleanupDoesNotDeleteOtherOwnedJobFamilies(): void
+    {
+        $this->pushOwnedJob(new CleanupAnalyticsJob(['reschedule' => true]), 300);
+        $this->pushOwnedJob(new CreateBackupJob([
+            'reason' => 'scheduled',
+            'reschedule' => true,
+        ]), 300);
+        $this->settings()->enableAnalytics = false;
+
+        $this->analytics->maintenance->synchronizeRecurringCleanup();
+
+        $this->assertSame(0, $this->countQueueRows('CleanupAnalyticsJob'));
+        $this->assertSame(1, $this->countQueueRows('CreateBackupJob'));
+    }
+
+    public function testIneligibleAnalyticsCleanupPreservesRunningOwnedRows(): void
+    {
+        $this->pushOwnedJob(new CleanupAnalyticsJob(['reschedule' => true]), 300);
+        $row = $this->latestQueueRow('CleanupAnalyticsJob');
+        self::assertIsArray($row);
+        Craft::$app->getDb()->createCommand()->update(
+            '{{%queue}}',
+            ['timeUpdated' => time()],
+            ['id' => $row['id']],
+        )->execute();
+        $this->settings()->enableAnalytics = false;
+
+        $this->analytics->maintenance->synchronizeRecurringCleanup();
+
+        $this->assertSame(1, $this->countQueueRows('CleanupAnalyticsJob'));
+    }
+
     public function testAnalyticsCleanupBootstrapCollapsesDuplicatePendingRows(): void
     {
         $this->settings()->enableAnalytics = true;
         $this->settings()->analyticsRetention = 30;
 
-        Craft::$app->getQueue()->delay(300)->push(new CleanupAnalyticsJob([
+        $this->pushOwnedJob(new CleanupAnalyticsJob([
             'reschedule' => true,
-        ]));
-        Craft::$app->getQueue()->delay(300)->push(new CleanupAnalyticsJob([
+        ]), 300);
+        $this->pushOwnedJob(new CleanupAnalyticsJob([
             'reschedule' => true,
-        ]));
+        ]), 300);
         $this->assertSame(2, $this->countQueueRows('CleanupAnalyticsJob'));
 
         $this->invokePrivate(RedirectManager::getInstance(), 'scheduleAnalyticsCleanup');

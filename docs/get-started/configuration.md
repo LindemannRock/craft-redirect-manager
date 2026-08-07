@@ -70,9 +70,11 @@ When enabled and token-configured, test the endpoint from **Redirect Manager →
 | `anonymizeIpAddress` | `bool` | `false` | Anonymize IP addresses before hashing (subnet masking) |
 | `ipHashSalt` | `?string` | `null` | IP hash salt. Falls back to `REDIRECT_MANAGER_IP_SALT` env var |
 | `stripQueryStringFromStats` | `bool` | `true` | Strip query strings from analytics URLs (group by path) |
-| `analyticsLimit` | `int` | `1000` | Maximum number of unique 404 records to retain |
-| `analyticsRetention` | `int` | `30` | Days to retain analytics (`0` = keep forever) |
-| `autoTrimAnalytics` | `bool` | `true` | Automatically trim analytics beyond retention |
+| `analyticsLimit` | `int` | `1000` | Target maximum number of unique 404 records after scheduled limit cleanup |
+| `analyticsRetention` | `int` | `30` | Days to retain analytics by age (`0` = disable age-based deletion) |
+| `autoTrimAnalytics` | `bool` | `true` | Enforce `analyticsLimit` during scheduled cleanup |
+
+Retention and limit cleanup are independent. With `analyticsRetention` set to `0`, age-based deletion is disabled, but `autoTrimAnalytics` can still enforce `analyticsLimit`. Automatic cleanup runs through Craft's queue, so the table can temporarily exceed the limit until the scheduled job runs. Analytics recording itself remains immediate, including hit counts and request metadata.
 
 ## Geographic Detection
 

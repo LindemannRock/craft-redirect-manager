@@ -32,14 +32,8 @@ class AnalyticsTrackingService
 {
     use LoggingTrait;
 
-    private AnalyticsExportService $exportService;
-
-    /**
-     * @param AnalyticsExportService $exportService
-     */
-    public function __construct(AnalyticsExportService $exportService)
+    public function __construct()
     {
-        $this->exportService = $exportService;
         $this->setLoggingHandle(RedirectManager::$plugin->id);
     }
 
@@ -205,10 +199,6 @@ class AnalyticsTrackingService
                 ->execute();
     
         $this->logDebug('Recorded 404 analytics hit', ['url' => $url, 'urlParsed' => $urlParsed, 'source' => $sourcePlugin]);
-    
-        if ($settings->autoTrimAnalytics) {
-            $this->exportService->trimAnalytics();
-        }
     }
 
     /**

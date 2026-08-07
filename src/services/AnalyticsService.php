@@ -14,6 +14,7 @@ use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\services\analytics\AnalyticsBreakdownService;
 use lindemannrock\redirectmanager\services\analytics\AnalyticsExportService;
+use lindemannrock\redirectmanager\services\analytics\AnalyticsMaintenanceService;
 use lindemannrock\redirectmanager\services\analytics\AnalyticsQueryService;
 use lindemannrock\redirectmanager\services\analytics\AnalyticsTrackingService;
 
@@ -41,6 +42,11 @@ class AnalyticsService extends Component
     public AnalyticsExportService $export;
 
     /**
+     * @since 5.41.0
+     */
+    public AnalyticsMaintenanceService $maintenance;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -49,9 +55,10 @@ class AnalyticsService extends Component
         $this->setLoggingHandle(RedirectManager::$plugin->id);
 
         $this->export = new AnalyticsExportService();
+        $this->maintenance = new AnalyticsMaintenanceService($this->export);
         $this->query = new AnalyticsQueryService();
         $this->breakdown = new AnalyticsBreakdownService();
-        $this->tracking = new AnalyticsTrackingService($this->export);
+        $this->tracking = new AnalyticsTrackingService();
     }
 
     // ── Tracking ──────────────────────────────────────────────

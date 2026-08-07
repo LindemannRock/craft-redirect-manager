@@ -252,11 +252,11 @@ return [
     '<strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in <a href="{url}">General Settings</a>.' => '<strong>Obs:</strong> den här inställningen påverkar bara analysvisningen. För omdirigeringsmatchning, se <strong>Hantering av frågesträngar</strong> i <a href="{url}">allmänna inställningar</a>.',
     'Data Retention' => 'Datalagring',
     'Analytics Retention (Days)' => 'Analyslagring (dagar)',
-    'Number of days to retain analytics (0 = keep forever)' => 'Antal dagar att behålla analys (0 = behåll alltid)',
+    'Number of days to retain analytics by age (0 = disable age-based deletion)' => 'Antal dagar analys behålls baserat på ålder (0 = inaktivera åldersbaserad borttagning)',
     'Analytics Limit' => 'Analysgräns',
-    'Maximum number of unique 404 records to retain' => 'Maximalt antal unika 404-poster att behålla',
+    'Target maximum number of unique 404 records after scheduled cleanup' => 'Målsatt maximalt antal unika 404-poster efter schemalagd rensning',
     'Auto Trim Analytics' => 'Trimma analys automatiskt',
-    'Automatically trim analytics to respect the limit' => 'Trimma analys automatiskt för att respektera gränsen',
+    'Enforce the analytics limit during scheduled cleanup' => 'Upprätthåll analysgränsen under schemalagd rensning',
 
     // Settings: Backup
     'Backup Settings' => 'Inställningar för säkerhetskopia',

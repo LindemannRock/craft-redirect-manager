@@ -67,11 +67,7 @@ A redirect exists in the CP but visiting the URL does not redirect.
 
 1. **Is analytics enabled?** Check `enableAnalytics` is `true` in settings (it is the master switch — disabling it stops all tracking).
 
-2. **Has the analytics limit been reached?** The default limit is 1000 unique 404 records. When the limit is reached, new records are not added. Check:
-
-   ```php
-   'analyticsLimit' => 1000, // increase if needed
-   ```
+2. **Is the URL excluded?** Exclude patterns skip both redirect handling and analytics. Review **Settings → Advanced → URL Filtering** if only certain paths are missing.
 
 3. **Is the IP hash salt configured?** An error banner appears in settings when the salt is missing. Open **Redirect Manager → Setup**, or generate one from the terminal:
 
@@ -89,7 +85,29 @@ A redirect exists in the CP but visiting the URL does not redirect.
    SELECT COUNT(*) FROM redirectmanager_analytics;
    ```
 
-**Why it happens:** Analytics requires `enableAnalytics = true`, a configured salt, and available capacity within `analyticsLimit`.
+**Why it happens:** Analytics requires `enableAnalytics = true`, a configured salt, and a URL that is not excluded. `analyticsLimit` does not reject incoming events; it is enforced later by scheduled cleanup.
+
+---
+
+## Analytics temporarily exceeds the configured limit
+
+`analyticsLimit` is a scheduled convergence target rather than a hard request-time cap. Redirect Manager records each handled or unhandled event immediately, then the recurring cleanup job trims the oldest, lowest-hit rows back to the configured limit.
+
+If the row count stays above the limit:
+
+1. Confirm `enableAnalytics` and `autoTrimAnalytics` are both `true`.
+2. Confirm a Craft queue worker is running.
+3. Run the queue manually to process pending cleanup work:
+
+   ```bash title="PHP"
+   php craft queue/run
+   ```
+
+   ```bash title="DDEV"
+   ddev craft queue/run
+   ```
+
+Setting `analyticsRetention` to `0` only disables age-based deletion. It does not disable limit cleanup while `autoTrimAnalytics` is enabled. Retention-only cleanup also remains available by setting a positive retention period with auto-trim disabled. You can clear analytics manually from **Redirect Manager > Analytics** or the Redirect Manager Craft utility if you need immediate removal rather than scheduled convergence.
 
 ---
 
@@ -99,7 +117,7 @@ Redirect Manager schedules recurring queue jobs for analytics cleanup and automa
 
 - Confirm the queue worker is running.
 - Visit any CP page to let Redirect Manager bootstrap initial jobs.
-- Check that `enableAnalytics` is on and `analyticsRetention` is greater than `0` for analytics cleanup.
+- Check that `enableAnalytics` is on and either `analyticsRetention` is greater than `0` or `autoTrimAnalytics` is enabled.
 - Check that `backupEnabled` is on and `backupSchedule` is not `disabled` for scheduled backups.
 
 The queued job description shows when that specific queued row is due to run. Craft stores that description when the row is queued, so date/time format changes apply to newly queued rows. Existing delayed rows keep their old label until they run or are requeued. Queue labels stay compact: numeric months render numerically, while short and long month settings both render as short month names.
@@ -108,7 +126,7 @@ The queued job description shows when that specific queued row is due to run. Cr
 
 Scheduled backups and analytics cleanup should normally have one delayed queue row per next run. Redirect Manager checks for existing pending rows during bootstrap, collapses duplicate pending rows automatically, and keeps one row for the next scheduled run.
 
-If duplicates keep returning after a deployment, check whether multiple app instances are running different plugin versions or whether `backupSchedule` or `backupEnabled` is overridden in `config/redirect-manager.php`. Config overrides prevent CP changes from taking effect, so update the config value directly.
+If duplicates keep returning after a deployment, check whether multiple app instances are running different plugin versions or whether scheduling settings are overridden in `config/redirect-manager.php`. For analytics, check `enableAnalytics`, `analyticsRetention`, and `autoTrimAnalytics`; for backups, check `backupSchedule` and `backupEnabled`. Config overrides prevent CP changes from taking effect, so update the config value directly.
 
 ---
 

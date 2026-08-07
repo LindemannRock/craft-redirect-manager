@@ -190,6 +190,9 @@ class SettingsController extends Controller
         // Capture old backup settings before applying new values (for schedule change detection)
         $oldBackupEnabled = $settings->backupEnabled;
         $oldBackupSchedule = $settings->backupSchedule;
+        $oldEnableAnalytics = $settings->enableAnalytics;
+        $oldAnalyticsRetention = $settings->analyticsRetention;
+        $oldAutoTrimAnalytics = $settings->autoTrimAnalytics;
 
         // Get only the posted settings (fields from the current page)
         $settingsData = Craft::$app->getRequest()->getBodyParam('settings', []);
@@ -226,6 +229,12 @@ class SettingsController extends Controller
                 $oldBackupSchedule !== $settings->backupSchedule
             ) {
                 RedirectManager::$plugin->handleBackupScheduleChange($settings);
+            }
+            if ($oldEnableAnalytics !== $settings->enableAnalytics ||
+                $oldAnalyticsRetention !== $settings->analyticsRetention ||
+                $oldAutoTrimAnalytics !== $settings->autoTrimAnalytics
+            ) {
+                RedirectManager::$plugin->handleAnalyticsMaintenanceChange($settings);
             }
 
             Craft::$app->getSession()->setNotice(Craft::t('redirect-manager', 'Settings saved.'));

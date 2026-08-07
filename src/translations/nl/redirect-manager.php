@@ -252,11 +252,11 @@ return [
     '<strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in <a href="{url}">General Settings</a>.' => '<strong>Opmerking:</strong> deze instelling heeft alleen invloed op de analyseweergave. Zie <strong>Queryreeksverwerking</strong> in <a href="{url}">Algemene instellingen</a> voor het redirectmatchinggedrag.',
     'Data Retention' => 'Gegevensbewaring',
     'Analytics Retention (Days)' => 'Analysebewaring (dagen)',
-    'Number of days to retain analytics (0 = keep forever)' => 'Aantal dagen analysegegevens bewaren (0 = voor altijd bewaren)',
+    'Number of days to retain analytics by age (0 = disable age-based deletion)' => 'Aantal dagen analysegegevens bewaren op basis van leeftijd (0 = verwijderen op basis van leeftijd uitschakelen)',
     'Analytics Limit' => 'Analyselimiet',
-    'Maximum number of unique 404 records to retain' => 'Maximum aantal unieke 404-records te bewaren',
+    'Target maximum number of unique 404 records after scheduled cleanup' => 'Beoogd maximumaantal unieke 404-records na geplande opschoning',
     'Auto Trim Analytics' => 'Analyses automatisch bijsnijden',
-    'Automatically trim analytics to respect the limit' => 'Analyses automatisch bijsnijden om de limiet te respecteren',
+    'Enforce the analytics limit during scheduled cleanup' => 'Analyselimiet afdwingen tijdens geplande opschoning',
 
     // Settings: Backup
     'Backup Settings' => 'Back-upinstellingen',

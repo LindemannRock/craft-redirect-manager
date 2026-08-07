@@ -252,11 +252,11 @@ return [
     '<strong>Note:</strong> This setting only affects analytics display. For redirect matching behavior, see <strong>Query String Handling</strong> in <a href="{url}">General Settings</a>.' => '<strong>注意:</strong> この設定はアナリティクス表示にのみ影響します。リダイレクト一致の動作については、<a href="{url}">一般設定</a>の <strong>クエリ文字列の処理</strong> を参照してください。',
     'Data Retention' => 'データ保持期間',
     'Analytics Retention (Days)' => 'アナリティクスの保持期間（日）',
-    'Number of days to retain analytics (0 = keep forever)' => 'アナリティクスを保持する日数（0 = 永久に保持）',
+    'Number of days to retain analytics by age (0 = disable age-based deletion)' => 'アナリティクスを経過日数に基づいて保持する日数（0 = 経過日数に基づく削除を無効にする）',
     'Analytics Limit' => 'アナリティクスの上限',
-    'Maximum number of unique 404 records to retain' => '保持するユニーク 404 レコードの最大数',
+    'Target maximum number of unique 404 records after scheduled cleanup' => 'スケジュールされた整理後のユニーク 404 レコードの目標最大数',
     'Auto Trim Analytics' => 'アナリティクスを自動削減する',
-    'Automatically trim analytics to respect the limit' => '上限を守るためにアナリティクスを自動的に削減する',
+    'Enforce the analytics limit during scheduled cleanup' => 'スケジュールされた整理中にアナリティクスの上限を適用する',
 
     // Settings: Backup
     'Backup Settings' => 'バックアップ設定',
