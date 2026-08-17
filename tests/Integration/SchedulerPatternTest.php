@@ -207,22 +207,30 @@ final class SchedulerPatternTest extends TestCase
         $this->assertSame(1, $this->countQueueRows('CleanupAnalyticsJob'));
     }
 
-    public function testBackupReschedulesWhenExistingBackupRowExists(): void
+    public function testReservedBackupConsumerCreatesExactlyOneReplaySafeSuccessor(): void
     {
         $this->settings()->backupEnabled = true;
         $this->settings()->backupSchedule = 'daily';
 
-        Craft::$app->getQueue()->delay(300)->push(new CreateBackupJob([
+        $this->pushOwnedJob(new CreateBackupJob([
             'reason' => 'scheduled',
             'reschedule' => true,
-        ]));
+            'recurringOwner' => 'redirect-manager:backup:scheduled',
+        ]), 300);
         $this->assertSame(1, $this->countQueueRows('CreateBackupJob'));
 
-        $job = new CreateBackupJob([
-            'reason' => 'scheduled',
-            'reschedule' => true,
-        ]);
-        $this->invokePrivate($job, 'scheduleNextBackup');
+        $row = $this->latestQueueRow('CreateBackupJob');
+        self::assertIsArray($row);
+        Craft::$app->getDb()->createCommand()->update(
+            '{{%queue}}',
+            ['timeUpdated' => time()],
+            ['id' => $row['id']],
+        )->execute();
+
+        $this->scheduledBackups->runOccurrence(static function(): void {
+        });
+        $this->scheduledBackups->runOccurrence(static function(): void {
+        });
 
         $this->assertSame(2, $this->countQueueRows('CreateBackupJob'));
     }

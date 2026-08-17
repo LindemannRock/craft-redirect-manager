@@ -37,11 +37,11 @@ When both `backupPath` and `backupVolumeUid` are set, the volume takes precedenc
 | Value | Behavior |
 |-------|----------|
 | `disabled` | No automatic schedule; backups only run on demand or before imports |
-| `daily` | Backup runs once per day (via `redirect-manager/backup/scheduled` console command) |
+| `daily` | Backup runs once per day |
 | `weekly` | Backup runs once per week |
 | `monthly` | Backup runs once per month |
 
-Scheduled backups run through Craft's queue. Redirect Manager keeps one delayed scheduled-backup row for the next run and recreates it after each scheduled backup completes. Run a queue worker with `queue/listen` or a cron-driven `queue/run` so scheduled backups fire on time.
+Scheduled backups normally run through Craft's queue. Redirect Manager keeps one delayed scheduled-backup chain for the next run and creates its successor only after a successful backup. On queue transports with a bounded delay, the plugin relays the wait through intermediate queue handoffs; those handoffs do not create backups. Local queue transports retain the complete native delay. Run a queue worker with `queue/listen` or a cron-driven `queue/run` so scheduled backups fire on time.
 
 The queued job description shows when that specific queued row is due to run. Craft stores that description when the row is queued, so date/time format changes apply to newly queued rows. Existing delayed rows keep their old label until they run or are requeued. Queue labels stay compact: numeric months render numerically, while short and long month settings both render as short month names.
 

@@ -34,15 +34,11 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use lindemannrock\base\helpers\ColorHelper;
 use lindemannrock\base\helpers\CpNavHelper;
-use lindemannrock\base\helpers\DateFormatHelper;
 use lindemannrock\base\helpers\PluginHelper;
-use lindemannrock\base\helpers\RecurringQueueHelper;
-use lindemannrock\base\helpers\ScheduleHelper;
 use lindemannrock\logginglibrary\LoggingLibrary;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\gql\queries\RedirectQuery;
 use lindemannrock\redirectmanager\gql\types\RedirectType;
-use lindemannrock\redirectmanager\jobs\CreateBackupJob;
 use lindemannrock\redirectmanager\models\Settings;
 use lindemannrock\redirectmanager\services\AnalyticsService;
 use lindemannrock\redirectmanager\services\BackupService;
@@ -50,6 +46,7 @@ use lindemannrock\redirectmanager\services\DeviceDetectionService;
 use lindemannrock\redirectmanager\services\LocalCacheService;
 use lindemannrock\redirectmanager\services\MatchingService;
 use lindemannrock\redirectmanager\services\RedirectsService;
+use lindemannrock\redirectmanager\services\ScheduledBackupScheduler;
 use lindemannrock\redirectmanager\services\SetupService;
 use lindemannrock\redirectmanager\utilities\RedirectManagerUtility;
 use lindemannrock\redirectmanager\variables\RedirectManagerVariable;
@@ -70,6 +67,7 @@ use yii\base\Event;
  * @property-read DeviceDetectionService $deviceDetection
  * @property-read BackupService $backup
  * @property-read LocalCacheService $localCache
+ * @property-read ScheduledBackupScheduler $scheduledBackups
  * @property-read SetupService $setup
  * @property-read Settings $settings
  * @method Settings getSettings()
@@ -156,6 +154,7 @@ class RedirectManager extends Plugin
             'deviceDetection' => DeviceDetectionService::class,
             'backup' => BackupService::class,
             'localCache' => LocalCacheService::class,
+            'scheduledBackups' => ScheduledBackupScheduler::class,
             'setup' => SetupService::class,
         ]);
 
@@ -632,75 +631,29 @@ class RedirectManager extends Plugin
     }
 
     /**
-     * Queue the next scheduled backup row for the provided settings.
-     */
-    private function queueBackupJob(Settings $settings): void
-    {
-        $schedule = $settings->getEffectiveBackupSchedule();
-
-        if (!$settings->backupEnabled || $schedule === 'disabled') {
-            return;
-        }
-
-        $nextRun = ScheduleHelper::calculateNext($schedule);
-        if ($nextRun === null) {
-            return;
-        }
-
-        $delay = max(0, $nextRun->getTimestamp() - DateFormatHelper::now()->getTimestamp());
-        $nextRunTime = DateFormatHelper::formatCompactDatetimeFromSettings(
-            $nextRun,
-            $settings,
-            null,
-            false,
-            pluginHandle: 'redirect-manager',
-        );
-
-        RecurringQueueHelper::ensurePending(
-            pluginToken: 'redirectmanager',
-            jobClass: CreateBackupJob::class,
-            delay: $delay,
-            jobFactory: fn() => new CreateBackupJob([
-                'reason' => 'scheduled',
-                'reschedule' => true,
-                'nextRunTime' => $nextRunTime,
-            ]),
-        );
-    }
-
-    /**
      * Schedule backup job if enabled
      * Called on every plugin init to ensure job is always in queue
      */
     private function scheduleBackupJob(): void
     {
-        $this->queueBackupJob($this->getSettings());
+        $this->scheduledBackups->synchronize($this->getSettings());
     }
 
     /**
      * Handle backup schedule changes when settings are saved
      *
+     * @param array{enabled: bool, schedule: string}|null $previousState
      * @since 5.23.0
      */
-    public function handleBackupScheduleChange(Settings $settings): void
+    public function handleBackupScheduleChange(Settings $settings, ?array $previousState = null): void
     {
-        $schedule = $settings->getEffectiveBackupSchedule();
-        if (!$settings->backupEnabled || $schedule === 'disabled') {
-            $this->cancelScheduledBackupJobs();
-            $this->logInfo('Backup scheduling disabled');
+        PluginHelper::applyConfigOverridesToSettings($settings, 'redirect-manager');
+        if ($previousState === null) {
+            $this->scheduledBackups->replace($settings);
             return;
         }
 
-        $this->cancelScheduledBackupJobs();
-        $this->queueBackupJob($settings);
-    }
-
-    /**
-     * Cancel any existing scheduled backup jobs
-     */
-    private function cancelScheduledBackupJobs(): void
-    {
-        RecurringQueueHelper::deletePending('redirectmanager', CreateBackupJob::class);
+        $this->scheduledBackups->replaceIfChanged($settings, $previousState);
     }
 
     /**

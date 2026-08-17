@@ -190,9 +190,10 @@ class SettingsController extends Controller
         // Load current settings from database
         $settings = Settings::loadFromDatabase();
 
-        // Capture old backup settings before applying new values (for schedule change detection)
-        $oldBackupEnabled = $settings->backupEnabled;
-        $oldBackupSchedule = $settings->backupSchedule;
+        // Capture the effective queue policy before applying posted values.
+        $oldEffectiveBackupSettings = clone $settings;
+        PluginHelper::applyConfigOverridesToSettings($oldEffectiveBackupSettings, 'redirect-manager');
+        $oldBackupState = RedirectManager::$plugin->scheduledBackups->getEffectiveState($oldEffectiveBackupSettings);
         $oldEnableAnalytics = $settings->enableAnalytics;
         $oldAnalyticsRetention = $settings->analyticsRetention;
         $oldAutoTrimAnalytics = $settings->autoTrimAnalytics;
@@ -232,12 +233,7 @@ class SettingsController extends Controller
 
         // Save only current section attributes to database
         if ($settings->saveToDatabase($attributesToValidate)) {
-            // Detect backup schedule changes and update queue jobs
-            if ($oldBackupEnabled !== $settings->backupEnabled ||
-                $oldBackupSchedule !== $settings->backupSchedule
-            ) {
-                RedirectManager::$plugin->handleBackupScheduleChange($settings);
-            }
+            RedirectManager::$plugin->handleBackupScheduleChange($settings, $oldBackupState);
             if ($oldEnableAnalytics !== $settings->enableAnalytics ||
                 $oldAnalyticsRetention !== $settings->analyticsRetention ||
                 $oldAutoTrimAnalytics !== $settings->autoTrimAnalytics

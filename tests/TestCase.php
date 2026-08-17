@@ -22,6 +22,7 @@ use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\services\AnalyticsService;
 use lindemannrock\redirectmanager\services\MatchingService;
 use lindemannrock\redirectmanager\services\RedirectsService;
+use lindemannrock\redirectmanager\services\ScheduledBackupScheduler;
 use Throwable;
 use yii\db\Transaction;
 
@@ -49,6 +50,7 @@ abstract class TestCase extends IntegrationTestCase
     protected MatchingService $matching;
     protected RedirectsService $redirects;
     protected AnalyticsService $analytics;
+    protected ScheduledBackupScheduler $scheduledBackups;
 
     private int $seedCounter = 0;
     /** @var array<string, mixed>|null */
@@ -88,6 +90,7 @@ abstract class TestCase extends IntegrationTestCase
             $this->matching = RedirectManager::$plugin->matching;
             $this->redirects = RedirectManager::$plugin->redirects;
             $this->analytics = RedirectManager::$plugin->analytics;
+            $this->scheduledBackups = RedirectManager::$plugin->scheduledBackups;
             $this->seedCounter = 0;
         } catch (Throwable $exception) {
             try {

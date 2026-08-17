@@ -12,8 +12,6 @@ namespace lindemannrock\redirectmanager\jobs;
 
 use Craft;
 use craft\queue\BaseJob;
-use lindemannrock\base\helpers\DateFormatHelper;
-use lindemannrock\base\helpers\ScheduleHelper;
 use lindemannrock\base\traits\QueueTtrTrait;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
@@ -40,6 +38,12 @@ class CreateBackupJob extends BaseJob implements RetryableJobInterface
     public bool $reschedule = false;
 
     /**
+     * @var string Stable recurring queue owner
+     * @since 5.41.0
+     */
+    public string $recurringOwner = '';
+
+    /**
      * @var string|null Next run time display string
      */
     public ?string $nextRunTime = null;
@@ -60,21 +64,8 @@ class CreateBackupJob extends BaseJob implements RetryableJobInterface
         parent::init();
         $this->setLoggingHandle(RedirectManager::$plugin->id);
 
-        if ($this->reschedule && !$this->nextRunTime) {
-            $settings = RedirectManager::getInstance()->getSettings();
-            $schedule = $settings->getEffectiveBackupSchedule();
-            if ($settings->backupEnabled && $schedule !== 'disabled') {
-                $nextRun = ScheduleHelper::calculateNext($schedule);
-                if ($nextRun !== null) {
-                    $this->nextRunTime = DateFormatHelper::formatCompactDatetimeFromSettings(
-                        $nextRun,
-                        $settings,
-                        null,
-                        false,
-                        pluginHandle: 'redirect-manager',
-                    );
-                }
-            }
+        if ($this->isRecurringScheduledBackup() && !$this->nextRunTime && RedirectManager::$plugin !== null) {
+            $this->nextRunTime = RedirectManager::$plugin->scheduledBackups->getNextRunTime();
         }
     }
 
@@ -98,6 +89,16 @@ class CreateBackupJob extends BaseJob implements RetryableJobInterface
      */
     public function execute($queue): void
     {
+        if ($this->isRecurringScheduledBackup()) {
+            RedirectManager::$plugin->scheduledBackups->runOccurrence(fn() => $this->createBackup());
+            return;
+        }
+
+        $this->createBackup();
+    }
+
+    private function createBackup(): void
+    {
         $backupService = RedirectManager::getInstance()->backup;
         $backupPath = $backupService->createBackup($this->reason);
 
@@ -113,51 +114,13 @@ class CreateBackupJob extends BaseJob implements RetryableJobInterface
                     $this->logInfo('Cleaned old backups', ['deleted' => $deleted]);
                 }
             }
-
-            if ($this->reschedule) {
-                $this->scheduleNextBackup();
-            }
         } else {
             throw new \Exception(Craft::t('redirect-manager', 'Failed to create scheduled backup'));
         }
     }
 
-    /**
-     * Schedule the next backup based on settings
-     */
-    private function scheduleNextBackup(): void
+    private function isRecurringScheduledBackup(): bool
     {
-        $settings = RedirectManager::getInstance()->getSettings();
-        $schedule = $settings->getEffectiveBackupSchedule();
-
-        if (!$settings->backupEnabled || $schedule === 'disabled') {
-            return;
-        }
-
-        $nextRun = ScheduleHelper::calculateNext($schedule);
-
-        if ($nextRun !== null) {
-            $delay = max(0, $nextRun->getTimestamp() - DateFormatHelper::now()->getTimestamp());
-            $nextRunTime = DateFormatHelper::formatCompactDatetimeFromSettings(
-                $nextRun,
-                $settings,
-                null,
-                false,
-                pluginHandle: 'redirect-manager',
-            );
-
-            $job = new self([
-                'reason' => 'scheduled',
-                'reschedule' => true,
-                'nextRunTime' => $nextRunTime,
-            ]);
-
-            Craft::$app->getQueue()->delay($delay)->push($job);
-
-            $this->logInfo('Next backup scheduled', [
-                'delay_seconds' => $delay,
-                'next_run' => $nextRunTime,
-            ]);
-        }
+        return $this->reason === 'scheduled' && $this->reschedule;
     }
 }
