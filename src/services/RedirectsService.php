@@ -16,13 +16,13 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use DirectoryIterator;
+use lindemannrock\base\cache\DisposableCacheStorageDecision;
 use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\events\RedirectEvent;
 use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\RedirectManager;
 use yii\db\IntegrityException;
-use yii\redis\Cache as RedisCache;
 use yii\web\NotFoundHttpException;
 
 /**
@@ -43,8 +43,6 @@ class RedirectsService extends Component
     private const CACHE_MAX_ENTRIES = 1000;
 
     private const FILE_CACHE_WRITE_MUTEX = 'redirect-manager:redirect-cache-file-write';
-    private const REDIS_CACHE_WRITE_MUTEX = 'redirect-manager:redirect-cache-redis-write';
-
     /**
      * Cache key prefix
      */
@@ -221,7 +219,11 @@ class RedirectsService extends Component
     {
         $pathCandidates = $this->normalizePathCandidates($pathCandidates);
         $lookupIdentity = $this->buildLookupIdentity($siteId, $fullUrl, $pathCandidates);
-        $cached = $this->getFromCache($lookupIdentity);
+        $settings = RedirectManager::$plugin->getSettings();
+        $storageDecision = $settings->enableRedirectCache
+            ? RedirectManager::$plugin->localCache->getStorageDecision()
+            : null;
+        $cached = $this->getFromCache($lookupIdentity, $siteId, $storageDecision);
 
         if ($cached['state'] === self::CACHE_STATE_NEGATIVE) {
             return null;
@@ -241,12 +243,12 @@ class RedirectsService extends Component
             $pathCandidates,
         );
         if ($redirect === null) {
-            $this->saveToCache($lookupIdentity, $this->negativeCacheResult());
+            $this->saveToCache($lookupIdentity, $siteId, $this->negativeCacheResult(), $storageDecision);
 
             return null;
         }
 
-        $this->saveToCache($lookupIdentity, $this->positiveCacheResult($redirect));
+        $this->saveToCache($lookupIdentity, $siteId, $this->positiveCacheResult($redirect), $storageDecision);
         $redirect['_requestSiteId'] = $siteId;
         $this->incrementHitCount((int)$redirect['id']);
 
@@ -887,8 +889,11 @@ class RedirectsService extends Component
             return false;
         }
 
-        // Invalidate caches
-        $this->invalidateCaches();
+        // Cache invalidation is best-effort after the redirect has committed.
+        RedirectManager::$plugin->localCache->invalidateRedirectMutation(
+            $record->siteId === null ? null : (int)$record->siteId,
+            $record->siteId === null ? null : (int)$record->siteId,
+        );
 
         // Trigger after save event
         $this->trigger(self::EVENT_AFTER_SAVE_REDIRECT, $event);
@@ -924,6 +929,8 @@ class RedirectsService extends Component
             $this->logError('Redirect not found', ['id' => $id]);
             return false;
         }
+
+        $oldSiteId = $record->siteId === null ? null : (int)$record->siteId;
 
         // Parse source URL if changed
         if (isset($attributes['sourceUrl']) && !isset($attributes['sourceUrlParsed'])) {
@@ -976,8 +983,11 @@ class RedirectsService extends Component
             return false;
         }
 
-        // Invalidate caches
-        $this->invalidateCaches();
+        // Cache invalidation is best-effort after the redirect has committed.
+        RedirectManager::$plugin->localCache->invalidateRedirectMutation(
+            $oldSiteId,
+            $record->siteId === null ? null : (int)$record->siteId,
+        );
 
         // Trigger after save event
         $this->trigger(self::EVENT_AFTER_SAVE_REDIRECT, $event);
@@ -1003,6 +1013,8 @@ class RedirectsService extends Component
             return false;
         }
 
+        $siteId = $record->siteId === null ? null : (int)$record->siteId;
+
         // Trigger before delete event
         $event = new RedirectEvent(['redirect' => $record->toArray()]);
         $this->trigger(self::EVENT_BEFORE_DELETE_REDIRECT, $event);
@@ -1016,8 +1028,8 @@ class RedirectsService extends Component
             return false;
         }
 
-        // Invalidate caches
-        $this->invalidateCaches();
+        // Cache invalidation is best-effort after the redirect has committed.
+        RedirectManager::$plugin->localCache->invalidateRedirectMutation($siteId, $siteId);
 
         // Trigger after delete event
         $this->trigger(self::EVENT_AFTER_DELETE_REDIRECT, $event);
@@ -1112,40 +1124,45 @@ class RedirectsService extends Component
     /**
      * @return array{state: 'absent'|'negative'|'positive', redirect?: array<string, mixed>}
      */
-    private function getFromCache(string $lookupIdentity): array
-    {
-        $settings = RedirectManager::$plugin->getSettings();
-        if (!$settings->enableRedirectCache) {
+    private function getFromCache(
+        string $lookupIdentity,
+        int $siteId,
+        ?DisposableCacheStorageDecision $storageDecision,
+    ): array {
+        if ($storageDecision === null || $storageDecision->isDisabled()) {
             return $this->absentCacheResult();
         }
 
-        $cacheKey = $this->cacheKey($lookupIdentity);
-        if ($settings->cacheStorageMethod === 'redis') {
-            $cache = PluginHelper::getRedisCacheOrLog(RedirectManager::$plugin->id);
+        if ($storageDecision->usesApplicationCache()) {
+            $cache = RedirectManager::$plugin->localCache->getScopedCache(
+                $storageDecision,
+                LocalCacheService::FAMILY_REDIRECT_LOOKUPS,
+            );
             if ($cache === null) {
                 return $this->absentCacheResult();
             }
 
-            try {
-                $cached = $cache->get($cacheKey);
-                if ($cached === false) {
-                    $this->untrackRedisCacheKeyIfAbsent($cache, $cacheKey);
-
-                    return $this->absentCacheResult();
-                }
-
-                $decoded = $this->decodeCachedResult($cached);
-                if ($decoded !== null) {
-                    $this->logDebug('Redirect result cache hit (Redis)', ['identity' => $lookupIdentity]);
-
-                    return $decoded;
-                }
-
-                $this->removeInvalidRedisCacheResult($cache, $cacheKey);
-            } catch (\Throwable $exception) {
+            $result = $cache->get($lookupIdentity, ['siteId' => $siteId]);
+            if ($result->isFailure()) {
                 $this->logWarning('Redirect result cache read failed; resolving uncached', [
-                    'backend' => 'redis',
-                    'error' => $exception->getMessage(),
+                    'backend' => 'application',
+                ]);
+                return $this->absentCacheResult();
+            }
+            if ($result->isMiss()) {
+                return $this->absentCacheResult();
+            }
+
+            $decoded = $this->decodeCachedResult($result->value);
+            if ($decoded !== null) {
+                $this->logDebug('Redirect result cache hit (Application)', ['identity' => $lookupIdentity]);
+
+                return $decoded;
+            }
+
+            if (!$cache->delete($lookupIdentity, ['siteId' => $siteId])) {
+                $this->logWarning('Invalid redirect result cache entry could not be removed', [
+                    'backend' => 'application',
                 ]);
             }
 
@@ -1182,11 +1199,6 @@ class RedirectsService extends Component
         @unlink($filepath);
 
         return $this->absentCacheResult();
-    }
-
-    private function cacheKey(string $lookupIdentity): string
-    {
-        return PluginHelper::getCacheKeyPrefix(RedirectManager::$plugin->id, 'redirect') . $lookupIdentity;
     }
 
     private function cacheFilepath(string $lookupIdentity): string
@@ -1240,79 +1252,40 @@ class RedirectsService extends Component
     /**
      * @param array{state: 'negative'|'positive', redirect?: array<string, mixed>} $result
      */
-    private function saveToCache(string $lookupIdentity, array $result): void
-    {
-        $settings = RedirectManager::$plugin->getSettings();
-        if (!$settings->enableRedirectCache) {
+    private function saveToCache(
+        string $lookupIdentity,
+        int $siteId,
+        array $result,
+        ?DisposableCacheStorageDecision $storageDecision,
+    ): void {
+        if ($storageDecision === null || $storageDecision->isDisabled()) {
             return;
         }
 
+        $settings = RedirectManager::$plugin->getSettings();
         $duration = max(1, (int)($settings->redirectCacheDuration ?? 3600));
         $storedResult = ['version' => self::CACHE_RESULT_VERSION] + $result;
 
-        if ($settings->cacheStorageMethod === 'redis') {
-            $cache = PluginHelper::getRedisCacheOrLog(RedirectManager::$plugin->id);
+        if ($storageDecision->usesApplicationCache()) {
+            $cache = RedirectManager::$plugin->localCache->getScopedCache(
+                $storageDecision,
+                LocalCacheService::FAMILY_REDIRECT_LOOKUPS,
+            );
             if ($cache === null) {
                 return;
             }
 
-            $cacheKey = $this->cacheKey($lookupIdentity);
-            $setKey = PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'redirect');
-            $trackingEstablished = false;
-            $mutex = Craft::$app->getMutex();
-            $mutexAcquired = false;
-            try {
-                $mutexAcquired = $mutex->acquire(self::REDIS_CACHE_WRITE_MUTEX, 3);
-                if (!$mutexAcquired) {
-                    throw new \RuntimeException('Unable to acquire the redirect result cache Redis write lock.');
-                }
-                $redis = $cache->redis;
-                $trackingEstablished = (int)$redis->executeCommand('SISMEMBER', [$setKey, $cacheKey]) === 1;
-                if (!$trackingEstablished) {
-                    if (!$this->prepareRedisCapacityForWrite($cache, $setKey)) {
-                        return;
-                    }
-                    if ((int)$redis->executeCommand('SADD', [$setKey, $cacheKey]) !== 1) {
-                        throw new \RuntimeException('Unable to track the redirect result cache key.');
-                    }
-                    $trackingEstablished = true;
-                }
-
-                if ((int)$redis->executeCommand('EXPIRE', [$setKey, $duration]) !== 1) {
-                    throw new \RuntimeException('Unable to refresh redirect result cache tracking expiry.');
-                }
-                if (!$cache->set($cacheKey, $storedResult, $duration)) {
-                    throw new \RuntimeException('Unable to write the redirect result cache entry.');
-                }
-                $this->logDebug('Redirect result cached (Redis)', [
-                    'identity' => $lookupIdentity,
-                    'state' => $result['state'],
-                    'duration' => $duration,
-                ]);
-            } catch (\Throwable $exception) {
-                if ($trackingEstablished) {
-                    try {
-                        $this->deleteRedisResultBeforeUntracking($cache, $setKey, $cacheKey);
-                    } catch (\Throwable) {
-                        // A live result remains tracked; an absent result may leave only stale membership.
-                    }
-                }
+            if (!$cache->set($lookupIdentity, $storedResult, $duration, ['siteId' => $siteId])) {
                 $this->logWarning('Redirect result cache write failed; continuing uncached', [
-                    'backend' => 'redis',
-                    'error' => $exception->getMessage(),
+                    'backend' => 'application',
                 ]);
-            } finally {
-                if ($mutexAcquired) {
-                    try {
-                        $mutex->release(self::REDIS_CACHE_WRITE_MUTEX);
-                    } catch (\Throwable $exception) {
-                        $this->logWarning('Redirect result cache Redis write lock release failed', [
-                            'backend' => 'redis',
-                            'error' => $exception->getMessage(),
-                        ]);
-                    }
-                }
+                return;
             }
+            $this->logDebug('Redirect result cached (Application)', [
+                'identity' => $lookupIdentity,
+                'state' => $result['state'],
+                'duration' => $duration,
+            ]);
 
             return;
         }
@@ -1357,88 +1330,6 @@ class RedirectsService extends Component
                 }
             }
         }
-    }
-
-    private function untrackRedisCacheKey(RedisCache $cache, string $cacheKey): void
-    {
-        $cache->redis->executeCommand('SREM', [
-            PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'redirect'),
-            $cacheKey,
-        ]);
-    }
-
-    private function untrackRedisCacheKeyIfAbsent(RedisCache $cache, string $cacheKey): void
-    {
-        $mutex = Craft::$app->getMutex();
-        $mutexAcquired = false;
-        try {
-            $mutexAcquired = $mutex->acquire(self::REDIS_CACHE_WRITE_MUTEX, 3);
-            if (!$mutexAcquired) {
-                return;
-            }
-            if ($cache->get($cacheKey) === false) {
-                $this->untrackRedisCacheKey($cache, $cacheKey);
-            }
-        } finally {
-            if ($mutexAcquired) {
-                $mutex->release(self::REDIS_CACHE_WRITE_MUTEX);
-            }
-        }
-    }
-
-    private function removeInvalidRedisCacheResult(RedisCache $cache, string $cacheKey): void
-    {
-        $mutex = Craft::$app->getMutex();
-        $mutexAcquired = false;
-        try {
-            $mutexAcquired = $mutex->acquire(self::REDIS_CACHE_WRITE_MUTEX, 3);
-            if (!$mutexAcquired) {
-                return;
-            }
-
-            $current = $cache->get($cacheKey);
-            if ($current === false) {
-                $this->untrackRedisCacheKey($cache, $cacheKey);
-            } elseif ($this->decodeCachedResult($current) === null) {
-                $this->deleteRedisResultBeforeUntracking(
-                    $cache,
-                    PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'redirect'),
-                    $cacheKey,
-                );
-            }
-        } finally {
-            if ($mutexAcquired) {
-                $mutex->release(self::REDIS_CACHE_WRITE_MUTEX);
-            }
-        }
-    }
-
-    private function prepareRedisCapacityForWrite(RedisCache $cache, string $setKey): bool
-    {
-        $trackedCount = (int)$cache->redis->executeCommand('SCARD', [$setKey]);
-        if ($trackedCount < self::CACHE_MAX_ENTRIES) {
-            return true;
-        }
-
-        $victim = $cache->redis->executeCommand('SRANDMEMBER', [$setKey]);
-        if (!is_string($victim) || $victim === '') {
-            throw new \RuntimeException('Unable to select a tracked redirect result cache victim.');
-        }
-        $this->deleteRedisResultBeforeUntracking($cache, $setKey, $victim);
-
-        // Legacy over-capacity sets converge by one exact victim per attempt.
-        // A new result is accepted only when that one removal creates capacity.
-        return $trackedCount === self::CACHE_MAX_ENTRIES;
-    }
-
-    private function deleteRedisResultBeforeUntracking(RedisCache $cache, string $setKey, string $cacheKey): void
-    {
-        $deleted = $cache->redis->executeCommand('DEL', [$cache->buildKey($cacheKey)]);
-        if (!is_int($deleted) && !is_numeric($deleted)) {
-            throw new \RuntimeException('Unable to confirm redirect result cache deletion.');
-        }
-
-        $cache->redis->executeCommand('SREM', [$setKey, $cacheKey]);
     }
 
     private function pruneFileCacheForWrite(string $cachePath): void
@@ -1494,7 +1385,7 @@ class RedirectsService extends Component
      */
     public function invalidateCaches(): void
     {
-        RedirectManager::$plugin->localCache->clearRedirectCache();
+        RedirectManager::$plugin->localCache->invalidateRedirectFamily();
     }
 
     /**

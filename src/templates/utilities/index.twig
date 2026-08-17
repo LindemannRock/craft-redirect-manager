@@ -69,33 +69,35 @@
 
     {# Cache Status Card #}
     {% if canClearCache %}
-    {% if storageMethod == 'redis' %}
         {% set cacheSubBoxes = [] %}
         {% if settings.enableRedirectCache %}
-            {% set cacheSubBoxes = cacheSubBoxes|merge([{value: '✓', label: 'Redirects'|t('redirect-manager')}]) %}
+            {% set cacheSubBoxes = cacheSubBoxes|merge([{
+                value: showCacheCounts ? redirectCacheFiles : (cacheStorageDisabled ? '—' : '✓'),
+                label: 'Redirects'|t('redirect-manager'),
+            }]) %}
         {% endif %}
         {% if settings.cacheDeviceDetection %}
-            {% set cacheSubBoxes = cacheSubBoxes|merge([{value: '✓', label: 'Devices'|t('redirect-manager')}]) %}
+            {% set cacheSubBoxes = cacheSubBoxes|merge([{
+                value: showCacheCounts ? deviceCacheFiles : (cacheStorageDisabled ? '—' : '✓'),
+                label: 'Devices'|t('redirect-manager'),
+            }]) %}
         {% endif %}
 
+        {% set cacheCardColor = cacheStorage.utilitySeverity == 'warning'
+            ? lrPaletteColor('amber').color
+            : (cacheStorage.utilitySeverity == 'info'
+                ? lrPaletteColor('sky').color
+                : (cacheStorage.utilitySeverity == 'inactive'
+                    ? lrPaletteColor('gray').color
+                    : lrPaletteColor('emerald').color)) %}
+
         {% include 'lindemannrock-base/_components/unified-card' with {
-            title: 'Cache Status'|t('redirect-manager') ~ ' (Redis)',
-            color: lrPaletteColor('emerald').color,
-            value: 'Active'|t('redirect-manager'),
+            title: 'Cache Status'|t('redirect-manager'),
+            color: cacheCardColor,
+            value: cacheStorage.utilityValueKey|t('lindemannrock-base'),
+            description: cacheStorage.utilityDescriptionKey|t('lindemannrock-base'),
             subBoxes: cacheSubBoxes,
         } only %}
-    {% else %}
-        {% include 'lindemannrock-base/_components/unified-card' with {
-            title: 'Cache Status'|t('redirect-manager') ~ ' (File)',
-            color: lrPaletteColor('emerald').color,
-            value: deviceCacheFiles + redirectCacheFiles,
-            description: 'Total cached entries'|t('redirect-manager'),
-            subBoxes: [
-                {value: redirectCacheFiles, label: 'Redirects'|t('redirect-manager')},
-                {value: deviceCacheFiles, label: 'Devices'|t('redirect-manager')},
-            ],
-        } only %}
-    {% endif %}
     {% endif %}
 {% endblock %}
 
@@ -128,14 +130,14 @@
                 {% set cacheButtons = cacheButtons|merge([{
                     id: 'clear-redirect-cache',
                     label: 'Clear Redirect Cache'|t('redirect-manager'),
-                    count: storageMethod != 'redis' ? redirectCacheFiles : null,
+                    count: showCacheCounts ? redirectCacheFiles : null,
                 }]) %}
             {% endif %}
             {% if settings.cacheDeviceDetection %}
                 {% set cacheButtons = cacheButtons|merge([{
                     id: 'clear-device-cache',
                     label: 'Clear Device Cache'|t('redirect-manager'),
-                    count: storageMethod != 'redis' ? deviceCacheFiles : null,
+                    count: showCacheCounts ? deviceCacheFiles : null,
                 }]) %}
             {% endif %}
             {% if settings.enableRedirectCache and settings.cacheDeviceDetection %}
@@ -143,7 +145,7 @@
                     id: 'clear-all-caches',
                     label: 'Clear All Caches'|t('redirect-manager'),
                     class: 'btn secondary',
-                    count: storageMethod != 'redis' ? (redirectCacheFiles + deviceCacheFiles) : null,
+                    count: showCacheCounts ? (redirectCacheFiles + deviceCacheFiles) : null,
                 }]) %}
             {% endif %}
 

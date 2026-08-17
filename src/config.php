@@ -133,8 +133,8 @@ return [
         // Performance and caching configuration
 
         // Cache Storage Method
-        // 'file' = File system (default, single server)
-        // 'redis' = Redis/Database (load-balanced, multi-server, cloud hosting)
+        // 'file' = Plugin-owned files on durable hosts; application cache on ephemeral hosts
+        // 'redis' or 'craft' = Craft's suitable cross-request application cache
         'cacheStorageMethod' => 'file',
 
         // Redirect Cache

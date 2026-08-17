@@ -458,7 +458,7 @@ class Settings extends Model
             ['enableRedirectCache', 'default', 'value' => true],
             ['redirectCacheDuration', 'integer', 'min' => 60, 'max' => 86400],
             ['redirectCacheDuration', 'default', 'value' => 3600],
-            [['cacheStorageMethod'], 'in', 'range' => ['file', 'redis']],
+            [['cacheStorageMethod'], 'in', 'range' => ['file', 'redis', 'craft']],
             ['backupPath', 'required'],
             ['backupPath', 'string'],
             [

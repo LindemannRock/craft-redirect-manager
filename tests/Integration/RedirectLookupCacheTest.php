@@ -18,7 +18,6 @@ use lindemannrock\redirectmanager\services\MatchingService;
 use lindemannrock\redirectmanager\services\RedirectsService;
 use lindemannrock\redirectmanager\tests\Support\InMemoryRedisConnection;
 use lindemannrock\redirectmanager\tests\TestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
 use yii\redis\Cache as RedisCache;
 use yii\web\NotFoundHttpException;
@@ -269,6 +268,7 @@ final class RedirectLookupCacheTest extends TestCase
 
     public function testUpdateInvalidatesAFormerWinnerForTheNextSafeRule(): void
     {
+        $this->useMemoryApplicationCache();
         $token = bin2hex(random_bytes(4));
         $path = '/' . self::MARKER . 'update_' . $token . '/page';
         $first = $this->seedRedirect([
@@ -298,6 +298,7 @@ final class RedirectLookupCacheTest extends TestCase
 
     public function testDeleteInvalidatesAFormerWinnerIntoAMiss(): void
     {
+        $this->useMemoryApplicationCache();
         $redirect = $this->seedRedirect();
         $path = (string)$redirect->sourceUrlParsed;
         $fullUrl = 'https://example.test' . $path;
@@ -305,7 +306,7 @@ final class RedirectLookupCacheTest extends TestCase
         self::assertSame($redirect->id, (int)$this->redirects->findRedirect($fullUrl, $path)['id']);
         self::assertTrue($this->redirects->deleteRedirect((int)$redirect->id, $redirect));
         self::assertNull($this->redirects->findRedirect($fullUrl, $path));
-        self::assertSame(1, RedirectManager::$plugin->localCache->countRedirectCacheFiles());
+        self::assertSame(0, RedirectManager::$plugin->localCache->countRedirectCacheFiles());
     }
 
     public function testFileCacheRemainsBoundedAndExpiredMissesConverge(): void
@@ -333,6 +334,30 @@ final class RedirectLookupCacheTest extends TestCase
         $path = '/' . self::MARKER . 'cardinality_replacement';
         self::assertNull($this->redirects->findRedirect('https://example.test' . $path, $path));
         self::assertSame(1, RedirectManager::$plugin->localCache->countRedirectCacheFiles());
+    }
+
+    public function testFileCapacityEvictsOldestEntryAcrossPositiveAndNegativeResults(): void
+    {
+        $cachePath = PluginHelper::getCachePath(RedirectManager::$plugin, 'redirects');
+        \craft\helpers\FileHelper::createDirectory($cachePath);
+        $oldest = $cachePath . '0000.cache';
+        for ($index = 0; $index < 1000; $index++) {
+            $state = $index % 2 === 0
+                ? ['state' => 'negative']
+                : ['state' => 'positive', 'redirect' => ['id' => $index]];
+            $path = $cachePath . sprintf('%04d.cache', $index);
+            file_put_contents($path, json_encode([
+                'result' => ['version' => 2] + $state,
+                'expires' => time() + 3600,
+            ], JSON_THROW_ON_ERROR));
+            touch($path, time() - ($index === 0 ? 200 : 100));
+        }
+
+        [$fullUrl, $path] = $this->missingLookup('oldest_first');
+        self::assertNull($this->redirects->findRedirect($fullUrl, $path));
+
+        self::assertFileDoesNotExist($oldest);
+        self::assertSame(1000, RedirectManager::$plugin->localCache->countRedirectCacheFiles());
     }
 
     public function testFileBackendFailureFallsBackToCorrectResolution(): void
@@ -411,16 +436,18 @@ final class RedirectLookupCacheTest extends TestCase
         self::assertSame(2, (int)$analytics['count']);
     }
 
-    public function testRedisBackendReusesPositiveAndNegativeResults(): void
+
+    public function testApplicationCacheReusesPositiveAndNegativeResults(): void
     {
-        $connection = $this->useMemoryRedisBackend();
+        $connection = $this->useMemoryApplicationCache();
         $redirect = $this->seedRedirect();
         $path = (string)$redirect->sourceUrlParsed;
         $fullUrl = 'https://example.test' . $path;
 
         self::assertSame($redirect->id, (int)$this->redirects->findRedirect($fullUrl, $path)['id']);
         self::assertSame($redirect->id, (int)$this->redirects->findRedirect($fullUrl, $path)['id']);
-        $missingPath = '/' . self::MARKER . 'redis_negative_' . bin2hex(random_bytes(4));
+
+        $missingPath = '/' . self::MARKER . 'application_negative_' . bin2hex(random_bytes(4));
         $missingFullUrl = 'https://example.test' . $missingPath;
         self::assertNull($this->redirects->findRedirect($missingFullUrl, $missingPath));
         self::assertNull($this->redirects->findRedirect($missingFullUrl, $missingPath));
@@ -428,255 +455,83 @@ final class RedirectLookupCacheTest extends TestCase
         self::assertSame(2, $this->candidateLoads);
         self::assertSame(2, $this->matcherCalls);
         self::assertSame(2, $this->fetchHitCountFromDb((int)$redirect->id));
-        self::assertCount(2, $connection->setMembers($this->redisTrackingSetKey()));
         self::assertSame(0, RedirectManager::$plugin->localCache->countRedirectCacheFiles());
+        self::assertNotEmpty(array_filter(
+            $connection->commandLog(),
+            static fn(array $command): bool => $command['name'] === 'SET'
+                && ($command['params'][2] ?? null) === 'PX'
+                && ($command['params'][3] ?? null) === 3_600_000,
+        ));
     }
 
-    public function testRedisResultBecomesLiveOnlyAfterTrackingExpiryIsRefreshed(): void
+    public function testSiteMutationInvalidatesOnlyAffectedApplicationCacheScope(): void
     {
-        [$fullUrl, $path] = $this->missingLookup('redis_write_order');
-        $connection = $this->useMemoryRedisBackend();
-        $connection->resetCommandAccounting();
+        $this->useMemoryApplicationCache();
+        $sites = Craft::$app->getSites()->getAllSites();
+        self::assertGreaterThanOrEqual(2, count($sites));
+        $siteA = (int)$sites[0]->id;
+        $siteB = (int)$sites[1]->id;
+        $pathA = '/' . self::MARKER . 'site_a_' . bin2hex(random_bytes(4));
+        $pathB = '/' . self::MARKER . 'site_b_' . bin2hex(random_bytes(4));
 
-        self::assertNull($this->redirects->findRedirect($fullUrl, $path));
+        self::assertNull($this->redirects->findRedirectForSite('https://one.example.test' . $pathA, $pathA, $siteA));
+        self::assertNull($this->redirects->findRedirectForSite('https://two.example.test' . $pathB, $pathB, $siteB));
 
-        $members = $connection->setMembers($this->redisTrackingSetKey());
-        self::assertCount(1, $members);
-        $cache = Craft::$app->getCache();
-        self::assertInstanceOf(RedisCache::class, $cache);
-        $commands = $connection->commandLog();
-        $membershipIndex = $this->commandIndex($commands, 'SADD', $members[0]);
-        $trackingExpiryIndex = $this->commandIndex($commands, 'EXPIRE', $this->redisTrackingSetKey());
-        $resultWriteIndex = $this->commandIndex($commands, 'SET', $cache->buildKey($members[0]));
-
-        self::assertLessThan($trackingExpiryIndex, $membershipIndex);
-        self::assertLessThan($resultWriteIndex, $trackingExpiryIndex);
-        $this->assertNoLiveUntrackedRedisResults($connection);
-    }
-
-    public function testRedisResultCapacityUsesConstantWriteMaintenance(): void
-    {
-        $connection = $this->useMemoryRedisBackend();
-        $constant = (new ReflectionClass(RedirectsService::class))->getReflectionConstant('CACHE_MAX_ENTRIES');
-        self::assertNotFalse($constant);
-        $bound = (int)$constant->getValue();
-        $writeCount = $bound + 25;
-        $maxCommandsForOneLookup = 0;
-        $maxCommandsForOneWrite = 0;
-        $maxMembersInspectedForOneLookup = 0;
-        $latestPath = '';
-
-        $connection->resetCommandAccounting();
-        for ($index = 0; $index < $writeCount; $index++) {
-            $latestPath = '/' . self::MARKER . 'redis_capacity_' . $index;
-            $commandsBefore = $connection->totalCommandCount();
-            $membersBefore = $connection->inspectedMemberCount();
-            self::assertNull($this->redirects->findRedirect('https://example.test' . $latestPath, $latestPath));
-            $commands = array_slice($connection->commandLog(), $commandsBefore);
-            $writeStart = array_search('SISMEMBER', array_column($commands, 'name'), true);
-            self::assertIsInt($writeStart);
-            $maxCommandsForOneLookup = max(
-                $maxCommandsForOneLookup,
-                $connection->totalCommandCount() - $commandsBefore,
-            );
-            $maxCommandsForOneWrite = max($maxCommandsForOneWrite, count($commands) - $writeStart);
-            $maxMembersInspectedForOneLookup = max(
-                $maxMembersInspectedForOneLookup,
-                $connection->inspectedMemberCount() - $membersBefore,
-            );
-        }
-
-        $metrics = [
-            'actualResultKeys' => $connection->actualValueCount(),
-            'trackedMembers' => count($connection->setMembers($this->redisTrackingSetKey())),
-            'totalCommands' => $connection->totalCommandCount(),
-            'existsCommands' => $connection->commandCount('EXISTS'),
-            'scanCommands' => $connection->commandCount('SSCAN'),
-            'maxCommandsForOneLookup' => $maxCommandsForOneLookup,
-            'maxCommandsForOneWrite' => $maxCommandsForOneWrite,
-            'maxMembersInspectedForOneLookup' => $maxMembersInspectedForOneLookup,
-        ];
-        $failureContext = json_encode($metrics, JSON_THROW_ON_ERROR);
-
-        self::assertSame(0, $metrics['scanCommands'], $failureContext);
-        self::assertSame(0, $metrics['existsCommands'], $failureContext);
-        self::assertLessThanOrEqual($bound, $metrics['actualResultKeys'], $failureContext);
-        self::assertLessThanOrEqual($bound, $metrics['trackedMembers'], $failureContext);
-        self::assertSame(11, $maxCommandsForOneLookup, $failureContext);
-        self::assertSame(8, $maxCommandsForOneWrite, $failureContext);
-        self::assertLessThanOrEqual(2, $maxMembersInspectedForOneLookup, $failureContext);
-        self::assertSame(8275, $metrics['totalCommands'], $failureContext);
-        self::assertSame(1050, $connection->inspectedMemberCount(), $failureContext);
-
-        $loadsBeforeReuse = $this->candidateLoads;
-        $matchesBeforeReuse = $this->matcherCalls;
-        self::assertNull($this->redirects->findRedirect('https://example.test' . $latestPath, $latestPath));
-        self::assertSame($loadsBeforeReuse, $this->candidateLoads);
-        self::assertSame($matchesBeforeReuse, $this->matcherCalls);
-    }
-
-    public function testRedisCapacityEvictsTheResultBeforeItsMembershipAndAllowsRecomputation(): void
-    {
-        $connection = $this->useMemoryRedisBackend();
-        $redirect = $this->seedRedirect();
-        $path = (string)$redirect->sourceUrlParsed;
-        $fullUrl = 'https://example.test' . $path;
-        self::assertSame($redirect->id, (int)$this->redirects->findRedirect($fullUrl, $path)['id']);
-        $positiveMember = $connection->setMembers($this->redisTrackingSetKey())[0];
-        $this->seedTrackedRedisResults(999, 'capacity_eviction');
-        self::assertSame(1000, $connection->actualValueCount());
-        self::assertCount(1000, $connection->setMembers($this->redisTrackingSetKey()));
-
-        $connection->resetCommandAccounting();
-        [$missingFullUrl, $missingPath] = $this->missingLookup('capacity_eviction_new');
-        self::assertNull($this->redirects->findRedirect($missingFullUrl, $missingPath));
-
-        $commands = $connection->commandLog();
-        $deleteIndex = $this->commandIndex($commands, 'DEL', Craft::$app->getCache()->buildKey($positiveMember));
-        $untrackIndex = $this->commandIndex($commands, 'SREM', $positiveMember);
-        self::assertLessThan($untrackIndex, $deleteIndex);
-        self::assertFalse($connection->hasActualKey(Craft::$app->getCache()->buildKey($positiveMember)));
-        self::assertNotContains($positiveMember, $connection->setMembers($this->redisTrackingSetKey()));
-        $this->assertNoLiveUntrackedRedisResults($connection);
-
-        $loadsBeforeRecompute = $this->candidateLoads;
-        self::assertSame($redirect->id, (int)$this->redirects->findRedirect($fullUrl, $path)['id']);
-        self::assertSame($loadsBeforeRecompute + 1, $this->candidateLoads);
-        self::assertSame(2, $this->fetchHitCountFromDb((int)$redirect->id));
-
-        self::assertTrue($this->redirects->updateRedirect((int)$redirect->id, ['enabled' => false], $redirect));
-        self::assertNull($this->redirects->findRedirect($fullUrl, $path));
-    }
-
-    #[DataProvider('redisCapacityFailureProvider')]
-    public function testRedisCapacityFailuresAbortNewWritesWithoutLiveUntrackedResults(
-        string $command,
-        int $occurrence,
-    ): void {
-        $connection = $this->useMemoryRedisBackend();
-        $this->seedTrackedRedisResults(1000, 'capacity_failure_' . strtolower($command));
-        [$fullUrl, $path] = $this->missingLookup('capacity_failure_' . strtolower($command));
-        $connection->resetCommandAccounting();
-        $connection->failOnFutureCommand($command, $occurrence);
-
-        self::assertNull($this->redirects->findRedirect($fullUrl, $path));
-        $commands = $connection->commandLog();
-        if ($command === 'EXPIRE' || $command === 'SET') {
-            $membershipCommand = null;
-            foreach ($commands as $recordedCommand) {
-                if ($recordedCommand['name'] === 'SADD') {
-                    $membershipCommand = $recordedCommand;
-                    break;
-                }
-            }
-            self::assertIsArray($membershipCommand);
-            $newMember = $membershipCommand['params'][1] ?? null;
-            self::assertIsString($newMember);
-            $cache = Craft::$app->getCache();
-            self::assertInstanceOf(RedisCache::class, $cache);
-            $membershipIndex = $this->commandIndex($commands, 'SADD', $newMember);
-            $trackingExpiryIndex = $this->commandIndex($commands, 'EXPIRE', $this->redisTrackingSetKey());
-            self::assertLessThan($trackingExpiryIndex, $membershipIndex);
-
-            if ($command === 'EXPIRE') {
-                self::assertSame(0, $connection->commandCount('SET'));
-            } else {
-                $resultWriteIndex = $this->commandIndex($commands, 'SET', $cache->buildKey($newMember));
-                self::assertLessThan($resultWriteIndex, $trackingExpiryIndex);
-            }
-
-            $deleteIndex = $this->commandIndex($commands, 'DEL', $cache->buildKey($newMember));
-            $untrackIndex = $this->lastCommandIndex($commands, 'SREM', $newMember);
-            self::assertLessThan($untrackIndex, $deleteIndex);
-            self::assertFalse($connection->hasActualKey($cache->buildKey($newMember)));
-            self::assertNotContains($newMember, $connection->setMembers($this->redisTrackingSetKey()));
-        }
-        self::assertLessThanOrEqual(1000, $connection->actualValueCount());
-        self::assertLessThanOrEqual(1000, count($connection->setMembers($this->redisTrackingSetKey())));
-        $this->assertNoLiveUntrackedRedisResults($connection);
-
-        $loadsBeforeRetry = $this->candidateLoads;
-        self::assertNull($this->redirects->findRedirect($fullUrl, $path));
-        self::assertSame($loadsBeforeRetry + 1, $this->candidateLoads);
-        self::assertLessThanOrEqual(1000, $connection->actualValueCount());
-        self::assertLessThanOrEqual(1000, count($connection->setMembers($this->redisTrackingSetKey())));
-        $this->assertNoLiveUntrackedRedisResults($connection);
-    }
-
-    /** @return array<string, array{0: string, 1: int}> */
-    public static function redisCapacityFailureProvider(): array
-    {
-        return [
-            'victim deletion' => ['DEL', 1],
-            'victim membership removal' => ['SREM', 2],
-            'new membership addition' => ['SADD', 1],
-            'new result write' => ['SET', 1],
-            'tracking expiry refresh' => ['EXPIRE', 1],
-        ];
-    }
-
-    public function testRedisStaleMembershipRemainsBoundedAndConvergesThroughTurnover(): void
-    {
-        $connection = $this->useMemoryRedisBackend();
-        $cache = Craft::$app->getCache();
-        self::assertInstanceOf(RedisCache::class, $cache);
-        $members = $this->seedTrackedRedisResults(1000, 'stale_turnover');
-        foreach (array_slice($members, 0, 25) as $member) {
-            $connection->expireActualKey($cache->buildKey($member));
-        }
-        self::assertSame(975, $connection->actualValueCount());
-        self::assertCount(1000, $connection->setMembers($this->redisTrackingSetKey()));
-
-        $connection->resetCommandAccounting();
-        for ($index = 0; $index < 25; $index++) {
-            $path = '/' . self::MARKER . 'stale_turnover_new_' . $index;
-            self::assertNull($this->redirects->findRedirect('https://example.test' . $path, $path));
-        }
-
-        self::assertSame(1000, $connection->actualValueCount());
-        self::assertCount(1000, $connection->setMembers($this->redisTrackingSetKey()));
-        self::assertSame(0, $connection->commandCount('SSCAN'));
-        self::assertSame(50, $connection->inspectedMemberCount());
-        $this->assertNoLiveUntrackedRedisResults($connection);
-
-        foreach ($connection->actualValueKeys() as $actualKey) {
-            $connection->expireActualKey($actualKey);
-        }
-        $connection->expireActualKey($this->redisTrackingSetKey());
-        self::assertSame(0, $connection->actualValueCount());
-        self::assertSame([], $connection->setMembers($this->redisTrackingSetKey()));
-    }
-
-    public function testRedisExpiredAndLegacyResultsAreRecomputed(): void
-    {
-        $connection = $this->useMemoryRedisBackend();
-        [$fullUrl, $path] = $this->missingLookup('redis_expiry');
-        self::assertNull($this->redirects->findRedirect($fullUrl, $path));
-        $members = $connection->setMembers($this->redisTrackingSetKey());
-        self::assertCount(1, $members);
-        $cache = Craft::$app->getCache();
-        self::assertInstanceOf(RedisCache::class, $cache);
-
-        $connection->expireActualKey($cache->buildKey($members[0]));
-        $this->resetCounters();
-        self::assertNull($this->redirects->findRedirect($fullUrl, $path));
-        self::assertSame(['loads' => 1, 'matches' => 1], [
-            'loads' => $this->candidateLoads,
-            'matches' => $this->matcherCalls,
+        $id = $this->redirects->createRedirect([
+            'sourceUrl' => $pathA,
+            'destinationUrl' => '/site-a-winner',
+            'matchType' => 'exact',
+            'redirectSrcMatch' => 'pathonly',
+            'statusCode' => 301,
+            'priority' => 0,
+            'enabled' => true,
+            'siteId' => $siteA,
         ]);
-
-        self::assertTrue($cache->set($members[0], ['legacy' => true], 3600));
+        self::assertIsInt($id);
         $this->resetCounters();
-        self::assertNull($this->redirects->findRedirect($fullUrl, $path));
-        self::assertSame(['loads' => 1, 'matches' => 1], [
-            'loads' => $this->candidateLoads,
-            'matches' => $this->matcherCalls,
-        ]);
+
+        self::assertNull($this->redirects->findRedirectForSite('https://two.example.test' . $pathB, $pathB, $siteB));
+        $result = $this->redirects->findRedirectForSite('https://one.example.test' . $pathA, $pathA, $siteA);
+
+        self::assertNotNull($result);
+        self::assertSame($id, (int)$result['id']);
+        self::assertSame(1, $this->candidateLoads);
     }
 
-    public function testRedisFailureFallsBackToCorrectUncachedResolution(): void
+    public function testGlobalMutationInvalidatesEveryApplicationCacheScope(): void
     {
-        $connection = $this->useMemoryRedisBackend();
+        $this->useMemoryApplicationCache();
+        $sites = Craft::$app->getSites()->getAllSites();
+        self::assertGreaterThanOrEqual(2, count($sites));
+        $siteA = (int)$sites[0]->id;
+        $siteB = (int)$sites[1]->id;
+        $pathA = '/' . self::MARKER . 'global_a_' . bin2hex(random_bytes(4));
+        $pathB = '/' . self::MARKER . 'global_b_' . bin2hex(random_bytes(4));
+
+        self::assertNull($this->redirects->findRedirectForSite('https://one.example.test' . $pathA, $pathA, $siteA));
+        self::assertNull($this->redirects->findRedirectForSite('https://two.example.test' . $pathB, $pathB, $siteB));
+
+        $id = $this->redirects->createRedirect([
+            'sourceUrl' => $pathA,
+            'destinationUrl' => '/global-winner',
+            'matchType' => 'exact',
+            'redirectSrcMatch' => 'pathonly',
+            'statusCode' => 301,
+            'priority' => 0,
+            'enabled' => true,
+            'siteId' => null,
+        ]);
+        self::assertIsInt($id);
+        $this->resetCounters();
+
+        self::assertNull($this->redirects->findRedirectForSite('https://two.example.test' . $pathB, $pathB, $siteB));
+        self::assertNotNull($this->redirects->findRedirectForSite('https://one.example.test' . $pathA, $pathA, $siteA));
+        self::assertSame(2, $this->candidateLoads);
+    }
+
+    public function testApplicationCacheFailureFallsBackToCorrectResolution(): void
+    {
+        $connection = $this->useMemoryApplicationCache();
         $redirect = $this->seedRedirect();
         $path = (string)$redirect->sourceUrlParsed;
         $connection->setFailCommands(true);
@@ -689,66 +544,65 @@ final class RedirectLookupCacheTest extends TestCase
         self::assertSame(1, $this->matcherCalls);
     }
 
-    public function testRedisInvalidationDeletesOnlyTrackedRedirectEntries(): void
+    public function testManualApplicationCacheClearPreservesUnrelatedEntries(): void
     {
-        $connection = $this->useMemoryRedisBackend();
-        $redirect = $this->seedRedirect();
-        $path = (string)$redirect->sourceUrlParsed;
-        self::assertNotNull($this->redirects->findRedirect('https://example.test' . $path, $path));
-        [$missingFullUrl, $missingPath] = $this->missingLookup('redis_clear');
-        self::assertNull($this->redirects->findRedirect($missingFullUrl, $missingPath));
-        self::assertCount(2, $connection->setMembers($this->redisTrackingSetKey()));
-
-        $connection->executeCommand('SET', ['shared:owner-key', 'keep']);
-        self::assertSame(2, RedirectManager::$plugin->localCache->clearRedirectCache());
-
-        self::assertTrue($connection->hasActualKey('shared:owner-key'));
-        self::assertSame([], $connection->setMembers($this->redisTrackingSetKey()));
-    }
-
-    public function testAggregateInvalidationClearsExactFileAndRedisNamespaces(): void
-    {
-        [$fileFullUrl, $filePath] = $this->missingLookup('aggregate_file');
-        self::assertNull($this->redirects->findRedirect($fileFullUrl, $filePath));
-        self::assertSame(1, RedirectManager::$plugin->localCache->countRedirectCacheFiles());
-
-        $connection = $this->useMemoryRedisBackend();
-        [$redisFullUrl, $redisPath] = $this->missingLookup('aggregate_redis');
-        self::assertNull($this->redirects->findRedirect($redisFullUrl, $redisPath));
-        self::assertCount(1, $connection->setMembers($this->redisTrackingSetKey()));
-
-        $this->settings()->cacheStorageMethod = 'file';
-        $this->redirects->invalidateCaches();
-
-        self::assertSame(0, RedirectManager::$plugin->localCache->countRedirectCacheFiles());
-        self::assertSame([], $connection->setMembers($this->redisTrackingSetKey()));
-    }
-
-    public function testRedisExpiredRequestedResultRemovesItsExactMembership(): void
-    {
-        $connection = $this->useMemoryRedisBackend();
+        $this->useMemoryApplicationCache();
         $cache = Craft::$app->getCache();
         self::assertInstanceOf(RedisCache::class, $cache);
-        $firstPath = '/' . self::MARKER . 'redis_stale_first';
-        self::assertNull($this->redirects->findRedirect('https://example.test' . $firstPath, $firstPath));
-        $members = $connection->setMembers($this->redisTrackingSetKey());
-        self::assertCount(1, $members);
-        $staleMember = $members[0];
-        $connection->expireActualKey($cache->buildKey($staleMember));
-        $connection->resetCommandAccounting();
+        self::assertTrue($cache->set('unrelated-sentinel', 'keep', 3600));
 
-        self::assertNull($this->redirects->findRedirect('https://example.test' . $firstPath, $firstPath));
+        [$fullUrl, $path] = $this->missingLookup('application_clear');
+        self::assertNull($this->redirects->findRedirect($fullUrl, $path));
+        self::assertSame(0, RedirectManager::$plugin->localCache->clearRedirectCache());
 
-        $members = $connection->setMembers($this->redisTrackingSetKey());
-        self::assertCount(1, $members);
-        self::assertSame($staleMember, $members[0]);
-        $commands = $connection->commandLog();
-        $exactUntrack = $this->commandIndex($commands, 'SREM', $staleMember);
-        $capacityCheck = $this->commandIndex($commands, 'SCARD', $this->redisTrackingSetKey());
-        self::assertLessThan($capacityCheck, $exactUntrack);
+        self::assertSame('keep', $cache->get('unrelated-sentinel'));
+        $this->resetCounters();
+        self::assertNull($this->redirects->findRedirect($fullUrl, $path));
+        self::assertSame(1, $this->candidateLoads);
     }
 
-    /** @return array{0: string, 1: string} */
+    public function testCommittedMutationSurvivesApplicationCacheInvalidationFailure(): void
+    {
+        $connection = $this->useMemoryApplicationCache();
+        $connection->setFailCommands(true);
+        $path = '/' . self::MARKER . 'invalidation_failure_' . bin2hex(random_bytes(4));
+
+        $id = $this->redirects->createRedirect([
+            'sourceUrl' => $path,
+            'destinationUrl' => '/committed',
+            'matchType' => 'exact',
+            'redirectSrcMatch' => 'pathonly',
+            'statusCode' => 301,
+            'priority' => 0,
+            'enabled' => true,
+            'siteId' => Craft::$app->getSites()->getCurrentSite()->id,
+        ]);
+
+        self::assertIsInt($id);
+        self::assertNotNull($this->fetchRow('{{%redirectmanager_redirects}}', ['id' => $id]));
+    }
+
+    public function testApplicationCacheCapacityRemainsBackendOwned(): void
+    {
+        $this->useMemoryApplicationCache();
+        $storage = RedirectManager::$plugin->localCache;
+        $decision = $storage->getStorageDecision();
+        $cache = $storage->getScopedCache($decision, 'redirect-lookups');
+        self::assertNotNull($cache);
+
+        for ($index = 0; $index < 1025; $index++) {
+            self::assertTrue($cache->set(
+                ['lookup' => $index],
+                ['version' => 2, 'state' => 'negative'],
+                3600,
+                ['siteId' => 1],
+            ));
+        }
+
+        self::assertTrue($cache->get(['lookup' => 0], ['siteId' => 1])->isHit());
+        self::assertTrue($cache->get(['lookup' => 1024], ['siteId' => 1])->isHit());
+    }
+
     private function missingLookup(string $label): array
     {
         $path = '/' . self::MARKER . $label . '_' . bin2hex(random_bytes(4));
@@ -793,7 +647,7 @@ final class RedirectLookupCacheTest extends TestCase
         return $files[0];
     }
 
-    private function useMemoryRedisBackend(): InMemoryRedisConnection
+    private function useMemoryApplicationCache(): InMemoryRedisConnection
     {
         $connection = new InMemoryRedisConnection();
         Craft::$app->set('cache', new RedisCache([
@@ -804,75 +658,5 @@ final class RedirectLookupCacheTest extends TestCase
         $this->settings()->cacheStorageMethod = 'redis';
 
         return $connection;
-    }
-
-    /** @return array<int, string> */
-    private function seedTrackedRedisResults(int $count, string $label): array
-    {
-        $cache = Craft::$app->getCache();
-        self::assertInstanceOf(RedisCache::class, $cache);
-        $setKey = $this->redisTrackingSetKey();
-        $members = [];
-        $allResultsStored = true;
-        $allMembersTracked = true;
-        for ($index = 0; $index < $count; $index++) {
-            $member = PluginHelper::getCacheKeyPrefix(RedirectManager::$plugin->id, 'redirect')
-                . hash('sha256', $label . ':' . $index);
-            $resultStored = $cache->set($member, ['version' => 2, 'state' => 'negative'], 3600);
-            $memberTracked = $cache->redis->executeCommand('SADD', [$setKey, $member]);
-            $allResultsStored = $resultStored && $allResultsStored;
-            $allMembersTracked = $memberTracked === 1 && $allMembersTracked;
-            $members[] = $member;
-        }
-        self::assertTrue($allResultsStored);
-        self::assertTrue($allMembersTracked);
-        self::assertSame(1, $cache->redis->executeCommand('EXPIRE', [$setKey, 3600]));
-
-        return $members;
-    }
-
-    /**
-     * @param array<int, array{name: string, params: array<int, mixed>}> $commands
-     */
-    private function commandIndex(array $commands, string $name, string $parameter): int
-    {
-        foreach ($commands as $index => $command) {
-            if ($command['name'] === $name && in_array($parameter, $command['params'], true)) {
-                return $index;
-            }
-        }
-
-        self::fail("Redis command {$name} with the expected parameter was not recorded.");
-    }
-
-    /**
-     * @param array<int, array{name: string, params: array<int, mixed>}> $commands
-     */
-    private function lastCommandIndex(array $commands, string $name, string $parameter): int
-    {
-        for ($index = count($commands) - 1; $index >= 0; $index--) {
-            if ($commands[$index]['name'] === $name && in_array($parameter, $commands[$index]['params'], true)) {
-                return $index;
-            }
-        }
-
-        self::fail("Redis command {$name} with the expected parameter was not recorded.");
-    }
-
-    private function assertNoLiveUntrackedRedisResults(InMemoryRedisConnection $connection): void
-    {
-        $cache = Craft::$app->getCache();
-        self::assertInstanceOf(RedisCache::class, $cache);
-        $trackedActualKeys = array_map(
-            static fn(string $member): string => $cache->buildKey($member),
-            $connection->setMembers($this->redisTrackingSetKey()),
-        );
-
-        self::assertSame([], array_values(array_diff($connection->actualValueKeys(), $trackedActualKeys)));
-    }
-
-    private function redisTrackingSetKey(): string
-    {
-        return PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'redirect');
     }
 }

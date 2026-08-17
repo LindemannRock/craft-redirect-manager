@@ -11,6 +11,8 @@ namespace lindemannrock\redirectmanager\controllers;
 use Craft;
 use craft\helpers\Json;
 use craft\web\Controller;
+use lindemannrock\base\cache\DisposableCacheStoragePresenter;
+use lindemannrock\base\cache\DisposableCacheStorageResolver;
 use lindemannrock\base\helpers\ExportHelper;
 use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\base\helpers\PluginThemeStyleHelper;
@@ -137,6 +139,7 @@ class SettingsController extends Controller
 
         return $this->renderTemplate('redirect-manager/settings/cache', [
             'settings' => $settings,
+            'cacheStorage' => $this->cacheStorageTemplateVariables($settings),
         ]);
     }
 
@@ -217,9 +220,14 @@ class SettingsController extends Controller
 
             $template = "redirect-manager/settings/{$section}";
 
-            return $this->renderTemplate($template, [
+            $templateVariables = [
                 'settings' => $settings,
-            ]);
+            ];
+            if ($section === 'cache') {
+                $templateVariables['cacheStorage'] = $this->cacheStorageTemplateVariables($settings);
+            }
+
+            return $this->renderTemplate($template, $templateVariables);
         }
 
         // Save only current section attributes to database
@@ -661,12 +669,13 @@ class SettingsController extends Controller
         $this->requirePermission('redirectManager:clearCache');
 
         try {
-            $settings = RedirectManager::$plugin->getSettings();
-            $cleared = RedirectManager::$plugin->localCache->clearRedirectCache();
+            $storage = RedirectManager::$plugin->localCache;
+            $decision = $storage->getStorageDecision();
+            $cleared = $storage->clearRedirectCache($decision);
 
-            $message = $settings->cacheStorageMethod === 'redis'
-                ? Craft::t('redirect-manager', 'Redirect cache cleared successfully.')
-                : Craft::t('redirect-manager', 'Cleared {count, plural, =1{# redirect cache} other{# redirect caches}}.', ['count' => $cleared]);
+            $message = $decision->usesFileCache()
+                ? Craft::t('redirect-manager', 'Cleared {count, plural, =1{# redirect cache} other{# redirect caches}}.', ['count' => $cleared])
+                : Craft::t('redirect-manager', 'Redirect cache cleared successfully.');
 
             return $this->asJson([
                 'success' => true,
@@ -706,12 +715,13 @@ class SettingsController extends Controller
         $this->requirePermission('redirectManager:clearCache');
 
         try {
-            $settings = RedirectManager::$plugin->getSettings();
-            $cleared = RedirectManager::$plugin->localCache->clearDeviceCache();
+            $storage = RedirectManager::$plugin->localCache;
+            $decision = $storage->getStorageDecision();
+            $cleared = $storage->clearDeviceCache($decision);
 
-            $message = $settings->cacheStorageMethod === 'redis'
-                ? Craft::t('redirect-manager', 'Device cache cleared successfully.')
-                : Craft::t('redirect-manager', 'Cleared {count, plural, =1{# device cache} other{# device caches}}.', ['count' => $cleared]);
+            $message = $decision->usesFileCache()
+                ? Craft::t('redirect-manager', 'Cleared {count, plural, =1{# device cache} other{# device caches}}.', ['count' => $cleared])
+                : Craft::t('redirect-manager', 'Device cache cleared successfully.');
 
             return $this->asJson([
                 'success' => true,
@@ -735,17 +745,19 @@ class SettingsController extends Controller
         $this->requirePermission('redirectManager:clearCache');
 
         try {
-            $settings = RedirectManager::$plugin->getSettings();
-            if ($settings->cacheStorageMethod === 'redis') {
-                RedirectManager::$plugin->localCache->clearAllCaches();
-                $message = Craft::t('redirect-manager', 'All caches cleared successfully.');
-            } else {
-                $redirectCount = RedirectManager::$plugin->localCache->clearRedirectCache();
-                $deviceCount = RedirectManager::$plugin->localCache->clearDeviceCache();
+            $storage = RedirectManager::$plugin->localCache;
+            $decision = $storage->getStorageDecision();
+            if ($decision->usesFileCache()) {
+                $redirectCount = $storage->countRedirectCacheFiles($decision);
+                $deviceCount = $storage->countDeviceCacheFiles($decision);
+                $storage->clearAllCaches($decision);
                 $message = Craft::t('redirect-manager', 'Cleared {redirectCount, plural, =1{# redirect cache} other{# redirect caches}} and {deviceCount, plural, =1{# device cache} other{# device caches}}.', [
                     'redirectCount' => $redirectCount,
                     'deviceCount' => $deviceCount,
                 ]);
+            } else {
+                $storage->clearAllCaches($decision);
+                $message = Craft::t('redirect-manager', 'All caches cleared successfully.');
             }
 
             return $this->asJson([
@@ -795,6 +807,33 @@ class SettingsController extends Controller
         $allowed = ['general', 'analytics', 'interface', 'cache', 'advanced', 'backup'];
 
         return in_array($section, $allowed, true) ? $section : 'general';
+    }
+
+    /**
+     * @return array{
+     *     applicationToken: string,
+     *     filePresentation: \lindemannrock\base\cache\DisposableCacheStoragePresentation,
+     *     applicationPresentation: \lindemannrock\base\cache\DisposableCacheStoragePresentation,
+     *     filePath: string|null
+     * }
+     */
+    private function cacheStorageTemplateVariables(Settings $settings): array
+    {
+        $storage = RedirectManager::$plugin->localCache;
+        $presenter = new DisposableCacheStoragePresenter();
+        $applicationToken = DisposableCacheStorageResolver::applicationOptionToken($settings->cacheStorageMethod);
+        $fileDecision = $storage->getStorageDecision('file');
+        $applicationDecisionToken = in_array($settings->cacheStorageMethod, ['file', 'redis', 'craft'], true)
+            ? $applicationToken
+            : $settings->cacheStorageMethod;
+        $applicationDecision = $storage->getStorageDecision($applicationDecisionToken);
+
+        return [
+            'applicationToken' => $applicationToken,
+            'filePresentation' => $presenter->present($fileDecision),
+            'applicationPresentation' => $presenter->present($applicationDecision),
+            'filePath' => $storage->getDisplayFilePath($fileDecision),
+        ];
     }
 
     /**

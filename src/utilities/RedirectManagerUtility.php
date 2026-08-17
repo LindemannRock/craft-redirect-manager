@@ -10,6 +10,7 @@ namespace lindemannrock\redirectmanager\utilities;
 
 use Craft;
 use craft\base\Utility;
+use lindemannrock\base\cache\DisposableCacheStoragePresenter;
 use lindemannrock\redirectmanager\RedirectManager;
 
 /**
@@ -82,18 +83,24 @@ class RedirectManagerUtility extends Utility
                 ->count();
         }
 
-        // Get cache counts (only for file storage)
+        // Resolve effective storage once for semantic status and file counting.
         $deviceCacheFiles = 0;
         $redirectCacheFiles = 0;
+        $cacheDecision = RedirectManager::$plugin->localCache->getStorageDecision();
+        $cacheStorage = (new DisposableCacheStoragePresenter())->present(
+            $cacheDecision,
+            $settings->enableRedirectCache || $settings->cacheDeviceDetection,
+        );
+        $showCacheCounts = false;
 
-        // Only count files when using file storage (Redis counts are not displayed)
-        if ($user->getIdentity() && $user->checkPermission('redirectManager:clearCache') && $settings->cacheStorageMethod === 'file') {
+        if ($user->getIdentity() && $user->checkPermission('redirectManager:clearCache') && $cacheDecision->usesFileCache()) {
+            $showCacheCounts = true;
             if ($settings->cacheDeviceDetection) {
-                $deviceCacheFiles = RedirectManager::$plugin->localCache->countDeviceCacheFiles();
+                $deviceCacheFiles = RedirectManager::$plugin->localCache->countDeviceCacheFiles($cacheDecision);
             }
 
             if ($settings->enableRedirectCache) {
-                $redirectCacheFiles = RedirectManager::$plugin->localCache->countRedirectCacheFiles();
+                $redirectCacheFiles = RedirectManager::$plugin->localCache->countRedirectCacheFiles($cacheDecision);
             }
         }
 
@@ -107,7 +114,9 @@ class RedirectManagerUtility extends Utility
             'unhandled' => $unhandled,
             'deviceCacheFiles' => $deviceCacheFiles,
             'redirectCacheFiles' => $redirectCacheFiles,
-            'storageMethod' => $settings->cacheStorageMethod,
+            'cacheStorage' => $cacheStorage,
+            'showCacheCounts' => $showCacheCounts,
+            'cacheStorageDisabled' => $cacheDecision->isDisabled(),
             'analyticsCount' => (int) $analyticsCount,
         ]);
     }

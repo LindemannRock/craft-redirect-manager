@@ -10,6 +10,7 @@ namespace lindemannrock\redirectmanager\services;
 
 use Craft;
 use craft\base\Component;
+use lindemannrock\base\cache\DisposableCacheStorageDecision;
 use lindemannrock\base\helpers\PluginHelper;
 use lindemannrock\base\traits\DeviceDetectionTrait;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
@@ -74,20 +75,39 @@ class DeviceDetectionService extends Component
     }
 
     /**
+     * Clear cached device detection results and the request-local detector.
+     *
+     * @since 5.41.0
+     */
+    public function clearCache(?DisposableCacheStorageDecision $decision = null): int
+    {
+        try {
+            return RedirectManager::$plugin->localCache->clearFamily(
+                LocalCacheService::FAMILY_DEVICE,
+                $decision,
+            );
+        } finally {
+            $this->deviceDetection = null;
+        }
+    }
+
+    /**
      * @inheritdoc
      */
     protected function getDeviceDetectionConfig(): array
     {
         $settings = RedirectManager::$plugin->getSettings();
+        $decision = RedirectManager::$plugin->localCache->getStorageDecision();
 
         return [
-            'cacheEnabled' => (bool) $settings->cacheDeviceDetection,
-            'cacheStorageMethod' => $settings->cacheStorageMethod,
+            'cacheEnabled' => (bool) $settings->cacheDeviceDetection && !$decision->isDisabled(),
+            'cacheStorageMethod' => $decision->usesApplicationCache() ? 'craft' : 'file',
             'cacheDuration' => (int) $settings->deviceDetectionCacheDuration,
             'pluginHandle' => RedirectManager::$plugin->id,
-            'cachePath' => PluginHelper::getCachePath(RedirectManager::$plugin, 'device'),
+            'cachePath' => $decision->usesFileCache()
+                ? PluginHelper::getCachePath(RedirectManager::$plugin, 'device')
+                : null,
             'cacheKeyPrefix' => PluginHelper::getCacheKeyPrefix(RedirectManager::$plugin->id, 'device'),
-            'cacheKeySet' => PluginHelper::getCacheKeySet(RedirectManager::$plugin->id, 'device'),
             'includeLanguage' => false,
             'includePlatform' => false,
         ];
