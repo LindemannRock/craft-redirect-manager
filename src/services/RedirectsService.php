@@ -267,12 +267,23 @@ class RedirectsService extends Component
      */
     public function testRedirects(string $fullUrl, string $pathOnly, array $siteIds): array
     {
+        $settings = RedirectManager::$plugin->getSettings();
+        $queryString = parse_url($fullUrl, PHP_URL_QUERY);
+
+        if ($settings->stripQueryString) {
+            $fullUrl = $this->stripQueryString($fullUrl);
+            $pathOnly = $this->stripQueryString($pathOnly);
+        }
+
         $matches = [];
         foreach ($this->getEnabledRedirects($siteIds) as $redirect) {
             $resolved = $this->resolveEligibleCandidate($redirect, $fullUrl, $pathOnly);
             if ($resolved !== null) {
                 $template = $resolved['_destinationTemplate'];
                 $resolvedDestination = $resolved['destinationUrl'];
+                if ($settings->preserveQueryString && is_string($queryString) && $queryString) {
+                    $resolvedDestination = $this->appendQueryString($resolvedDestination, $queryString);
+                }
                 $resolved = $this->withoutDestinationPolicyMetadata($resolved);
                 $resolved['destinationUrl'] = $template;
                 $resolved['resolvedDestinationUrl'] = $resolvedDestination;
@@ -481,9 +492,8 @@ class RedirectsService extends Component
         // Handle query string preservation
         if ($settings->preserveQueryString) {
             $queryString = parse_url($fullUrl, PHP_URL_QUERY);
-            if ($queryString) {
-                $separator = strpos($destination, '?') === false ? '?' : '&';
-                $destination .= $separator . $queryString;
+            if (is_string($queryString) && $queryString) {
+                $destination = $this->appendQueryString($destination, $queryString);
             }
         }
 
@@ -1481,6 +1491,15 @@ class RedirectsService extends Component
     private function stripQueryString(string $url): string
     {
         return strtok($url, '?');
+    }
+
+    /**
+     * Append a source query string using the redirect response's current merge semantics.
+     */
+    private function appendQueryString(string $destination, string $queryString): string
+    {
+        $separator = strpos($destination, '?') === false ? '?' : '&';
+        return $destination . $separator . $queryString;
     }
 
     /**

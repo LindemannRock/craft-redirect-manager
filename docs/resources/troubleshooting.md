@@ -32,7 +32,7 @@ A redirect exists in the CP but visiting the URL does not redirect.
 
 3. **Is the redirect enabled?** Go to **Redirect Manager > Redirects** and check that the redirect row shows as enabled (not greyed out).
 
-4. **Is the source URL correct?** By default, the plugin matches by path only. If the redirect source is `/old-page`, it matches the path `/old-page` — not `https://example.com/old-page`. If you need domain-specific matching, switch to `redirectSrcMatch = 'fullurl'`.
+4. **Is the source URL correct?** By default, the plugin matches by path only. If the redirect source is `/old-page`, it matches the path `/old-page` — not `https://example.com/old-page`. If you need domain-specific matching, switch to `redirectSrcMatch = 'fullurl'`. For URLs carrying `utm_*`, `fbclid`, or similar parameters, enable **Strip Query String** so those parameters do not prevent an exact path match. The tester under **Settings → Test** applies the same setting.
 
 5. **Is the redirect cache stale?** Clear caches:
 
