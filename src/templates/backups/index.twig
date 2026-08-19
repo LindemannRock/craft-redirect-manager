@@ -72,6 +72,7 @@ const T = {
     failedToDeleteBackup: {{ 'Failed to delete backup.'|t('redirect-manager')|json_encode|raw }},
     failedToLoadBackups: {{ 'Failed to load backups: '|t('redirect-manager')|json_encode|raw }},
     failedToRestoreBackup: {{ 'Failed to restore backup.'|t('redirect-manager')|json_encode|raw }},
+    location: {{ 'Backup Location:'|t('redirect-manager')|json_encode|raw }},
     redirectCount: {{ 'Redirect Count'|t('redirect-manager')|json_encode|raw }},
     restoringBackup: {{ 'Restoring backup...'|t('redirect-manager')|json_encode|raw }},
     size: {{ 'Size'|t('redirect-manager')|json_encode|raw }},
@@ -85,6 +86,7 @@ function renderBackupsTable(backups) {
         const date = escapeHtml((backup.formattedDate || backup.date || '').toString().replace('_', ' '));
         const user = escapeHtml(backup.user || '');
         const count = escapeHtml(numberFormatter.format(backup.redirectCount ?? 0));
+        const location = escapeHtml(backup.storageLocation || '');
         const size = escapeHtml(backup.formattedSize || '-');
         const reasonBadge = renderReasonBadge(backup.reasonBadgeHtml);
         const rowActions = renderRowActions(backup.rowActionsHtml);
@@ -94,6 +96,7 @@ function renderBackupsTable(backups) {
             <td>${reasonBadge}</td>
             <td>${user}</td>
             <td><strong>${count}</strong></td>
+            <td><code style="font-size: 11px;">${location}</code></td>
             <td><code style="font-size: 11px;">${size}</code></td>
             ${rowActions}
         </tr>`;
@@ -106,6 +109,7 @@ function renderBackupsTable(backups) {
                 <th>${escapeHtml(T.type)}</th>
                 <th>${escapeHtml(T.createdBy)}</th>
                 <th>${escapeHtml(T.redirectCount)}</th>
+                <th>${escapeHtml(T.location)}</th>
                 <th>${escapeHtml(T.size)}</th>
                 <th class="thin">${escapeHtml(T.actions)}</th>
             </tr>

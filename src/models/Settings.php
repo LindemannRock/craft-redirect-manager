@@ -598,8 +598,22 @@ class Settings extends Model
     public function getBackupLocationLabel(): string
     {
         if ($this->backupVolumeUid) {
-            return StorageVolumeHelper::displayPath($this->backupVolumeUid, 'redirect-manager/backups')
-                ?? Craft::t('redirect-manager', 'Backup Storage Volume');
+            try {
+                $volume = Craft::$app->getVolumes()->getVolumeByUid($this->backupVolumeUid);
+                if ($volume instanceof \craft\models\Volume) {
+                    $subpath = trim($volume->getSubpath(), '/');
+                    $managedPath = $subpath === ''
+                        ? 'redirect-manager/backups'
+                        : $subpath . '/redirect-manager/backups';
+
+                    return StorageVolumeHelper::displayPath($this->backupVolumeUid, $managedPath)
+                        ?? Craft::t('redirect-manager', 'Backup Storage Volume');
+                }
+            } catch (Throwable) {
+                // The operational resolver provides the actionable unavailable error.
+            }
+
+            return Craft::t('redirect-manager', 'Backup Storage Volume');
         }
 
         return $this->getBackupPath();

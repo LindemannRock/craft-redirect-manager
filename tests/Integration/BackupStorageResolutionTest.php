@@ -92,7 +92,7 @@ final class BackupStorageResolutionTest extends TestCase
         self::assertSame([], $response->data['backups']);
     }
 
-    public function testValidConfiguredVolumeUsesItsUnderlyingFilesystem(): void
+    public function testValidConfiguredVolumeUsesTheCraftVolumeWrapper(): void
     {
         $volumeRoot = $this->createTrackedTempDirectory('redirect-backup-volume-');
         $this->settings()->backupVolumeUid = 'backup-volume';
@@ -272,8 +272,12 @@ final class BackupStorageResolutionTest extends TestCase
 
     private function volume(FsInterface $fs): Volume
     {
-        $volume = $this->createMock(Volume::class);
-        $volume->method('getFs')->willReturn($fs);
+        $volume = new Volume([
+            'name' => 'Redirect backup test volume',
+            'handle' => 'redirectBackupTestVolume',
+            'uid' => 'backup-volume',
+        ]);
+        $volume->setFs($fs);
         return $volume;
     }
 

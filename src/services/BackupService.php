@@ -9,6 +9,7 @@
 namespace lindemannrock\redirectmanager\services;
 
 use Craft;
+use craft\base\BaseFsInterface;
 use craft\base\Component;
 use craft\base\FsInterface;
 use craft\base\MissingComponentInterface;
@@ -338,7 +339,7 @@ class BackupService extends Component
             return false;
         }
 
-        $this->getVolumeFs();
+        $this->getVolume();
         return true;
     }
 
@@ -354,15 +355,14 @@ class BackupService extends Component
             return null;
         }
 
-        $fs = $this->getVolumeFs();
-
         $path = self::VOLUME_BACKUP_ROOT . '/' . $backupName . '/' . $filename;
         try {
-            if (!$fs->fileExists($path)) {
+            $storage = $this->resolveVolumeBackupStorage($backupName);
+            if ($storage === null || !$storage->fileExists($path)) {
                 return null;
             }
 
-            return $fs->read($path);
+            return $storage->read($path);
         } catch (Throwable $e) {
             $this->throwStorageUnavailable('read', $e);
         }
@@ -380,16 +380,15 @@ class BackupService extends Component
             return false;
         }
 
-        $fs = $this->getVolumeFs();
-
         $path = self::VOLUME_BACKUP_ROOT . '/' . $backupName;
         try {
-            if (!$fs->directoryExists($path)) {
+            $storage = $this->resolveVolumeBackupStorage($backupName);
+            if ($storage === null) {
                 return false;
             }
 
-            $fs->deleteDirectory($path);
-            if ($fs->directoryExists($path)) {
+            $storage->deleteDirectory($path);
+            if ($storage->directoryExists($path)) {
                 throw new \RuntimeException('Volume backup remained after deletion.');
             }
             return true;
@@ -407,7 +406,7 @@ class BackupService extends Component
     {
         $settings = RedirectManager::$plugin->getSettings();
         if (trim((string)$settings->backupVolumeUid) !== '') {
-            $this->getVolumeFs();
+            $this->getVolume();
             throw new \LogicException('A local backup root is unavailable while volume storage is configured.');
         }
         return rtrim($settings->getBackupPath(), '/');
@@ -603,7 +602,7 @@ class BackupService extends Component
      */
     private function createVolumeBackup(string $backupName, array $metadata, array $redirects): string
     {
-        $fs = $this->getVolumeFs();
+        $volume = $this->getVolume();
         $redirectsContent = Json::encode($redirects, JSON_PRETTY_PRINT);
         $metadata = $this->withChecksumMetadata($metadata, $redirectsContent);
         $metadataContent = Json::encode($metadata, JSON_PRETTY_PRINT);
@@ -614,35 +613,35 @@ class BackupService extends Component
         $promotionSucceeded = false;
 
         try {
-            $this->createVolumeDirectory($parentPath, $fs);
-            if ($fs->directoryExists($finalPath)) {
+            $this->createVolumeDirectory($parentPath, $volume);
+            if ($volume->directoryExists($finalPath)) {
                 throw new \RuntimeException('Unique backup path already exists.');
             }
-            $this->createVolumeDirectory($stagingPath, $fs);
+            $this->createVolumeDirectory($stagingPath, $volume);
 
-            $fs->write($stagingPath . '/metadata.json', $metadataContent);
-            $fs->write($stagingPath . '/redirects.json', $redirectsContent);
-            $writtenMetadata = $fs->read($stagingPath . '/metadata.json');
-            $writtenRedirects = $fs->read($stagingPath . '/redirects.json');
+            $volume->write($stagingPath . '/metadata.json', $metadataContent);
+            $volume->write($stagingPath . '/redirects.json', $redirectsContent);
+            $writtenMetadata = $volume->read($stagingPath . '/metadata.json');
+            $writtenRedirects = $volume->read($stagingPath . '/redirects.json');
             if ($writtenMetadata !== $metadataContent || $writtenRedirects !== $redirectsContent
                 || !$this->validateBackupIntegrity($writtenMetadata, $writtenRedirects, $backupName)) {
                 throw new \RuntimeException('Staged backup validation failed.');
             }
 
-            $fs->renameDirectory($stagingPath, basename($finalPath));
+            $volume->renameDirectory($stagingPath, basename($finalPath));
             $promotionSucceeded = true;
-            if (!$fs->directoryExists($finalPath) || $fs->directoryExists($stagingPath)) {
+            if (!$volume->directoryExists($finalPath) || $volume->directoryExists($stagingPath)) {
                 throw new \RuntimeException('Backup promotion failed.');
             }
 
             return $backupName;
         } catch (Throwable $e) {
             $ownsFinal = $promotionSucceeded
-                || (!$this->volumeDirectoryExists($stagingPath, $fs)
-                    && $this->volumeBackupMatchesSnapshot($finalPath, $metadataContent, $redirectsContent, $fs));
-            $this->removeOwnedVolumeDirectory($stagingPath, $fs);
+                || (!$this->volumeDirectoryExists($stagingPath, $volume)
+                    && $this->volumeBackupMatchesSnapshot($finalPath, $metadataContent, $redirectsContent, $volume));
+            $this->removeOwnedVolumeDirectory($stagingPath, $volume);
             if ($ownsFinal) {
-                $this->removeOwnedVolumeDirectory($finalPath, $fs);
+                $this->removeOwnedVolumeDirectory($finalPath, $volume);
             }
             throw $e;
         }
@@ -693,7 +692,7 @@ class BackupService extends Component
         return true;
     }
 
-    private function getVolumeFs(): FsInterface
+    private function getVolume(): Volume
     {
         $settings = RedirectManager::$plugin->getSettings();
         $volumeUid = trim((string)$settings->backupVolumeUid);
@@ -712,6 +711,25 @@ class BackupService extends Component
                 throw new \RuntimeException('Configured backup volume could not be resolved.');
             }
 
+            $presentation = \lindemannrock\redirectmanager\presenters\StorageWarningPresentation::forSettings($settings);
+            if ($presentation->isUnavailable()) {
+                throw new \RuntimeException('Configured backup volume filesystem is unavailable.');
+            }
+
+            return $volume;
+        } catch (Throwable $e) {
+            $this->throwStorageUnavailable('resolve', $e, $volumeUid);
+        }
+    }
+
+    /**
+     * Resolve the exact underlying filesystem used by backups created before
+     * canonical Craft volume wrapper support. This is the only operational
+     * compatibility path that may bypass the configured volume subpath.
+     */
+    private function getLegacyVolumeFs(Volume $volume): FsInterface
+    {
+        try {
             $fs = $volume->getFs();
             if (!$fs instanceof FsInterface || $fs instanceof MissingComponentInterface) {
                 throw new \RuntimeException('Configured backup volume filesystem is unavailable.');
@@ -719,11 +737,36 @@ class BackupService extends Component
 
             return $fs;
         } catch (Throwable $e) {
-            $this->throwStorageUnavailable('resolve', $e, $volumeUid);
+            $this->throwStorageUnavailable('legacy-resolve', $e);
         }
     }
 
-    private function createVolumeDirectory(string $path, FsInterface $fs): void
+    /**
+     * Resolve one volume backup with canonical wrapper storage taking
+     * precedence over the exact historical filesystem-root prefix.
+     */
+    private function resolveVolumeBackupStorage(string $backupName): ?BaseFsInterface
+    {
+        $volume = $this->getVolume();
+        $path = self::VOLUME_BACKUP_ROOT . '/' . $backupName;
+        if ($volume->directoryExists($path)) {
+            return $volume;
+        }
+
+        if (!$this->hasSeparateLegacyLocation($volume)) {
+            return null;
+        }
+
+        $legacyFs = $this->getLegacyVolumeFs($volume);
+        return $legacyFs->directoryExists($path) ? $legacyFs : null;
+    }
+
+    private function hasSeparateLegacyLocation(Volume $volume): bool
+    {
+        return trim($volume->getSubpath(), '/') !== '';
+    }
+
+    private function createVolumeDirectory(string $path, BaseFsInterface $storage): void
     {
         $currentPath = '';
         foreach (explode('/', $path) as $part) {
@@ -732,19 +775,19 @@ class BackupService extends Component
             }
 
             $currentPath = $currentPath === '' ? $part : $currentPath . '/' . $part;
-            if (!$fs->directoryExists($currentPath)) {
-                $fs->createDirectory($currentPath);
-                if (!$fs->directoryExists($currentPath)) {
+            if (!$storage->directoryExists($currentPath)) {
+                $storage->createDirectory($currentPath);
+                if (!$storage->directoryExists($currentPath)) {
                     throw new \RuntimeException('Backup volume directory could not be created.');
                 }
             }
         }
     }
 
-    private function volumeDirectoryExists(string $path, FsInterface $fs): bool
+    private function volumeDirectoryExists(string $path, BaseFsInterface $storage): bool
     {
         try {
-            return $fs->directoryExists($path);
+            return $storage->directoryExists($path);
         } catch (Throwable $e) {
             $this->logError('Failed to inspect owned volume backup directory', [
                 'path' => $path,
@@ -754,14 +797,14 @@ class BackupService extends Component
         }
     }
 
-    private function removeOwnedVolumeDirectory(string $path, FsInterface $fs): void
+    private function removeOwnedVolumeDirectory(string $path, BaseFsInterface $storage): void
     {
         try {
-            if (!$fs->directoryExists($path)) {
+            if (!$storage->directoryExists($path)) {
                 return;
             }
-            $fs->deleteDirectory($path);
-            if ($fs->directoryExists($path)) {
+            $storage->deleteDirectory($path);
+            if ($storage->directoryExists($path)) {
                 $this->logError('Failed to remove owned volume backup directory', ['path' => $path]);
             }
         } catch (Throwable $e) {
@@ -776,14 +819,14 @@ class BackupService extends Component
         string $path,
         string $metadataContent,
         string $redirectsContent,
-        FsInterface $fs,
+        BaseFsInterface $storage,
     ): bool {
         try {
-            return $fs->directoryExists($path)
-                && $fs->fileExists($path . '/metadata.json')
-                && $fs->fileExists($path . '/redirects.json')
-                && $fs->read($path . '/metadata.json') === $metadataContent
-                && $fs->read($path . '/redirects.json') === $redirectsContent;
+            return $storage->directoryExists($path)
+                && $storage->fileExists($path . '/metadata.json')
+                && $storage->fileExists($path . '/redirects.json')
+                && $storage->read($path . '/metadata.json') === $metadataContent
+                && $storage->read($path . '/redirects.json') === $redirectsContent;
         } catch (Throwable $e) {
             $this->logError('Failed to verify owned promoted backup', [
                 'path' => $path,
@@ -830,31 +873,27 @@ class BackupService extends Component
      */
     private function getVolumeBackups(): array
     {
-        $fs = $this->getVolumeFs();
-        if (!$fs->directoryExists(self::VOLUME_BACKUP_ROOT)) {
-            return [];
+        $volume = $this->getVolume();
+        /** @var array<string, array<string, mixed>> $backupsByName */
+        $backupsByName = [];
+
+        $this->collectVolumeBackups(
+            $backupsByName,
+            $volume,
+            $this->volumeLocationLabel($volume, false),
+            'canonical-volume',
+        );
+
+        if ($this->hasSeparateLegacyLocation($volume)) {
+            $this->collectVolumeBackups(
+                $backupsByName,
+                $this->getLegacyVolumeFs($volume),
+                $this->volumeLocationLabel($volume, true),
+                'legacy-volume',
+            );
         }
 
-        $backups = [];
-        foreach (self::BACKUP_FOLDERS as $folder) {
-            $folderPath = self::VOLUME_BACKUP_ROOT . '/' . $folder;
-            if (!$fs->directoryExists($folderPath)) {
-                continue;
-            }
-
-            foreach ($fs->getFileList($folderPath, false) as $listing) {
-                if (!$listing instanceof FsListing || !$listing->getIsDir()) {
-                    continue;
-                }
-
-                $backupName = $folder . '/' . $listing->getBasename();
-                if ($this->validateBackupName($backupName) === null) {
-                    continue;
-                }
-                $this->addVolumeBackup($backups, $backupName, $fs);
-            }
-        }
-
+        $backups = array_values($backupsByName);
         usort($backups, function($a, $b) {
             return ($b['timestamp'] ?? 0) <=> ($a['timestamp'] ?? 0);
         });
@@ -863,27 +902,82 @@ class BackupService extends Component
     }
 
     /**
-     * @param array<int, array<string, mixed>> $backups
+     * Collect backups beneath one bounded storage root. Existing entries are
+     * retained so the canonical wrapper wins duplicate-name collisions.
+     *
+     * @param array<string, array<string, mixed>> $backupsByName
      */
-    private function addVolumeBackup(array &$backups, string $backupName, FsInterface $fs): void
-    {
+    private function collectVolumeBackups(
+        array &$backupsByName,
+        BaseFsInterface $storage,
+        string $location,
+        string $storageType,
+    ): void {
+        if (!$storage->directoryExists(self::VOLUME_BACKUP_ROOT)) {
+            return;
+        }
+
+        foreach ($storage->getFileList(self::VOLUME_BACKUP_ROOT, false) as $listing) {
+            if (!$listing instanceof FsListing || !$listing->getIsDir()) {
+                continue;
+            }
+
+            $backupName = $listing->getBasename();
+            if (in_array($backupName, self::BACKUP_FOLDERS, true)
+                || $this->validateBackupName($backupName) === null
+                || isset($backupsByName[$backupName])) {
+                continue;
+            }
+            $this->addVolumeBackup($backupsByName, $backupName, $storage, $location, $storageType);
+        }
+
+        foreach (self::BACKUP_FOLDERS as $folder) {
+            $folderPath = self::VOLUME_BACKUP_ROOT . '/' . $folder;
+            if (!$storage->directoryExists($folderPath)) {
+                continue;
+            }
+
+            foreach ($storage->getFileList($folderPath, false) as $listing) {
+                if (!$listing instanceof FsListing || !$listing->getIsDir()) {
+                    continue;
+                }
+
+                $backupName = $folder . '/' . $listing->getBasename();
+                if ($this->validateBackupName($backupName) === null || isset($backupsByName[$backupName])) {
+                    continue;
+                }
+                $this->addVolumeBackup($backupsByName, $backupName, $storage, $location, $storageType);
+            }
+        }
+    }
+
+    /** @param array<string, array<string, mixed>> $backupsByName */
+    private function addVolumeBackup(
+        array &$backupsByName,
+        string $backupName,
+        BaseFsInterface $storage,
+        string $location,
+        string $storageType,
+    ): void {
         $metadataPath = self::VOLUME_BACKUP_ROOT . '/' . $backupName . '/metadata.json';
-        if (!$fs->fileExists($metadataPath)) {
+        if (!$storage->fileExists($metadataPath)) {
             return;
         }
 
         try {
-            $metadata = Json::decode($fs->read($metadataPath)) ?? [];
+            $metadata = Json::decode($storage->read($metadataPath)) ?? [];
             if (!is_array($metadata)) {
                 return;
             }
 
             $metadata['path'] = self::VOLUME_BACKUP_ROOT . '/' . $backupName;
             $metadata['dirname'] = $backupName;
-            $metadata['size'] = $this->calculateVolumeBackupSize($backupName, $fs);
+            $metadata['storageLocation'] = $location;
+            $metadata['storageType'] = $storageType;
+            $metadata['size'] = $this->calculateVolumeBackupSize($backupName, $storage);
             $metadata['formattedSize'] = Craft::$app->getFormatter()->asShortSize((int)$metadata['size'], 2);
 
-            $backups[] = $metadata;
+            $backupsByName[$backupName] = $metadata;
         } catch (Throwable $e) {
             $this->logError('Failed to read volume backup metadata', [
                 'backup' => $backupName,
@@ -893,17 +987,30 @@ class BackupService extends Component
         }
     }
 
-    private function calculateVolumeBackupSize(string $backupName, FsInterface $fs): int
+    private function calculateVolumeBackupSize(string $backupName, BaseFsInterface $storage): int
     {
         $size = 0;
         foreach (['metadata.json', 'redirects.json'] as $filename) {
             $path = self::VOLUME_BACKUP_ROOT . '/' . $backupName . '/' . $filename;
-            if ($fs->fileExists($path)) {
-                $size += $fs->getFileSize($path);
+            if ($storage->fileExists($path)) {
+                $size += $storage->getFileSize($path);
             }
         }
 
         return $size;
+    }
+
+    private function volumeLocationLabel(Volume $volume, bool $legacy): string
+    {
+        $path = self::VOLUME_BACKUP_ROOT;
+        if (!$legacy) {
+            $subpath = trim($volume->getSubpath(), '/');
+            if ($subpath !== '') {
+                $path = $subpath . '/' . $path;
+            }
+        }
+
+        return 'Volume: ' . (string)$volume->name . '/' . $path;
     }
 
     /**
@@ -951,6 +1058,8 @@ class BackupService extends Component
             }
             $metadata['path'] = $dir;
             $metadata['dirname'] = $folder ? ($folder . '/' . basename($dir)) : basename($dir);
+            $metadata['storageLocation'] = $this->getBackupRoot();
+            $metadata['storageType'] = 'local';
 
             // Calculate total size of backup directory
             $totalSize = 0;

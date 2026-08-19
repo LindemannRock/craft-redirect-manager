@@ -277,8 +277,12 @@ final class BackupRestoreSafetyTest extends TestCase
 
     private function volume(FsInterface $fs): Volume
     {
-        $volume = $this->createMock(Volume::class);
-        $volume->method('getFs')->willReturn($fs);
+        $volume = new Volume([
+            'name' => 'Restore safety volume',
+            'handle' => 'restoreSafetyVolume',
+            'uid' => 'restore-volume',
+        ]);
+        $volume->setFs($fs);
         return $volume;
     }
 

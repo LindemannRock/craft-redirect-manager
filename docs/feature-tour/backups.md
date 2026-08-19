@@ -32,6 +32,10 @@ To store backups in a Craft asset volume instead, set `backupVolumeUid` to the U
 
 When both `backupPath` and `backupVolumeUid` are set, the volume takes precedence.
 
+Redirect Manager uses the selected Craft volume directly, including any subpath configured on that volume. New backups are therefore stored under the volume's configured subpath and then `redirect-manager/backups`. The same location is used for listing, size calculation, downloads, restores, deletion, and retention.
+
+Backups created by earlier versions may exist at `redirect-manager/backups` at the filesystem root, outside a configured volume subpath. Redirect Manager checks that exact historical location so those backups remain manageable; it does not scan other locations or move files automatically. The Backups list identifies the location used for each entry. If the same backup name exists in both places, the backup beneath the configured volume subpath is authoritative. Deleting or retaining that canonical backup does not delete the historical duplicate during the same operation.
+
 An explicitly configured volume is authoritative. If its UID is missing, its filesystem cannot be resolved, or the requested filesystem operation is unavailable, Redirect Manager blocks the operation and reports that the configured backup volume is unavailable. It does not silently write the backup to `backupPath` or `@storage`. Restore service by restoring access to the same volume, or change the effective `backupVolumeUid` in the CP or `config/redirect-manager.php`.
 
 ### Craft Cloud storage
@@ -69,7 +73,7 @@ Set to `0` to keep all backups indefinitely. The maximum value is `365` days. Cl
 
 Navigate to **Redirect Manager > Backups** to:
 
-- View a list of existing backups with timestamps and file sizes
+- View a list of existing backups with timestamps, storage locations, and file sizes
 - Create a manual backup
 - Download a backup as a ZIP file
 - Restore redirects from a backup

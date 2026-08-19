@@ -265,6 +265,8 @@ This notice is informational and does not change backup behavior or save differe
 
 If Redirect Manager reports that the configured backup volume cannot be used, verify that the volume UID still exists, its filesystem component loads, and the filesystem permits the requested read or write. The configured UID remains unchanged so service resumes automatically when the same volume becomes healthy again.
 
+Redirect Manager honors the subpath configured on the selected Craft volume. New backups and all normal backup operations use `{volume subpath}/redirect-manager/backups`. If backups created by an earlier version appear at the filesystem-root prefix `redirect-manager/backups`, they remain available in the Backups page and are labelled with that historical location. Redirect Manager checks only this exact compatibility location and does not move it automatically. When both locations contain the same backup name, the copy beneath the configured volume subpath is used first; deleting it does not also delete the historical duplicate.
+
 A restore can also stop after its selected backup passes validation when Redirect Manager cannot create the required safety backup of the current redirects. This happens before the current redirect table is replaced. Restore volume access or permissions, confirm a backup can be created, and retry the restore. When the current redirect library is already empty, no meaningless safety artifact is required.
 
 Creating a backup while the redirect library is empty is a successful no-op. The CP and console report that there was nothing to back up, scheduled recurrence continues, and no empty backup folder is created.
