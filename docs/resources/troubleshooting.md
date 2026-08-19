@@ -122,6 +122,14 @@ Redirect Manager schedules recurring queue jobs for analytics cleanup and automa
 
 The queued job description shows when that specific queued row is due to run. Craft stores that description when the row is queued, so date/time format changes apply to newly queued rows. Existing delayed rows keep their old label until they run or are requeued. Queue labels stay compact: numeric months render numerically, while short and long month settings both render as short month names.
 
+## Scheduled-backup reconciliation is deferred
+
+The logs show that scheduled-backup bootstrap reconciliation was deferred because the lifecycle or portable queue lock is busy.
+
+This warning is expected when a scheduled backup or another scheduling operation already owns the lock. Redirect Manager leaves the queue unchanged, allows the request to continue, and retries reconciliation during a later Craft bootstrap.
+
+If the warning continues after the backup or settings operation has finished, confirm the queue worker is healthy and check for a stuck scheduled-backup job before restarting the worker.
+
 ## Duplicate scheduled backup jobs keep appearing
 
 Scheduled backups and analytics cleanup should normally have one delayed queue row per next run. Redirect Manager checks for existing pending rows during bootstrap, collapses duplicate pending rows automatically, and keeps one row for the next scheduled run.
