@@ -92,14 +92,15 @@ export function validateArchiveMembers(members) {
     for (const required of [
         'composer.json',
         'src/RedirectManager.php',
+        'src/presenters/StorageWarningPresentation.php',
         'src/services/analytics/AnalyticsMaintenanceService.php',
         'src/services/ScheduledBackupScheduler.php',
         generatedOutput,
     ]) {
         if (!files.includes(required)) throw new Error(`Customer archive is missing runtime file: ${required}`);
     }
-    if (files.length !== 99) {
-        throw new Error(`Customer archive changed from the approved 99-file boundary: ${files.length}`);
+    if (files.length !== 100) {
+        throw new Error(`Customer archive changed from the approved 100-file boundary: ${files.length}`);
     }
     return files;
 }
