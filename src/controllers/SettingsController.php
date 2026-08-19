@@ -19,6 +19,7 @@ use lindemannrock\base\helpers\PluginThemeStyleHelper;
 use lindemannrock\base\helpers\SettingsPostHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\models\Settings;
+use lindemannrock\redirectmanager\presenters\StorageWarningPresentation;
 use lindemannrock\redirectmanager\RedirectManager;
 use yii\web\Response;
 
@@ -174,6 +175,7 @@ class SettingsController extends Controller
 
         return $this->renderTemplate('redirect-manager/settings/backup', [
             'settings' => $settings,
+            'storageWarning' => StorageWarningPresentation::forSettings($settings),
         ]);
     }
 
@@ -226,6 +228,11 @@ class SettingsController extends Controller
             ];
             if ($section === 'cache') {
                 $templateVariables['cacheStorage'] = $this->cacheStorageTemplateVariables($settings);
+            }
+            if ($section === 'backup') {
+                $effectiveSettings = clone $settings;
+                PluginHelper::applyConfigOverridesToSettings($effectiveSettings, 'redirect-manager');
+                $templateVariables['storageWarning'] = StorageWarningPresentation::forSettings($effectiveSettings);
             }
 
             return $this->renderTemplate($template, $templateVariables);

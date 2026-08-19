@@ -112,6 +112,10 @@ Retention and limit cleanup are independent. With `analyticsRetention` set to `0
 | `backupPath` | `string` | `'@storage/redirect-manager/backups'` | Local filesystem path for backups. Supports `@storage`, `@root` subfolders, or `$VARIABLE` env vars that resolve inside those roots. |
 | `backupVolumeUid` @since(5.32.0) | `?string` | `null` | Optional asset volume UID for storing backups. Local volumes inside `@webroot` are rejected; remote volume access must be restricted in the storage provider. |
 
+Craft Cloud's application filesystem is ephemeral. On Craft Cloud, neither `backupPath` nor a volume backed by Craft's local-filesystem interface is suitable for persistent backups; use a volume configured with the **Cloud** filesystem type. See Craft's [local filesystem guidance](https://craftcms.com/docs/cloud/assets.html#local).
+
+The CP warning evaluates the effective settings after `config/redirect-manager.php` overrides. It appears on an ephemeral host for an effective custom path, local volume, or an invalid/missing volume that the current backup flow falls back from to local storage. A valid resolved non-local filesystem suppresses this warning only—it is not a compatibility endorsement for a third-party filesystem. Filesystem-unavailable failures remain separate, and the warning never rewrites, rejects, clears, or persists settings or changes runtime backup behavior.
+
 ## Advanced
 
 | Option | Type | Default | Description |

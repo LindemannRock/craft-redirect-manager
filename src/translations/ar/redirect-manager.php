@@ -279,6 +279,7 @@ return [
     'The custom path where backups should be stored (only used when no volume is selected)' => 'المسار المخصص لتخزين النسخ الاحتياطية (يُستخدم فقط عند عدم تحديد وحدة تخزين)',
     'Use Craft path aliases: <code>@storage/redirect-manager/backups</code> (recommended) or <code>@root/backups/redirect-manager</code>. Paths must be outside webroot for security. Environment variables like <code>$ENV_VAR</code> are supported.' => 'استخدم أسماء مستعارة لمسارات Craft: <code>@storage/redirect-manager/backups</code> (موصى به) أو <code>@root/backups/redirect-manager</code>. يجب أن تكون المسارات خارج جذر الويب للأمان. تُدعم متغيرات البيئة مثل <code>$ENV_VAR</code>.',
     'Backup Location:' => 'موقع النسخة الاحتياطية:',
+    'This host has an ephemeral filesystem. Files in the effective local storage path may be lost during deployments, restarts, or environment replacement. Select a Craft volume backed by durable remote storage. On Craft Cloud, use a Cloud filesystem.' => 'يحتوي هذا المضيف على نظام ملفات مؤقت. قد تُفقد الملفات الموجودة في مسار التخزين المحلي الفعلي أثناء عمليات النشر أو إعادة التشغيل أو استبدال البيئة. حدّد وحدة تخزين Craft مدعومة بتخزين بعيد دائم. على Craft Cloud، استخدم نظام ملفات Cloud.',
 
     // Settings: Cache
     'Cache Settings' => 'إعدادات Cache',

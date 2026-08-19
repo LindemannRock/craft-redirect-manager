@@ -32,6 +32,14 @@ To store backups in a Craft asset volume instead, set `backupVolumeUid` to the U
 
 When both `backupPath` and `backupVolumeUid` are set, the volume takes precedence.
 
+### Craft Cloud storage
+
+Craft Cloud's application filesystem is ephemeral, so a custom path is not durable backup storage there. A Craft volume backed by a local filesystem has the same limitation, even when its path is outside `@webroot`. For persistent backups on Craft Cloud, select a volume that uses Craft Cloud's **Cloud** filesystem type. See Craft's [local filesystem migration guidance](https://craftcms.com/docs/cloud/assets.html#local).
+
+On an ephemeral host, the Backup settings page shows a colored warning when the effective configuration uses a custom path or a local-filesystem volume. Config-file overrides are applied first, so the warning reflects the value the plugin will actually use rather than a different stored CP value. A successfully resolved non-local filesystem suppresses only this local-storage warning; it does not certify that a third-party filesystem is fully compatible with Craft Cloud.
+
+The warning is informational. It does not change the selected setting or any backup, restore, download, retention, or queue behavior. Missing or validation-invalid volumes that already fall back to local storage still do so and show the warning; an unavailable filesystem remains a separate failure condition and is not treated as durable storage.
+
 ### Scheduled Backups
 
 | Value | Behavior |

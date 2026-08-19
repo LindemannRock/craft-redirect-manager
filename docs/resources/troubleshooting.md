@@ -253,6 +253,16 @@ If an older published redirect or an integration-created row contains an unsafe 
 
 ---
 
+## Craft Cloud warns about local backup storage
+
+Craft Cloud's application filesystem is ephemeral: files under a custom/local backup path can disappear during deployments, restarts, or environment replacement. A selected Craft volume is also unsafe for persistent Craft Cloud backups when its underlying filesystem is local. Choose a volume using Craft Cloud's **Cloud** filesystem type and review Craft's [local filesystem migration guidance](https://craftcms.com/docs/cloud/assets.html#local).
+
+The warning uses the effective `backupPath` and `backupVolumeUid` after `config/redirect-manager.php` overrides, so check the config file when the CP fields are disabled or differ from the warning. A valid, successfully resolved non-local filesystem suppresses this one warning, but that suppression does not certify third-party Craft Cloud compatibility.
+
+This notice is informational and does not change backup behavior or save different settings. A missing or validation-invalid volume follows the existing local fallback and therefore warns; a filesystem that cannot be resolved is a separate unavailable-volume failure, not proof of durable storage. Check Redirect Manager's logs for the underlying validation or availability message.
+
+---
+
 ## Getting Help
 
 - Enable debug logging and check **Redirect Manager > Logs**
