@@ -89,11 +89,17 @@ export function validateArchiveMembers(members) {
     if (forbidden.length > 0) {
         throw new Error(`Customer archive contains development files: ${forbidden.join(', ')}`);
     }
-    for (const required of ['composer.json', 'src/RedirectManager.php', generatedOutput]) {
+    for (const required of [
+        'composer.json',
+        'src/RedirectManager.php',
+        'src/services/analytics/AnalyticsMaintenanceService.php',
+        'src/services/ScheduledBackupScheduler.php',
+        generatedOutput,
+    ]) {
         if (!files.includes(required)) throw new Error(`Customer archive is missing runtime file: ${required}`);
     }
-    if (files.length !== 97) {
-        throw new Error(`Customer archive changed from the approved 97-file boundary: ${files.length}`);
+    if (files.length !== 99) {
+        throw new Error(`Customer archive changed from the approved 99-file boundary: ${files.length}`);
     }
     return files;
 }

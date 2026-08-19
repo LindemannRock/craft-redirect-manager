@@ -30,12 +30,14 @@ test('stale analytics output fails and removes only its owned build directory', 
     } finally { rmSync(fixtureRoot, {recursive: true, force: true}); }
 });
 
-test('customer archive preserves the approved 97-file runtime boundary', () => {
+test('customer archive preserves the approved 99-file runtime boundary', () => {
     const files = checkPackageExport();
-    assert.equal(files.length, 97);
+    assert.equal(files.length, 99);
     assert.equal(files.includes('composer.json'), true);
     assert.equal(files.includes('tests/TestCase.php'), false);
     assert.equal(files.includes('src/web/assets/analytics/dist/analytics.js'), true);
+    assert.equal(files.includes('src/services/analytics/AnalyticsMaintenanceService.php'), true);
+    assert.equal(files.includes('src/services/ScheduledBackupScheduler.php'), true);
 });
 
 test('archive validation rejects development leakage and missing runtime output', () => {
