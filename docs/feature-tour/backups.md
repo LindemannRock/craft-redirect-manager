@@ -32,13 +32,15 @@ To store backups in a Craft asset volume instead, set `backupVolumeUid` to the U
 
 When both `backupPath` and `backupVolumeUid` are set, the volume takes precedence.
 
+An explicitly configured volume is authoritative. If its UID is missing, its filesystem cannot be resolved, or the requested filesystem operation is unavailable, Redirect Manager blocks the operation and reports that the configured backup volume is unavailable. It does not silently write the backup to `backupPath` or `@storage`. Restore service by restoring access to the same volume, or change the effective `backupVolumeUid` in the CP or `config/redirect-manager.php`.
+
 ### Craft Cloud storage
 
 Craft Cloud's application filesystem is ephemeral, so a custom path is not durable backup storage there. A Craft volume backed by a local filesystem has the same limitation, even when its path is outside `@webroot`. For persistent backups on Craft Cloud, select a volume that uses Craft Cloud's **Cloud** filesystem type. See Craft's [local filesystem migration guidance](https://craftcms.com/docs/cloud/assets.html#local).
 
 On an ephemeral host, the Backup settings page shows a colored warning when the effective configuration uses a custom path or a local-filesystem volume. Config-file overrides are applied first, so the warning reflects the value the plugin will actually use rather than a different stored CP value. A successfully resolved non-local filesystem suppresses only this local-storage warning; it does not certify that a third-party filesystem is fully compatible with Craft Cloud.
 
-The warning is informational. It does not change the selected setting or any backup, restore, download, retention, or queue behavior. Missing or validation-invalid volumes that already fall back to local storage still do so and show the warning; an unavailable filesystem remains a separate failure condition and is not treated as durable storage.
+The local-storage warning is informational. It does not change the selected setting or any backup, restore, download, retention, or queue behavior. A missing, validation-invalid, or unresolved configured volume instead shows a separate unavailable-volume error on both durable and ephemeral hosts. That state is neither classified as local fallback storage nor described as durable.
 
 ### Scheduled Backups
 
@@ -49,7 +51,7 @@ The warning is informational. It does not change the selected setting or any bac
 | `weekly` | Backup runs once per week |
 | `monthly` | Backup runs once per month |
 
-Scheduled backups normally run through Craft's queue. Redirect Manager keeps one delayed scheduled-backup chain for the next run and creates its successor only after a successful backup. On queue transports with a bounded delay, the plugin relays the wait through intermediate queue handoffs; those handoffs do not create backups. Local queue transports retain the complete native delay. Run a queue worker with `queue/listen` or a cron-driven `queue/run` so scheduled backups fire on time.
+Scheduled backups normally run through Craft's queue. Redirect Manager keeps one delayed scheduled-backup chain for the next run. Each eligible occurrence schedules its successor even when the current storage attempt fails, allowing the same configured volume to recover automatically on a later run. On queue transports with a bounded delay, the plugin relays the wait through intermediate queue handoffs; those handoffs do not create backups. Local queue transports retain the complete native delay. Run a queue worker with `queue/listen` or a cron-driven `queue/run` so scheduled backups fire on time.
 
 The queued job description shows when that specific queued row is due to run. Craft stores that description when the row is queued, so date/time format changes apply to newly queued rows. Existing delayed rows keep their old label until they run or are requeued. Queue labels stay compact: numeric months render numerically, while short and long month settings both render as short month names.
 
@@ -75,6 +77,10 @@ Navigate to **Redirect Manager > Backups** to:
 
 Downloaded ZIP files are portable archives. To use one on another install without an upload flow, extract the ZIP and place its files in the expected backup folder structure under that install's configured backup storage.
 
+Each download uses its own temporary ZIP. Redirect Manager removes that exact archive after the response completes and also registers an interruption safeguard, so a downloaded archive does not outlive the backup-retention lifecycle as a separate temporary copy.
+
+If the redirect library is empty, manual, scheduled, and console backup creation completes as a successful no-op. Redirect Manager reports that there was nothing to back up and does not create an empty artifact.
+
 ## Restoring from a Backup
 
 To restore your redirect library to a previous state:
@@ -85,7 +91,7 @@ To restore your redirect library to a previous state:
 4. Confirm the action — this will replace your current redirects with the backup contents
 
 > [!WARNING]
-> Restoring a backup replaces your current redirect library. If you want to keep your current redirects, create a manual backup first.
+> Restoring a backup replaces your current redirect library. Redirect Manager first creates a complete safety backup when current redirects exist. If that safety backup cannot be completed, restore stops before any current redirect is deleted or replaced.
 
 Restore requires an intact backup folder with `metadata.json`, `redirects.json`, and a valid SHA-256 checksum in the metadata. Backups with missing metadata, missing checksum data, or modified JSON contents are rejected before redirects are replaced.
 

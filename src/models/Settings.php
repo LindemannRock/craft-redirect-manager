@@ -28,6 +28,8 @@ use lindemannrock\base\traits\SettingsPersistenceTrait;
 use lindemannrock\base\validators\StoragePathValidator;
 use lindemannrock\base\validators\StorageVolumeValidator;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
+use Throwable;
+use yii\base\UserException;
 
 /**
  * Settings Model
@@ -538,29 +540,27 @@ class Settings extends Model
      */
     public function getBackupPath(): string
     {
-        // If a volume is selected, use its path
-        if ($this->backupVolumeUid) {
-            $volumeErrors = StorageVolumeHelper::validateVolume($this->backupVolumeUid, [
-            ]);
-            if ($volumeErrors !== []) {
-                $this->logWarning('Backup volume failed validation. Using safe default.', [
+        // A configured volume is authoritative and must never become a local fallback.
+        if (trim((string)$this->backupVolumeUid) !== '') {
+            try {
+                $volumeErrors = StorageVolumeHelper::validateVolume($this->backupVolumeUid);
+                if ($volumeErrors !== []) {
+                    throw new \RuntimeException('Backup volume failed validation: ' . implode('; ', $volumeErrors));
+                }
+
+                $localRootPath = StorageVolumeHelper::localRootPath($this->backupVolumeUid);
+                if ($localRootPath !== null) {
+                    return rtrim($localRootPath, '/') . '/redirect-manager/backups';
+                }
+            } catch (Throwable $e) {
+                $this->logWarning('Configured backup volume is unavailable.', [
                     'backupVolumeUid' => $this->backupVolumeUid,
-                    'errors' => $volumeErrors,
+                    'error' => $e->getMessage(),
                 ]);
-
-                return Craft::getAlias('@storage/redirect-manager/backups');
+                throw new UserException(Craft::t('redirect-manager', 'The configured backup volume cannot currently be used. Backup operations are unavailable until the volume is restored or the effective setting is changed.'), previous: $e);
             }
 
-            $localRootPath = StorageVolumeHelper::localRootPath($this->backupVolumeUid);
-            if ($localRootPath !== null) {
-                return rtrim($localRootPath, '/') . '/redirect-manager/backups';
-            }
-
-            $this->logWarning('Backup volume could not be resolved to a local path. Using safe default.', [
-                'backupVolumeUid' => $this->backupVolumeUid,
-            ]);
-
-            return Craft::getAlias('@storage/redirect-manager/backups');
+            throw new \LogicException('The configured backup volume does not expose a local backup path.');
         }
 
         if (!$this->validate(['backupPath'])) {

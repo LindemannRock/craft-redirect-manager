@@ -85,7 +85,11 @@ final class ScheduledBackupScheduler extends Component
     }
 
     /**
-     * Run one eligible recurring occurrence and queue its successor on success.
+     * Run one eligible recurring occurrence and always queue its successor.
+     *
+     * A failed storage attempt still propagates to Craft's queue while the next
+     * occurrence remains scheduled, so unchanged configuration can recover
+     * automatically when its storage becomes available again.
      *
      * @param callable(): void $backup
      * @return bool Whether the recurring backup callback ran
@@ -98,10 +102,13 @@ final class ScheduledBackupScheduler extends Component
                 return false;
             }
 
-            $backup();
-            $nextRun = $this->getNextRun($settings);
-            if ($nextRun !== null) {
-                $this->withPortableLock(fn() => $this->queueAtLocked($settings, $nextRun, true));
+            try {
+                $backup();
+            } finally {
+                $nextRun = $this->getNextRun($settings);
+                if ($nextRun !== null) {
+                    $this->withPortableLock(fn() => $this->queueAtLocked($settings, $nextRun, true));
+                }
             }
 
             return true;

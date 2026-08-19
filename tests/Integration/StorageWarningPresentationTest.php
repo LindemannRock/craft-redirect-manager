@@ -31,6 +31,7 @@ use RuntimeException;
 final class StorageWarningPresentationTest extends TestCase
 {
     private const WARNING = 'This host has an ephemeral filesystem. Files in the effective local storage path may be lost during deployments, restarts, or environment replacement. Select a Craft volume backed by durable remote storage. On Craft Cloud, use a Cloud filesystem.';
+    private const UNAVAILABLE = 'The configured backup volume cannot currently be used. Backup operations are unavailable until the volume is restored or the effective setting is changed.';
 
     private bool $hadEphemeralSetting;
     private mixed $originalEphemeralSetting;
@@ -128,17 +129,18 @@ final class StorageWarningPresentationTest extends TestCase
         self::assertTrue($presentation->shouldShowWarning());
     }
 
-    public function testEphemeralMissingVolumeFallsBackLocallyAndShowsWarning(): void
+    public function testEphemeralMissingVolumeIsUnavailableWithoutLocalWarning(): void
     {
         $this->installVolumes(null);
 
         $presentation = StorageWarningPresentation::forSettings($this->volumeSettings());
 
-        self::assertSame(StorageWarningPresentation::STATE_LOCAL, $presentation->state);
-        self::assertTrue($presentation->shouldShowWarning());
+        self::assertSame(StorageWarningPresentation::STATE_UNAVAILABLE, $presentation->state);
+        self::assertTrue($presentation->isUnavailable());
+        self::assertFalse($presentation->shouldShowWarning());
     }
 
-    public function testEphemeralInvalidLocalVolumeFallsBackLocallyAndShowsWarning(): void
+    public function testEphemeralInvalidLocalVolumeIsUnavailableWithoutLocalWarning(): void
     {
         $webroot = Craft::getAlias('@webroot');
         self::assertIsString($webroot);
@@ -149,8 +151,21 @@ final class StorageWarningPresentationTest extends TestCase
 
         $presentation = StorageWarningPresentation::forSettings($this->volumeSettings());
 
-        self::assertSame(StorageWarningPresentation::STATE_LOCAL, $presentation->state);
-        self::assertTrue($presentation->shouldShowWarning());
+        self::assertSame(StorageWarningPresentation::STATE_UNAVAILABLE, $presentation->state);
+        self::assertTrue($presentation->isUnavailable());
+        self::assertFalse($presentation->shouldShowWarning());
+    }
+
+    public function testDurableMissingVolumeStillShowsUnavailableError(): void
+    {
+        $_SERVER['CRAFT_EPHEMERAL'] = false;
+        $this->installVolumes(null);
+
+        $presentation = StorageWarningPresentation::forSettings($this->volumeSettings());
+
+        self::assertSame(StorageWarningPresentation::STATE_UNAVAILABLE, $presentation->state);
+        self::assertTrue($presentation->isUnavailable());
+        self::assertFalse($presentation->shouldShowWarning());
     }
 
     public function testEphemeralMissingFilesystemIsUnavailableAndNotClassifiedAsDurable(): void
@@ -228,6 +243,24 @@ final class StorageWarningPresentationTest extends TestCase
         foreach (['en', 'de', 'fr', 'nl', 'es', 'ar', 'it', 'pt', 'ja', 'sv', 'da', 'no'] as $locale) {
             $catalogue = require dirname(__DIR__, 2) . "/src/translations/{$locale}/redirect-manager.php";
             self::assertArrayHasKey(self::WARNING, $catalogue);
+        }
+    }
+
+    public function testUnavailableErrorRendersSeparatelyFromTheCloudWarning(): void
+    {
+        $template = (string)file_get_contents(dirname(__DIR__, 2) . '/src/templates/settings/backup.twig');
+        $unavailable = strpos($template, self::UNAVAILABLE);
+        $warning = strpos($template, self::WARNING);
+
+        self::assertIsInt($unavailable);
+        self::assertIsInt($warning);
+        self::assertTrue($unavailable < $warning);
+        self::assertStringContainsString('storageWarning.isUnavailable', $template);
+        self::assertStringContainsString("type: 'error'", $template);
+
+        foreach (['en', 'de', 'fr', 'nl', 'es', 'ar', 'it', 'pt', 'ja', 'sv', 'da', 'no'] as $locale) {
+            $catalogue = require dirname(__DIR__, 2) . "/src/translations/{$locale}/redirect-manager.php";
+            self::assertArrayHasKey(self::UNAVAILABLE, $catalogue);
         }
     }
 

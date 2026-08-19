@@ -11,12 +11,16 @@ namespace lindemannrock\redirectmanager\services;
 use Craft;
 use craft\base\Component;
 use craft\base\FsInterface;
+use craft\base\MissingComponentInterface;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\FsListing;
+use craft\models\Volume;
 use lindemannrock\base\helpers\StorageVolumeHelper;
 use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\RedirectManager;
+use Throwable;
+use yii\base\UserException;
 
 /**
  * Backup Service
@@ -36,6 +40,10 @@ class BackupService extends Component
 
     private const CHECKSUM_ALGORITHM = 'sha256';
 
+    private const STORAGE_UNAVAILABLE_MESSAGE = 'The configured backup volume cannot currently be used. Backup operations are unavailable until the volume is restored or the effective setting is changed.';
+
+    private const CREATION_FAILED_MESSAGE = 'The backup could not be completed. Check the configured backup storage and permissions, then try again.';
+
     /**
      * @inheritdoc
      */
@@ -49,7 +57,13 @@ class BackupService extends Component
      * Create backup of existing redirects
      *
      * @param string $reason Reason for backup (import, restore, manual, scheduled)
-     * @return string|null Backup directory path or null on failure
+     *
+     * A path/name means a complete backup was promoted into final storage.
+     * Null means the operation was a legitimate no-op because backups are
+     * disabled or there are no redirects. Storage and creation failures throw.
+     *
+     * @return string|null Complete backup directory path/name, or null for a successful no-op
+     * @throws UserException when storage or finalization fails
      */
     public function createBackup(string $reason = 'import'): ?string
     {
@@ -71,7 +85,7 @@ class BackupService extends Component
 
             $timestamp = date('Y-m-d_H-i-s');
             $folder = $this->getFolderForReason($reason);
-            $backupName = $folder . '/' . $timestamp;
+            $backupName = $folder . '/' . $timestamp . '-' . bin2hex(random_bytes(6));
 
             $identity = Craft::$app->getUser()->getIdentity();
             $metadata = [
@@ -99,19 +113,35 @@ class BackupService extends Component
 
             // Cleanup old automatic backups (manual backups are never deleted)
             if ($settings->backupRetentionDays > 0 && $this->isAutomaticReason($reason)) {
-                $deleted = $this->cleanupOldBackups();
-                if ($deleted > 0) {
-                    $this->logInfo('Cleaned old backups', ['deleted' => $deleted]);
+                try {
+                    $deleted = $this->cleanupOldBackups();
+                    if ($deleted > 0) {
+                        $this->logInfo('Cleaned old backups', ['deleted' => $deleted]);
+                    }
+                } catch (Throwable $e) {
+                    $this->logError('Backup retention failed after successful creation', [
+                        'path' => $backupPath,
+                        'error' => $e->getMessage(),
+                    ]);
                 }
             }
 
             return $backupPath;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logError('Backup failed', [
                 'error' => $e->getMessage(),
                 'reason' => $reason,
             ]);
-            return null;
+
+            if ($e instanceof UserException) {
+                throw $e;
+            }
+
+            if (trim((string)$settings->backupVolumeUid) !== '') {
+                throw new UserException(Craft::t('redirect-manager', self::STORAGE_UNAVAILABLE_MESSAGE), previous: $e);
+            }
+
+            throw new UserException(Craft::t('redirect-manager', self::CREATION_FAILED_MESSAGE), previous: $e);
         }
     }
 
@@ -122,45 +152,52 @@ class BackupService extends Component
      */
     public function getBackups(): array
     {
-        if ($this->isUsingVolumeStorage()) {
-            return $this->getVolumeBackups();
-        }
-
-        $backupDir = $this->getBackupRoot();
-
-        if (!is_dir($backupDir)) {
-            return [];
-        }
-
-        $backups = [];
-        // Legacy backups stored directly under backup root
-        $rootDirs = FileHelper::findDirectories($backupDir, ['recursive' => false]);
-        foreach ($rootDirs as $dir) {
-            $dirName = basename($dir);
-            if (in_array($dirName, self::BACKUP_FOLDERS, true)) {
-                continue;
+        try {
+            if ($this->isUsingVolumeStorage()) {
+                return $this->getVolumeBackups();
             }
-            $this->addBackupFromDir($backups, $dir, null);
-        }
 
-        // New backups stored under subfolders
-        foreach (self::BACKUP_FOLDERS as $folder) {
-            $folderPath = $backupDir . '/' . $folder;
-            if (!is_dir($folderPath)) {
-                continue;
+            $backupDir = $this->getBackupRoot();
+
+            if (!is_dir($backupDir)) {
+                return [];
             }
-            $dirs = FileHelper::findDirectories($folderPath, ['recursive' => false]);
-            foreach ($dirs as $dir) {
-                $this->addBackupFromDir($backups, $dir, $folder);
+
+            $backups = [];
+            // Legacy backups stored directly under backup root
+            $rootDirs = FileHelper::findDirectories($backupDir, ['recursive' => false]);
+            foreach ($rootDirs as $dir) {
+                $dirName = basename($dir);
+                if (in_array($dirName, self::BACKUP_FOLDERS, true) || $this->validateBackupName($dirName) === null) {
+                    continue;
+                }
+                $this->addBackupFromDir($backups, $dir, null);
             }
+
+            // New backups stored under subfolders
+            foreach (self::BACKUP_FOLDERS as $folder) {
+                $folderPath = $backupDir . '/' . $folder;
+                if (!is_dir($folderPath)) {
+                    continue;
+                }
+                $dirs = FileHelper::findDirectories($folderPath, ['recursive' => false]);
+                foreach ($dirs as $dir) {
+                    if ($this->validateBackupName($folder . '/' . basename($dir)) === null) {
+                        continue;
+                    }
+                    $this->addBackupFromDir($backups, $dir, $folder);
+                }
+            }
+
+            // Sort by timestamp descending (newest first)
+            usort($backups, function($a, $b) {
+                return ($b['timestamp'] ?? 0) <=> ($a['timestamp'] ?? 0);
+            });
+
+            return $backups;
+        } catch (Throwable $e) {
+            $this->throwReadableStorageFailure('list', $e);
         }
-
-        // Sort by timestamp descending (newest first)
-        usort($backups, function($a, $b) {
-            return ($b['timestamp'] ?? 0) <=> ($a['timestamp'] ?? 0);
-        });
-
-        return $backups;
     }
 
     /**
@@ -179,25 +216,27 @@ class BackupService extends Component
         $cutoff = time() - ($settings->backupRetentionDays * 86400);
         $deleted = 0;
 
-        foreach ($this->getBackups() as $backup) {
-            $timestamp = is_int($backup['timestamp'] ?? null) ? $backup['timestamp'] : 0;
-            $reason = $backup['reason'] ?? 'import';
+        try {
+            foreach ($this->getBackups() as $backup) {
+                $timestamp = is_int($backup['timestamp'] ?? null) ? $backup['timestamp'] : 0;
+                $reason = $backup['reason'] ?? 'import';
 
-            if ($timestamp > 0 && $timestamp < $cutoff && $this->isAutomaticReason($reason)) {
-                try {
+                if ($timestamp > 0 && $timestamp < $cutoff && $this->isAutomaticReason($reason)) {
                     if ($this->isUsingVolumeStorage()) {
-                        $this->deleteVolumeBackup((string)($backup['dirname'] ?? ''));
+                        if (!$this->deleteVolumeBackup((string)($backup['dirname'] ?? ''))) {
+                            throw new \RuntimeException('Owned volume backup could not be deleted.');
+                        }
                     } else {
                         FileHelper::removeDirectory($backup['path']);
+                        if (is_dir($backup['path'])) {
+                            throw new \RuntimeException('Owned local backup could not be deleted.');
+                        }
                     }
                     $deleted++;
-                } catch (\Throwable $e) {
-                    $this->logError('Failed to delete old backup', [
-                        'path' => $backup['path'] ?? '',
-                        'error' => $e->getMessage(),
-                    ]);
                 }
             }
+        } catch (Throwable $e) {
+            $this->throwReadableStorageFailure('retention', $e);
         }
 
         return $deleted;
@@ -226,8 +265,8 @@ class BackupService extends Component
             }
         }
 
-        // Must match timestamp format: 2025-01-21_14-30-45
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/', $name)) {
+        // Accept legacy timestamps and the collision-safe suffixed form.
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}(?:-[a-f0-9]{12})?$/', $name)) {
             $this->logWarning('Invalid backup dirname format', ['dirname' => $dirname]);
             return null;
         }
@@ -295,11 +334,12 @@ class BackupService extends Component
     public function isUsingVolumeStorage(): bool
     {
         $settings = RedirectManager::$plugin->getSettings();
-        if (!$settings->backupVolumeUid) {
+        if (trim((string)$settings->backupVolumeUid) === '') {
             return false;
         }
 
-        return $this->getVolumeFs() instanceof FsInterface;
+        $this->getVolumeFs();
+        return true;
     }
 
     /**
@@ -315,16 +355,17 @@ class BackupService extends Component
         }
 
         $fs = $this->getVolumeFs();
-        if (!$fs instanceof FsInterface) {
-            return null;
-        }
 
         $path = self::VOLUME_BACKUP_ROOT . '/' . $backupName . '/' . $filename;
-        if (!$fs->fileExists($path)) {
-            return null;
-        }
+        try {
+            if (!$fs->fileExists($path)) {
+                return null;
+            }
 
-        return $fs->read($path);
+            return $fs->read($path);
+        } catch (Throwable $e) {
+            $this->throwStorageUnavailable('read', $e);
+        }
     }
 
     /**
@@ -340,17 +381,21 @@ class BackupService extends Component
         }
 
         $fs = $this->getVolumeFs();
-        if (!$fs instanceof FsInterface) {
-            return false;
-        }
 
         $path = self::VOLUME_BACKUP_ROOT . '/' . $backupName;
-        if (!$fs->directoryExists($path)) {
-            return false;
-        }
+        try {
+            if (!$fs->directoryExists($path)) {
+                return false;
+            }
 
-        $fs->deleteDirectory($path);
-        return true;
+            $fs->deleteDirectory($path);
+            if ($fs->directoryExists($path)) {
+                throw new \RuntimeException('Volume backup remained after deletion.');
+            }
+            return true;
+        } catch (Throwable $e) {
+            $this->throwStorageUnavailable('delete', $e);
+        }
     }
 
     /**
@@ -361,6 +406,10 @@ class BackupService extends Component
     public function getBackupRoot(): string
     {
         $settings = RedirectManager::$plugin->getSettings();
+        if (trim((string)$settings->backupVolumeUid) !== '') {
+            $this->getVolumeFs();
+            throw new \LogicException('A local backup root is unavailable while volume storage is configured.');
+        }
         return rtrim($settings->getBackupPath(), '/');
     }
 
@@ -417,7 +466,7 @@ class BackupService extends Component
             }
         }
 
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/', $name)) {
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}(?:-[a-f0-9]{12})?$/', $name)) {
             return null;
         }
 
@@ -432,16 +481,118 @@ class BackupService extends Component
      */
     private function createLocalBackup(string $backupName, array $metadata, array $redirects): string
     {
-        $backupDir = $this->getBackupRoot() . '/' . $backupName;
-        FileHelper::createDirectory($backupDir);
-
         $redirectsContent = Json::encode($redirects, JSON_PRETTY_PRINT);
         $metadata = $this->withChecksumMetadata($metadata, $redirectsContent);
+        $metadataContent = Json::encode($metadata, JSON_PRETTY_PRINT);
 
-        file_put_contents($backupDir . '/metadata.json', Json::encode($metadata, JSON_PRETTY_PRINT));
-        file_put_contents($backupDir . '/redirects.json', $redirectsContent);
+        $finalDir = $this->getBackupRoot() . '/' . $backupName;
+        $parentDir = dirname($finalDir);
+        $stagingDir = $parentDir . '/.' . basename($finalDir) . '.staging-' . bin2hex(random_bytes(6));
+        $promotionSucceeded = false;
 
-        return $backupDir;
+        try {
+            $this->createLocalDirectory($parentDir);
+            if (is_dir($finalDir)) {
+                throw new \RuntimeException('Unique backup path already exists.');
+            }
+            $this->createLocalDirectory($stagingDir);
+
+            $this->writeCompleteLocalFile($stagingDir . '/metadata.json', $metadataContent);
+            $this->writeCompleteLocalFile($stagingDir . '/redirects.json', $redirectsContent);
+            $this->validateStagedLocalBackup($stagingDir, $metadataContent, $redirectsContent, $backupName);
+
+            if (!$this->moveLocalDirectory($stagingDir, $finalDir)) {
+                throw new \RuntimeException('Backup promotion failed.');
+            }
+            $promotionSucceeded = true;
+            if (!is_dir($finalDir) || is_dir($stagingDir)) {
+                throw new \RuntimeException('Backup promotion failed.');
+            }
+
+            return $finalDir;
+        } catch (Throwable $e) {
+            $ownsFinal = $promotionSucceeded
+                || (!$this->localDirectoryExists($stagingDir)
+                    && $this->localBackupMatchesSnapshot($finalDir, $metadataContent, $redirectsContent));
+            $this->removeOwnedLocalDirectory($stagingDir);
+            if ($ownsFinal) {
+                $this->removeOwnedLocalDirectory($finalDir);
+            }
+            throw $e;
+        }
+    }
+
+    protected function createLocalDirectory(string $path): void
+    {
+        FileHelper::createDirectory($path);
+        if (!is_dir($path)) {
+            throw new \RuntimeException('Backup directory could not be created.');
+        }
+    }
+
+    protected function writeLocalFile(string $path, string $content): int|false
+    {
+        return file_put_contents($path, $content);
+    }
+
+    protected function moveLocalDirectory(string $source, string $destination): bool
+    {
+        return rename($source, $destination);
+    }
+
+    protected function removeLocalDirectory(string $path): void
+    {
+        FileHelper::removeDirectory($path);
+    }
+
+    protected function localDirectoryExists(string $path): bool
+    {
+        clearstatcache(true, $path);
+        return is_dir($path);
+    }
+
+    private function writeCompleteLocalFile(string $path, string $content): void
+    {
+        $written = $this->writeLocalFile($path, $content);
+        if ($written === false || $written !== strlen($content)) {
+            throw new \RuntimeException('Backup file write was incomplete.');
+        }
+    }
+
+    private function validateStagedLocalBackup(
+        string $stagingDir,
+        string $metadataContent,
+        string $redirectsContent,
+        string $backupName,
+    ): void {
+        $writtenMetadata = file_get_contents($stagingDir . '/metadata.json');
+        $writtenRedirects = file_get_contents($stagingDir . '/redirects.json');
+        if ($writtenMetadata !== $metadataContent || $writtenRedirects !== $redirectsContent
+            || !$this->validateBackupIntegrity($writtenMetadata, $writtenRedirects, $backupName)) {
+            throw new \RuntimeException('Staged backup validation failed.');
+        }
+    }
+
+    private function removeOwnedLocalDirectory(string $path): void
+    {
+        if (!is_dir($path)) {
+            return;
+        }
+
+        $this->removeLocalDirectory($path);
+        if ($this->localDirectoryExists($path)) {
+            $this->logError('Failed to remove owned backup directory', ['path' => $path]);
+        }
+    }
+
+    private function localBackupMatchesSnapshot(string $path, string $metadataContent, string $redirectsContent): bool
+    {
+        if (!is_dir($path)) {
+            return false;
+        }
+
+        return file_get_contents($path . '/metadata.json') === $metadataContent
+            && file_get_contents($path . '/redirects.json') === $redirectsContent;
     }
 
     /**
@@ -453,20 +604,48 @@ class BackupService extends Component
     private function createVolumeBackup(string $backupName, array $metadata, array $redirects): string
     {
         $fs = $this->getVolumeFs();
-        if (!$fs instanceof FsInterface) {
-            throw new \RuntimeException('Backup volume is not available.');
-        }
-
-        $backupPath = self::VOLUME_BACKUP_ROOT . '/' . $backupName;
-        $this->createVolumeDirectory($backupPath);
-
         $redirectsContent = Json::encode($redirects, JSON_PRETTY_PRINT);
         $metadata = $this->withChecksumMetadata($metadata, $redirectsContent);
+        $metadataContent = Json::encode($metadata, JSON_PRETTY_PRINT);
 
-        $fs->write($backupPath . '/metadata.json', Json::encode($metadata, JSON_PRETTY_PRINT));
-        $fs->write($backupPath . '/redirects.json', $redirectsContent);
+        $finalPath = self::VOLUME_BACKUP_ROOT . '/' . $backupName;
+        $parentPath = dirname($finalPath);
+        $stagingPath = $parentPath . '/.' . basename($finalPath) . '.staging-' . bin2hex(random_bytes(6));
+        $promotionSucceeded = false;
 
-        return $backupName;
+        try {
+            $this->createVolumeDirectory($parentPath, $fs);
+            if ($fs->directoryExists($finalPath)) {
+                throw new \RuntimeException('Unique backup path already exists.');
+            }
+            $this->createVolumeDirectory($stagingPath, $fs);
+
+            $fs->write($stagingPath . '/metadata.json', $metadataContent);
+            $fs->write($stagingPath . '/redirects.json', $redirectsContent);
+            $writtenMetadata = $fs->read($stagingPath . '/metadata.json');
+            $writtenRedirects = $fs->read($stagingPath . '/redirects.json');
+            if ($writtenMetadata !== $metadataContent || $writtenRedirects !== $redirectsContent
+                || !$this->validateBackupIntegrity($writtenMetadata, $writtenRedirects, $backupName)) {
+                throw new \RuntimeException('Staged backup validation failed.');
+            }
+
+            $fs->renameDirectory($stagingPath, basename($finalPath));
+            $promotionSucceeded = true;
+            if (!$fs->directoryExists($finalPath) || $fs->directoryExists($stagingPath)) {
+                throw new \RuntimeException('Backup promotion failed.');
+            }
+
+            return $backupName;
+        } catch (Throwable $e) {
+            $ownsFinal = $promotionSucceeded
+                || (!$this->volumeDirectoryExists($stagingPath, $fs)
+                    && $this->volumeBackupMatchesSnapshot($finalPath, $metadataContent, $redirectsContent, $fs));
+            $this->removeOwnedVolumeDirectory($stagingPath, $fs);
+            if ($ownsFinal) {
+                $this->removeOwnedVolumeDirectory($finalPath, $fs);
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -514,33 +693,38 @@ class BackupService extends Component
         return true;
     }
 
-    private function getVolumeFs(): ?FsInterface
+    private function getVolumeFs(): FsInterface
     {
         $settings = RedirectManager::$plugin->getSettings();
-        if (!$settings->backupVolumeUid) {
-            return null;
+        $volumeUid = trim((string)$settings->backupVolumeUid);
+        if ($volumeUid === '') {
+            throw new \LogicException('Volume storage was requested without an effective volume UID.');
         }
 
-        $volumeErrors = StorageVolumeHelper::validateVolume($settings->backupVolumeUid);
-        if ($volumeErrors !== []) {
-            $this->logWarning('Backup volume failed validation.', [
-                'backupVolumeUid' => $settings->backupVolumeUid,
-                'errors' => $volumeErrors,
-            ]);
-            return null;
-        }
+        try {
+            $volumeErrors = StorageVolumeHelper::validateVolume($volumeUid);
+            if ($volumeErrors !== []) {
+                throw new \RuntimeException('Backup volume failed validation: ' . implode('; ', $volumeErrors));
+            }
 
-        $volume = Craft::$app->getVolumes()->getVolumeByUid($settings->backupVolumeUid);
-        return $volume?->getFs();
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($volumeUid);
+            if (!$volume instanceof Volume) {
+                throw new \RuntimeException('Configured backup volume could not be resolved.');
+            }
+
+            $fs = $volume->getFs();
+            if (!$fs instanceof FsInterface || $fs instanceof MissingComponentInterface) {
+                throw new \RuntimeException('Configured backup volume filesystem is unavailable.');
+            }
+
+            return $fs;
+        } catch (Throwable $e) {
+            $this->throwStorageUnavailable('resolve', $e, $volumeUid);
+        }
     }
 
-    private function createVolumeDirectory(string $path): void
+    private function createVolumeDirectory(string $path, FsInterface $fs): void
     {
-        $fs = $this->getVolumeFs();
-        if (!$fs instanceof FsInterface) {
-            throw new \RuntimeException('Backup volume is not available.');
-        }
-
         $currentPath = '';
         foreach (explode('/', $path) as $part) {
             if ($part === '') {
@@ -550,8 +734,93 @@ class BackupService extends Component
             $currentPath = $currentPath === '' ? $part : $currentPath . '/' . $part;
             if (!$fs->directoryExists($currentPath)) {
                 $fs->createDirectory($currentPath);
+                if (!$fs->directoryExists($currentPath)) {
+                    throw new \RuntimeException('Backup volume directory could not be created.');
+                }
             }
         }
+    }
+
+    private function volumeDirectoryExists(string $path, FsInterface $fs): bool
+    {
+        try {
+            return $fs->directoryExists($path);
+        } catch (Throwable $e) {
+            $this->logError('Failed to inspect owned volume backup directory', [
+                'path' => $path,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    private function removeOwnedVolumeDirectory(string $path, FsInterface $fs): void
+    {
+        try {
+            if (!$fs->directoryExists($path)) {
+                return;
+            }
+            $fs->deleteDirectory($path);
+            if ($fs->directoryExists($path)) {
+                $this->logError('Failed to remove owned volume backup directory', ['path' => $path]);
+            }
+        } catch (Throwable $e) {
+            $this->logError('Failed to remove owned volume backup directory', [
+                'path' => $path,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function volumeBackupMatchesSnapshot(
+        string $path,
+        string $metadataContent,
+        string $redirectsContent,
+        FsInterface $fs,
+    ): bool {
+        try {
+            return $fs->directoryExists($path)
+                && $fs->fileExists($path . '/metadata.json')
+                && $fs->fileExists($path . '/redirects.json')
+                && $fs->read($path . '/metadata.json') === $metadataContent
+                && $fs->read($path . '/redirects.json') === $redirectsContent;
+        } catch (Throwable $e) {
+            $this->logError('Failed to verify owned promoted backup', [
+                'path' => $path,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    private function throwStorageUnavailable(string $operation, Throwable $e, ?string $volumeUid = null): never
+    {
+        $settings = RedirectManager::$plugin->getSettings();
+        $this->logError('Backup volume operation failed', [
+            'operation' => $operation,
+            'backupVolumeUid' => $volumeUid ?? $settings->backupVolumeUid,
+            'error' => $e->getMessage(),
+        ]);
+
+        if ($e instanceof UserException && $e->getMessage() === Craft::t('redirect-manager', self::STORAGE_UNAVAILABLE_MESSAGE)) {
+            throw $e;
+        }
+
+        throw new UserException(Craft::t('redirect-manager', self::STORAGE_UNAVAILABLE_MESSAGE), previous: $e);
+    }
+
+    private function throwReadableStorageFailure(string $operation, Throwable $e): never
+    {
+        $settings = RedirectManager::$plugin->getSettings();
+        if (trim((string)$settings->backupVolumeUid) !== '') {
+            $this->throwStorageUnavailable($operation, $e);
+        }
+
+        $this->logError('Local backup storage operation failed', [
+            'operation' => $operation,
+            'error' => $e->getMessage(),
+        ]);
+        throw new UserException(Craft::t('redirect-manager', 'The local backup storage could not be accessed. Check the configured path and permissions, then try again.'), previous: $e);
     }
 
     /**
@@ -562,7 +831,7 @@ class BackupService extends Component
     private function getVolumeBackups(): array
     {
         $fs = $this->getVolumeFs();
-        if (!$fs instanceof FsInterface || !$fs->directoryExists(self::VOLUME_BACKUP_ROOT)) {
+        if (!$fs->directoryExists(self::VOLUME_BACKUP_ROOT)) {
             return [];
         }
 
@@ -579,6 +848,9 @@ class BackupService extends Component
                 }
 
                 $backupName = $folder . '/' . $listing->getBasename();
+                if ($this->validateBackupName($backupName) === null) {
+                    continue;
+                }
                 $this->addVolumeBackup($backups, $backupName, $fs);
             }
         }
@@ -612,11 +884,12 @@ class BackupService extends Component
             $metadata['formattedSize'] = Craft::$app->getFormatter()->asShortSize((int)$metadata['size'], 2);
 
             $backups[] = $metadata;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logError('Failed to read volume backup metadata', [
                 'backup' => $backupName,
                 'error' => $e->getMessage(),
             ]);
+            throw $e;
         }
     }
 
@@ -668,7 +941,14 @@ class BackupService extends Component
         }
 
         try {
-            $metadata = json_decode(file_get_contents($metadataFile), true) ?? [];
+            $metadataContent = file_get_contents($metadataFile);
+            if (!is_string($metadataContent)) {
+                throw new \RuntimeException('Backup metadata could not be read.');
+            }
+            $metadata = json_decode($metadataContent, true) ?? [];
+            if (!is_array($metadata)) {
+                return;
+            }
             $metadata['path'] = $dir;
             $metadata['dirname'] = $folder ? ($folder . '/' . basename($dir)) : basename($dir);
 
@@ -693,6 +973,7 @@ class BackupService extends Component
                 'dir' => $dir,
                 'error' => $e->getMessage(),
             ]);
+            throw $e;
         }
     }
 }

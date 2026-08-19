@@ -832,10 +832,10 @@ final class ScheduledBackupQueueTest extends TestCase
         self::assertSame([], $mutex->heldLocks);
     }
 
-    public function testBackupFailurePropagatesWithoutQueuingASuccessor(): void
+    public function testBackupFailurePropagatesAfterQueuingOneRecoverySuccessor(): void
     {
         $backup = new RecordingBackupService();
-        $backup->succeed = false;
+        $backup->failure = new \RuntimeException('Scheduled backup storage failure.');
         $this->replacePluginComponent('backup', $backup);
         $this->settings()->backupEnabled = true;
         $this->settings()->backupSchedule = 'daily';
@@ -843,13 +843,30 @@ final class ScheduledBackupQueueTest extends TestCase
         try {
             $this->recurringJob('failure')->execute(Craft::$app->getQueue());
             self::fail('Expected backup creation failure to propagate.');
-        } catch (\Exception $exception) {
-            self::assertSame('Failed to create scheduled backup', $exception->getMessage());
+        } catch (\RuntimeException $exception) {
+            self::assertSame('Scheduled backup storage failure.', $exception->getMessage());
         }
 
         self::assertSame(1, $backup->createCalls);
         self::assertSame(0, $backup->cleanupCalls);
-        self::assertSame(0, $this->countOwnerRows());
+        self::assertSame(1, $this->countOwnerRows());
+    }
+
+    public function testEmptyRecurringBackupQueuesOneSuccessorWithoutRetentionOrRetry(): void
+    {
+        $backup = new RecordingBackupService();
+        $backup->empty = true;
+        $this->replacePluginComponent('backup', $backup);
+        $this->settings()->backupEnabled = true;
+        $this->settings()->backupSchedule = 'daily';
+        $this->settings()->backupRetentionDays = 30;
+
+        $this->recurringJob('empty')->execute(Craft::$app->getQueue());
+
+        self::assertSame(1, $backup->createCalls);
+        self::assertSame(['scheduled'], $backup->reasons);
+        self::assertSame(0, $backup->cleanupCalls);
+        self::assertSame(1, $this->countOwnerRows());
     }
 
     public function testSettingsCancellationFailureStillPropagates(): void
@@ -1182,7 +1199,8 @@ final class RecordingBackupService extends BackupService
 {
     public int $createCalls = 0;
     public int $cleanupCalls = 0;
-    public bool $succeed = true;
+    public bool $empty = false;
+    public ?\Throwable $failure = null;
     public ?\Closure $onCreate = null;
     public ?\Closure $onCleanup = null;
     /** @var list<string> */
@@ -1194,7 +1212,11 @@ final class RecordingBackupService extends BackupService
         $this->reasons[] = $reason;
         ($this->onCreate ?? static fn() => null)();
 
-        return $this->succeed ? '/tmp/redirect-manager-owned-test-backup' : null;
+        if ($this->failure !== null) {
+            throw $this->failure;
+        }
+
+        return $this->empty ? null : '/tmp/redirect-manager-owned-test-backup';
     }
 
     public function cleanupOldBackups(): int

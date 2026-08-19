@@ -73,7 +73,7 @@ class BackupController extends Controller
             $backupService = RedirectManager::getInstance()->backup;
             $backupPath = $backupService->createBackup($reason);
 
-            if ($backupPath) {
+            if ($backupPath !== null) {
                 $this->stdout("✓ Backup created successfully\n", Console::FG_GREEN);
                 $this->stdout("  Path: " . basename($backupPath) . "\n");
 
@@ -90,8 +90,8 @@ class BackupController extends Controller
                 return ExitCode::OK;
             }
 
-            $this->stderr("✗ Failed to create backup\n", Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
+            $this->stdout("No redirects found to back up.\n");
+            return ExitCode::OK;
         } catch (\Throwable $e) {
             $this->stderr("✗ Error: " . $e->getMessage() . "\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
@@ -121,7 +121,12 @@ class BackupController extends Controller
 
         $this->stdout("Checking backup schedule...\n", Console::FG_YELLOW);
 
-        $lastBackupTime = $this->getLastScheduledBackupTime();
+        try {
+            $lastBackupTime = $this->getLastScheduledBackupTime();
+        } catch (\Throwable $e) {
+            $this->stderr("✗ Error: " . $e->getMessage() . "\n", Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
         $from = (new \DateTime('@' . $lastBackupTime))->setTimezone(DateFormatHelper::now()->getTimezone());
         $nextRun = ScheduleHelper::calculateNext($schedule, $from);
         $shouldBackup = $nextRun !== null && DateFormatHelper::now() >= $nextRun;
@@ -145,7 +150,12 @@ class BackupController extends Controller
     {
         $this->stdout("Available backups:\n\n", Console::FG_YELLOW);
 
-        $backups = RedirectManager::getInstance()->backup->getBackups();
+        try {
+            $backups = RedirectManager::getInstance()->backup->getBackups();
+        } catch (\Throwable $e) {
+            $this->stderr("✗ Error: " . $e->getMessage() . "\n", Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
 
         if (empty($backups)) {
             $this->stdout("No backups found\n");

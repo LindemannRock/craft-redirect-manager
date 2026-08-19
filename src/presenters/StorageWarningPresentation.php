@@ -37,13 +37,9 @@ final class StorageWarningPresentation
 
     public static function forSettings(Settings $settings): self
     {
-        if (!App::isEphemeral()) {
-            return new self(self::STATE_DURABLE_HOST);
-        }
-
         $volumeUid = trim((string)$settings->backupVolumeUid);
         if ($volumeUid === '') {
-            return new self(self::STATE_LOCAL);
+            return new self(App::isEphemeral() ? self::STATE_LOCAL : self::STATE_DURABLE_HOST);
         }
 
         try {
@@ -53,7 +49,7 @@ final class StorageWarningPresentation
         }
 
         if ($volumeErrors !== []) {
-            return new self(self::STATE_LOCAL);
+            return new self(self::STATE_UNAVAILABLE);
         }
 
         try {
@@ -63,7 +59,7 @@ final class StorageWarningPresentation
         }
 
         if (!$volume instanceof Volume) {
-            return new self(self::STATE_LOCAL);
+            return new self(self::STATE_UNAVAILABLE);
         }
 
         try {
@@ -74,6 +70,10 @@ final class StorageWarningPresentation
 
         if ($fs instanceof MissingComponentInterface) {
             return new self(self::STATE_UNAVAILABLE);
+        }
+
+        if (!App::isEphemeral()) {
+            return new self(self::STATE_DURABLE_HOST);
         }
 
         return new self(

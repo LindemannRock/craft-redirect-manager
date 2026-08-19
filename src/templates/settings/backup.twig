@@ -129,6 +129,15 @@
         } %}
     {% endif %}
 
+    {% if storageWarning.isUnavailable %}
+        {% include 'lindemannrock-base/_components/info-box' with {
+            message: 'The configured backup volume cannot currently be used. Backup operations are unavailable until the volume is restored or the effective setting is changed.'|t('redirect-manager'),
+            type: 'error',
+            variant: 'colored',
+            allowHtml: false,
+        } only %}
+    {% endif %}
+
     {% if storageWarning.shouldShowWarning %}
         {% include 'lindemannrock-base/_components/info-box' with {
             message: 'This host has an ephemeral filesystem. Files in the effective local storage path may be lost during deployments, restarts, or environment replacement. Select a Craft volume backed by durable remote storage. On Craft Cloud, use a Cloud filesystem.'|t('redirect-manager'),

@@ -102,7 +102,7 @@ class CreateBackupJob extends BaseJob implements RetryableJobInterface
         $backupService = RedirectManager::getInstance()->backup;
         $backupPath = $backupService->createBackup($this->reason);
 
-        if ($backupPath) {
+        if ($backupPath !== null) {
             $this->logInfo('Scheduled backup created successfully', [
                 'filename' => basename($backupPath),
             ]);
@@ -115,7 +115,7 @@ class CreateBackupJob extends BaseJob implements RetryableJobInterface
                 }
             }
         } else {
-            throw new \Exception(Craft::t('redirect-manager', 'Failed to create scheduled backup'));
+            $this->logInfo('Scheduled backup completed with no redirects to back up');
         }
     }
 

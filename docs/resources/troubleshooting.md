@@ -259,7 +259,15 @@ Craft Cloud's application filesystem is ephemeral: files under a custom/local ba
 
 The warning uses the effective `backupPath` and `backupVolumeUid` after `config/redirect-manager.php` overrides, so check the config file when the CP fields are disabled or differ from the warning. A valid, successfully resolved non-local filesystem suppresses this one warning, but that suppression does not certify third-party Craft Cloud compatibility.
 
-This notice is informational and does not change backup behavior or save different settings. A missing or validation-invalid volume follows the existing local fallback and therefore warns; a filesystem that cannot be resolved is a separate unavailable-volume failure, not proof of durable storage. Check Redirect Manager's logs for the underlying validation or availability message.
+This notice is informational and does not change backup behavior or save different settings. A missing, validation-invalid, or unresolved configured volume shows a separate unavailable-volume error instead of the Cloud warning. Redirect Manager blocks backup operations and does not write a local fallback under `backupPath` or `@storage`. Restore the configured volume, or change the effective `backupVolumeUid` in `config/redirect-manager.php` or the CP when the field is not config-controlled.
+
+## Backup or restore stops because storage is unavailable
+
+If Redirect Manager reports that the configured backup volume cannot be used, verify that the volume UID still exists, its filesystem component loads, and the filesystem permits the requested read or write. The configured UID remains unchanged so service resumes automatically when the same volume becomes healthy again.
+
+A restore can also stop after its selected backup passes validation when Redirect Manager cannot create the required safety backup of the current redirects. This happens before the current redirect table is replaced. Restore volume access or permissions, confirm a backup can be created, and retry the restore. When the current redirect library is already empty, no meaningless safety artifact is required.
+
+Creating a backup while the redirect library is empty is a successful no-op. The CP and console report that there was nothing to back up, scheduled recurrence continues, and no empty backup folder is created.
 
 ---
 

@@ -63,6 +63,7 @@ abstract class TestCase extends IntegrationTestCase
     private ?object $originalQueue = null;
     private ?object $originalCache = null;
     private ?string $originalRuntimePath = null;
+    private ?string $originalStorageAlias = null;
     private ?string $queueRawTable = null;
     private ?string $queueShadowTable = null;
     /** @var list<int> */
@@ -193,7 +194,7 @@ abstract class TestCase extends IntegrationTestCase
 
     private function snapshotAppComponents(): void
     {
-        foreach (['request', 'response', 'sites', 'user', 'config', 'mutex', 'elements'] as $id) {
+        foreach (['request', 'response', 'sites', 'user', 'config', 'mutex', 'elements', 'volumes'] as $id) {
             if (Craft::$app->has($id)) {
                 $component = Craft::$app->get($id);
                 if (is_object($component)) {
@@ -206,9 +207,12 @@ abstract class TestCase extends IntegrationTestCase
     private function isolateRuntimeAndCache(): void
     {
         $this->originalRuntimePath = Craft::$app->getRuntimePath();
+        $this->originalStorageAlias = Craft::getAlias('@storage');
         $this->originalCache = Craft::$app->getCache();
         $runtimePath = $this->createTrackedTempDirectory('redirect-manager-runtime-');
+        $storagePath = $this->createTrackedTempDirectory('redirect-manager-storage-');
         Craft::$app->setRuntimePath($runtimePath);
+        Craft::setAlias('@storage', $storagePath);
         Craft::$app->set('cache', new FileCache([
             'cachePath' => $runtimePath . '/cache',
             'keyPrefix' => 'redirect-manager-test-' . bin2hex(random_bytes(8)),
@@ -320,6 +324,10 @@ abstract class TestCase extends IntegrationTestCase
             if ($this->originalRuntimePath !== null) {
                 Craft::$app->setRuntimePath($this->originalRuntimePath);
                 $this->originalRuntimePath = null;
+            }
+            if ($this->originalStorageAlias !== null) {
+                Craft::setAlias('@storage', $this->originalStorageAlias);
+                $this->originalStorageAlias = null;
             }
         });
 
