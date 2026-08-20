@@ -610,6 +610,7 @@ class BackupService extends Component
         $finalPath = self::VOLUME_BACKUP_ROOT . '/' . $backupName;
         $parentPath = dirname($finalPath);
         $stagingPath = $parentPath . '/.' . basename($finalPath) . '.staging-' . bin2hex(random_bytes(6));
+        $finalOwnershipEstablished = false;
         $promotionSucceeded = false;
 
         try {
@@ -628,6 +629,10 @@ class BackupService extends Component
                 throw new \RuntimeException('Staged backup validation failed.');
             }
 
+            if ($volume->directoryExists($finalPath)) {
+                throw new \RuntimeException('Unique backup path already exists.');
+            }
+            $finalOwnershipEstablished = true;
             $volume->renameDirectory($stagingPath, basename($finalPath));
             $promotionSucceeded = true;
             if (!$volume->directoryExists($finalPath) || $volume->directoryExists($stagingPath)) {
@@ -637,8 +642,8 @@ class BackupService extends Component
             return $backupName;
         } catch (Throwable $e) {
             $ownsFinal = $promotionSucceeded
-                || (!$this->volumeDirectoryExists($stagingPath, $volume)
-                    && $this->volumeBackupMatchesSnapshot($finalPath, $metadataContent, $redirectsContent, $volume));
+                || ($finalOwnershipEstablished
+                    && $this->volumeBackupContainsSnapshotArtifact($finalPath, $metadataContent, $redirectsContent, $volume));
             $this->removeOwnedVolumeDirectory($stagingPath, $volume);
             if ($ownsFinal) {
                 $this->removeOwnedVolumeDirectory($finalPath, $volume);
@@ -784,19 +789,6 @@ class BackupService extends Component
         }
     }
 
-    private function volumeDirectoryExists(string $path, BaseFsInterface $storage): bool
-    {
-        try {
-            return $storage->directoryExists($path);
-        } catch (Throwable $e) {
-            $this->logError('Failed to inspect owned volume backup directory', [
-                'path' => $path,
-                'error' => $e->getMessage(),
-            ]);
-            return false;
-        }
-    }
-
     private function removeOwnedVolumeDirectory(string $path, BaseFsInterface $storage): void
     {
         try {
@@ -815,7 +807,7 @@ class BackupService extends Component
         }
     }
 
-    private function volumeBackupMatchesSnapshot(
+    private function volumeBackupContainsSnapshotArtifact(
         string $path,
         string $metadataContent,
         string $redirectsContent,
@@ -823,12 +815,12 @@ class BackupService extends Component
     ): bool {
         try {
             return $storage->directoryExists($path)
-                && $storage->fileExists($path . '/metadata.json')
-                && $storage->fileExists($path . '/redirects.json')
-                && $storage->read($path . '/metadata.json') === $metadataContent
-                && $storage->read($path . '/redirects.json') === $redirectsContent;
+                && (($storage->fileExists($path . '/metadata.json')
+                        && $storage->read($path . '/metadata.json') === $metadataContent)
+                    || ($storage->fileExists($path . '/redirects.json')
+                        && $storage->read($path . '/redirects.json') === $redirectsContent));
         } catch (Throwable $e) {
-            $this->logError('Failed to verify owned promoted backup', [
+            $this->logError('Failed to verify owned promoted backup artifact', [
                 'path' => $path,
                 'error' => $e->getMessage(),
             ]);

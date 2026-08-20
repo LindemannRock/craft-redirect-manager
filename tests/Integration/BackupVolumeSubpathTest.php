@@ -23,6 +23,8 @@ use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\services\BackupService;
 use lindemannrock\redirectmanager\tests\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+use RuntimeException;
+use yii\base\UserException;
 
 /**
  * Pins canonical Craft volume subpaths and bounded legacy compatibility.
@@ -102,6 +104,75 @@ final class BackupVolumeSubpathTest extends TestCase
         self::assertNotNull($this->backup()->readVolumeBackupFile($name, 'redirects.json'));
         self::assertTrue($this->backup()->deleteVolumeBackup($name));
         self::assertDirectoryDoesNotExist($remoteRoot . '/' . self::CANONICAL_ROOT . '/' . $name);
+    }
+
+    public function testPartialRemotePromotionFailureRemovesOnlyRequestOwnedCanonicalArtifacts(): void
+    {
+        $remoteRoot = $this->createTrackedTempDirectory('redirect-partial-remote-volume-');
+        $filesystem = new PartialPromotionFilesystem([
+            'name' => 'Partial promotion filesystem',
+            'handle' => 'partialPromotionFilesystem',
+            'path' => $remoteRoot,
+        ]);
+        $filesystem->canonicalRoot = self::CANONICAL_ROOT;
+        $filesystem->failAfterMovingOneFile = true;
+        $unrelatedPath = $remoteRoot . '/' . self::CANONICAL_ROOT . '/manual/unrelated-sibling/preserve.bin';
+        $historicalPath = $remoteRoot . '/' . self::LEGACY_ROOT . '/manual/historical-sibling/preserve.bin';
+        \craft\helpers\FileHelper::createDirectory(dirname($unrelatedPath));
+        \craft\helpers\FileHelper::createDirectory(dirname($historicalPath));
+        file_put_contents($unrelatedPath, "unrelated\0canonical\n");
+        file_put_contents($historicalPath, "historical\0prefix\n");
+        $unrelatedHash = hash_file('sha256', $unrelatedPath);
+        $historicalHash = hash_file('sha256', $historicalPath);
+        $this->installVolume($this->volume($filesystem, self::SUBPATH));
+        $this->seedRedirect();
+
+        try {
+            $this->backup()->createBackup('manual');
+            self::fail('Expected a partial remote promotion failure.');
+        } catch (UserException $exception) {
+            self::assertStringContainsString('configured backup volume', $exception->getMessage());
+        }
+
+        self::assertSame(1, $filesystem->movedFiles);
+        self::assertNotNull($filesystem->stagingPath);
+        self::assertNotNull($filesystem->finalPath);
+        self::assertDirectoryDoesNotExist($remoteRoot . '/' . $filesystem->stagingPath);
+        self::assertDirectoryDoesNotExist($remoteRoot . '/' . $filesystem->finalPath);
+        self::assertSame($unrelatedHash, hash_file('sha256', $unrelatedPath));
+        self::assertSame($historicalHash, hash_file('sha256', $historicalPath));
+        self::assertSame(1, $filesystem->renameCalls);
+        $this->assertCanonicalOperationsUseOneWrapperSubpath($filesystem);
+    }
+
+    public function testLatePromotionCollisionPreservesTheCompleteForeignBackup(): void
+    {
+        $remoteRoot = $this->createTrackedTempDirectory('redirect-colliding-remote-volume-');
+        $filesystem = new PartialPromotionFilesystem([
+            'name' => 'Colliding promotion filesystem',
+            'handle' => 'collidingPromotionFilesystem',
+            'path' => $remoteRoot,
+        ]);
+        $filesystem->canonicalRoot = self::CANONICAL_ROOT;
+        $filesystem->createCompleteCollisionOnFinalRecheck = true;
+        $this->installVolume($this->volume($filesystem, self::SUBPATH));
+        $this->seedRedirect();
+
+        try {
+            $this->backup()->createBackup('manual');
+            self::fail('Expected a late promotion collision.');
+        } catch (UserException $exception) {
+            self::assertStringContainsString('configured backup volume', $exception->getMessage());
+        }
+
+        self::assertNotNull($filesystem->stagingPath);
+        self::assertNotNull($filesystem->finalPath);
+        self::assertDirectoryDoesNotExist($remoteRoot . '/' . $filesystem->stagingPath);
+        self::assertDirectoryExists($remoteRoot . '/' . $filesystem->finalPath);
+        self::assertSame($filesystem->collisionMetadata, file_get_contents($remoteRoot . '/' . $filesystem->finalPath . '/metadata.json'));
+        self::assertSame($filesystem->collisionRedirects, file_get_contents($remoteRoot . '/' . $filesystem->finalPath . '/redirects.json'));
+        self::assertSame(0, $filesystem->renameCalls);
+        $this->assertCanonicalOperationsUseOneWrapperSubpath($filesystem);
     }
 
     public function testExactLegacyPrefixSupportsTimestampNamesAndEveryReadAction(): void
@@ -305,5 +376,124 @@ final class BackupVolumeSubpathTest extends TestCase
         );
 
         return $filesystem;
+    }
+
+    private function assertCanonicalOperationsUseOneWrapperSubpath(PartialPromotionFilesystem $filesystem): void
+    {
+        self::assertNotSame([], $filesystem->operationPaths);
+        foreach ($filesystem->operationPaths as $path) {
+            self::assertStringStartsWith(self::SUBPATH . '/redirect-manager', $path);
+            self::assertSame(1, substr_count($path, self::SUBPATH));
+            self::assertFalse(str_starts_with($path, self::LEGACY_ROOT));
+        }
+    }
+}
+
+/** Remote-like filesystem with non-atomic directory-promotion failure seams. */
+final class PartialPromotionFilesystem extends Local
+{
+    public string $canonicalRoot = '';
+    public bool $failAfterMovingOneFile = false;
+    public bool $createCompleteCollisionOnFinalRecheck = false;
+    public int $movedFiles = 0;
+    public int $renameCalls = 0;
+    public ?string $stagingPath = null;
+    public ?string $finalPath = null;
+    public string $collisionMetadata = '';
+    public string $collisionRedirects = '';
+    /** @var list<string> */
+    public array $operationPaths = [];
+    private int $finalChecks = 0;
+
+    public function directoryExists(string $path): bool
+    {
+        $this->record($path);
+        if ($this->isFinalBackupPath($path)) {
+            $this->finalPath = $path;
+            $this->finalChecks++;
+            if ($this->createCompleteCollisionOnFinalRecheck && $this->finalChecks === 2) {
+                $this->writeCompleteCollision($path);
+            }
+        }
+
+        return parent::directoryExists($path);
+    }
+
+    public function createDirectory(string $path, array $config = []): void
+    {
+        $this->record($path);
+        if (str_contains($path, '.staging-')) {
+            $this->stagingPath = $path;
+        }
+        parent::createDirectory($path, $config);
+    }
+
+    public function deleteDirectory(string $path): void
+    {
+        $this->record($path);
+        parent::deleteDirectory($path);
+    }
+
+    public function renameDirectory(string $path, string $newName): void
+    {
+        $this->record($path);
+        $this->renameCalls++;
+        $this->stagingPath = $path;
+        $this->finalPath = dirname($path) . '/' . $newName;
+        if (!$this->failAfterMovingOneFile) {
+            parent::renameDirectory($path, $newName);
+            return;
+        }
+
+        parent::createDirectory($this->finalPath);
+        $metadata = parent::read($path . '/metadata.json');
+        parent::write($this->finalPath . '/metadata.json', $metadata);
+        parent::deleteFile($path . '/metadata.json');
+        $this->movedFiles++;
+        throw new RuntimeException('Injected remote failure after one promoted file.');
+    }
+
+    public function write(string $path, string $contents, array $config = []): void
+    {
+        $this->record($path);
+        parent::write($path, $contents, $config);
+    }
+
+    public function read(string $path): string
+    {
+        $this->record($path);
+        return parent::read($path);
+    }
+
+    public function fileExists(string $path): bool
+    {
+        $this->record($path);
+        return parent::fileExists($path);
+    }
+
+    private function isFinalBackupPath(string $path): bool
+    {
+        return preg_match('#^' . preg_quote($this->canonicalRoot, '#') . '/manual/\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-[a-f0-9]{12}$#', $path) === 1;
+    }
+
+    private function writeCompleteCollision(string $path): void
+    {
+        $this->collisionRedirects = Json::encode([['sourceUrl' => '/foreign-complete-backup']], JSON_PRETTY_PRINT);
+        $this->collisionMetadata = Json::encode([
+            'date' => basename($path),
+            'timestamp' => 1_755_604_800,
+            'reason' => 'manual',
+            'redirectCount' => 1,
+            'checksum' => hash('sha256', $this->collisionRedirects),
+            'checksumAlgorithm' => 'sha256',
+        ], JSON_PRETTY_PRINT);
+        parent::createDirectory($path);
+        parent::write($path . '/metadata.json', $this->collisionMetadata);
+        parent::write($path . '/redirects.json', $this->collisionRedirects);
+    }
+
+    private function record(string $path): void
+    {
+        $this->operationPaths[] = $path;
     }
 }
