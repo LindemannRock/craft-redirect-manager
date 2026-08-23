@@ -2,6 +2,8 @@
 
 Use **Redirect Manager → Settings → Test** when you need to confirm what Redirect Manager would do before you visit a URL, change rule priority, or hand the JSON API to another system. The page has two tabs: **Test URL Redirects** for redirect matching and **Test JSON API Endpoint** for the read-only redirects API.
 
+The rule-bearing Test page requires both `redirectManager:manageSettings` and `redirectManager:manageRedirects`. This keeps settings access separate from permission to view redirect rules. The standalone Postman download remains available with `redirectManager:manageSettings`.
+
 ![The Test URL Redirects tab showing a test URL and the matched redirect result](../images/testing-tools-redirect-test.webp)
 
 ## What you'll use it for
@@ -27,6 +29,8 @@ When a redirect matches and resolves safely, the result shows **Match Found!**, 
 
 When no redirect matches, the result shows **No Match Found** and offers **Create Redirect for This URL**. Full URLs prefill `redirectSrcMatch=fullurl`; paths create a normal path-only redirect draft.
 
+Results include global redirects and redirects assigned to sites the current user can edit. Rules for other sites are not included, even when their source URL also matches.
+
 ## Test the JSON API endpoint
 
 ![The Test JSON API Endpoint tab showing site selection and response output](../images/testing-tools-api-test.webp)
@@ -39,13 +43,13 @@ The tab reflects the real API requirements:
 - If `REDIRECT_MANAGER_API_TOKEN` is missing, the test action returns the same environment-token warning used elsewhere in settings.
 - When the endpoint is enabled and token-configured, the page shows **REDIRECT_MANAGER_API_TOKEN is configured. Endpoint tests will use it automatically.**
 
-Choose **All Sites** or a specific **Site**, then click **Run API Test**. The result pane shows **Status**, **Time**, **Equivalent curl**, **Response headers**, and **Response body**. The generated curl uses `Accept: application/json` and `X-Redirect-Manager-Key: $REDIRECT_MANAGER_API_TOKEN`.
+Choose a specific editable **Site**, then click **Run API Test**. The tester does not offer an all-sites request or accept a site the current user cannot edit. The result pane shows **Status**, **Time**, **Equivalent curl**, **Response headers**, and **Response body**. The generated curl uses `Accept: application/json` and the placeholder `X-Redirect-Manager-Key: $REDIRECT_MANAGER_API_TOKEN`; the configured token stays server-side and is never returned to the browser.
 
 The CP tester is read-only. It lists enabled redirects through the JSON API and does not create, update, delete, resolve, increment hit counts, or write analytics.
 
 ## Download the Postman collection
 
-The API tab includes a **Developer Resources** box with **Download Postman collection**. The download is `redirect-manager-postman.zip` and includes:
+The API tab includes a **Developer Resources** box with **Download Postman collection**. This placeholder-only download follows the settings permission and does not require redirect-view access. The download is `redirect-manager-postman.zip` and includes:
 
 - `Redirect-Manager.postman_collection.json`
 - `Redirect-Manager.postman_environment.json`

@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
-{% set apiEndpointReady = settings.apiEndpointEnabled and settings.apiEndpointToken %}
-{% set siteOptions = [{label: 'All Sites'|t('redirect-manager'), value: ''}] %}
-{% for site in craft.app.sites.getAllSites() %}
+{% set apiEndpointReady = settings.apiEndpointEnabled and settings.apiEndpointToken and apiTestSites|length %}
+{% set siteOptions = [] %}
+{% for site in apiTestSites %}
     {% set siteOptions = siteOptions|merge([{label: site.name, value: site.handle}]) %}
 {% endfor %}
 

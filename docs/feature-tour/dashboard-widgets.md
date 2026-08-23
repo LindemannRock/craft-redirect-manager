@@ -15,6 +15,8 @@ Both widgets require the `redirectManager:viewAnalytics` permission. Users witho
 
 In multi-site projects, both widgets can be scoped to **All Sites** or a specific editable site. **All Sites** follows the Analytics screen behavior and includes every site the current user can edit.
 
+Craft rechecks that site access whenever a widget renders. If a saved site is no longer editable, the widget shows a permission/no-data state and does not query that site. Restoring access makes the saved selection work again; **All Sites** always follows the user's current editable-site list, including the no-editable-sites case.
+
 ## Unhandled 404s Widget
 
 Lists the most common unhandled 404s — URLs that hit a 404 but have no matching redirect rule. This gives you a quick, actionable view of broken links without navigating to the full Analytics section.

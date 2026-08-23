@@ -11,6 +11,7 @@ namespace lindemannrock\redirectmanager\controllers;
 use Craft;
 use craft\helpers\Json;
 use craft\web\Controller;
+use GuzzleHttp\ClientInterface;
 use lindemannrock\base\cache\DisposableCacheStoragePresenter;
 use lindemannrock\base\cache\DisposableCacheStorageResolver;
 use lindemannrock\base\helpers\ExportHelper;
@@ -21,6 +22,7 @@ use lindemannrock\logginglibrary\traits\LoggingTrait;
 use lindemannrock\redirectmanager\models\Settings;
 use lindemannrock\redirectmanager\presenters\StorageWarningPresentation;
 use lindemannrock\redirectmanager\RedirectManager;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 /**
@@ -478,12 +480,13 @@ class SettingsController extends Controller
      */
     public function actionTest(): Response
     {
-        $this->requirePermission('redirectManager:manageSettings');
+        $this->requireTestingToolsPermission();
 
         $settings = RedirectManager::$plugin->getSettings();
 
         return $this->renderTemplate('redirect-manager/settings/test/index', [
             'settings' => $settings,
+            'apiTestSites' => Craft::$app->getSites()->getEditableSites(),
         ]);
     }
 
@@ -495,7 +498,7 @@ class SettingsController extends Controller
     public function actionTestUrl(): Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:manageSettings');
+        $this->requireTestingToolsPermission();
         $this->requireAcceptsJson();
 
         $testUrl = Craft::$app->getRequest()->getBodyParam('testUrl');
@@ -562,7 +565,7 @@ class SettingsController extends Controller
     public function actionRunApiTest(): Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('redirectManager:manageSettings');
+        $this->requireTestingToolsPermission();
         $this->requireAcceptsJson();
 
         $settings = RedirectManager::$plugin->getSettings();
@@ -581,11 +584,13 @@ class SettingsController extends Controller
         }
 
         $site = trim((string) $request->getBodyParam('testSite', ''));
-
-        $query = [];
-        if ($site !== '') {
-            $query['site'] = $site;
+        $editableSites = Craft::$app->getSites()->getEditableSites();
+        $editableSiteHandles = array_map(static fn($editableSite): string => $editableSite->handle, $editableSites);
+        if ($site === '' || !in_array($site, $editableSiteHandles, true)) {
+            throw new ForbiddenHttpException();
         }
+
+        $query = ['site' => $site];
 
         $path = '/actions/redirect-manager/api/get-redirects';
         $queryString = http_build_query($query);
@@ -598,7 +603,7 @@ class SettingsController extends Controller
             $headers['X-Redirect-Manager-Key'] = $token;
         }
 
-        $client = Craft::createGuzzleClient(['http_errors' => false, 'timeout' => 15]);
+        $client = $this->createApiTestClient();
         $start = microtime(true);
 
         try {
@@ -703,6 +708,23 @@ class SettingsController extends Controller
         $parts[] = escapeshellarg($url);
 
         return implode(' ', $parts);
+    }
+
+    /**
+     * Create the server-side client used by the API diagnostic.
+     */
+    protected function createApiTestClient(): ClientInterface
+    {
+        return Craft::createGuzzleClient(['http_errors' => false, 'timeout' => 15]);
+    }
+
+    /**
+     * Require both settings and redirect-view authority for rule-bearing tests.
+     */
+    private function requireTestingToolsPermission(): void
+    {
+        $this->requirePermission('redirectManager:manageSettings');
+        $this->requirePermission('redirectManager:manageRedirects');
     }
 
     /**

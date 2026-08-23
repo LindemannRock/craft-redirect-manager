@@ -106,7 +106,8 @@ class Unhandled404sWidget extends Widget
      */
     public function getBodyHtml(): ?string
     {
-        if (!Craft::$app->getUser()->checkPermission('redirectManager:viewAnalytics')) {
+        $effectiveSiteId = $this->effectiveSiteId();
+        if (!Craft::$app->getUser()->checkPermission('redirectManager:viewAnalytics') || $effectiveSiteId === null) {
             return '<p class="light">' . Craft::t('redirect-manager', 'You don\'t have permission to view analytics.') . '</p>';
         }
 
@@ -114,7 +115,7 @@ class Unhandled404sWidget extends Widget
             return '<p class="light">' . Craft::t('redirect-manager', 'Analytics are disabled in plugin settings.') . '</p>';
         }
 
-        $unhandled404s = RedirectManager::$plugin->analytics->getUnhandled404s($this->effectiveSiteId(), $this->limit);
+        $unhandled404s = RedirectManager::$plugin->analytics->getUnhandled404s($effectiveSiteId, $this->limit);
 
         return Craft::$app->getView()->renderTemplate('redirect-manager/widgets/unhandled-404s/body', [
             'widget' => $this,

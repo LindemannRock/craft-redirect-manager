@@ -52,17 +52,19 @@ class RedirectManagerUtility extends Utility
         $settings = RedirectManager::$plugin->getSettings();
         $pluginName = $settings->getFullName();
         $user = Craft::$app->getUser();
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
         $totalRedirects = 0;
         $activeRedirects = 0;
         if ($user->getIdentity() && $user->checkPermission('redirectManager:manageRedirects')) {
             $totalRedirects = (new \craft\db\Query())
                 ->from('{{%redirectmanager_redirects}}')
+                ->where(['or', ['siteId' => null], ['siteId' => $editableSiteIds]])
                 ->count();
 
             $activeRedirects = (new \craft\db\Query())
                 ->from('{{%redirectmanager_redirects}}')
-                ->where(['enabled' => true])
+                ->where(['and', ['enabled' => true], ['or', ['siteId' => null], ['siteId' => $editableSiteIds]]])
                 ->count();
         }
 
@@ -70,7 +72,7 @@ class RedirectManagerUtility extends Utility
         $handled = 0;
         $unhandled = 0;
         if ($settings->enableAnalytics && $user->getIdentity() && $user->checkPermission('redirectManager:viewAnalytics')) {
-            $chartData = RedirectManager::$plugin->analytics->getChartData(null, 7);
+            $chartData = RedirectManager::$plugin->analytics->getChartData($editableSiteIds, 7);
             $total404s = array_sum(array_column($chartData, 'handled')) + array_sum(array_column($chartData, 'unhandled'));
             $handled = array_sum(array_column($chartData, 'handled'));
             $unhandled = array_sum(array_column($chartData, 'unhandled'));
@@ -80,6 +82,7 @@ class RedirectManagerUtility extends Utility
         if ($settings->enableAnalytics && $user->getIdentity() && $user->checkPermission('redirectManager:clearAnalytics')) {
             $analyticsCount = (new \craft\db\Query())
                 ->from('{{%redirectmanager_analytics}}')
+                ->where(['siteId' => $editableSiteIds])
                 ->count();
         }
 

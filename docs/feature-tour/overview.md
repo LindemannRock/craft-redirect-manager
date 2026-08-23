@@ -35,7 +35,7 @@ At its core, Redirect Manager intercepts every 404 response on your site, checks
 
 - **[Dashboard Widgets](dashboard-widgets.md) @since(5.33.0)** — Two Craft dashboard widgets: an unhandled 404 counter and an analytics summary. Add them from **Dashboard > New Widget**.
 
-- **Craft Utility @since(5.1.0)** — A utility page under **Utilities → Redirect Manager** that shows redirect counts, recent 404 activity (last 7 days), and cache file counts at a glance.
+- **Craft Utility @since(5.1.0)** — A utility page under **Utilities → Redirect Manager** that shows redirect counts, recent 404 activity (last 7 days), and cache file counts at a glance. Redirect totals include global rules plus rules for the user's editable sites; analytics activity and the displayed clear count include editable sites only. Cache-file counts follow the separate cache-clear permission and are not site-specific.
 
 ## Privacy by Default
 

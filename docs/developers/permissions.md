@@ -60,6 +60,8 @@ Redirect Manager registers granular permissions that can be assigned to user gro
 |------------|-------------|
 | `redirectManager:manageSettings` | Access and modify plugin settings |
 
+The rule-bearing **Settings → Test** page and its direct URL/API test actions require both `redirectManager:manageSettings` and `redirectManager:manageRedirects`. Downloading the placeholder Postman collection requires only `redirectManager:manageSettings`.
+
 ## Checking Permissions
 
 In Twig:
@@ -93,3 +95,5 @@ Craft's nested permissions are a UI convenience — the parent permission does n
 - **Write permissions** (e.g., `createRedirects`, `editRedirects`, `deleteRedirects`) are nested under manage and control specific write operations
 
 To give a user read-only access, grant only `manageRedirects`. For full access, also grant the specific write permissions needed.
+
+The same rule applies to backups: `manageBackups` grants section/list access, while create, download, restore, and delete each require their exact child permission. A parent-only user cannot perform those actions through direct requests.

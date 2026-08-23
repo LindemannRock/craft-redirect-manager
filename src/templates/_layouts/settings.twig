@@ -57,11 +57,13 @@
                     {{ 'Advanced'|t('redirect-manager') }}
                 </a>
             </li>
-            <li>
-                <a href="{{ url('redirect-manager/settings/test') }}" {% if selectedSettingsItem == 'test' %}class="sel"{% endif %} data-nav-item="test">
-                    {{ 'Test'|t('redirect-manager') }}
-                </a>
-            </li>
+            {% if currentUser.can('redirectManager:manageRedirects') %}
+                <li>
+                    <a href="{{ url('redirect-manager/settings/test') }}" {% if selectedSettingsItem == 'test' %}class="sel"{% endif %} data-nav-item="test">
+                        {{ 'Test'|t('redirect-manager') }}
+                    </a>
+                </li>
+            {% endif %}
         </ul>
     </nav>
 {% endblock %}

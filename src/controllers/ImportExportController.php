@@ -1498,15 +1498,14 @@ class ImportExportController extends Controller
     }
 
     /**
-     * Require a specific backup permission (or manageBackups)
+     * Require a specific backup operation permission.
      *
      * @param string $permission
      * @return void
      */
     private function requireBackupPermission(string $permission): void
     {
-        $user = Craft::$app->getUser();
-        if (!$user->checkPermission('redirectManager:manageBackups') && !$user->checkPermission($permission)) {
+        if (!Craft::$app->getUser()->checkPermission($permission)) {
             throw new ForbiddenHttpException(Craft::t('redirect-manager', 'User does not have permission to manage backups.'));
         }
     }

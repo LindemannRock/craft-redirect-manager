@@ -106,7 +106,8 @@ class AnalyticsSummaryWidget extends Widget
      */
     public function getBodyHtml(): ?string
     {
-        if (!Craft::$app->getUser()->checkPermission('redirectManager:viewAnalytics')) {
+        $effectiveSiteId = $this->effectiveSiteId();
+        if (!Craft::$app->getUser()->checkPermission('redirectManager:viewAnalytics') || $effectiveSiteId === null) {
             return '<p class="light">' . Craft::t('redirect-manager', 'You don\'t have permission to view analytics.') . '</p>';
         }
 
@@ -114,7 +115,7 @@ class AnalyticsSummaryWidget extends Widget
             return '<p class="light">' . Craft::t('redirect-manager', 'Analytics are disabled in plugin settings.') . '</p>';
         }
 
-        $chartData = RedirectManager::$plugin->analytics->getChartData($this->effectiveSiteId(), $this->days);
+        $chartData = RedirectManager::$plugin->analytics->getChartData($effectiveSiteId, $this->days);
 
         // Calculate totals
         $totalHandled = array_sum(array_column($chartData, 'handled'));

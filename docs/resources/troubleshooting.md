@@ -4,6 +4,18 @@ Start here when redirects, analytics, scheduled jobs, or settings behave differe
 
 For redirect matching and JSON API checks, start with [Testing tools](testing-tools.md). **Redirect Manager → Settings → Test** shows which redirect wins, which lower-priority rules also match, whether the JSON API is ready, and the exact API response body and headers.
 
+## A permitted page or record is missing
+
+Redirect Manager applies Craft's current editable-site permissions to rule-bearing tools, widgets, utilities, and mutations. If a page, site, or record is unavailable:
+
+1. For **Settings → Test**, grant both `redirectManager:manageSettings` and `redirectManager:manageRedirects`. Direct URL and API tester requests enforce the same pair. The placeholder Postman download needs only settings access.
+2. In the API tester, choose one of the sites the account can currently edit. All-sites and non-editable-site diagnostic requests are intentionally unavailable.
+3. If a saved dashboard widget site has since been revoked, restore that site permission or edit the widget to select an accessible site or **All Sites**. The widget does not query the stale site while access is missing.
+4. Utility redirect totals include global rules plus editable sites. Utility analytics totals and the displayed clear count include editable sites only.
+5. For backups, `redirectManager:manageBackups` opens the section, but create, download, restore, and delete each require their corresponding child permission.
+
+These checks are repeated on direct actions, so changing a URL or submitting a different site does not bypass the visible Control Panel scope.
+
 ## Redirects not working
 
 A redirect exists in the CP but visiting the URL does not redirect.

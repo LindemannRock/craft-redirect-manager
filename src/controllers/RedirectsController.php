@@ -240,6 +240,14 @@ class RedirectsController extends Controller
 
         $this->requirePermission($redirectId ? 'redirectManager:editRedirects' : 'redirectManager:createRedirects');
 
+        $existingRedirect = null;
+        if ($redirectId) {
+            $existingRedirect = RedirectRecord::findOne((int) $redirectId);
+            if ($existingRedirect !== null) {
+                $this->_requireEditableRedirect($existingRedirect);
+            }
+        }
+
         $submittedSiteId = $request->getBodyParam('siteId') ? (int)$request->getBodyParam('siteId') : null;
 
         // Validate that user has access to the submitted site
@@ -266,7 +274,8 @@ class RedirectsController extends Controller
 
         if ($redirectId) {
             // Update existing redirect
-            $success = RedirectManager::$plugin->redirects->updateRedirect($redirectId, $attributes);
+            $success = $existingRedirect !== null
+                && RedirectManager::$plugin->redirects->updateRedirect((int) $redirectId, $attributes, $existingRedirect);
             $newRedirectId = $redirectId;
         } else {
             // Create new redirect - returns ID on success, false on failure
