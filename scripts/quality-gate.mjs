@@ -69,7 +69,11 @@ const constituents = [
     {
         id: 'orchestration-regressions',
         family: 'aggregate-orchestration',
-        standalone: ['node', ['--test', 'tests/js/quality-gate-orchestration.test.mjs']],
+        standalone: ['node', [
+            '--test',
+            'tests/js/quality-gate-orchestration.test.mjs',
+            'tests/js/compatibility-runner-cleanup.test.mjs',
+        ]],
     },
 ];
 

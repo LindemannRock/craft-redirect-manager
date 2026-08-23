@@ -105,15 +105,48 @@ export function validateArchiveMembers(members) {
     return files;
 }
 
-export function checkPackageExport(sourceRoot = packageRoot, {onTemporaryPath} = {}) {
+export function checkPackageExport(sourceRoot = packageRoot, {onTemporaryPath, inspectArchive} = {}) {
     const archiveRoot = ownedTemporaryDirectory('redirect-manager-package-export-', onTemporaryPath);
     const archivePath = path.join(archiveRoot, 'package.tar');
     try {
-        const archive = spawnSync('git', ['archive', '--worktree-attributes', `--output=${archivePath}`, 'HEAD'], {cwd: sourceRoot, encoding: 'utf8'});
+        const indexPath = path.join(archiveRoot, 'candidate.index');
+        const objectRoot = path.join(archiveRoot, 'objects');
+        mkdirSync(objectRoot);
+        const repositoryObjects = spawnSync('git', ['rev-parse', '--git-path', 'objects'], {cwd: sourceRoot, encoding: 'utf8'});
+        if (repositoryObjects.error || repositoryObjects.status !== 0) {
+            throw new Error(`Git object directory resolution failed.\n${repositoryObjects.stderr ?? ''}`);
+        }
+        const alternateObjects = path.resolve(sourceRoot, repositoryObjects.stdout.trim());
+        const gitEnvironment = {
+            ...process.env,
+            GIT_INDEX_FILE: indexPath,
+            GIT_OBJECT_DIRECTORY: objectRoot,
+            GIT_ALTERNATE_OBJECT_DIRECTORIES: [alternateObjects, process.env.GIT_ALTERNATE_OBJECT_DIRECTORIES]
+                .filter(Boolean)
+                .join(path.delimiter),
+        };
+        for (const [label, commandArguments] of [
+            ['candidate index initialization', ['read-tree', 'HEAD']],
+            ['candidate worktree capture', ['add', '-A', '--', '.']],
+        ]) {
+            const result = spawnSync('git', commandArguments, {cwd: sourceRoot, env: gitEnvironment, encoding: 'utf8'});
+            if (result.error || result.status !== 0) {
+                throw new Error(`Git ${label} failed.\n${result.stderr ?? ''}`);
+            }
+        }
+        const tree = spawnSync('git', ['write-tree'], {cwd: sourceRoot, env: gitEnvironment, encoding: 'utf8'});
+        if (tree.error || tree.status !== 0) throw new Error(`Git candidate tree creation failed.\n${tree.stderr ?? ''}`);
+        const archive = spawnSync('git', ['archive', '--worktree-attributes', `--output=${archivePath}`, tree.stdout.trim()], {
+            cwd: sourceRoot,
+            env: gitEnvironment,
+            encoding: 'utf8',
+        });
         if (archive.error || archive.status !== 0) throw new Error(`Git archive failed.\n${archive.stderr ?? ''}`);
         const listing = spawnSync('tar', ['-tf', archivePath], {encoding: 'utf8'});
         if (listing.error || listing.status !== 0) throw new Error(`Archive listing failed.\n${listing.stderr ?? ''}`);
-        return validateArchiveMembers(listing.stdout.trim().split('\n').filter(Boolean));
+        const members = validateArchiveMembers(listing.stdout.trim().split('\n').filter(Boolean));
+        inspectArchive?.(archivePath, members);
+        return members;
     } finally {
         removeTemporaryPath(archiveRoot);
     }

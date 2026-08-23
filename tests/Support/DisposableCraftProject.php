@@ -325,14 +325,39 @@ PHP);
         $this->runCommand([PHP_BINARY, $this->packageRoot . '/tests/Fixtures/Project/seed-sites.php'], $this->packageRoot);
     }
 
-    /** @param list<string> $arguments @return array{command: list<string>, exitCode: int, stdout: string, stderr: string} */
+    /** @param list<string> $arguments @return array<string, mixed> */
     private function runPhpunit(array $arguments): array
     {
         $this->injectFailure('phpunit');
-        return $this->runCommand([
+        $reportPath = $this->projectRoot . '/phpunit-result.xml';
+        $result = $this->runCommand([
             PHP_BINARY, $this->vendorRoot . '/bin/phpunit', '--configuration', $this->packageRoot . '/phpunit.xml.dist',
-            '--colors=never', ...$arguments,
+            '--colors=never', '--log-junit', $reportPath, ...$arguments,
         ], $this->packageRoot);
+        if (!$this->isCompleteSuiteInvocation($arguments)) {
+            $result['acceptedSuite'] = null;
+            return $result;
+        }
+
+        $baseline = AcceptedSuiteAuthority::load($this->packageRoot . '/tests/accepted-suite.json');
+        $actual = AcceptedSuiteAuthority::readJUnitSummary($reportPath);
+        AcceptedSuiteAuthority::assertExecuted($baseline['executed'], $actual);
+        $result['acceptedSuite'] = $actual;
+
+        return $result;
+    }
+
+    /** @param list<string> $arguments */
+    private function isCompleteSuiteInvocation(array $arguments): bool
+    {
+        foreach ($arguments as $argument) {
+            if (!str_starts_with($argument, '-')
+                || preg_match('/^--(?:filter|testsuite|exclude-testsuite|group|exclude-group|list-tests|list-tests-xml|test-suffix)(?:=|$)/', $argument) === 1) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /** @param list<string> $command @return array{command: list<string>, exitCode: int, stdout: string, stderr: string} */

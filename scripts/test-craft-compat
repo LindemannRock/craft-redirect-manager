@@ -4,12 +4,13 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/test-craft-compat <craft-constraint> [plugin-version] [--install] [--php-version <version>] [--smoke-command <command>] [--skip-smoke] [--keep-project-dev] [--allow-insecure-floor]
+  scripts/test-craft-compat <craft-constraint> [plugin-version] [--install] [--php-version <version>] [--smoke-command <command>] [--skip-smoke] [--keep-project-dev] [--keep-project] [--allow-insecure-floor]
 
 Examples:
   scripts/test-craft-compat '^5.10'
   scripts/test-craft-compat '^5.10' dev-main
   scripts/test-craft-compat '^5.10' dev-main --install --php-version 8.3
+  scripts/test-craft-compat '^5.10' dev-main --install --keep-project
   scripts/test-craft-compat '5.10.0' dev-main --allow-insecure-floor
 
 What it does:
@@ -24,6 +25,10 @@ full fresh-install smoke test.
 The disposable Craft project's require-dev packages are removed by default so
 the check reflects a normal consumer install path. Use --keep-project-dev only
 when you intentionally want to validate the Craft starter project's dev tools.
+
+The project and any exact run-owned DDEV resources are removed by default on
+success, failure, and interruption. Use --keep-project only when you need to
+retain that run for diagnostics; this is separate from --keep-project-dev.
 
 Composer platform PHP is pinned to the selected PHP version so dependency
 resolution matches the DDEV runtime. The default PHP version is 8.3.
@@ -51,6 +56,7 @@ PHP_VERSION="8.3"
 SMOKE_COMMAND=""
 SKIP_SMOKE=false
 KEEP_PROJECT_DEV=false
+KEEP_PROJECT=false
 
 shift
 
@@ -84,6 +90,9 @@ while [[ $# -gt 0 ]]; do
     --keep-project-dev)
       KEEP_PROJECT_DEV=true
       ;;
+    --keep-project)
+      KEEP_PROJECT=true
+      ;;
     --help|-h)
       usage
       exit 0
@@ -112,9 +121,84 @@ if [[ -z "$PLUGIN_NAME" || -z "$PLUGIN_HANDLE" || -z "$PLUGIN_TYPE" ]]; then
   exit 1
 fi
 
-STAMP="$(date +%Y%m%d%H%M%S)"
 SAFE_CONSTRAINT="$(printf '%s' "$CRAFT_CONSTRAINT" | tr -c '[:alnum:]' '-')"
-PROJECT_DIR="/tmp/craft-compat-${PLUGIN_HANDLE}-${SAFE_CONSTRAINT}-${STAMP}"
+TEMP_ROOT="${CRAFT_COMPAT_TEMP_ROOT:-${TMPDIR:-/tmp}}"
+mkdir -p -- "$TEMP_ROOT"
+TEMP_ROOT="$(CDPATH= cd -- "$TEMP_ROOT" && pwd -P)"
+case "$TEMP_ROOT" in
+  /|"${HOME:-}")
+    echo "Refusing unsafe compatibility temporary root: $TEMP_ROOT" >&2
+    exit 1
+    ;;
+esac
+PROJECT_PREFIX="craft-compat-${PLUGIN_HANDLE}-${SAFE_CONSTRAINT}."
+PROJECT_DIR="$(mktemp -d "$TEMP_ROOT/${PROJECT_PREFIX}XXXXXXXX")"
+PROJECT_BASENAME="$(basename "$PROJECT_DIR")"
+DDEV_PROJECT_NAME="$(printf '%s' "$PROJECT_BASENAME" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' | cut -c1-63)"
+DDEV_OWNED=false
+
+cleanup_owned_resources() {
+  primary_status=$?
+  cleanup_status=0
+  trap - EXIT INT TERM HUP
+  set +e
+
+  if [[ "$KEEP_PROJECT" == true ]]; then
+    echo "Project kept at: $PROJECT_DIR"
+    exit "$primary_status"
+  fi
+
+  if [[ "$DDEV_OWNED" == true ]]; then
+    (
+      cd "$PROJECT_DIR" 2>/dev/null || exit 1
+      ddev delete -Oy "$DDEV_PROJECT_NAME"
+    )
+    ddev_status=$?
+    if [[ "$ddev_status" -ne 0 ]]; then
+      echo "Failed to remove owned DDEV project $DDEV_PROJECT_NAME (exit $ddev_status)." >&2
+      cleanup_status="$ddev_status"
+    fi
+  fi
+
+  if [[ -e "$PROJECT_DIR" ]]; then
+    if [[ "$(dirname "$PROJECT_DIR")" == "$TEMP_ROOT" && "$(basename "$PROJECT_DIR")" == "$PROJECT_PREFIX"* ]]; then
+      rm -rf -- "$PROJECT_DIR"
+      filesystem_status=$?
+      if [[ "$filesystem_status" -ne 0 || -e "$PROJECT_DIR" ]]; then
+        [[ "$filesystem_status" -eq 0 ]] && filesystem_status=1
+        echo "Failed to remove owned compatibility project $PROJECT_DIR (exit $filesystem_status)." >&2
+        if [[ "$cleanup_status" -eq 0 ]]; then
+          cleanup_status="$filesystem_status"
+        fi
+      fi
+    else
+      echo "Refusing to remove unexpected compatibility project path: $PROJECT_DIR" >&2
+      if [[ "$cleanup_status" -eq 0 ]]; then
+        cleanup_status=1
+      fi
+    fi
+  fi
+
+  if [[ "$primary_status" -ne 0 ]]; then
+    exit "$primary_status"
+  fi
+  exit "$cleanup_status"
+}
+
+handle_signal() {
+  exit "$1"
+}
+
+trap cleanup_owned_resources EXIT
+trap 'handle_signal 130' INT
+trap 'handle_signal 143' TERM
+trap 'handle_signal 129' HUP
+
+if [[ "$(dirname "$PROJECT_DIR")" != "$TEMP_ROOT" || "$PROJECT_BASENAME" != "$PROJECT_PREFIX"* \
+  || ! "$DDEV_PROJECT_NAME" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$ ]]; then
+  echo "Generated compatibility ownership boundary is invalid." >&2
+  exit 1
+fi
 
 echo "Creating disposable Craft project: $PROJECT_DIR"
 composer create-project craftcms/craft "$PROJECT_DIR" --no-interaction --no-scripts --quiet
@@ -161,7 +245,6 @@ fi
 
 if [[ "$INSTALL_MODE" != true ]]; then
   echo "Composer compatibility check passed."
-  echo "Project left at: $PROJECT_DIR"
   exit 0
 fi
 
@@ -171,7 +254,8 @@ if ! command -v ddev >/dev/null 2>&1; then
 fi
 
 echo "Starting DDEV fresh-install smoke test"
-ddev config --project-type=craftcms --docroot=web --php-version="$PHP_VERSION" --database=mysql:8.0 --auto >/dev/null
+DDEV_OWNED=true
+ddev config --project-name="$DDEV_PROJECT_NAME" --project-type=craftcms --docroot=web --php-version="$PHP_VERSION" --database=mysql:8.0 --auto >/dev/null
 ddev start
 
 ddev craft install \
@@ -230,4 +314,3 @@ else
 fi
 
 echo "Fresh-install compatibility check passed."
-echo "Project left at: $PROJECT_DIR"

@@ -22,7 +22,7 @@ use yii\caching\ArrayCache;
 #[CoversClass(LocalCacheService::class)]
 final class PortableCacheOwnershipTest extends TestCase
 {
-    private const APPROVED_BASE_COMMIT = '3ad476aabc02c87606e584fc8835fd9dea71888b';
+    private const APPROVED_BASE_COMMIT = '8fc9269ac46b71d2f67f3114861e04851d6374a5';
 
     public function testPortableCacheContractsResolveFromExpectedBaseSource(): void
     {
