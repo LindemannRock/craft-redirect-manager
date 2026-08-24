@@ -80,6 +80,82 @@ class RedirectRecord extends ActiveRecord
     }
 
     /**
+     * Return the canonical database identity for one parsed redirect source.
+     *
+     * Match type and source match mode describe how a redirect is evaluated;
+     * the unique database identity is the parsed source plus its site scope.
+     *
+     * @since 5.41.0
+     */
+    public static function sourceIdentityKey(string $sourceUrlParsed, int $siteIdKey): string
+    {
+        return $sourceUrlParsed . "\n" . $siteIdKey;
+    }
+
+    /**
+     * Normalize one source URL for persistence and identity comparisons.
+     *
+     * Path-only Exact and Prefix sources accept an HTTP(S) URL as input and
+     * retain only its path. Query strings and fragments are intentionally not
+     * part of a path-only source identity. Regex and Wildcard patterns remain
+     * byte-for-byte unchanged so pattern syntax is never parsed as a URL.
+     *
+     * @return array{sourceUrl: string, sourceUrlParsed: string}
+     * @since 5.41.0
+     */
+    public static function normalizeSourceUrl(string $sourceUrl, string $redirectSrcMatch, string $matchType): array
+    {
+        if (in_array($matchType, ['regex', 'wildcard'], true)) {
+            return [
+                'sourceUrl' => $sourceUrl,
+                'sourceUrlParsed' => $sourceUrl,
+            ];
+        }
+
+        $sourceUrlParsed = trim(str_replace(["\r", "\n", "\t"], '', $sourceUrl));
+        if ($redirectSrcMatch === 'pathonly' && UrlSafetyHelper::isHttpUrlWithHost($sourceUrlParsed)) {
+            $path = parse_url($sourceUrlParsed, PHP_URL_PATH);
+            $sourceUrl = is_string($path) && $path !== '' ? $path : '/';
+            $sourceUrlParsed = $sourceUrl;
+        }
+
+        // Normalize repeated slashes in the comparison identity without
+        // changing a supported path input's persisted presentation.
+        if (preg_match('#^(https?://[^/]+)(.*)$#i', $sourceUrlParsed, $matches)) {
+            $sourceUrlParsed = $matches[1] . preg_replace('#/+#', '/', $matches[2]);
+        } else {
+            $sourceUrlParsed = preg_replace('#/+#', '/', $sourceUrlParsed) ?? $sourceUrlParsed;
+        }
+
+        if (in_array($matchType, ['exact', 'prefix'], true)) {
+            $sourceUrlParsed = strtolower($sourceUrlParsed);
+        }
+
+        return [
+            'sourceUrl' => $sourceUrl,
+            'sourceUrlParsed' => $sourceUrlParsed,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeValidate(): bool
+    {
+        if (is_string($this->sourceUrl)) {
+            $normalized = self::normalizeSourceUrl(
+                $this->sourceUrl,
+                (string)$this->redirectSrcMatch,
+                (string)$this->matchType,
+            );
+            $this->sourceUrl = $normalized['sourceUrl'];
+            $this->sourceUrlParsed = $normalized['sourceUrlParsed'];
+        }
+
+        return parent::beforeValidate();
+    }
+
+    /**
      * @inheritdoc
      */
     public function beforeSave($insert): bool

@@ -120,7 +120,7 @@
     {% if duplicateRows|length > 0 %}
         <hr>
         <h3>{{ "Duplicate Redirects (will be skipped)"|t('redirect-manager') }} ({{ duplicateRows|length }})</h3>
-        <p class="light">{{ "These redirects already exist with the same source URL, match type, and source match mode."|t('redirect-manager') }}</p>
+        <p class="light">{{ "These redirects already exist with the same source URL and site scope."|t('redirect-manager') }}</p>
         <div class="lr-preview-table">
             <table class="data fullwidth">
                 <thead class="is-warning">

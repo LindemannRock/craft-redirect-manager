@@ -11,7 +11,7 @@ When an entry is saved with a changed URI, the plugin runs a two-step process:
 1. **`stashElementUri`** — Before the save, the plugin captures the element's current URI and stores it temporarily.
 2. **`handleElementUriChange`** — After the save completes, the plugin compares the stored URI with the new URI. If they differ, a redirect is created from the old URI to the new one.
 
-The resulting redirect uses match type `exact`, status code `301`, and a fixed priority of `0`.
+The resulting redirect uses match type `exact`, status code `301`, and a fixed priority of `0`. Its source shape follows `redirectSrcMatch`: path-only mode stores URI-shaped values such as `/old-page`, while full-URL mode uses the old and new URLs reported by the changed element for that explicit Craft site.
 
 ### When Auto-Redirects Are Created
 
@@ -30,6 +30,8 @@ Auto-redirects are **not** created when:
 - The entry is in a section with no URI template (e.g., a single-type section or a section with URIs disabled)
 - The entry has no previous URI (first-time publish)
 - The old and new URIs are identical
+- The old or new element does not have a routable URL
+- The save concerns a draft or revision
 
 ## Enabling and Disabling
 
@@ -76,6 +78,8 @@ Setting to `0` means undo detection always fires — no time limit. Use a shorte
 ## Multi-Site Behavior
 
 Auto-redirects are created per site. When a multi-site entry changes its URI, a redirect is created for each site where the URI changed. The redirect is scoped to that specific site's `siteId`.
+
+In full-URL mode, each site's configured domain and base path remain part of that site's automatic redirect. Redirect Manager uses the element URLs for the explicit site being saved; it does not borrow the current request's host. For example, a secondary site rooted at `https://example.test/fr/` produces full-URL sources and destinations under that same site root.
 
 ## Reviewing Auto-Created Redirects
 

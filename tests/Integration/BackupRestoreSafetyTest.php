@@ -14,6 +14,7 @@ use Craft;
 use craft\base\FsInterface;
 use craft\db\Query;
 use craft\fs\Local;
+use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\models\Volume;
 use craft\services\Config;
@@ -157,6 +158,61 @@ final class BackupRestoreSafetyTest extends TestCase
             ->scalar());
     }
 
+    public function testSameInstallRestoreNormalizesIdentityAndRetainsValidOwnership(): void
+    {
+        $siteId = (int)Craft::$app->getSites()->getPrimarySite()->id;
+        $token = bin2hex(random_bytes(4));
+        $rows = [
+            $this->backupRow("https://restore.example.test/MiXeD/{$token}?drop=yes#drop", 'exact', $siteId, [
+                'creationType' => 'entry-change',
+                'sourcePlugin' => 'redirect-manager',
+                'elementId' => 12345,
+            ]),
+            $this->backupRow("/PREFIX/{$token}", 'prefix', $siteId),
+            $this->backupRow("^/Regex/{$token}/([A-Z]+)$", 'regex', $siteId),
+            $this->backupRow("/Wildcard/{$token}/*", 'wildcard', $siteId),
+        ];
+        $redirects = new RecordingRedirectsService();
+        $this->replacePluginComponent('redirects', $redirects);
+
+        self::assertSame(4, $this->controller->replaceRows($rows));
+
+        $persisted = (new Query())
+            ->from(RedirectRecord::tableName())
+            ->orderBy(['id' => SORT_ASC])
+            ->all();
+        self::assertSame("/mixed/{$token}", $persisted[0]['sourceUrlParsed']);
+        self::assertSame("/prefix/{$token}", $persisted[1]['sourceUrlParsed']);
+        self::assertSame("^/Regex/{$token}/([A-Z]+)$", $persisted[2]['sourceUrlParsed']);
+        self::assertSame("/Wildcard/{$token}/*", $persisted[3]['sourceUrlParsed']);
+        self::assertSame('entry-change', $persisted[0]['creationType']);
+        self::assertSame('redirect-manager', $persisted[0]['sourcePlugin']);
+        self::assertSame(12345, (int)$persisted[0]['elementId']);
+        self::assertSame(1, $redirects->invalidateCalls);
+    }
+
+    public function testRestoreIdentityCollisionRollsBackWithoutInvalidatingCaches(): void
+    {
+        $existing = $this->seedRedirect();
+        $before = $this->redirectFingerprint();
+        $siteId = (int)Craft::$app->getSites()->getPrimarySite()->id;
+        $source = '/' . self::MARKER . 'restore-collision-' . bin2hex(random_bytes(4));
+        $redirects = new RecordingRedirectsService();
+        $this->replacePluginComponent('redirects', $redirects);
+
+        try {
+            $this->controller->replaceRows([
+                $this->backupRow($source, 'exact', $siteId),
+                $this->backupRow(strtoupper($source), 'prefix', $siteId),
+            ]);
+            self::fail('Expected the canonical backup identity collision to fail.');
+        } catch (\Throwable) {
+            self::assertSame($before, $this->redirectFingerprint());
+            self::assertNotNull($this->redirectRow((int)$existing->id));
+            self::assertSame(0, $redirects->invalidateCalls);
+        }
+    }
+
     public function testReplacementFailureRollsBackAndDoesNotInvalidateCaches(): void
     {
         $existing = $this->seedRedirect();
@@ -260,6 +316,33 @@ final class BackupRestoreSafetyTest extends TestCase
             'checksum' => $checksum,
             'checksumAlgorithm' => 'sha256',
         ], JSON_PRETTY_PRINT);
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     * @return array<string, mixed>
+     */
+    private function backupRow(string $sourceUrl, string $matchType, int $siteId, array $overrides = []): array
+    {
+        return array_merge([
+            'sourceUrl' => $sourceUrl,
+            'sourceUrlParsed' => '/stale-backup-identity',
+            'destinationUrl' => '/restored-' . bin2hex(random_bytes(4)),
+            'siteId' => $siteId,
+            'redirectSrcMatch' => 'pathonly',
+            'matchType' => $matchType,
+            'statusCode' => 301,
+            'priority' => 0,
+            'enabled' => true,
+            'creationType' => 'manual',
+            'sourcePlugin' => 'redirect-manager',
+            'elementId' => null,
+            'hitCount' => 0,
+            'lastHit' => null,
+            'dateCreated' => Db::prepareDateForDb(new \DateTime()),
+            'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
+            'uid' => \craft\helpers\StringHelper::UUID(),
+        ], $overrides);
     }
 
     /** @return array<string, mixed>|null */

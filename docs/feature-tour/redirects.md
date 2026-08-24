@@ -150,8 +150,12 @@ The source match mode controls what part of the incoming URL is compared against
 
 | Mode | Behavior |
 |------|----------|
-| `pathonly` (default) | Match by path only (`/old-page`). Works across all domains. Full URLs entered in the CP are automatically stripped to their path. |
+| `pathonly` (default) | Match by path only (`/old-page`). Works across all domains. For Exact and Prefix rules, a full HTTP(S) source entered in the CP, passed to the service, or imported from CSV is automatically reduced to its path. |
 | `fullurl` | Match by complete URL including domain (`https://example.com/old-page`). Use for domain-specific redirects. |
+
+For example, saving `https://old.example.com/catalog/item?campaign=summer#details` as a path-only Exact or Prefix source stores `/catalog/item`. The host, query string, and fragment are not part of a path-only source. A source already written as a path stays a path.
+
+Regex and Wildcard sources are patterns, not ordinary URLs. Redirect Manager preserves their text as entered and does not try to extract a path from them.
 
 Configure the global default in `config/redirect-manager.php`:
 

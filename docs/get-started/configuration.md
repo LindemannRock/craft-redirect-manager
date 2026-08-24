@@ -13,7 +13,7 @@ cp vendor/lindemannrock/craft-redirect-manager/src/config.php config/redirect-ma
 | `pluginName` | `string` | `'Redirect Manager'` | The public-facing name of the plugin |
 | `autoCreateRedirects` | `bool` | `true` | Automatically create redirects when entry URIs change |
 | `undoWindowMinutes` | `int` | `60` | Time window in minutes for detecting immediate undo (`0`, `30`, `60`, `120`, `240`). `0` = unlimited (always undo, no time limit) |
-| `redirectSrcMatch` | `string` | `'pathonly'` | Match legacy URL by path (`pathonly`) or full URL (`fullurl`) |
+| `redirectSrcMatch` | `string` | `'pathonly'` | Match legacy URLs by path (`pathonly`) or complete site URL (`fullurl`). Path-only Exact/Prefix inputs accept HTTP(S) URLs and store only the path, without host/query/fragment; automatic full-URL redirects retain each element site's domain and base path |
 
 ## Interface
 

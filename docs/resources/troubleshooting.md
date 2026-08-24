@@ -178,7 +178,9 @@ Entry URIs change but no redirects appear in the redirect list.
 
 4. **Check the logs** for any errors during the save event.
 
-**Why it happens:** The plugin hooks into Craft's element save events. If the entry has no previous URI or URIs are disabled for the section, the event fires but no redirect is created.
+5. **Check the source match mode.** Path-only mode creates `/old-uri → /new-uri`. Full-URL mode uses the old and new URLs for the entry's explicit site, including that site's configured domain and base path.
+
+**Why it happens:** The plugin hooks into Craft's element save events. If the entry has no previous URI, either side is not routable, URIs are disabled for the section, or the save is a draft/revision, no redirect is created.
 
 ---
 
@@ -265,6 +267,7 @@ Saving a redirect or importing a row fails with an invalid destination/source UR
 3. **Check capture references.** `$1`, `$2` only work where the match type produces captures: Wildcard (one per `*`), Prefix (`$1` = the part after the prefix), and Regex (one per capturing group). Exact Match supports only `$0`, the full matched URL. Referencing more captures than the source defines is rejected. See [Match Types](../feature-tour/redirects.md#match-types).
 4. **Contact links are allowed.** `mailto:`, `tel:`, `whatsapp:`, `sms:`, `fax:`, `skype://`, `slack:`, and `msteams:` destinations are valid; executable schemes (`javascript:`, `data:`) are not.
 5. **Keep captures inside a fixed destination.** Use `/new/$1` or `https://example.com/$1?from=$2`. A bare `$1`, `https://$1/path`, or a capture in the user-info or port portion of an HTTP(S) URL is rejected because the request value would control the destination's trust boundary.
+6. **Check the source mode and match type.** In path-only mode, an HTTP(S) source is accepted for Exact and Prefix rules and saved as its path; the host, query string, and fragment are discarded. Regex and Wildcard source patterns are kept exactly as entered. Full-URL mode still requires a complete HTTP(S) source with a host.
 
 If an older published redirect or an integration-created row contains an unsafe template, it remains in the database but cannot win resolution. Redirect Manager skips it and continues to the next matching safe rule in normal site-rank, priority, and rule-ID order. If every matching rule is unsafe, no redirect is issued and the request is recorded as unhandled. Skipped rules do not receive hits, handled analytics, or positive cache entries. Edit or replace the unsafe row; do not raise its priority to work around the protection.
 

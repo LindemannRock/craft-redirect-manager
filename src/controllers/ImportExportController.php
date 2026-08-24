@@ -41,6 +41,20 @@ class ImportExportController extends Controller
 {
     use LoggingTrait;
 
+    /** @var list<string> */
+    private const PORTABLE_IMPORT_FIELDS = [
+        'sourceUrl',
+        'destinationUrl',
+        'siteId',
+        'redirectSrcMatch',
+        'matchType',
+        'statusCode',
+        'priority',
+        'enabled',
+        'hitCount',
+        'lastHit',
+    ];
+
     /**
      * @inheritdoc
      */
@@ -521,10 +535,11 @@ class ImportExportController extends Controller
     public function actionPreview(): Response
     {
         $this->requireImportPermission();
+        $session = $this->importSession();
 
         // If GET request, show preview from session
         if (!Craft::$app->getRequest()->getIsPost()) {
-            $previewData = Craft::$app->getSession()->get('redirect-preview');
+            $previewData = $session->get('redirect-preview');
 
             if (!$previewData) {
                 Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'No preview data found. Please map columns first.'));
@@ -536,7 +551,7 @@ class ImportExportController extends Controller
 
         // POST request - process column mapping
 
-        $importData = Craft::$app->getSession()->get('redirect-import');
+        $importData = $session->get('redirect-import');
 
         if (!$importData || !isset($importData['allRows'])) {
             Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Import session expired. Please upload the file again.'));
@@ -549,7 +564,7 @@ class ImportExportController extends Controller
         // Create reverse mapping (column index => field name)
         $columnMap = [];
         foreach ($mapping as $colIndex => $fieldName) {
-            if (!empty($fieldName)) {
+            if (is_string($fieldName) && in_array($fieldName, self::PORTABLE_IMPORT_FIELDS, true)) {
                 $columnMap[(int)$colIndex] = $fieldName;
             }
         }
@@ -570,13 +585,16 @@ class ImportExportController extends Controller
 
         // Get existing redirects for duplicate detection
         $existingRedirects = (new \craft\db\Query())
-            ->select(['sourceUrl', 'matchType', 'redirectSrcMatch'])
+            ->select(['sourceUrlParsed', 'siteIdKey'])
             ->from('{{%redirectmanager_redirects}}')
             ->all();
 
         $existingKeys = [];
         foreach ($existingRedirects as $existing) {
-            $key = strtolower($existing['sourceUrl']) . '|' . $existing['matchType'] . '|' . $existing['redirectSrcMatch'];
+            $key = RedirectRecord::sourceIdentityKey(
+                (string)$existing['sourceUrlParsed'],
+                (int)$existing['siteIdKey'],
+            );
             $existingKeys[$key] = true;
         }
 
@@ -596,9 +614,11 @@ class ImportExportController extends Controller
                 'enabled' => true,
                 'hitCount' => 0,
                 'lastHit' => null,
-                'creationType' => 'import',
+                'creationType' => 'manual',
                 'sourcePlugin' => 'redirect-manager',
+                'elementId' => null,
             ];
+            $behaviorError = null;
 
             foreach ($columnMap as $colIndex => $fieldName) {
                 if (isset($row[$colIndex])) {
@@ -607,11 +627,21 @@ class ImportExportController extends Controller
                     // Type conversion and normalization
                     if ($fieldName === 'enabled') {
                         $redirect[$fieldName] = in_array(strtolower($value), ['1', 'true', 'yes', 'enabled']);
-                    } elseif ($fieldName === 'statusCode' || $fieldName === 'priority' || $fieldName === 'siteId' || $fieldName === 'hitCount') {
-                        // Handle empty values - priority and hitCount default to 0, siteId can be null
+                    } elseif ($fieldName === 'priority') {
+                        if ($value === '') {
+                            $redirect[$fieldName] = 0;
+                        } elseif (!ctype_digit($value) || (int)$value > 9) {
+                            $behaviorError = Craft::t('redirect-manager', 'Invalid priority: {priority}. Priority must be a whole number from 0 to 9.', [
+                                'priority' => $value,
+                            ]);
+                        } else {
+                            $redirect[$fieldName] = (int)$value;
+                        }
+                    } elseif ($fieldName === 'statusCode' || $fieldName === 'siteId' || $fieldName === 'hitCount') {
+                        // Handle empty values - hitCount defaults to 0, siteId can be null
                         if (!empty($value)) {
                             $redirect[$fieldName] = (int)$value;
-                        } elseif ($fieldName === 'priority' || $fieldName === 'hitCount') {
+                        } elseif ($fieldName === 'hitCount') {
                             $redirect[$fieldName] = 0;
                         } else {
                             $redirect[$fieldName] = null; // siteId can be null
@@ -631,39 +661,59 @@ class ImportExportController extends Controller
                     } elseif ($fieldName === 'matchType') {
                         // Normalize match type from various formats
                         $valueLower = strtolower($value);
-                        if (in_array($valueLower, ['exactmatch', 'exact match', 'exact'])) {
+                        if ($valueLower === '') {
                             $redirect[$fieldName] = 'exact';
-                        } elseif (in_array($valueLower, ['regexmatch', 'regex match', 'regex', 'regexp'])) {
+                        } elseif (in_array($valueLower, ['exactmatch', 'exact match', 'exact'], true)) {
+                            $redirect[$fieldName] = 'exact';
+                        } elseif (in_array($valueLower, ['regexmatch', 'regex match', 'regex', 'regexp'], true)) {
                             $redirect[$fieldName] = 'regex';
-                        } elseif (in_array($valueLower, ['wildcardmatch', 'wildcard match', 'wildcard'])) {
+                        } elseif (in_array($valueLower, ['wildcardmatch', 'wildcard match', 'wildcard'], true)) {
                             $redirect[$fieldName] = 'wildcard';
-                        } elseif (in_array($valueLower, ['prefixmatch', 'prefix match', 'prefix'])) {
+                        } elseif (in_array($valueLower, ['prefixmatch', 'prefix match', 'prefix'], true)) {
                             $redirect[$fieldName] = 'prefix';
                         } else {
-                            $redirect[$fieldName] = 'exact'; // Default
+                            $behaviorError = Craft::t('redirect-manager', 'Invalid match type: {matchType}', [
+                                'matchType' => $value,
+                            ]);
                         }
                     } elseif ($fieldName === 'redirectSrcMatch') {
                         // Normalize source match mode
                         $valueLower = strtolower($value);
-                        if (in_array($valueLower, ['fullurl', 'full url', 'full', 'url'])) {
+                        if ($valueLower === '') {
+                            $redirect[$fieldName] = 'pathonly';
+                        } elseif (in_array($valueLower, ['fullurl', 'full url', 'full', 'url'], true)) {
                             $redirect[$fieldName] = 'fullurl';
+                        } elseif (in_array($valueLower, ['pathonly', 'path only', 'path'], true)) {
+                            $redirect[$fieldName] = 'pathonly';
                         } else {
-                            $redirect[$fieldName] = 'pathonly'; // Default
+                            $behaviorError = Craft::t('redirect-manager', 'Invalid source match mode: {redirectSrcMatch}', [
+                                'redirectSrcMatch' => $value,
+                            ]);
                         }
-                    } elseif ($fieldName === 'sourceUrl' || $fieldName === 'destinationUrl') {
+                    } else {
                         // Strip formula escape prefix for round-trip compatibility
                         $redirect[$fieldName] = CsvImportHelper::stripFormulaEscapePrefix($value);
-                    } else {
-                        $redirect[$fieldName] = $value;
                     }
                 }
             }
+
+            if ($behaviorError !== null) {
+                $errorRows[] = [
+                    'rowNumber' => $rowNumber,
+                    'sourceUrl' => $redirect['sourceUrl'],
+                    'destinationUrl' => $redirect['destinationUrl'] ?: '-',
+                    'error' => $behaviorError,
+                ];
+                continue;
+            }
+
+            $redirect = $this->normalizeImportSource($redirect);
 
             // Validate required fields
             if (empty($redirect['sourceUrl']) || empty($redirect['destinationUrl'])) {
                 $errorRows[] = [
                     'rowNumber' => $rowNumber,
-                    'sourceUrl' => $redirect['sourceUrl'] ?? '-',
+                    'sourceUrl' => $redirect['sourceUrl'],
                     'destinationUrl' => $redirect['destinationUrl'] ?? '-',
                     'error' => Craft::t('redirect-manager', 'Missing required field(s): Source URL or Destination URL'),
                 ];
@@ -780,12 +830,15 @@ class ImportExportController extends Controller
             }
 
             // Check for duplicates
-            $duplicateKey = strtolower($redirect['sourceUrl']) . '|' . $redirect['matchType'] . '|' . $redirect['redirectSrcMatch'];
+            $duplicateKey = RedirectRecord::sourceIdentityKey(
+                (string)$redirect['sourceUrlParsed'],
+                RedirectRecord::siteIdKey($redirect['siteId'] === null ? null : (int)$redirect['siteId']),
+            );
             if (isset($existingKeys[$duplicateKey])) {
                 $duplicateRows[] = [
                     'sourceUrl' => $redirect['sourceUrl'],
                     'destinationUrl' => $redirect['destinationUrl'],
-                    'reason' => Craft::t('redirect-manager', 'Already exists with same source URL, match type, and source match mode'),
+                    'reason' => Craft::t('redirect-manager', 'Already exists with the same source URL and site scope'),
                 ];
                 continue;
             }
@@ -802,6 +855,7 @@ class ImportExportController extends Controller
             }
 
             $validRows[] = $redirect;
+            $existingKeys[$duplicateKey] = true;
         }
 
         // Get count of existing redirects for backup info
@@ -810,7 +864,7 @@ class ImportExportController extends Controller
             ->count();
 
         // Store validated data in session
-        Craft::$app->getSession()->set('redirect-import-validated', [
+        $session->set('redirect-import-validated', [
             'validRows' => $validRows,
             'duplicateRows' => $duplicateRows,
             'errorRows' => $errorRows,
@@ -825,7 +879,7 @@ class ImportExportController extends Controller
         ];
 
         // Store preview data in session for rendering
-        Craft::$app->getSession()->set('redirect-preview', [
+        $session->set('redirect-preview', [
             'summary' => $summary,
             'validRows' => $validRows,
             'duplicateRows' => $duplicateRows,
@@ -839,6 +893,14 @@ class ImportExportController extends Controller
     }
 
     /**
+     * Return the session used by the portable import lifecycle.
+     */
+    protected function importSession(): object
+    {
+        return Craft::$app->getSession();
+    }
+
+    /**
      * Perform the import
      *
      * @return Response|null
@@ -847,12 +909,13 @@ class ImportExportController extends Controller
     {
         $this->requirePostRequest();
         $this->requireImportPermission();
+        $session = $this->importSession();
 
-        $validatedData = Craft::$app->getSession()->get('redirect-import-validated');
-        $importData = Craft::$app->getSession()->get('redirect-import');
+        $validatedData = $session->get('redirect-import-validated');
+        $importData = $session->get('redirect-import');
 
         if (!$validatedData) {
-            Craft::$app->getSession()->setError(Craft::t('redirect-manager', 'Import session expired'));
+            $session->setError(Craft::t('redirect-manager', 'Import session expired'));
             return $this->redirect('redirect-manager/import-export');
         }
 
@@ -876,12 +939,12 @@ class ImportExportController extends Controller
                     $backupPath = RedirectManager::$plugin->backup->createBackup('import');
                 } catch (Throwable $e) {
                     $this->logError('Import safety backup failed', ['error' => $e->getMessage()]);
-                    Craft::$app->getSession()->setError($this->safetyBackupFailureMessage('Import was stopped because the safety backup could not be completed.'));
+                    $session->setError($this->safetyBackupFailureMessage('Import was stopped because the safety backup could not be completed.'));
                     return $this->redirect('redirect-manager/import-export');
                 }
 
                 if ($backupPath === null) {
-                    Craft::$app->getSession()->setError($this->safetyBackupFailureMessage('Import was stopped because the safety backup could not be completed.'));
+                    $session->setError($this->safetyBackupFailureMessage('Import was stopped because the safety backup could not be completed.'));
                     return $this->redirect('redirect-manager/import-export');
                 }
             }
@@ -889,43 +952,19 @@ class ImportExportController extends Controller
 
         // Import redirects
         $imported = 0;
-        $failed = $siteScopeFailures;
+        $failed = $siteScopeFailures
+            + count(is_array($validatedData['duplicateRows'] ?? null) ? $validatedData['duplicateRows'] : [])
+            + count(is_array($validatedData['errorRows'] ?? null) ? $validatedData['errorRows'] : []);
         $db = Craft::$app->getDb();
 
         foreach ($validRows as $redirectData) {
             try {
-                // Parse source URL to store parsed version
-                // For regex/wildcard patterns, don't use parse_url() as it misinterprets ? and other regex chars
-                if (in_array($redirectData['matchType'], ['regex', 'wildcard'])) {
-                    $sourceUrlParsed = $redirectData['sourceUrl'];
-                } else {
-                    $parsedUrl = parse_url($redirectData['sourceUrl']);
-                    $sourceUrlParsed = $redirectData['redirectSrcMatch'] === 'pathonly'
-                        ? ($parsedUrl['path'] ?? '/')
-                        : $redirectData['sourceUrl'];
-                }
-
-                // Detect creationType if not explicitly set
-                // If creationType is already set and valid, use it; otherwise auto-detect
-                $creationType = $redirectData['creationType'] ?? null;
-                if (empty($creationType) || $creationType === 'import') {
-                    // Auto-detect based on matchType and elementId
-                    if (in_array($redirectData['matchType'], ['regex', 'wildcard'])) {
-                        // Regex/wildcard patterns are always manual
-                        $creationType = 'manual';
-                    } elseif (!empty($redirectData['elementId']) && (int)$redirectData['elementId'] > 0) {
-                        // If associated with an element, it was auto-created from entry changes
-                        $creationType = 'entry-change';
-                    } else {
-                        // Default to manual for exact/prefix matches without element association
-                        $creationType = 'manual';
-                    }
-                }
+                $redirectData = $this->normalizeImportSource($redirectData);
 
                 $db->createCommand()->insert('{{%redirectmanager_redirects}}', [
                     'siteId' => $redirectData['siteId'],
                     'sourceUrl' => $redirectData['sourceUrl'],
-                    'sourceUrlParsed' => $sourceUrlParsed,
+                    'sourceUrlParsed' => $redirectData['sourceUrlParsed'],
                     'siteIdKey' => RedirectRecord::siteIdKey($redirectData['siteId'] ? (int)$redirectData['siteId'] : null),
                     'destinationUrl' => $redirectData['destinationUrl'],
                     'redirectSrcMatch' => $redirectData['redirectSrcMatch'],
@@ -933,8 +972,9 @@ class ImportExportController extends Controller
                     'statusCode' => $redirectData['statusCode'],
                     'priority' => $redirectData['priority'],
                     'enabled' => $redirectData['enabled'],
-                    'creationType' => $creationType,
-                    'sourcePlugin' => $redirectData['sourcePlugin'] ?? 'redirect-manager',
+                    'creationType' => 'manual',
+                    'sourcePlugin' => 'redirect-manager',
+                    'elementId' => null,
                     'hitCount' => $redirectData['hitCount'] ?? 0,
                     'lastHit' => $redirectData['lastHit'],
                     'dateCreated' => \craft\helpers\Db::prepareDateForDb(new \DateTime()),
@@ -957,9 +997,9 @@ class ImportExportController extends Controller
         }
 
         // Clean up session data (no temp file to delete - data was stored in session)
-        Craft::$app->getSession()->remove('redirect-import');
-        Craft::$app->getSession()->remove('redirect-import-validated');
-        Craft::$app->getSession()->remove('redirect-preview');
+        $session->remove('redirect-import');
+        $session->remove('redirect-import-validated');
+        $session->remove('redirect-preview');
 
         $pluginName = RedirectManager::$plugin->getSettings()->getPluralLowerDisplayName();
         $message = Craft::t('redirect-manager', 'Successfully imported {imported} {pluginName}.', [
@@ -984,7 +1024,7 @@ class ImportExportController extends Controller
             $this->logError('Failed to save import history', ['error' => $e->getMessage()]);
         }
 
-        Craft::$app->getSession()->setNotice($message);
+        $session->setNotice($message);
         return $this->redirect('redirect-manager/import-export');
     }
 
@@ -1016,6 +1056,23 @@ class ImportExportController extends Controller
         }
 
         return [$filtered, $skipped];
+    }
+
+    /**
+     * @param array<string, mixed> $redirect
+     * @return array<string, mixed>
+     */
+    private function normalizeImportSource(array $redirect): array
+    {
+        $normalized = RedirectRecord::normalizeSourceUrl(
+            (string)$redirect['sourceUrl'],
+            (string)$redirect['redirectSrcMatch'],
+            (string)$redirect['matchType'],
+        );
+        $redirect['sourceUrl'] = $normalized['sourceUrl'];
+        $redirect['sourceUrlParsed'] = $normalized['sourceUrlParsed'];
+
+        return $redirect;
     }
 
     /**
@@ -1459,7 +1516,15 @@ class ImportExportController extends Controller
 
             foreach ($redirects as $redirect) {
                 unset($redirect['id']);
-                $redirect['siteIdKey'] = RedirectRecord::siteIdKey(isset($redirect['siteId']) && $redirect['siteId'] !== null ? (int)$redirect['siteId'] : null);
+                $siteId = isset($redirect['siteId']) && $redirect['siteId'] !== null ? (int)$redirect['siteId'] : null;
+                $normalized = RedirectRecord::normalizeSourceUrl(
+                    (string)($redirect['sourceUrl'] ?? $redirect['sourceUrlParsed'] ?? ''),
+                    (string)($redirect['redirectSrcMatch'] ?? 'pathonly'),
+                    (string)($redirect['matchType'] ?? 'exact'),
+                );
+                $redirect['sourceUrl'] = $normalized['sourceUrl'];
+                $redirect['sourceUrlParsed'] = $normalized['sourceUrlParsed'];
+                $redirect['siteIdKey'] = RedirectRecord::siteIdKey($siteId);
                 $db->createCommand()->insert(RedirectRecord::tableName(), $redirect)->execute();
                 $restored++;
             }

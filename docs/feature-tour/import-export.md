@@ -38,7 +38,8 @@ Optional fields (defaults are used when omitted):
 
 | Field | Default | Description |
 |-------|---------|-------------|
-| Match Type | `exact` | `exact`, `regex`, `wildcard`, `prefix` |
+| Match Type | `exact` | `exact`, `regex`, `wildcard`, or `prefix` (the mapper also accepts the aliases `exact match`, `regex match`, `regexp`, `wildcard match`, and `prefix match`) |
+| Source Match Mode | `pathonly` | `pathonly` or `fullurl` (the aliases `path only`, `path`, `full url`, `full`, and `url` are also accepted) |
 | Status Code | `301` | `301`, `302`, `303`, `307`, `308`, `410` |
 | Priority | `0` | `0`–`9` (lower = higher priority) |
 | Enabled | `true` | `true` or `false` |
@@ -47,6 +48,18 @@ Optional fields (defaults are used when omitted):
 > [!NOTE]
 > Rows are imported only for sites you can edit. If a row names a **Site ID** that your account has no editing permission for, that row is skipped and counted toward the failed total in the import summary. Rows left blank (all sites) always import.
 
+Path-only Exact and Prefix rows may use either a path or a complete HTTP(S) source. A complete URL is previewed and imported as its path only; its host, query string, and fragment are discarded. Regex and Wildcard source patterns remain unchanged. This is the same normalization used by the redirect editor and public redirect service.
+
+Canonical values and supported aliases are compared without regard to letter case. A mapped field that is blank uses its documented default, just as an omitted field does. Any other nonblank Match Type or Source Match Mode is rejected instead of being silently rewritten. Priority must be a whole number from `0` through `9`; negative, larger, and non-numeric values are rejected in preview.
+
+Duplicate identity is the normalized source plus its site scope. Match Type and Source Match Mode labels do not create a second identity for the same normalized source. Global and site-specific rows remain separate, while equivalent path-only full URLs, paths, and Exact/Prefix case variants collide. Preview checks both existing redirects and earlier accepted rows in the same CSV, so the final import uses the same identity the preview reported.
+
+### Portable Import Ownership
+
+A CSV is a portable data format, not a same-install lifecycle backup. Every imported CSV row becomes a manual redirect owned by Redirect Manager. The mapper does not offer creation type, source plugin, or element ID fields, and those columns are ignored if a CSV includes them. This prevents a portable row from claiming entry-change, Shortlink, Smartlink, or another integration's ownership without the original element lifecycle.
+
+JSON backups created by Redirect Manager are different: restoring one on the same installation may retain a valid creation type, source plugin, and element association. Restore still recalculates the canonical normalized source and site identity before writing the rows.
+
 ### Row Validation
 
 Each row is validated before import; problems are flagged in the **Preview** errors bucket and those rows are skipped. A row is rejected when:
@@ -54,7 +67,7 @@ Each row is validated before import; problems are flagged in the **Preview** err
 - **Source or Destination URL is missing or malformed** — a bare scheme (`https://` with no host), an email-looking value, a protocol-relative `//host`, or a bare capture such as `$1` is rejected. A destination may be a path, a full `http(s)://` URL with a host, or a contact/application link (`mailto:`, `tel:`, `whatsapp:`, `sms:`, `fax:`, `skype://`, `slack:`, `msteams:`).
 - **A capture controls the destination trust boundary** — captures may refine a relative path, a fixed-host HTTP(S) path/query/fragment, or the payload of a contact/application link. They cannot supply the scheme or control an HTTP(S) hostname, user information, or port. For example, `https://example.com/$1?from=$2` is valid; `$1`, `https://$1/path`, and `https://example.com:$1/path` are not.
 - **A capture reference exceeds the match type** — e.g. `$1` under `exact`, or `$2` when the source has only one `*` / one capturing group. See [Match Types](redirects.md#match-types).
-- **Match type or status code is invalid**, the row duplicates an existing redirect, or the source and destination are identical (a loop).
+- **Match type, source match mode, priority, or status code is invalid**, the row duplicates an existing redirect (or an earlier row in the same CSV), or the source and destination are identical (a loop).
 
 Validation prevents intrinsically unsafe new templates from being imported. Redirect Manager still checks substituted destinations at runtime so older published rows and records created through integrations cannot emit an unsafe redirect. An unsafe matching rule is skipped and the next eligible safe rule is considered.
 
@@ -97,7 +110,7 @@ To export your full redirect list as CSV:
 1. Go to **Redirect Manager > Import/Export**
 2. Click **Export Redirects**
 
-The export includes all fields: source URL, destination URL, match type, status code, priority, enabled status, hit count, and creation date.
+The export includes source URL, destination URL, site ID, source match mode, match type, status code, priority, enabled status, hit count, last-hit time, creation type, and source plugin. Creation type and source plugin are useful export context, but a later CSV import deliberately ignores those ownership fields and creates manual Redirect Manager-owned rows as described above.
 
 The `redirectManager:exportRedirects` permission is required.
 

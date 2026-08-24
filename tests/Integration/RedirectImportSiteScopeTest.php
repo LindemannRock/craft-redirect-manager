@@ -53,6 +53,25 @@ final class RedirectImportSiteScopeTest extends TestCase
         self::assertSame(10, $filtered[1]['siteId']);
     }
 
+    public function testImportUsesTheSharedPathOnlySourceIdentity(): void
+    {
+        $controller = new ImportExportController('import-export', RedirectManager::getInstance());
+        $method = new ReflectionMethod($controller, 'normalizeImportSource');
+        $method->setAccessible(true);
+
+        /** @var array<string, mixed> $normalized */
+        $normalized = $method->invoke($controller, [
+            'sourceUrl' => 'https://import.example.test/base/old?drop=yes#drop',
+            'redirectSrcMatch' => 'pathonly',
+            'matchType' => 'prefix',
+        ]);
+
+        self::assertSame('/base/old', $normalized['sourceUrl']);
+        self::assertSame('/base/old', $normalized['sourceUrlParsed']);
+        self::assertSame('pathonly', $normalized['redirectSrcMatch']);
+        self::assertSame('prefix', $normalized['matchType']);
+    }
+
     /**
      * @param array<int, array<string, mixed>> $rows
      * @param array<int> $editableSiteIds

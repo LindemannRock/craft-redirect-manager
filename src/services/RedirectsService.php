@@ -637,6 +637,7 @@ class RedirectsService extends Component
         if ($oldElement && $oldElement->uri && $oldElement->getUrl()) {
             $this->_stashedUris[$element->id . '_' . $element->siteId] = [
                 'uri' => $oldElement->uri,
+                'url' => $oldElement->getUrl(),
                 'siteId' => $element->siteId,
             ];
 
@@ -674,136 +675,154 @@ class RedirectsService extends Component
             return;
         }
 
-        $oldUri = $this->_stashedUris[$key]['uri'];
-        $newUri = $element->uri;
-        $siteId = $element->siteId;
+        $stashed = $this->_stashedUris[$key];
 
-        $this->logDebug('Checking URI change', [
-            'elementId' => $element->id,
-            'siteId' => $siteId,
-            'oldUri' => $oldUri,
-            'newUri' => $newUri,
-            'changed' => $oldUri !== $newUri,
-        ]);
+        try {
+            $oldUri = (string)$stashed['uri'];
+            $newUri = $element->uri;
+            $siteId = $element->siteId;
 
-        // Only create redirect if URI actually changed
-        if ($oldUri !== $newUri && $newUri) {
-            $oldUrl = '/' . ltrim($oldUri, '/');
-            $newUrl = '/' . ltrim($newUri, '/');
-
-            // Get most recent redirect for this element
-            $mostRecentRedirect = (new Query())
-                ->from(RedirectRecord::tableName())
-                ->where(['elementId' => $element->id])
-                ->andWhere(['siteId' => $siteId])
-                ->andWhere(['creationType' => 'entry-change'])
-                ->orderBy(['dateCreated' => SORT_DESC])
-                ->one();
-
-            $this->logDebug('Looking for recent redirect (Site ID: ' . $siteId . ')', [
+            $this->logDebug('Checking URI change', [
                 'elementId' => $element->id,
-                'found' => !empty($mostRecentRedirect),
-                'mostRecent' => $mostRecentRedirect ? ($mostRecentRedirect['sourceUrl'] . ' → ' . $mostRecentRedirect['destinationUrl']) : 'none',
-                'dateCreated' => $mostRecentRedirect['dateCreated'] ?? null,
+                'siteId' => $siteId,
+                'oldUri' => $oldUri,
+                'newUri' => $newUri,
+                'changed' => $oldUri !== $newUri,
             ]);
 
-            // SCENARIO 1: Detect IMMEDIATE UNDO (flip-flop) - Use centralized method
-            if ($this->handleUndoRedirect($oldUrl, $newUrl, $siteId, 'entry-change', 'redirect-manager')) {
-                // Undo was handled, clear stashed URI and exit
-                unset($this->_stashedUris[$key]);
-                return;
-            }
+            // Only create redirect if URI actually changed
+            if ($oldUri !== $newUri && $newUri) {
+                $sourceMode = RedirectManager::$plugin->getSettings()->redirectSrcMatch;
+                if ($sourceMode === 'fullurl') {
+                    $oldUrl = (string)$stashed['url'];
+                    $newUrl = $element->getUrl();
+                    if (!$newUrl) {
+                        $this->logDebug('Changed element has no routable URL', [
+                            'elementId' => $element->id,
+                            'siteId' => $siteId,
+                        ]);
+                        return;
+                    }
+                } else {
+                    $oldUrl = '/' . ltrim($oldUri, '/');
+                    $newUrl = '/' . ltrim($newUri, '/');
+                }
 
-            // SCENARIO 2: Detect GOING BACKWARDS (returning to old URL in chain)
-            // If new URL already exists as a source, we're going back
-            $goingBackwards = (new Query())
-                ->from(RedirectRecord::tableName())
-                ->where(['sourceUrlParsed' => strtolower($newUrl)])
-                ->andWhere(['elementId' => $element->id])
-                ->andWhere(['siteId' => $siteId])
-                ->andWhere(['creationType' => 'entry-change'])
-                ->exists();
+                $normalizedOld = RedirectRecord::normalizeSourceUrl($oldUrl, $sourceMode, 'exact');
+                $oldUrl = $normalizedOld['sourceUrl'];
 
-            if ($goingBackwards) {
-                // Going back to a previous URL - delete entire chain for this element
-                $conflictingRedirects = (new Query())
+                // Get most recent redirect for this element
+                $mostRecentRedirect = (new Query())
                     ->from(RedirectRecord::tableName())
                     ->where(['elementId' => $element->id])
                     ->andWhere(['siteId' => $siteId])
                     ->andWhere(['creationType' => 'entry-change'])
-                    ->all();
+                    ->orderBy(['dateCreated' => SORT_DESC])
+                    ->one();
 
-                foreach ($conflictingRedirects as $redirect) {
-                    $this->deleteRedirect($redirect['id']);
-                    $this->logInfo('Deleted old auto-redirect for element (Site ID: ' . $siteId . ')', [
-                        'id' => $redirect['id'],
-                        'elementId' => $element->id,
-                        'from' => $redirect['sourceUrl'],
-                        'to' => $redirect['destinationUrl'],
-                        'reason' => 'Entry returned to previous URL in chain - cleaning up',
-                    ]);
+                $this->logDebug('Looking for recent redirect (Site ID: ' . $siteId . ')', [
+                    'elementId' => $element->id,
+                    'found' => !empty($mostRecentRedirect),
+                    'mostRecent' => $mostRecentRedirect ? ($mostRecentRedirect['sourceUrl'] . ' → ' . $mostRecentRedirect['destinationUrl']) : 'none',
+                    'dateCreated' => $mostRecentRedirect['dateCreated'] ?? null,
+                ]);
+
+                // SCENARIO 1: Detect IMMEDIATE UNDO (flip-flop) - Use centralized method
+                if ($this->handleUndoRedirect($oldUrl, $newUrl, $siteId, 'entry-change', 'redirect-manager')) {
+                    return;
                 }
 
-                Craft::$app->getSession()->setNotice(
-                    Craft::t('redirect-manager', '{count, number} {count, plural, =1{outdated automatic redirect removed} other{outdated automatic redirects removed}} because the entry returned to a previous URL.', [
-                        'count' => count($conflictingRedirects),
-                    ])
-                );
-            }
+                // SCENARIO 2: Detect GOING BACKWARDS (returning to old URL in chain)
+                // If new URL already exists as a source, we're going back
+                $normalizedNew = RedirectRecord::normalizeSourceUrl($newUrl, $sourceMode, 'exact');
+                $goingBackwards = (new Query())
+                    ->from(RedirectRecord::tableName())
+                    ->where(['sourceUrlParsed' => strtolower($normalizedNew['sourceUrlParsed'])])
+                    ->andWhere(['elementId' => $element->id])
+                    ->andWhere(['siteId' => $siteId])
+                    ->andWhere(['creationType' => 'entry-change'])
+                    ->exists();
 
-            // SCENARIO 3: FORWARD PROGRESSION
-            // Just keep existing redirects and add new one (default behavior)
+                if ($goingBackwards) {
+                    // Going back to a previous URL - delete entire chain for this element
+                    $conflictingRedirects = (new Query())
+                        ->from(RedirectRecord::tableName())
+                        ->where(['elementId' => $element->id])
+                        ->andWhere(['siteId' => $siteId])
+                        ->andWhere(['creationType' => 'entry-change'])
+                        ->all();
 
-            // FINALLY: Check if this would create a circular redirect (after cleanup)
-            if ($this->wouldCreateLoop($oldUrl, $newUrl, null, $siteId)) {
-                $this->logError('Cannot create redirect: would create circular loop', [
-                    'elementId' => $element->id,
-                    'oldUri' => $oldUri,
-                    'newUri' => $newUri,
-                ]);
+                    foreach ($conflictingRedirects as $redirect) {
+                        $this->deleteRedirect($redirect['id']);
+                        $this->logInfo('Deleted old auto-redirect for element (Site ID: ' . $siteId . ')', [
+                            'id' => $redirect['id'],
+                            'elementId' => $element->id,
+                            'from' => $redirect['sourceUrl'],
+                            'to' => $redirect['destinationUrl'],
+                            'reason' => 'Entry returned to previous URL in chain - cleaning up',
+                        ]);
+                    }
 
-                // Show error message in CP
-                Craft::$app->getSession()->setError(
-                    Craft::t('redirect-manager', 'Entry saved, but automatic redirect was not created because it would create a circular redirect loop. Please create a different redirect manually or change the slug.')
-                );
+                    $this->notifyUser(
+                        'notice',
+                        Craft::t('redirect-manager', '{count, number} {count, plural, =1{outdated automatic redirect removed} other{outdated automatic redirects removed}} because the entry returned to a previous URL.', [
+                            'count' => count($conflictingRedirects),
+                        ]),
+                    );
+                }
 
-                // Clear stashed URI and exit
-                unset($this->_stashedUris[$key]);
-                return;
-            }
+                // SCENARIO 3: FORWARD PROGRESSION
+                // Just keep existing redirects and add new one (default behavior)
 
-            $result = $this->createRedirect([
-                'sourceUrl' => $oldUrl,
-                'sourceUrlParsed' => $oldUrl,
-                'destinationUrl' => $newUrl,
-                'matchType' => 'exact',
-                'redirectSrcMatch' => RedirectManager::$plugin->getSettings()->redirectSrcMatch,
-                'statusCode' => 301,
-                'siteId' => $siteId,
-                'enabled' => true,
-                'priority' => 0,
-                'creationType' => 'entry-change',
-                'sourcePlugin' => 'redirect-manager',
-                'elementId' => $element->id,
-            ], true); // Show notification
+                // FINALLY: Check if this would create a circular redirect (after cleanup)
+                if ($this->wouldCreateLoop($oldUrl, $newUrl, null, $siteId, 'exact')) {
+                    $this->logError('Cannot create redirect: would create circular loop', [
+                        'elementId' => $element->id,
+                        'oldUri' => $oldUri,
+                        'newUri' => $newUri,
+                    ]);
 
-            if ($result) {
-                $this->logInfo('Auto-created redirect for entry URI change', [
-                    'elementId' => $element->id,
+                    // Show error message in CP
+                    $this->notifyUser(
+                        'error',
+                        Craft::t('redirect-manager', 'Entry saved, but automatic redirect was not created because it would create a circular redirect loop. Please create a different redirect manually or change the slug.'),
+                    );
+
+                    // Clear stashed URI and exit
+                    return;
+                }
+
+                $result = $this->createRedirect([
+                    'sourceUrl' => $oldUrl,
+                    'destinationUrl' => $newUrl,
+                    'matchType' => 'exact',
+                    'redirectSrcMatch' => $sourceMode,
+                    'statusCode' => 301,
                     'siteId' => $siteId,
-                    'from' => $oldUri,
-                    'to' => $newUri,
+                    'enabled' => true,
+                    'priority' => 0,
+                    'creationType' => 'entry-change',
+                    'sourcePlugin' => 'redirect-manager',
+                    'elementId' => $element->id,
+                ], true); // Show notification
+
+                if ($result) {
+                    $this->logInfo('Auto-created redirect for entry URI change', [
+                        'elementId' => $element->id,
+                        'siteId' => $siteId,
+                        'from' => $oldUri,
+                        'to' => $newUri,
+                    ]);
+                }
+            } else {
+                $this->logDebug('URI did not change, skipping redirect creation', [
+                    'elementId' => $element->id,
+                    'uri' => $newUri,
                 ]);
             }
-        } else {
-            $this->logDebug('URI did not change, skipping redirect creation', [
-                'elementId' => $element->id,
-                'uri' => $newUri,
-            ]);
+        } finally {
+            unset($this->_stashedUris[$key]);
         }
-
-        // Clear stashed URI
-        unset($this->_stashedUris[$key]);
     }
 
     /**
@@ -867,8 +886,9 @@ class RedirectsService extends Component
                     'sourcePlugin' => $sourcePlugin,
                 ]);
 
-                Craft::$app->getSession()->setNotice(
-                    Craft::t('redirect-manager', 'Slug change undone - previous redirect removed.')
+                $this->notifyUser(
+                    'notice',
+                    Craft::t('redirect-manager', 'Slug change undone - previous redirect removed.'),
                 );
 
                 return true; // Undo was handled
@@ -903,10 +923,13 @@ class RedirectsService extends Component
             return false;
         }
 
-        // Parse source URL
-        if (!isset($attributes['sourceUrlParsed'])) {
-            $attributes['sourceUrlParsed'] = $this->parseUrl($attributes['sourceUrl']);
-        }
+        $normalized = RedirectRecord::normalizeSourceUrl(
+            (string)$attributes['sourceUrl'],
+            (string)($attributes['redirectSrcMatch'] ?? 'pathonly'),
+            (string)($attributes['matchType'] ?? 'exact'),
+        );
+        $attributes['sourceUrl'] = $normalized['sourceUrl'];
+        $attributes['sourceUrlParsed'] = $normalized['sourceUrlParsed'];
 
         // Set default sourcePlugin if not provided
         if (!isset($attributes['sourcePlugin'])) {
@@ -916,15 +939,22 @@ class RedirectsService extends Component
         $siteId = isset($attributes['siteId']) ? (int)$attributes['siteId'] : null;
 
         // Check for circular redirects
-        if ($this->wouldCreateLoop($attributes['sourceUrl'], $attributes['destinationUrl'], null, $siteId)) {
+        if ($this->wouldCreateLoop(
+            $attributes['sourceUrl'],
+            $attributes['destinationUrl'],
+            null,
+            $siteId,
+            (string)($attributes['matchType'] ?? 'exact'),
+        )) {
             $this->logError('Cannot create redirect: would create circular loop', [
                 'sourceUrl' => $attributes['sourceUrl'],
                 'destinationUrl' => $attributes['destinationUrl'],
             ]);
 
             // Show specific error message to user
-            Craft::$app->getSession()->setError(
-                Craft::t('redirect-manager', 'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.')
+            $this->notifyUser(
+                'error',
+                Craft::t('redirect-manager', 'Cannot create redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.'),
             );
 
             return false;
@@ -947,7 +977,7 @@ class RedirectsService extends Component
         $existing = (new Query())
             ->from(RedirectRecord::tableName())
             ->where(['sourceUrlParsed' => $duplicateProbe])
-            ->andWhere(['siteId' => $attributes['siteId'] ?? null])
+            ->andWhere(['siteIdKey' => RedirectRecord::siteIdKey($siteId)])
             ->one();
 
         $this->logDebug('Duplicate check', [
@@ -960,11 +990,12 @@ class RedirectsService extends Component
             $this->logWarning('Redirect already exists', ['sourceUrl' => $attributes['sourceUrl']]);
 
             // Show notification to user
-            Craft::$app->getSession()->setNotice(
+            $this->notifyUser(
+                'notice',
                 Craft::t('redirect-manager', 'Redirect already exists: {source} → {dest}', [
                     'source' => $attributes['sourceUrl'],
                     'dest' => $attributes['destinationUrl'],
-                ])
+                ]),
             );
 
             return false;
@@ -1002,11 +1033,12 @@ class RedirectsService extends Component
 
         // Show notification if requested
         if ($showNotification) {
-            Craft::$app->getSession()->setNotice(
+            $this->notifyUser(
+                'notice',
                 Craft::t('redirect-manager', 'Redirect created: {source} → {dest}', [
                     'source' => $attributes['sourceUrl'],
                     'dest' => $attributes['destinationUrl'],
-                ])
+                ]),
             );
         }
 
@@ -1032,18 +1064,29 @@ class RedirectsService extends Component
 
         $oldSiteId = $record->siteId === null ? null : (int)$record->siteId;
 
-        // Parse source URL if changed
-        if (isset($attributes['sourceUrl']) && !isset($attributes['sourceUrlParsed'])) {
-            $attributes['sourceUrlParsed'] = $this->parseUrl($attributes['sourceUrl']);
+        if (array_intersect(['sourceUrl', 'redirectSrcMatch', 'matchType'], array_keys($attributes)) !== []) {
+            $normalized = RedirectRecord::normalizeSourceUrl(
+                (string)($attributes['sourceUrl'] ?? $record->sourceUrl),
+                (string)($attributes['redirectSrcMatch'] ?? $record->redirectSrcMatch),
+                (string)($attributes['matchType'] ?? $record->matchType),
+            );
+            $attributes['sourceUrl'] = $normalized['sourceUrl'];
+            $attributes['sourceUrlParsed'] = $normalized['sourceUrlParsed'];
         }
 
-        // Check for circular redirects (if destination is being changed)
-        if (isset($attributes['destinationUrl'])) {
+        // Check for circular redirects whenever either side's identity changes.
+        if (array_intersect(['sourceUrl', 'destinationUrl', 'redirectSrcMatch', 'matchType'], array_keys($attributes)) !== []) {
             $sourceUrl = $attributes['sourceUrl'] ?? $record->sourceUrl;
-            $destinationUrl = $attributes['destinationUrl'];
+            $destinationUrl = $attributes['destinationUrl'] ?? $record->destinationUrl;
             $siteId = isset($attributes['siteId']) ? (int)$attributes['siteId'] : ($record->siteId ? (int)$record->siteId : null);
 
-            if ($this->wouldCreateLoop($sourceUrl, $destinationUrl, $id, $siteId)) {
+            if ($this->wouldCreateLoop(
+                $sourceUrl,
+                $destinationUrl,
+                $id,
+                $siteId,
+                (string)($attributes['matchType'] ?? $record->matchType),
+            )) {
                 $this->logError('Cannot update redirect: would create circular loop', [
                     'id' => $id,
                     'sourceUrl' => $sourceUrl,
@@ -1051,8 +1094,9 @@ class RedirectsService extends Component
                 ]);
 
                 // Show specific error message to user
-                Craft::$app->getSession()->setError(
-                    Craft::t('redirect-manager', 'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.')
+                $this->notifyUser(
+                    'error',
+                    Craft::t('redirect-manager', 'Cannot update redirect: This would create a circular redirect loop. The destination eventually redirects back to the source.'),
                 );
 
                 return false;
@@ -1775,10 +1819,17 @@ class RedirectsService extends Component
      * @param int|null $siteId Site ID to scope chain checks to; null checks global redirects only
      * @return bool True if this would create a loop
      */
-    private function wouldCreateLoop(string $sourceUrl, string $destinationUrl, ?int $excludeId = null, ?int $siteId = null): bool
-    {
+    private function wouldCreateLoop(
+        string $sourceUrl,
+        string $destinationUrl,
+        ?int $excludeId = null,
+        ?int $siteId = null,
+        string $matchType = 'exact',
+    ): bool {
         // Parse and clean URLs
-        $sourceParsed = $this->parseUrl($sourceUrl);
+        $sourceParsed = in_array($matchType, ['regex', 'wildcard'], true)
+            ? $sourceUrl
+            : $this->parseUrl($sourceUrl);
         $destParsed = $this->parseUrl($destinationUrl);
 
         // Same source and destination is obviously a loop
@@ -1870,13 +1921,27 @@ class RedirectsService extends Component
         }
 
         $this->logWarning('Redirect already exists', ['sourceUrl' => $sourceUrl]);
-        Craft::$app->getSession()->setNotice(
+        $this->notifyUser(
+            'notice',
             Craft::t('redirect-manager', 'Redirect already exists: {source} → {dest}', [
                 'source' => $sourceUrl,
                 'dest' => $destinationUrl,
-            ])
+            ]),
         );
 
         return true;
+    }
+
+    /**
+     * Send one redirect lifecycle notification to the current CP user.
+     */
+    protected function notifyUser(string $type, string $message): void
+    {
+        if ($type === 'error') {
+            Craft::$app->getSession()->setError($message);
+            return;
+        }
+
+        Craft::$app->getSession()->setNotice($message);
     }
 }
