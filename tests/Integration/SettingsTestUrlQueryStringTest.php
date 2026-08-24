@@ -17,6 +17,7 @@ use craft\web\Response;
 use lindemannrock\redirectmanager\controllers\SettingsController;
 use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\tests\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Covers query-string settings in the Test URL Redirects tool.
@@ -80,6 +81,70 @@ final class SettingsTestUrlQueryStringTest extends TestCase
             '/destination?existing=value&utm_source=social',
             $withQuery['redirect']['resolvedDestinationUrl'],
         );
+    }
+
+    #[DataProvider('destinationQueryProvider')]
+    public function testUrlTesterPlacesPreservedQueryBeforeFragment(string $destination, string $expected): void
+    {
+        $source = '/' . self::MARKER . 'query_fragment_' . bin2hex(random_bytes(4)) . '/*';
+        $redirect = $this->seedRedirect([
+            'sourceUrl' => $source,
+            'sourceUrlParsed' => $source,
+            'destinationUrl' => $destination,
+            'matchType' => 'wildcard',
+            'siteId' => $this->siteId,
+        ]);
+        $this->settings()->stripQueryString = true;
+        $this->settings()->preserveQueryString = true;
+
+        $result = $this->testUrl((string)$redirect->sourceUrlParsed . '?campaign=summer');
+
+        self::assertTrue($result['matched']);
+        self::assertSame($expected, $result['redirect']['resolvedDestinationUrl']);
+    }
+
+    public function testUrlTesterLeavesDestinationUnchangedForEmptyIncomingQuery(): void
+    {
+        $redirect = $this->seedRedirect([
+            'destinationUrl' => '/destination?existing=value#section',
+            'siteId' => $this->siteId,
+        ]);
+        $this->settings()->stripQueryString = true;
+        $this->settings()->preserveQueryString = true;
+
+        $result = $this->testUrl((string)$redirect->sourceUrlParsed);
+
+        self::assertSame('/destination?existing=value#section', $result['redirect']['resolvedDestinationUrl']);
+    }
+
+    public function testUrlTesterMergesQueryAfterCaptureResolutionAndBeforeFragment(): void
+    {
+        $prefix = '/' . self::MARKER . 'capture_query_' . bin2hex(random_bytes(4)) . '/';
+        $this->seedRedirect([
+            'sourceUrl' => $prefix . '*',
+            'sourceUrlParsed' => $prefix . '*',
+            'destinationUrl' => '/archive/$1#details',
+            'matchType' => 'wildcard',
+            'siteId' => $this->siteId,
+        ]);
+        $this->settings()->stripQueryString = true;
+        $this->settings()->preserveQueryString = true;
+
+        $result = $this->testUrl($prefix . 'article?campaign=summer');
+
+        self::assertTrue($result['matched']);
+        self::assertSame('/archive/$1#details', $result['redirect']['destinationUrl']);
+        self::assertSame('/archive/article?campaign=summer#details', $result['redirect']['resolvedDestinationUrl']);
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function destinationQueryProvider(): iterable
+    {
+        yield 'relative without query or fragment' => ['/destination', '/destination?campaign=summer'];
+        yield 'relative with existing query' => ['/destination?existing=value', '/destination?existing=value&campaign=summer'];
+        yield 'relative with fragment' => ['/destination#section', '/destination?campaign=summer#section'];
+        yield 'relative with query and fragment' => ['/destination?existing=value#section', '/destination?existing=value&campaign=summer#section'];
+        yield 'absolute with query and fragment' => ['https://destination.example/path?existing=value#section', 'https://destination.example/path?existing=value&campaign=summer#section'];
     }
 
     /** @return array<string, mixed> */

@@ -12,7 +12,11 @@ namespace lindemannrock\redirectmanager\tests\Integration;
 
 use Craft;
 use craft\console\Request as ConsoleRequest;
+use craft\helpers\UrlHelper;
+use GraphQL\Type\Definition\ResolveInfo;
 use lindemannrock\base\helpers\PluginHelper;
+use lindemannrock\base\testing\StubConsoleRequest;
+use lindemannrock\redirectmanager\gql\resolvers\RedirectResolver;
 use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\services\MatchingService;
 use lindemannrock\redirectmanager\services\RedirectsService;
@@ -128,12 +132,83 @@ final class RedirectLookupCacheTest extends TestCase
         self::assertSame($winner->id, (int)$result['id']);
         self::assertSame('/winner/captured', $result['destinationUrl']);
         self::assertSame(
-            ['candidateLoads' => 1, 'matcherCalls' => 3],
+            ['candidateLoads' => 1, 'matcherCalls' => 5],
             [
                 'candidateLoads' => $this->candidateLoads,
                 'matcherCalls' => $this->matcherCalls,
             ],
         );
+    }
+
+    public function testSiteWinnerRemainsAuthoritativeAcrossOrderedBasePathCandidates(): void
+    {
+        $site = Craft::$app->getSites()->getCurrentSite();
+        $originalBaseUrl = $site->getBaseUrl(false);
+        $site->setBaseUrl(rtrim((string)$site->getBaseUrl(), '/') . '/en');
+
+        try {
+            $token = bin2hex(random_bytes(4));
+            $strippedPath = '/' . self::MARKER . 'base_path_' . $token;
+            $originalPath = '/en' . $strippedPath;
+            $fullUrl = UrlHelper::siteUrl(ltrim($originalPath, '/'), null, null, (int)$site->id);
+            $global = $this->seedRedirect([
+                'sourceUrl' => $strippedPath,
+                'sourceUrlParsed' => $strippedPath,
+                'destinationUrl' => '/global-winner',
+                'priority' => 0,
+            ]);
+            $global->siteId = null;
+            self::assertTrue($global->save(false));
+            $siteRedirect = $this->seedRedirect([
+                'sourceUrl' => $originalPath,
+                'sourceUrlParsed' => $originalPath,
+                'destinationUrl' => '/site-winner',
+                'priority' => 9,
+                'siteId' => $site->id,
+            ]);
+            $settings = $this->settings();
+            $settings->enableAnalytics = true;
+            $settings->autoTrimAnalytics = false;
+            $settings->enableGeoDetection = false;
+            $settings->anonymizeIpAddress = false;
+            $settings->ipHashSalt = '0123456789abcdef0123456789abcdef';
+            Craft::$app->set('request', new StubConsoleRequest(userIp: '203.0.113.42'));
+
+            $cold = $this->redirects->findRedirectForSiteCandidates(
+                $fullUrl,
+                [$strippedPath, $originalPath],
+                (int)$site->id,
+            );
+            $cached = RedirectResolver::resolve(
+                null,
+                ['uri' => $originalPath, 'siteId' => $site->id],
+                null,
+                $this->createMock(ResolveInfo::class),
+            );
+
+            self::assertNotNull($cold);
+            self::assertIsArray($cached);
+            self::assertSame($siteRedirect->id, (int)$cold['id']);
+            self::assertSame($siteRedirect->id, (int)$cached['id']);
+            self::assertSame('/site-winner', $cold['destinationUrl']);
+            self::assertSame('/site-winner', $cached['destinationUrl']);
+            self::assertSame(1, $this->candidateLoads);
+            self::assertSame(1, RedirectManager::$plugin->localCache->countRedirectCacheFiles());
+            self::assertSame(0, $this->fetchHitCountFromDb((int)$global->id));
+            self::assertSame(2, $this->fetchHitCountFromDb((int)$siteRedirect->id));
+
+            $analytics = $this->fetchRow('{{%redirectmanager_analytics}}', [
+                'urlParsed' => strtolower($originalPath),
+                'siteId' => $site->id,
+            ]);
+            self::assertNotNull($analytics);
+            self::assertSame(1, (int)$analytics['handled']);
+            self::assertSame($siteRedirect->id, (int)$analytics['redirectId']);
+            self::assertSame(1, (int)$analytics['count']);
+            self::assertSame('graphql', $analytics['sourcePlugin']);
+        } finally {
+            $site->setBaseUrl($originalBaseUrl);
+        }
     }
 
     public function testExpiredNegativeResultIsRecomputed(): void
@@ -374,7 +449,7 @@ final class RedirectLookupCacheTest extends TestCase
         self::assertNotNull($result);
         self::assertSame($redirect->id, (int)$result['id']);
         self::assertSame(1, $this->candidateLoads);
-        self::assertSame(1, $this->matcherCalls);
+        self::assertSame(2, $this->matcherCalls);
     }
 
     public function testFrontendCachedMissStillRecordsEveryRequest(): void
@@ -453,7 +528,7 @@ final class RedirectLookupCacheTest extends TestCase
         self::assertNull($this->redirects->findRedirect($missingFullUrl, $missingPath));
 
         self::assertSame(2, $this->candidateLoads);
-        self::assertSame(2, $this->matcherCalls);
+        self::assertSame(3, $this->matcherCalls);
         self::assertSame(2, $this->fetchHitCountFromDb((int)$redirect->id));
         self::assertSame(0, RedirectManager::$plugin->localCache->countRedirectCacheFiles());
         self::assertNotEmpty(array_filter(
@@ -541,7 +616,7 @@ final class RedirectLookupCacheTest extends TestCase
         self::assertNotNull($result);
         self::assertSame($redirect->id, (int)$result['id']);
         self::assertSame(1, $this->candidateLoads);
-        self::assertSame(1, $this->matcherCalls);
+        self::assertSame(2, $this->matcherCalls);
     }
 
     public function testManualApplicationCacheClearPreservesUnrelatedEntries(): void

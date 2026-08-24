@@ -329,14 +329,15 @@ final class DynamicDestinationTrustTest extends TestCase
             'priority' => 1,
         ]);
 
-        $method = new ReflectionMethod($this->redirects, 'resolveRedirectChain');
-        $resolved = $method->invoke(
+        $method = new ReflectionMethod($this->redirects, 'resolveRedirectChainOutcome');
+        $outcome = $method->invoke(
             $this->redirects,
             $intermediate,
             Craft::$app->getSites()->getCurrentSite()->id,
         );
 
-        self::assertSame('/safe-chain/evil.example', $resolved);
+        self::assertIsArray($outcome);
+        self::assertSame('/safe-chain/evil.example', $outcome['destination']);
         self::assertSame(0, $this->fetchHitCountFromDb($unsafe->id));
         self::assertSame(0, $this->fetchHitCountFromDb($safe->id));
     }

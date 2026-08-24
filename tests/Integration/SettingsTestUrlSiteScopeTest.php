@@ -215,4 +215,79 @@ final class SettingsTestUrlSiteScopeTest extends TestCase
         self::assertSame(0, $this->fetchHitCountFromDb($safe->id));
         self::assertSame(0, $this->countRows('{{%redirectmanager_analytics}}'));
     }
+
+    public function testUrlTestPrefersSiteSpecificRuleBeforeGlobalPriority(): void
+    {
+        $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        $path = '/' . self::MARKER . 'tester_precedence_' . bin2hex(random_bytes(4));
+        $global = $this->seedRedirect([
+            'sourceUrl' => $path,
+            'sourceUrlParsed' => $path,
+            'destinationUrl' => '/global',
+            'priority' => 0,
+        ]);
+        $global->siteId = null;
+        self::assertTrue($global->save(false));
+        $site = $this->seedRedirect([
+            'sourceUrl' => $path,
+            'sourceUrlParsed' => $path,
+            'destinationUrl' => '/site',
+            'priority' => 9,
+            'siteId' => $siteId,
+        ]);
+
+        Craft::$app->set('sites', new class($siteId) extends Sites {
+            public function __construct(private readonly int $editableSiteId)
+            {
+                parent::__construct();
+            }
+
+            public function getEditableSiteIds(): array
+            {
+                return [$this->editableSiteId];
+            }
+        });
+        Craft::$app->set('request', new class(['testUrl' => $path]) extends ConsoleRequest {
+            /** @param array<string, mixed> $bodyParams */
+            public function __construct(private readonly array $bodyParams)
+            {
+                parent::__construct();
+            }
+
+            public function getBodyParam($name, $defaultValue = null): mixed
+            {
+                return $this->bodyParams[$name] ?? $defaultValue;
+            }
+
+            public function getIsPost(): bool
+            {
+                return true;
+            }
+
+            public function getAcceptsJson(): bool
+            {
+                return true;
+            }
+
+            public function getIsOptions(): bool
+            {
+                return false;
+            }
+
+            public function hasValidSiteToken(): bool
+            {
+                return false;
+            }
+        });
+
+        $response = (new class('settings', RedirectManager::$plugin) extends SettingsController {
+            public function requirePermission(string $permissionName): void
+            {
+            }
+        })->actionTestUrl();
+
+        self::assertIsArray($response->data);
+        self::assertSame($site->id, (int)$response->data['redirect']['id']);
+        self::assertSame($global->id, (int)$response->data['alsoMatches'][0]['id']);
+    }
 }

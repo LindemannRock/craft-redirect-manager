@@ -50,10 +50,14 @@ final class RedirectChainSiteScopeTest extends TestCase
             'siteId' => $siteA,
         ]);
 
-        $method = new ReflectionMethod($this->redirects, 'resolveRedirectChain');
+        $method = new ReflectionMethod($this->redirects, 'resolveRedirectChainOutcome');
 
-        self::assertSame($siteDestination, $method->invoke($this->redirects, $intermediate, $siteA));
-        self::assertSame($globalDestination, $method->invoke($this->redirects, $intermediate, $siteC));
+        $siteOutcome = $method->invoke($this->redirects, $intermediate, $siteA);
+        $globalOutcome = $method->invoke($this->redirects, $intermediate, $siteC);
+        self::assertIsArray($siteOutcome);
+        self::assertIsArray($globalOutcome);
+        self::assertSame($siteDestination, $siteOutcome['destination']);
+        self::assertSame($globalDestination, $globalOutcome['destination']);
     }
 
     public function testWouldCreateLoopIgnoresOtherSiteRedirects(): void

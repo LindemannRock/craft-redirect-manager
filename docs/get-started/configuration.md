@@ -42,8 +42,8 @@ When the Control Panel value is **Use global default**, the setting cascades fro
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `stripQueryString` | `bool` | `false` | Strip query string from 404 URLs before matching |
-| `preserveQueryString` | `bool` | `false` | Preserve and pass query string to redirect destination |
+| `stripQueryString` | `bool` | `false` | Strip the query before matching across frontend, GraphQL, the URL tester, and plugin integrations; when `false`, the query remains part of the matching input |
+| `preserveQueryString` | `bool` | `false` | Append the incoming query after existing destination parameters and before any `#fragment`; applies after capture substitution across the same resolution paths |
 
 ## Redirect Response
 

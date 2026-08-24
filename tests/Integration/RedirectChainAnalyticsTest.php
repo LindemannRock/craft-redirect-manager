@@ -85,14 +85,15 @@ final class RedirectChainAnalyticsTest extends TestCase
             'destinationUrl' => $final,
         ]);
 
-        $method = new ReflectionMethod($this->redirects, 'resolveRedirectChain');
-        $resolvedUrl = $method->invoke(
+        $method = new ReflectionMethod($this->redirects, 'resolveRedirectChainOutcome');
+        $outcome = $method->invoke(
             $this->redirects,
             $intermediate,
             Craft::$app->getSites()->getPrimarySite()->id,
         );
 
-        $this->assertSame($final, $resolvedUrl);
+        self::assertIsArray($outcome);
+        $this->assertSame($final, $outcome['destination']);
         $this->assertSame(
             0,
             $this->countRows('{{%redirectmanager_analytics}}', ['urlParsed' => $intermediate]),

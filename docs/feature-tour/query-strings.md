@@ -50,6 +50,16 @@ OFF (default):      Redirected to: /new-page
 ON:                 Redirected to: /new-page?ref=email&campaign=spring
 ```
 
+If the destination already has parameters, Redirect Manager keeps them first and appends the incoming query. If the destination also has a fragment, the merged query stays before `#fragment`:
+
+```text
+Visitor arrives at: /old-page?campaign=spring
+Rule destination:   /new-page?view=full#details
+Redirected to:      /new-page?view=full&campaign=spring#details
+```
+
+This policy is shared by frontend responses, GraphQL resolution, the Settings URL tester, and plugin integrations such as Shortlink Manager and Smartlink Manager. Capture substitutions are resolved before the query is merged. Redirect Manager preserves the existing destination parameters and appends the incoming query as supplied; it does not deduplicate same-named parameters.
+
 **When to enable:** Sites that rely on query string parameters for tracking, attribution, or session state. Enabling this ensures tracking parameters survive through a redirect.
 
 ```php

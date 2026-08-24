@@ -44,9 +44,11 @@ A redirect exists in the CP but visiting the URL does not redirect.
 
 3. **Is the redirect enabled?** Go to **Redirect Manager > Redirects** and check that the redirect row shows as enabled (not greyed out).
 
-4. **Is the source URL correct?** By default, the plugin matches by path only. If the redirect source is `/old-page`, it matches the path `/old-page` — not `https://example.com/old-page`. If you need domain-specific matching, switch to `redirectSrcMatch = 'fullurl'`. For URLs carrying `utm_*`, `fbclid`, or similar parameters, enable **Strip Query String** so those parameters do not prevent an exact path match. The tester under **Settings → Test** applies the same setting.
+4. **Is the source URL correct?** By default, the plugin matches by path only. If the redirect source is `/old-page`, it matches the path `/old-page` — not `https://example.com/old-page`. If you need domain-specific matching, switch to `redirectSrcMatch = 'fullurl'`. For URLs carrying `utm_*`, `fbclid`, or similar parameters, enable **Strip Query String** so those parameters do not prevent an exact path match. Frontend, GraphQL, the tester, and plugin integrations all apply the same effective setting.
 
-5. **Is the redirect cache stale?** Clear caches:
+5. **Is another site scope winning?** A rule assigned to the requested site is considered before every global rule. Priority and rule ID apply within the site-specific and global ranks. Use **Settings → Test** to see the ordered result.
+
+6. **Is the redirect cache stale?** Clear caches:
 
    ```bash title="PHP"
    php craft clear-caches/all
@@ -58,7 +60,7 @@ A redirect exists in the CP but visiting the URL does not redirect.
 
    If `cacheStorageMethod` is set to `redis`, also check the logs for a cache-component warning. Redirect Manager logs a warning and skips Redis-specific cache operations when Redis storage is selected but Craft's `cache` component is not Redis-backed.
 
-6. **Check the logs.** Go to **Redirect Manager > Logs** or enable debug logging temporarily:
+7. **Check the logs.** Go to **Redirect Manager > Logs** or enable debug logging temporarily:
 
    ```php
    // config/redirect-manager.php
@@ -67,7 +69,7 @@ A redirect exists in the CP but visiting the URL does not redirect.
 
    Debug logging requires `devMode` to be enabled.
 
-**Why it happens:** The redirect cache may contain an outdated version of the redirect list, or the source URL doesn't match what the plugin is receiving (e.g., query strings, path differences).
+**Why it happens:** The redirect cache may contain an outdated version of the redirect list, the source URL may not match what the plugin is receiving, or the first matching rule may be ineligible because its destination is unsafe or its chain cycles or exceeds the depth limit. Ineligible rules receive no hit, handled analytics, `Location` header, or positive cache entry; Redirect Manager tries the next matching rule and returns a normal unhandled result when none is safe.
 
 ---
 
@@ -197,7 +199,7 @@ Set `logLevel` to `debug` but debug entries are not appearing.
 
 ## Redirect Creates a Loop
 
-A redirect fires but the browser reports "Too many redirects" or the destination sends back to the source.
+A redirect is skipped, or an independently configured redirect outside Redirect Manager sends the browser back to the source.
 
 **Common causes:**
 
@@ -209,7 +211,10 @@ A redirect fires but the browser reports "Too many redirects" or the destination
 
 1. Review the redirect in the CP for obvious source/destination overlap
 2. Enable debug logging and check logs for the redirect chain
-3. Use `exact` match type for specific pages instead of `wildcard` or `prefix` to avoid unintended matches
+3. Use **Settings → Test** to see whether a later safe candidate wins or every match is rejected
+4. Use `exact` match type for specific pages instead of `wildcard` or `prefix` to avoid unintended matches
+
+Redirect Manager detects direct, multi-hop, wildcard, prefix, and RegEx cycles before issuing a response. A cycle-producing or depth-exhausted candidate is skipped, so it cannot emit the repeated destination. If no later safe match exists, the request remains a normal unhandled 404.
 
 ---
 
@@ -261,7 +266,7 @@ Saving a redirect or importing a row fails with an invalid destination/source UR
 4. **Contact links are allowed.** `mailto:`, `tel:`, `whatsapp:`, `sms:`, `fax:`, `skype://`, `slack:`, and `msteams:` destinations are valid; executable schemes (`javascript:`, `data:`) are not.
 5. **Keep captures inside a fixed destination.** Use `/new/$1` or `https://example.com/$1?from=$2`. A bare `$1`, `https://$1/path`, or a capture in the user-info or port portion of an HTTP(S) URL is rejected because the request value would control the destination's trust boundary.
 
-If an older published redirect or an integration-created row contains an unsafe template, it remains in the database but cannot win resolution. Redirect Manager skips it and continues to the next matching safe rule by priority. If every matching rule is unsafe, no redirect is issued and the request is recorded as unhandled. Skipped rules do not receive hits, handled analytics, or positive cache entries. Edit or replace the unsafe row; do not raise its priority to work around the protection.
+If an older published redirect or an integration-created row contains an unsafe template, it remains in the database but cannot win resolution. Redirect Manager skips it and continues to the next matching safe rule in normal site-rank, priority, and rule-ID order. If every matching rule is unsafe, no redirect is issued and the request is recorded as unhandled. Skipped rules do not receive hits, handled analytics, or positive cache entries. Edit or replace the unsafe row; do not raise its priority to work around the protection.
 
 ---
 

@@ -535,9 +535,6 @@ class SettingsController extends Controller
         ], $resolvedMatches);
 
         if (!empty($allMatches)) {
-            // Sort by priority (already sorted from getEnabledRedirects, but be explicit)
-            usort($allMatches, fn($a, $b) => $a['priority'] <=> $b['priority'] ?: $a['id'] <=> $b['id']);
-
             // First match is the winner
             $winningRedirect = array_shift($allMatches);
 

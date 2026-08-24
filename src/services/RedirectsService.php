@@ -36,7 +36,7 @@ class RedirectsService extends Component
 {
     use LoggingTrait;
 
-    private const CACHE_RESULT_VERSION = 2;
+    private const CACHE_RESULT_VERSION = 3;
     private const CACHE_STATE_ABSENT = 'absent';
     private const CACHE_STATE_NEGATIVE = 'negative';
     private const CACHE_STATE_POSITIVE = 'positive';
@@ -105,8 +105,6 @@ class RedirectsService extends Component
             return;
         }
 
-        $settings = RedirectManager::$plugin->getSettings();
-
         // Build full path with query string for analytics
         // Check if pathOnly already includes query string
         $queryString = $request->getQueryString();
@@ -117,14 +115,7 @@ class RedirectsService extends Component
         }
         $originalFullUrl = $fullUrl;
 
-        // Strip query string for matching if configured
-        if ($settings->stripQueryString) {
-            $pathOnlyForMatching = $this->stripQueryString($pathOnly);
-            $fullUrlForMatching = $this->stripQueryString($fullUrl);
-        } else {
-            $pathOnlyForMatching = $pathOnly;
-            $fullUrlForMatching = $fullUrl;
-        }
+        [$fullUrlForMatching, $pathOnlyForMatching] = $this->normalizeMatchingInputs($fullUrl, $pathOnly);
 
         // Strip site base path for matching (e.g., /en/about-us → /about-us)
         // This allows redirects to be stored without site prefix while matching URLs with prefix
@@ -152,7 +143,7 @@ class RedirectsService extends Component
             return;
         }
 
-        $redirect = $this->findRedirectForSiteCandidates(
+        $redirect = $this->findRedirectForSiteCandidatesInternal(
             $fullUrlForMatching,
             [$pathOnlyStripped, $pathOnlyForMatching],
             (int)$currentSite->id,
@@ -217,6 +208,21 @@ class RedirectsService extends Component
      */
     public function findRedirectForSiteCandidates(string $fullUrl, array $pathCandidates, int $siteId): ?array
     {
+        $queryString = $this->queryStringFromUrl($fullUrl);
+        $redirect = $this->findRedirectForSiteCandidatesInternal($fullUrl, $pathCandidates, $siteId);
+
+        return $redirect === null ? null : $this->prepareRedirectForConsumer($redirect, $queryString);
+    }
+
+    /**
+     * Resolve one accepted candidate while retaining internal response metadata.
+     *
+     * @param array<int, string> $pathCandidates
+     * @return array<string, mixed>|null
+     */
+    private function findRedirectForSiteCandidatesInternal(string $fullUrl, array $pathCandidates, int $siteId): ?array
+    {
+        [$fullUrl, $pathCandidates] = $this->normalizeMatchingCandidateInputs($fullUrl, $pathCandidates);
         $pathCandidates = $this->normalizePathCandidates($pathCandidates);
         $lookupIdentity = $this->buildLookupIdentity($siteId, $fullUrl, $pathCandidates);
         $settings = RedirectManager::$plugin->getSettings();
@@ -241,6 +247,7 @@ class RedirectsService extends Component
             $this->getEnabledRedirects($siteId),
             $fullUrl,
             $pathCandidates,
+            $siteId,
         );
         if ($redirect === null) {
             $this->saveToCache($lookupIdentity, $siteId, $this->negativeCacheResult(), $storageDecision);
@@ -252,7 +259,7 @@ class RedirectsService extends Component
         $redirect['_requestSiteId'] = $siteId;
         $this->incrementHitCount((int)$redirect['id']);
 
-        return $this->withoutDestinationPolicyMetadata($redirect);
+        return $redirect;
     }
 
     /**
@@ -267,24 +274,18 @@ class RedirectsService extends Component
      */
     public function testRedirects(string $fullUrl, string $pathOnly, array $siteIds): array
     {
-        $settings = RedirectManager::$plugin->getSettings();
-        $queryString = parse_url($fullUrl, PHP_URL_QUERY);
-
-        if ($settings->stripQueryString) {
-            $fullUrl = $this->stripQueryString($fullUrl);
-            $pathOnly = $this->stripQueryString($pathOnly);
-        }
+        $queryString = $this->queryStringFromUrl($fullUrl);
+        [$fullUrl, $pathOnly] = $this->normalizeMatchingInputs($fullUrl, $pathOnly);
 
         $matches = [];
-        foreach ($this->getEnabledRedirects($siteIds) as $redirect) {
-            $resolved = $this->resolveEligibleCandidate($redirect, $fullUrl, $pathOnly);
+        $redirects = $this->getEnabledRedirects($siteIds);
+        foreach ($redirects as $redirect) {
+            $resolved = $this->resolveEligibleCandidate($redirect, $fullUrl, $pathOnly, $siteIds, $redirects);
             if ($resolved !== null) {
-                $template = $resolved['_destinationTemplate'];
-                $resolvedDestination = $resolved['destinationUrl'];
-                if ($settings->preserveQueryString && is_string($queryString) && $queryString) {
-                    $resolvedDestination = $this->appendQueryString($resolvedDestination, $queryString);
-                }
-                $resolved = $this->withoutDestinationPolicyMetadata($resolved);
+                $template = (string)$resolved['_destinationTemplate'];
+                $prepared = $this->prepareRedirectForConsumer($resolved, $queryString);
+                $resolvedDestination = $prepared['destinationUrl'];
+                $resolved = $prepared;
                 $resolved['destinationUrl'] = $template;
                 $resolved['resolvedDestinationUrl'] = $resolvedDestination;
                 $matches[] = $resolved;
@@ -310,9 +311,8 @@ class RedirectsService extends Component
         $currentSite = Craft::$app->getSites()->getCurrentSite();
         $siteId = $currentSite->id;
 
-        // Strip query string for matching
-        $fullUrl = $this->stripQueryString($url);
-        $pathOnly = parse_url($fullUrl, PHP_URL_PATH) ?: $fullUrl;
+        $fullUrl = $url;
+        $pathOnly = $this->pathAndQueryFromUrl($url);
 
         // Strip site base path for matching (e.g., /ar/go/slug -> /go/slug)
         $siteBaseUrl = $currentSite->getBaseUrl();
@@ -352,7 +352,11 @@ class RedirectsService extends Component
 
         if ($redirect) {
             // If we stripped site base path and destination is a relative path, add it back
-            if ($siteBasePath !== '/' && $pathOnlyStripped !== $pathOnly) {
+            if (
+                (int)$redirect['statusCode'] !== 410
+                && $siteBasePath !== '/'
+                && $pathOnlyStripped !== $pathOnly
+            ) {
                 $destUrl = $redirect['destinationUrl'];
                 // Only prepend if destination is a relative path starting with /
                 if ($destUrl && $destUrl[0] === '/' && !str_starts_with($destUrl, $siteBasePath . '/')) {
@@ -377,9 +381,58 @@ class RedirectsService extends Component
      * @param array<string, mixed> $redirect
      * @param string $fullUrl
      * @param string $pathOnly
+     * @param array<int, array<string, mixed>>|null $chainCandidates
      * @return array<string, mixed>|null
      */
-    private function resolveEligibleCandidate(array $redirect, string $fullUrl, string $pathOnly): ?array
+    private function resolveEligibleCandidate(
+        array $redirect,
+        string $fullUrl,
+        string $pathOnly,
+        int|array|null $siteId,
+        ?array $chainCandidates = null,
+    ): ?array {
+        $resolved = $this->resolveMatchingCandidate($redirect, $fullUrl, $pathOnly);
+        if ($resolved === null) {
+            return null;
+        }
+
+        if ((int)$resolved['statusCode'] === 410) {
+            return $resolved;
+        }
+
+        $chainSiteId = is_array($siteId)
+            ? (isset($redirect['siteId']) && is_numeric($redirect['siteId'])
+                ? (int)$redirect['siteId']
+                : (isset($siteId[0]) ? (int)$siteId[0] : null))
+            : $siteId;
+        $chain = $this->resolveRedirectChainOutcome(
+            (string)$resolved['destinationUrl'],
+            $chainSiteId,
+            candidates: $chainCandidates,
+        );
+        if (!$chain['safe']) {
+            $this->logWarning('Skipped redirect with unsafe chain', [
+                'redirectId' => $redirect['id'] ?? null,
+                'sourceUrl' => $redirect['sourceUrl'] ?? null,
+                'destinationUrl' => $resolved['destinationUrl'],
+                'reason' => $chain['reason'],
+            ]);
+
+            return null;
+        }
+
+        $resolved['_chainDestinationUrl'] = $chain['destination'];
+
+        return $resolved;
+    }
+
+    /**
+     * Match a candidate and resolve only its own capture-aware destination.
+     *
+     * @param array<string, mixed> $redirect
+     * @return array<string, mixed>|null
+     */
+    private function resolveMatchingCandidate(array $redirect, string $fullUrl, string $pathOnly): ?array
     {
         $matchType = $redirect['matchType'];
         $sourceUrlParsed = $redirect['sourceUrlParsed'];
@@ -396,6 +449,14 @@ class RedirectsService extends Component
         }
 
         $template = (string)$redirect['destinationUrl'];
+        if ((int)$redirect['statusCode'] === 410) {
+            $redirect['_destinationTemplate'] = $template;
+            $redirect['_destinationPolicyVersion'] = 2;
+            $redirect['_responseType'] = 'gone';
+
+            return $redirect;
+        }
+
         $resolved = RedirectManager::$plugin->matching->resolveDestination($template, $result['captures']);
         if ($resolved === null) {
             $this->logWarning('Skipped redirect with unsafe resolved destination', [
@@ -408,25 +469,10 @@ class RedirectsService extends Component
 
         $redirect['destinationUrl'] = $resolved;
         $redirect['_destinationTemplate'] = $template;
-        $redirect['_destinationPolicyVersion'] = 1;
+        $redirect['_destinationPolicyVersion'] = 2;
+        $redirect['_responseType'] = 'redirect';
 
         return $redirect;
-    }
-
-    /**
-     * @param array<int, array<string, mixed>> $redirects
-     * @return array<string, mixed>|null
-     */
-    private function resolveFirstEligibleCandidate(array $redirects, string $fullUrl, string $pathOnly): ?array
-    {
-        foreach ($redirects as $redirect) {
-            $resolved = $this->resolveEligibleCandidate($redirect, $fullUrl, $pathOnly);
-            if ($resolved !== null) {
-                return $resolved;
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -434,22 +480,27 @@ class RedirectsService extends Component
      * @param array<int, string> $pathCandidates
      * @return array<string, mixed>|null
      */
-    private function resolveFirstEligibleCandidateForPaths(array $redirects, string $fullUrl, array $pathCandidates): ?array
-    {
-        $evaluatedFullUrlCandidates = [];
-
-        foreach ($pathCandidates as $pathOnly) {
-            foreach ($redirects as $index => $redirect) {
-                if (($redirect['redirectSrcMatch'] ?? 'pathonly') === 'fullurl') {
-                    if (isset($evaluatedFullUrlCandidates[$index])) {
-                        continue;
-                    }
-                    $evaluatedFullUrlCandidates[$index] = true;
-                }
-
-                $resolved = $this->resolveEligibleCandidate($redirect, $fullUrl, $pathOnly);
+    private function resolveFirstEligibleCandidateForPaths(
+        array $redirects,
+        string $fullUrl,
+        array $pathCandidates,
+        int $siteId,
+    ): ?array {
+        foreach ($redirects as $redirect) {
+            foreach ($pathCandidates as $pathOnly) {
+                $resolved = $this->resolveEligibleCandidate(
+                    $redirect,
+                    $fullUrl,
+                    $pathOnly,
+                    $siteId,
+                    $redirects,
+                );
                 if ($resolved !== null) {
                     return $resolved;
+                }
+
+                if (($redirect['redirectSrcMatch'] ?? 'pathonly') === 'fullurl') {
+                    break;
                 }
             }
         }
@@ -460,9 +511,36 @@ class RedirectsService extends Component
     /** @param array<string, mixed> $redirect */
     private function withoutDestinationPolicyMetadata(array $redirect): array
     {
-        unset($redirect['_destinationTemplate'], $redirect['_destinationPolicyVersion']);
+        unset(
+            $redirect['_destinationTemplate'],
+            $redirect['_destinationPolicyVersion'],
+            $redirect['_responseType'],
+            $redirect['_chainDestinationUrl'],
+        );
 
         return $redirect;
+    }
+
+    /**
+     * Apply request-specific destination settings without changing cached data.
+     *
+     * @param array<string, mixed> $redirect
+     * @return array<string, mixed>
+     */
+    private function prepareRedirectForConsumer(array $redirect, ?string $queryString): array
+    {
+        if (
+            (int)$redirect['statusCode'] !== 410
+            && RedirectManager::$plugin->getSettings()->preserveQueryString
+            && $queryString !== null
+        ) {
+            $redirect['destinationUrl'] = $this->appendQueryString(
+                (string)$redirect['destinationUrl'],
+                $queryString,
+            );
+        }
+
+        return $this->withoutDestinationPolicyMetadata($redirect);
     }
 
     /**
@@ -475,31 +553,41 @@ class RedirectsService extends Component
      */
     private function executeRedirect(array $redirect, string $fullUrl, string $pathOnly): void
     {
-        $destination = $redirect['destinationUrl'];
-        $statusCode = $redirect['statusCode'];
+        $response = $this->prepareRedirectResponse($redirect, $fullUrl, $pathOnly);
+
+        $response->send();
+        Craft::$app->end();
+    }
+
+    /**
+     * Prepare the accepted HTTP response without sending it.
+     *
+     * @param array<string, mixed> $redirect
+     */
+    private function prepareRedirectResponse(array $redirect, string $fullUrl, string $pathOnly): \yii\web\Response
+    {
+        $statusCode = (int)$redirect['statusCode'];
         $settings = RedirectManager::$plugin->getSettings();
+        $response = Craft::$app->getResponse();
 
-        // Resolve redirect chains to get final destination
-        try {
-            $siteId = isset($redirect['_requestSiteId']) && is_numeric($redirect['_requestSiteId'])
-                ? (int)$redirect['_requestSiteId']
-                : null;
-            $destination = $this->resolveRedirectChain($destination, $siteId);
-        } catch (\Exception $e) {
-            $this->logError('Failed to resolve redirect chain', ['error' => $e->getMessage()]);
-        }
-
-        // Handle query string preservation
-        if ($settings->preserveQueryString) {
-            $queryString = parse_url($fullUrl, PHP_URL_QUERY);
-            if (is_string($queryString) && $queryString) {
-                $destination = $this->appendQueryString($destination, $queryString);
+        if ($statusCode === 410) {
+            $destination = null;
+            $response->setStatusCode(410);
+            $response->headers->remove('Location');
+        } else {
+            $destination = (string)($redirect['_chainDestinationUrl'] ?? $redirect['destinationUrl']);
+            if ($settings->preserveQueryString) {
+                $queryString = $this->queryStringFromUrl($fullUrl);
+                if ($queryString !== null) {
+                    $destination = $this->appendQueryString($destination, $queryString);
+                }
             }
-        }
 
-        // Make destination URL absolute if relative
-        if (!UrlHelper::isAbsoluteUrl($destination)) {
-            $destination = UrlHelper::siteUrl($destination);
+            if (!UrlHelper::isAbsoluteUrl($destination)) {
+                $destination = UrlHelper::siteUrl($destination);
+            }
+
+            $response->redirect($destination, $statusCode);
         }
 
         $this->logDebug('Executing redirect', [
@@ -510,19 +598,21 @@ class RedirectsService extends Component
 
         // Set no-cache headers if configured
         if ($settings->setNoCacheHeaders) {
-            Craft::$app->getResponse()->setNoCacheHeaders();
+            $response->setNoCacheHeaders();
         }
 
         // Add custom headers
         foreach ($settings->additionalHeaders as $header) {
             if (isset($header['name']) && isset($header['value'])) {
-                Craft::$app->getResponse()->headers->set($header['name'], $header['value']);
+                $response->headers->set($header['name'], $header['value']);
             }
         }
 
-        // Perform the redirect
-        Craft::$app->getResponse()->redirect($destination, $statusCode)->send();
-        Craft::$app->end();
+        if ($statusCode === 410) {
+            $response->headers->remove('Location');
+        }
+
+        return $response;
     }
 
     /**
@@ -1050,7 +1140,7 @@ class RedirectsService extends Component
     }
 
     /**
-     * Get all enabled redirects for one or more sites, ordered by priority
+     * Get all enabled redirects using site rank, priority, then ID.
      *
      * @param int|array<int>|null $siteId
      * @return array
@@ -1070,7 +1160,22 @@ class RedirectsService extends Component
             ]);
         }
 
-        return $query->all();
+        $redirects = $query->all();
+        if ($siteId === null) {
+            return $redirects;
+        }
+
+        $siteIds = is_array($siteId) ? array_map('intval', $siteId) : [$siteId];
+        usort($redirects, static function(array $a, array $b) use ($siteIds): int {
+            $aSiteRank = isset($a['siteId']) && in_array((int)$a['siteId'], $siteIds, true) ? 0 : 1;
+            $bSiteRank = isset($b['siteId']) && in_array((int)$b['siteId'], $siteIds, true) ? 0 : 1;
+
+            return $aSiteRank <=> $bSiteRank
+                ?: (int)$a['priority'] <=> (int)$b['priority']
+                ?: (int)$a['id'] <=> (int)$b['id'];
+        });
+
+        return $redirects;
     }
 
     /**
@@ -1097,6 +1202,32 @@ class RedirectsService extends Component
         }
 
         return $normalized;
+    }
+
+    /** @return array{0: string, 1: string} */
+    private function normalizeMatchingInputs(string $fullUrl, string $pathOnly): array
+    {
+        if (!RedirectManager::$plugin->getSettings()->stripQueryString) {
+            return [$fullUrl, $pathOnly];
+        }
+
+        return [$this->stripQueryString($fullUrl), $this->stripQueryString($pathOnly)];
+    }
+
+    /**
+     * @param array<int, string> $pathCandidates
+     * @return array{0: string, 1: array<int, string>}
+     */
+    private function normalizeMatchingCandidateInputs(string $fullUrl, array $pathCandidates): array
+    {
+        if (!RedirectManager::$plugin->getSettings()->stripQueryString) {
+            return [$fullUrl, $pathCandidates];
+        }
+
+        return [
+            $this->stripQueryString($fullUrl),
+            array_map($this->stripQueryString(...), $pathCandidates),
+        ];
     }
 
     /** @param array<int, string> $pathCandidates */
@@ -1245,9 +1376,21 @@ class RedirectsService extends Component
     {
         if (
             !is_array($cached)
-            || ($cached['_destinationPolicyVersion'] ?? null) !== 1
+            || ($cached['_destinationPolicyVersion'] ?? null) !== 2
             || !is_string($cached['_destinationTemplate'] ?? null)
+        ) {
+            return null;
+        }
+
+        if (($cached['_responseType'] ?? null) === 'gone' && (int)($cached['statusCode'] ?? 0) === 410) {
+            return $cached;
+        }
+
+        if (
+            ($cached['_responseType'] ?? null) !== 'redirect'
             || !is_string($cached['destinationUrl'] ?? null)
+            || !is_string($cached['_chainDestinationUrl'] ?? null)
+            || !RedirectRecord::isValidDestination($cached['_chainDestinationUrl'])
             || !MatchingService::isResolvedDestinationSafe(
                 $cached['_destinationTemplate'],
                 $cached['destinationUrl'],
@@ -1256,7 +1399,7 @@ class RedirectsService extends Component
             return null;
         }
 
-        return $this->withoutDestinationPolicyMetadata($cached);
+        return $cached;
     }
 
     /**
@@ -1493,13 +1636,42 @@ class RedirectsService extends Component
         return strtok($url, '?');
     }
 
+    private function queryStringFromUrl(string $url): ?string
+    {
+        $query = parse_url($url, PHP_URL_QUERY);
+
+        return is_string($query) && $query !== '' ? $query : null;
+    }
+
+    private function pathAndQueryFromUrl(string $url): string
+    {
+        $path = parse_url($url, PHP_URL_PATH);
+        if (!is_string($path) || $path === '') {
+            $path = $url;
+        }
+
+        $query = $this->queryStringFromUrl($url);
+
+        return $query === null ? $path : $path . '?' . $query;
+    }
+
     /**
      * Append a source query string using the redirect response's current merge semantics.
      */
     private function appendQueryString(string $destination, string $queryString): string
     {
-        $separator = strpos($destination, '?') === false ? '?' : '&';
-        return $destination . $separator . $queryString;
+        $fragmentPosition = strpos($destination, '#');
+        if ($fragmentPosition === false) {
+            $base = $destination;
+            $fragment = '';
+        } else {
+            $base = substr($destination, 0, $fragmentPosition);
+            $fragment = substr($destination, $fragmentPosition);
+        }
+
+        $separator = strpos($base, '?') === false ? '?' : '&';
+
+        return $base . $separator . $queryString . $fragment;
     }
 
     /**
@@ -1527,89 +1699,71 @@ class RedirectsService extends Component
     }
 
     /**
-     * Resolve redirect chain to get final destination
+     * Resolve a chain only when one of the ordered paths reaches a safe endpoint.
      *
-     * @param string $url
-     * @param int|null $siteId
-     * @param int $maxDepth Maximum chain depth to prevent infinite loops
-     * @return string Final destination URL
+     * @param array<int, string> $visited
+     * @param array<int, array<string, mixed>>|null $candidates
+     * @return array{safe: bool, destination: string, reason: string|null}
      */
-    private function resolveRedirectChain(string $url, ?int $siteId = null, int $maxDepth = 10): string
-    {
-        $visited = [];
-        $currentUrl = $url;
-        $chain = [$url];
-
-        for ($i = 0; $i < $maxDepth; $i++) {
-            // Prevent loops
-            if (in_array($currentUrl, $visited)) {
-                $this->logWarning('Redirect loop detected', ['chain' => $chain]);
-                break;
-            }
-
-            $visited[] = $currentUrl;
-
-            // If URL is absolute, extract just the path
-            if (UrlHelper::isAbsoluteUrl($currentUrl)) {
-                $urlPath = parse_url($currentUrl, PHP_URL_PATH);
-                $searchUrl = $urlPath ?: $currentUrl;
-            } else {
-                $searchUrl = '/' . ltrim($currentUrl, '/');
-            }
-
-            $parsedUrl = $this->parseUrl($searchUrl);
-
-            $this->logDebug('Checking for next redirect in chain', [
-                'currentUrl' => $currentUrl,
-                'searchUrl' => $searchUrl,
-                'parsedUrl' => $parsedUrl,
-            ]);
-
-            $fullUrl = UrlHelper::isAbsoluteUrl($currentUrl)
-                ? $currentUrl
-                : UrlHelper::siteUrl(ltrim($searchUrl, '/'), null, null, $siteId);
-            $candidates = $this->getEnabledRedirects($siteId);
-
-            // Preserve chain-specific site precedence while applying the same
-            // match, substitution, and trust policy as request resolution.
-            if ($siteId !== null) {
-                usort($candidates, static function(array $a, array $b) use ($siteId): int {
-                    $aSiteRank = isset($a['siteId']) && (int)$a['siteId'] === $siteId ? 0 : 1;
-                    $bSiteRank = isset($b['siteId']) && (int)$b['siteId'] === $siteId ? 0 : 1;
-
-                    return $aSiteRank <=> $bSiteRank
-                        ?: (int)$a['priority'] <=> (int)$b['priority']
-                        ?: (int)$a['id'] <=> (int)$b['id'];
-                });
-            }
-
-            $nextRedirect = $this->resolveFirstEligibleCandidate($candidates, $fullUrl, $parsedUrl);
-
-            if (!$nextRedirect) {
-                $this->logDebug('No more redirects in chain', ['stoppedAt' => $currentUrl]);
-                // No more redirects in chain
-                break;
-            }
-
-            $this->logDebug('Found next redirect in chain', [
-                'from' => $nextRedirect['sourceUrlParsed'],
-                'to' => $nextRedirect['destinationUrl'],
-            ]);
-
-            $currentUrl = $nextRedirect['destinationUrl'];
-            $chain[] = $currentUrl;
+    private function resolveRedirectChainOutcome(
+        string $url,
+        ?int $siteId,
+        int $maxDepth = 10,
+        array $visited = [],
+        int $depth = 0,
+        ?array $candidates = null,
+    ): array {
+        if (in_array($url, $visited, true)) {
+            return ['safe' => false, 'destination' => $url, 'reason' => 'cycle'];
         }
 
-        if (count($chain) > 1) {
-            $this->logDebug('Resolved redirect chain', [
-                'originalUrl' => $url,
-                'finalUrl' => $currentUrl,
-                'chain' => $chain,
-                'depth' => count($chain) - 1,
-            ]);
+        $visited[] = $url;
+        $pathOnly = $this->pathAndQueryFromUrl($url);
+        $fullUrl = UrlHelper::isAbsoluteUrl($url)
+            ? $url
+            : UrlHelper::siteUrl(ltrim($pathOnly, '/'), null, null, $siteId);
+        [$fullUrl, $pathOnly] = $this->normalizeMatchingInputs($fullUrl, $pathOnly);
+        $matchedCandidate = false;
+
+        $candidates ??= $this->getEnabledRedirects($siteId);
+        foreach ($candidates as $candidate) {
+            $next = $this->resolveMatchingCandidate($candidate, $fullUrl, $this->parseUrl($pathOnly));
+            if ($next === null) {
+                continue;
+            }
+
+            $matchedCandidate = true;
+            if ((int)$next['statusCode'] === 410) {
+                return ['safe' => true, 'destination' => $url, 'reason' => null];
+            }
+
+            $nextUrl = (string)$next['destinationUrl'];
+            if ($depth >= $maxDepth || in_array($nextUrl, $visited, true)) {
+                continue;
+            }
+
+            $outcome = $this->resolveRedirectChainOutcome(
+                $nextUrl,
+                $siteId,
+                $maxDepth,
+                $visited,
+                $depth + 1,
+                $candidates,
+            );
+            if ($outcome['safe']) {
+                return $outcome;
+            }
         }
 
-        return $currentUrl;
+        if (!$matchedCandidate) {
+            return ['safe' => true, 'destination' => $url, 'reason' => null];
+        }
+
+        return [
+            'safe' => false,
+            'destination' => $url,
+            'reason' => $depth >= $maxDepth ? 'depth' : 'cycle-or-depth',
+        ];
     }
 
     /**

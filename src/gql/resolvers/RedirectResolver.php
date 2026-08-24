@@ -42,20 +42,10 @@ class RedirectResolver extends Resolver
         }
 
         [$fullUrl, $pathOnly] = self::normalizeUri($uri, $siteId);
-        $settings = RedirectManager::$plugin->getSettings();
-
-        if ($settings->stripQueryString) {
-            $fullUrlForMatching = self::stripQueryString($fullUrl);
-            $pathOnlyForMatching = self::stripQueryString($pathOnly);
-        } else {
-            $fullUrlForMatching = $fullUrl;
-            $pathOnlyForMatching = $pathOnly;
-        }
-
-        $pathOnlyStripped = self::stripSiteBasePath($pathOnlyForMatching, $siteId);
+        $pathOnlyStripped = self::stripSiteBasePath($pathOnly, $siteId);
         $redirect = RedirectManager::$plugin->redirects->findRedirectForSiteCandidates(
-            $fullUrlForMatching,
-            [$pathOnlyStripped, $pathOnlyForMatching],
+            $fullUrl,
+            [$pathOnlyStripped, $pathOnly],
             $siteId,
         );
 
@@ -159,19 +149,6 @@ class RedirectResolver extends Resolver
             UrlHelper::siteUrl(ltrim($pathOnly, '/'), null, null, $siteId),
             $pathOnly,
         ];
-    }
-
-    /**
-     * Strip a query string from a URL or path.
-     *
-     * @param string $url
-     * @return string
-     */
-    private static function stripQueryString(string $url): string
-    {
-        $position = strpos($url, '?');
-
-        return $position === false ? $url : substr($url, 0, $position);
     }
 
     /**

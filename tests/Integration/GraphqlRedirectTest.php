@@ -258,6 +258,70 @@ final class GraphqlRedirectTest extends TestCase
         self::assertSame(1, (int)$analytics['count']);
     }
 
+    public function testResolveAndListPreferSiteSpecificRulesBeforeGlobalRules(): void
+    {
+        $site = Craft::$app->getSites()->getPrimarySite();
+        $token = bin2hex(random_bytes(4));
+        $uri = '/' . self::MARKER . 'graphql_precedence_' . $token;
+        $global = $this->seedRedirect([
+            'sourceUrl' => $uri,
+            'sourceUrlParsed' => $uri,
+            'destinationUrl' => '/global',
+            'priority' => 0,
+        ]);
+        $global->siteId = null;
+        self::assertTrue($global->save(false));
+        $siteRedirect = $this->seedRedirect([
+            'sourceUrl' => $uri,
+            'sourceUrlParsed' => $uri,
+            'destinationUrl' => '/site',
+            'priority' => 9,
+            'siteId' => $site->id,
+        ]);
+
+        $resolved = RedirectResolver::resolve(
+            null,
+            ['uri' => $uri, 'siteId' => $site->id],
+            null,
+            $this->createMock(ResolveInfo::class),
+        );
+        $listed = RedirectResolver::resolveAll(
+            null,
+            ['siteId' => $site->id],
+            null,
+            $this->createMock(ResolveInfo::class),
+        );
+
+        self::assertIsArray($resolved);
+        self::assertSame($siteRedirect->id, (int)$resolved['id']);
+        $relevantIds = array_values(array_filter(
+            array_map(static fn(array $row): int => (int)$row['id'], $listed),
+            static fn(int $id): bool => in_array($id, [$global->id, $siteRedirect->id], true),
+        ));
+        self::assertSame([$siteRedirect->id, $global->id], $relevantIds);
+    }
+
+    public function testResolveAppliesPreservedQueryBeforeFragment(): void
+    {
+        $site = Craft::$app->getSites()->getPrimarySite();
+        $redirect = $this->seedRedirect([
+            'destinationUrl' => '/graphql-destination?existing=value#section',
+            'siteId' => $site->id,
+        ]);
+        $this->settings()->stripQueryString = true;
+        $this->settings()->preserveQueryString = true;
+
+        $result = RedirectResolver::resolve(
+            null,
+            ['uri' => (string)$redirect->sourceUrlParsed . '?campaign=summer', 'siteId' => $site->id],
+            null,
+            $this->createMock(ResolveInfo::class),
+        );
+
+        self::assertIsArray($result);
+        self::assertSame('/graphql-destination?existing=value&campaign=summer#section', $result['destinationUrl']);
+    }
+
     public function testRedirectListQueryIsReadOnly(): void
     {
         $site = Craft::$app->getSites()->getPrimarySite();

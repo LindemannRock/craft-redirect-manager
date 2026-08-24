@@ -1,6 +1,6 @@
 # Redirects
 
-Redirect Manager matches incoming 404 requests against a library of redirect rules and issues the appropriate HTTP redirect. Rules support four match types, priority ordering, all standard redirect status codes, and multi-site scoping.
+Redirect Manager matches incoming 404 requests against a library of redirect rules and issues the appropriate HTTP response. Rules support four match types, priority ordering, redirect status codes, `410 Gone`, and multi-site scoping.
 
 ![The Redirect Manager redirect editor showing the source URL, destination, match type, status code, and priority fields](../images/redirects-edit-form.webp)
 
@@ -111,11 +111,11 @@ Bare schemes (`https://` with no host), protocol-relative URLs (`//host`), execu
 
 Captures refine a destination; they do not choose where it is trusted to go. A relative template remains relative after substitution. An `http://` or `https://` template keeps the scheme and authority you entered, so captures can appear in its path, query, or fragment but not in its scheme, hostname, user information, or port. Contact and application templates likewise keep their entered scheme.
 
-Redirect Manager also applies this rule when a redirect runs. This protects older rows and records written by integrations that may have bypassed current validation. If the highest-priority matching rule resolves outside its template's trust boundary, Redirect Manager skips it and evaluates the next matching rule. If no matching rule resolves safely, the request remains unhandled. Only the eventual safe winner receives a hit, handled analytics, or a positive cache entry.
+Redirect Manager also applies this rule when a redirect runs. This protects older rows and records written by integrations that may have bypassed current validation. If the first matching rule resolves outside its template's trust boundary, creates a redirect cycle, or exhausts the ten-hop chain limit, Redirect Manager skips it and evaluates the next matching rule. If no matching rule reaches a safe endpoint, the request remains unhandled. Only the eventual safe winner receives a hit, handled analytics, or a positive cache entry.
 
 ## Priority
 
-When multiple redirect rules could match the same URL, priority determines which one fires first. Lower numbers are evaluated first.
+When multiple redirect rules could match the same URL, Redirect Manager first ranks a rule assigned to the requested site ahead of a global rule. Within each site rank, priority determines which one is evaluated first; lower numbers come first, with the older rule ID breaking a tie.
 
 | Priority | Description | Recommended Use |
 |----------|-------------|-----------------|
@@ -129,7 +129,7 @@ New redirects default to priority `0` (highest) — raise the number for broader
 
 **Example:** You have `/blog/featured-post` set to priority 0 and `/blog/*` set to priority 9. Visitors to `/blog/featured-post` hit the exact rule; all other `/blog/` paths fall through to the wildcard.
 
-Priority is evaluated among eligible safe rules. A matching rule whose capture substitution would change its destination trust class, scheme, or HTTP authority is skipped rather than blocking a lower-priority safe rule.
+Priority is evaluated among eligible safe rules in the same site rank. A matching rule whose capture substitution would change its destination trust boundary, whose chain cycles, or whose chain exceeds the depth limit is skipped rather than blocking the next safe rule.
 
 ## Status Codes
 
@@ -140,7 +140,9 @@ Priority is evaluated among eligible safe rules. A matching rule whose capture s
 | `303` | See Other | Redirect to a different resource, typically after form submission. |
 | `307` | Temporary Redirect | Like 302 but guarantees the request method (POST, PUT, etc.) is preserved. |
 | `308` | Permanent Redirect | Like 301 but guarantees the request method is preserved. |
-| `410` | Gone | Content is permanently deleted. Search engines remove it from their index. |
+| `410` | Gone | Content is permanently deleted. Returns an ordinary 410 response without a `Location` header; the stored destination is ignored. |
+
+Accepted `410` rules keep the normal hit-count and handled-analytics attribution. They do not resolve a destination or follow a redirect chain. Other status codes continue to issue redirects with a `Location` header.
 
 ## Source Match Mode
 
@@ -166,7 +168,7 @@ Redirects can be scoped to a single Craft site or applied globally.
 - **Global redirect** (`siteId = null`): Matches on any site. Useful for redirects that apply regardless of domain or language.
 - **Site-specific redirect**: Only matches requests for that site. Use when different sites have conflicting URL structures.
 
-When both a site-specific and a global redirect match, site-specific rules take precedence.
+When both a site-specific and a global redirect match, the site-specific rule is considered first even when the global rule has a lower priority number. Priority and rule ID then order candidates within the site-specific and global ranks.
 
 ## Managing Redirects
 
@@ -184,11 +186,11 @@ The redirect list supports bulk enable, bulk disable, and bulk delete. Select ro
 
 ### Testing a Redirect
 
-To check what a given URL resolves to, go to **Settings → Test** and enter a URL. The tester lists every enabled rule that matches and resolves safely — not just the first — along with the resolved destination, with any capture groups already applied. Unsafe matches are skipped by the same policy used for frontend requests, GraphQL, and plugin integrations, so the first result is the rule that would actually win. This is the fastest way to confirm a new pattern behaves as expected or to see why two rules overlap before adjusting their [priority](#priority). See [Testing tools](../resources/testing-tools.md) for the full redirect tester and JSON API tester workflow.
+To check what a given URL resolves to, go to **Settings → Test** and enter a URL. The tester lists every enabled rule that matches and reaches a safe endpoint — not just the first — along with the resolved destination, with any capture groups and query-string settings already applied. Unsafe destinations, cycles, and depth-exhausted chains are skipped by the same policy used for frontend requests, GraphQL, and plugin integrations, so the first result is the rule that would actually win. This is the fastest way to confirm a new pattern behaves as expected or to see why two rules overlap before adjusting their [priority](#priority). See [Testing tools](../resources/testing-tools.md) for the full redirect tester and JSON API tester workflow.
 
 ## Caching
 
-Redirect Manager caches eligible resolved winners for fast lookups. An unsafe match is never stored as the winner, and cached entries are rechecked against the destination policy before use. The cache is automatically invalidated when a redirect is created, updated, or deleted. Cache settings:
+Redirect Manager caches eligible resolved winners for fast lookups. An unsafe destination, cycle-producing rule, or depth-exhausted rule is never stored as the winner, and cached payloads must still pass destination validation before use. A lookup where every candidate is unsafe is cached as a normal miss. The cache is automatically invalidated when a redirect is created, updated, or deleted. Cache settings:
 
 ```php
 'enableRedirectCache'    => true,

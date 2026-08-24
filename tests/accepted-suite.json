@@ -1,12 +1,12 @@
 {
     "schemaVersion": 1,
     "declared": {
-        "integrationClasses": 51,
-        "testMethods": 340
+        "integrationClasses": 55,
+    "testMethods": 364
     },
     "executed": {
-        "tests": 389,
-        "assertions": 3489,
+    "tests": 423,
+    "assertions": 3719,
         "errors": 0,
         "failures": 0,
         "skipped": 0,

@@ -134,7 +134,7 @@ Example response:
 
 ### Resolver behavior
 
-Resolution uses Redirect Manager's normal matching path, including path-only vs full-URL mode, requested-site base-path stripping, priority ordering, global redirects, wildcard/prefix/RegEx captures, destination trust checks, and query-string stripping when that setting is enabled. If a matched rule resolves outside its editor-authored destination trust class, scheme, or HTTP authority, it is skipped and resolution continues to the next eligible safe rule.
+Resolution uses Redirect Manager's normal matching path, including path-only vs full-URL mode, requested-site base-path stripping, site-specific-before-global ordering, priority and rule-ID ordering within each site rank, wildcard/prefix/RegEx captures, destination trust checks, chain safety, and the effective query-string settings. If a matched rule resolves outside its editor-authored destination trust boundary, creates a cycle, or exhausts the chain depth, it is skipped and resolution continues to the next eligible safe rule. When query preservation is enabled, the incoming query is appended after existing destination parameters and before any fragment.
 
 This query behaves like a real 404 lookup:
 
@@ -142,6 +142,7 @@ This query behaves like a real 404 lookup:
 - Only that winner records handled analytics with `sourcePlugin = graphql`
 - A miss records unhandled analytics with `sourcePlugin = graphql`
 - Analytics respects the requested `site` / `siteId`
+- A `410` result is an accepted Gone rule: return an ordinary 410 response without redirecting to `destinationUrl`
 
 Because this query intentionally has hit-count and analytics side effects, Redirect Manager disables Craft's GraphQL result cache for operations that include `redirectManagerResolveRedirect`.
 
@@ -207,7 +208,7 @@ You can also pass a site handle:
 }
 ```
 
-The list query returns enabled redirects for the requested site plus global redirects where `siteId` is `null`. It does not increment `hitCount` and does not write analytics.
+The list query returns enabled redirects for the requested site plus global redirects where `siteId` is `null`. Site-specific rows appear first, followed by global rows; priority and rule ID order each rank. It does not increment `hitCount` and does not write analytics.
 
 ### Arguments
 
@@ -245,7 +246,7 @@ redirectManagerRedirects(siteId: 1, site: "en")
 
 1. Let the SPA router attempt to match the route.
 2. On a miss, call `redirectManagerResolveRedirect`.
-3. If the result is not `null`, redirect the browser to `destinationUrl` with the returned `statusCode`.
+3. If the result has status `410`, return an ordinary Gone response without using `destinationUrl`. Otherwise, redirect the browser to `destinationUrl` with the returned 3xx status.
 4. If the result is `null`, show the frontend's normal 404 page.
 
 ## Troubleshooting

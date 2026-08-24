@@ -36,6 +36,10 @@ class MyController extends Controller
         ]);
 
         if ($redirect) {
+            if ((int)$redirect['statusCode'] === 410) {
+                return Craft::$app->getResponse()->setStatusCode(410);
+            }
+
             return $this->redirect($redirect['destinationUrl'], $redirect['statusCode']);
         }
 
@@ -48,7 +52,7 @@ class MyController extends Controller
 **What happens behind the scenes:**
 
 1. Your plugin calls `handleRedirect404()` with the URL and your plugin's handle as `$source`
-2. Redirect Manager searches for a matching redirect rule
+2. Redirect Manager applies its effective query-string settings and searches the current site's rules before global rules
 3. If found, the 404 is recorded in analytics as "handled" with your plugin as the source
 4. If not found, it's recorded as "unhandled" with your plugin as the source
 5. The method returns the redirect array or `null`
@@ -136,7 +140,9 @@ class MyService extends Component
 | `$source` | `string` | Your plugin handle in kebab-case (e.g., `'shortlink-manager'`) |
 | `$context` | `array` | Optional metadata about the 404 (stored in analytics) |
 
-Returns the first eligible safe matching redirect as an array with `destinationUrl` and `statusCode` keys, or `null` if no safe match remains. Capture substitution and destination trust checks use the same policy as frontend and GraphQL resolution: unsafe matches are skipped by priority, and only the eventual safe winner receives hit and handled-analytics updates.
+Returns the first eligible safe matching redirect as an array with `destinationUrl` and `statusCode` keys, or `null` if no safe match remains. The request URL may include a query: the effective strip setting controls matching, and the effective preserve setting merges it into the returned destination after existing parameters and before a fragment. Site-specific rules rank ahead of global rules, then priority and rule ID apply within each rank.
+
+Capture substitution, destination trust, and chain safety use the same policy as frontend and GraphQL resolution. A rule that produces an unsafe destination, cycle, or depth-exhausted chain is skipped before hit, handled-analytics, or positive-cache effects. Only the eventual safe winner receives those effects. For a `410` result, create an ordinary Gone response as shown above; do not call a redirect helper or use `destinationUrl` as a target.
 
 ### `createRedirectRule(array $attributes, bool $showNotification = false): bool`
 
