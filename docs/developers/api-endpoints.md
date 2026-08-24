@@ -112,7 +112,7 @@ If both `site` and `siteId` are present, `site` is used. Invalid explicit sites 
 
 Requests are rate limited per configured token using a fixed 60-second window. `apiEndpointRateLimit` sets the maximum number of requests allowed in each window (default `60`; maximum `100000`; set `0` to disable).
 
-Every response carries the current limit state:
+Accepted requests and exhausted-window responses carry the current limit state:
 
 | Header | Meaning |
 |--------|---------|
@@ -130,6 +130,8 @@ curl -i -H "Authorization: Bearer $REDIRECT_MANAGER_API_TOKEN" \
 # Retry-After: 42
 ```
 
+The decision fails closed. If Craft cannot acquire the token mutex, read the shared counter, or persist the accepted request, the endpoint returns `503 Service Unavailable` without loading or serializing the redirect table. Retry a `503` response normally; it does not mean the window is exhausted, and it does not claim a remaining count. A `429` response is reserved for a counter that truthfully reached the configured limit.
+
 ## Status codes
 
 | Status | Meaning |
@@ -139,6 +141,7 @@ curl -i -H "Authorization: Bearer $REDIRECT_MANAGER_API_TOKEN" \
 | `401` | Token is configured but missing or invalid |
 | `404` | Endpoint is disabled |
 | `429` | Rate limit exceeded — retry after the window resets |
+| `503` | Rate-limit coordination or counter storage is temporarily unavailable; retry the request |
 
 ## JSON API vs GraphQL
 

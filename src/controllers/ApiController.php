@@ -11,6 +11,7 @@ namespace lindemannrock\redirectmanager\controllers;
 use Craft;
 use craft\web\Controller;
 use lindemannrock\redirectmanager\RedirectManager;
+use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\TooManyRequestsHttpException;
@@ -39,6 +40,11 @@ class ApiController extends Controller
      * Fixed rate-limit window duration, in seconds.
      */
     private const RATE_LIMIT_WINDOW_SECONDS = 60;
+
+    /**
+     * Maximum time to wait for one token rate-limit decision.
+     */
+    private const RATE_LIMIT_MUTEX_TIMEOUT = 5;
 
     /**
      * @inheritdoc
@@ -117,26 +123,89 @@ class ApiController extends Controller
             return;
         }
 
-        $now = time();
-        $window = intdiv($now, self::RATE_LIMIT_WINDOW_SECONDS);
-        $retryAfter = self::RATE_LIMIT_WINDOW_SECONDS - ($now % self::RATE_LIMIT_WINDOW_SECONDS);
-
-        $cacheKey = self::RATE_LIMIT_CACHE_PREFIX . hash('sha256', $token) . ':' . $window;
+        $tokenKey = self::RATE_LIMIT_CACHE_PREFIX . hash('sha256', $token);
+        $lockName = $tokenKey . ':lock';
         $cache = Craft::$app->getCache();
-        $count = (int) $cache->get($cacheKey);
-
+        $mutex = Craft::$app->getMutex();
         $headers = Craft::$app->getResponse()->getHeaders();
-        $headers->set('X-RateLimit-Limit', (string) $limit);
-        $headers->set('X-RateLimit-Remaining', (string) max(0, $limit - $count - 1));
-        $headers->set('X-RateLimit-Reset', (string) ($now + $retryAfter));
+        $headers->remove('X-RateLimit-Remaining');
+        $headers->remove('Retry-After');
 
-        if ($count >= $limit) {
-            $headers->set('Retry-After', (string) $retryAfter);
-
-            throw new TooManyRequestsHttpException('API rate limit exceeded. Try again in a moment.');
+        try {
+            $mutexAcquired = $mutex->acquire($lockName, self::RATE_LIMIT_MUTEX_TIMEOUT);
+        } catch (\Throwable $exception) {
+            throw new HttpException(503, previous: $exception);
+        }
+        if (!$mutexAcquired) {
+            throw new HttpException(503);
         }
 
-        $cache->set($cacheKey, $count + 1, $retryAfter);
+        $decisionFailure = null;
+        $releaseFailure = null;
+        try {
+            $now = $this->currentTimestamp();
+            $window = intdiv($now, self::RATE_LIMIT_WINDOW_SECONDS);
+            $retryAfter = self::RATE_LIMIT_WINDOW_SECONDS - ($now % self::RATE_LIMIT_WINDOW_SECONDS);
+            $cacheKey = $tokenKey . ':' . $window;
+            $headers->set('X-RateLimit-Limit', (string) $limit);
+            $headers->set('X-RateLimit-Reset', (string) ($now + $retryAfter));
+
+            try {
+                $cachedCount = $cache->get($cacheKey);
+            } catch (\Throwable $exception) {
+                throw new HttpException(503, previous: $exception);
+            }
+
+            if ($cachedCount === false) {
+                $count = 0;
+            } elseif (is_int($cachedCount) && $cachedCount >= 0) {
+                $count = $cachedCount;
+            } else {
+                throw new HttpException(503);
+            }
+
+            if ($count >= $limit) {
+                $headers->set('X-RateLimit-Remaining', '0');
+                $headers->set('Retry-After', (string) $retryAfter);
+
+                throw new TooManyRequestsHttpException('API rate limit exceeded. Try again in a moment.');
+            }
+
+            try {
+                $counterWritten = $cache->set($cacheKey, $count + 1, $retryAfter);
+            } catch (\Throwable $exception) {
+                throw new HttpException(503, previous: $exception);
+            }
+            if (!$counterWritten) {
+                throw new HttpException(503);
+            }
+
+            $headers->set('X-RateLimit-Remaining', (string) ($limit - $count - 1));
+        } catch (\Throwable $exception) {
+            $decisionFailure = $exception;
+        } finally {
+            try {
+                if (!$mutex->release($lockName)) {
+                    $releaseFailure = new HttpException(503);
+                }
+            } catch (\Throwable $exception) {
+                $releaseFailure = new HttpException(503, previous: $exception);
+            }
+        }
+        if ($releaseFailure !== null) {
+            throw $releaseFailure;
+        }
+        if ($decisionFailure !== null) {
+            throw $decisionFailure;
+        }
+    }
+
+    /**
+     * Return the timestamp used for one rate-limit decision.
+     */
+    protected function currentTimestamp(): int
+    {
+        return time();
     }
 
     /**

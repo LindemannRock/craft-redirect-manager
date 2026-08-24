@@ -16,6 +16,19 @@ Redirect Manager applies Craft's current editable-site permissions to rule-beari
 
 These checks are repeated on direct actions, so changing a URL or submitting a different site does not bypass the visible Control Panel scope.
 
+## JSON API returns 503 Service Unavailable
+
+The JSON endpoint rejects a request with `503` when it cannot make and persist a coordinated rate-limit decision. This keeps an unrecorded request from proceeding and is different from `429`, which means the configured token has truthfully exhausted its current 60-second window.
+
+If the endpoint returns `503`:
+
+1. Check that Craft's configured cache component is reachable and writable.
+2. Check that Craft's mutex component can acquire and release locks. On multi-node deployments, confirm every web node uses the same shared cache and coordination backend.
+3. If Craft uses Redis for cache or mutex storage, check Redis connectivity and permissions from every web node.
+4. Retry after the backend is healthy. Redirect Manager does not load or serialize the redirect table for the failed request.
+
+Setting `apiEndpointRateLimit` to `0` intentionally disables all rate-limit cache and mutex work. Use that only when disabling the endpoint's request limit is an explicit deployment decision, not as a substitute for repairing shared infrastructure.
+
 ## Redirects not working
 
 A redirect exists in the CP but visiting the URL does not redirect.
