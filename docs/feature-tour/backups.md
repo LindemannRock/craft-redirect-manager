@@ -1,10 +1,22 @@
 # Backups @since(5.23.0)
 
-Redirect Manager can automatically back up your redirect library before imports and on a scheduled basis. Backups are stored locally or in a Craft asset volume, and can be restored from the CP or CLI.
+Protect your redirect library before imports, keep scheduled snapshots, and restore a known-good set from the Control Panel. Redirect Manager can store backups on a protected local path or a Craft asset volume.
 
 ![The Backups section listing saved backups with create, restore, download, and delete actions](../images/backups-list.webp)
 
-## How Backups Work
+## Create and manage backups in the CP
+
+Open **Redirect Manager → Backups** to:
+
+- View existing backups with timestamps, storage locations, and file sizes
+- Create a manual backup
+- Download a backup as a ZIP file
+- Restore redirects from a backup
+- Delete individual backups
+
+Before relying on the first backup, open **Redirect Manager → Settings → Backup**, confirm the storage destination, and create a manual backup. If the redirect library is empty, creation is a successful no-op and no empty artifact is written.
+
+## How backups work
 
 A backup is a snapshot of your redirect library at a point in time, saved as a file in a configured storage location. Backups are created:
 
@@ -12,7 +24,9 @@ A backup is a snapshot of your redirect library at a point in time, saved as a f
 - **On a schedule** (daily, weekly, or monthly, when `backupSchedule` is not `disabled`)
 - **Manually** from the Backups CP section or via console command
 
-## Configuration
+## Configure automatic backups
+
+Use **Redirect Manager → Settings → Backup** to enable backups, choose pre-import behavior and cadence, set retention, and select local or volume storage. Use `config/redirect-manager.php` when those values should be fixed per environment:
 
 ```php
 // config/redirect-manager.php
@@ -24,7 +38,7 @@ A backup is a snapshot of your redirect library at a point in time, saved as a f
 'backupVolumeUid'     => null,     // Asset volume UID (optional)
 ```
 
-### Storage Location
+### Storage location
 
 By default, backups are stored on the local filesystem at `@storage/redirect-manager/backups`. This path supports Craft's `@storage` and `@root` aliases plus `$VARIABLE` environment variable substitution. Environment variables must resolve inside Craft's storage directory or a project-root subfolder.
 
@@ -46,7 +60,7 @@ On an ephemeral host, the Backup settings page shows a colored warning when the 
 
 The local-storage warning is informational. It does not change the selected setting or any backup, restore, download, retention, or queue behavior. A missing, validation-invalid, or unresolved configured volume instead shows a separate unavailable-volume error on both durable and ephemeral hosts. That state is neither classified as local fallback storage nor described as durable.
 
-### Scheduled Backups
+### Scheduled backups
 
 | Value | Behavior |
 |-------|----------|
@@ -71,15 +85,7 @@ Set `backupRetentionDays` to control how long backups are kept:
 
 Set to `0` to keep all backups indefinitely. The maximum value is `365` days. Cleanup runs automatically when a new backup is created.
 
-## Managing Backups in the CP
-
-Navigate to **Redirect Manager > Backups** to:
-
-- View a list of existing backups with timestamps, storage locations, and file sizes
-- Create a manual backup
-- Download a backup as a ZIP file
-- Restore redirects from a backup
-- Delete individual backups
+## Portable downloads
 
 Downloaded ZIP files are portable archives. To use one on another install without an upload flow, extract the ZIP and place its files in the expected backup folder structure under that install's configured backup storage.
 
@@ -87,7 +93,7 @@ Each download uses its own temporary ZIP. Redirect Manager removes that exact ar
 
 If the redirect library is empty, manual, scheduled, and console backup creation completes as a successful no-op. Redirect Manager reports that there was nothing to back up and does not create an empty artifact.
 
-## Restoring from a Backup
+## Restore from a backup
 
 To restore your redirect library to a previous state:
 
@@ -101,9 +107,9 @@ To restore your redirect library to a previous state:
 
 Restore requires an intact backup folder with `metadata.json`, `redirects.json`, and a valid SHA-256 checksum in the metadata. Backups with missing metadata, missing checksum data, or modified JSON contents are rejected before redirects are replaced.
 
-## Console Commands
+## Console commands
 
-### Create a Backup
+### Create a backup
 
 ```bash title="PHP"
 php craft redirect-manager/backup/create
@@ -120,7 +126,7 @@ Options:
 | `--reason=<text>` | Optional label for the backup (e.g., `--reason="before-migration"`) |
 | `--clean` | Run retention cleanup after creating the backup |
 
-### Run Scheduled Backup
+### Run a scheduled backup
 
 Checks whether a backup is due based on `backupSchedule` and creates one if needed. This is useful for manual checks and legacy cron setups; normal automatic scheduling uses Craft's queue.
 
@@ -138,7 +144,7 @@ If you prefer a direct cron setup instead of the recurring queue row, run the co
 0 2 * * * /path/to/craft redirect-manager/backup/scheduled
 ```
 
-### List Backups
+### List backups
 
 ```bash title="PHP"
 php craft redirect-manager/backup/list
@@ -148,7 +154,7 @@ php craft redirect-manager/backup/list
 ddev craft redirect-manager/backup/list
 ```
 
-### Clean Up Old Backups
+### Clean up old backups
 
 Removes backups that exceed the retention period:
 
@@ -162,7 +168,7 @@ ddev craft redirect-manager/backup/clean
 
 ## Permissions
 
-| Action | Permission Required |
+| Action | Permission required |
 |--------|---------------------|
 | Access Backups section | `redirectManager:manageBackups` |
 | Create manual backup | `redirectManager:createBackups` |

@@ -1,4 +1,4 @@
-# Postman Collection @since(5.35.0)
+# Postman collection @since(5.35.0)
 
 Redirect Manager ships a ready-made Postman collection and environment template for the read-only [JSON API](api-endpoints.md). Use it to confirm the endpoint is enabled, exercise site filtering, and verify token and rate-limit enforcement without writing any client code.
 

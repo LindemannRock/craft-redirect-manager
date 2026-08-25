@@ -1,4 +1,4 @@
-# URL Filtering
+# URL filtering
 
 Not every 404 deserves your attention. Bots probe for `/wp-login.php`, vulnerability scanners hammer `.env` and `.git`, and Craft's own `/admin`, `/cpresources`, and `/actions` URLs can all surface as misses. URL Filtering lets you tell Redirect Manager which paths to ignore completely — and it ships one-click presets for the most common cases so you don't have to write the regex yourself.
 
@@ -15,7 +15,7 @@ Not every 404 deserves your attention. Bots probe for `/wp-login.php`, vulnerabi
 
 Everything below is on **Redirect Manager → Settings → Advanced**, under the **URL Filtering** heading.
 
-## Exclude Patterns
+## Exclude patterns
 
 **Exclude Patterns** are regular expressions matched against the incoming request path. When a path matches, Redirect Manager stops processing that request immediately — **before** it looks for a redirect **and before** it records anything to analytics.
 
@@ -35,11 +35,11 @@ Patterns are evaluated on every 404, so they run on a hot path. Redirect Manager
 > [!NOTE]
 > If `excludePatterns` is set in `config/redirect-manager.php`, the table is locked in the Control Panel and the config file wins. See [Configuration](../get-started/configuration.md).
 
-## Quick Setup Presets
+## Quick setup presets
 
 Below the URL Filtering fields are three buttons that apply curated pattern sets, so you don't have to build them by hand. Each preset is **additive and de-duplicating** — it only adds patterns you don't already have, and tells you if everything is already applied. (If the relevant field is overridden by `config/redirect-manager.php`, that preset can't change it.)
 
-### Apply Recommended Settings
+### Apply recommended settings
 
 Listed under **Quick Setup**. Safe for any installation — it adds the patterns that almost every Craft site should exclude, plus two SEO headers:
 
@@ -48,18 +48,18 @@ Listed under **Quick Setup**. Safe for any installation — it adds the patterns
 | Exclude patterns | `^/admin`, `^/cms`, `^/cpresources`, `^/actions`, `^/\.well-known`, `^/dist/.*/assets` |
 | Additional headers | `X-Robots-Tag: noindex, nofollow` · `X-Redirect-By: Redirect Manager` |
 
-### Apply WordPress Migration Filters
+### Apply WordPress migration filters
 
 Silences the bot and spam traffic a site keeps receiving after moving off WordPress: `wp-includes`, `wp-content/themes`, `wp-content/plugins`, `wp-json`, `feed`, `?p=` permalinks, `xmlrpc.php`, `wp-login.php`, `wp-admin`, and `wp-config.php`.
 
 > [!WARNING]
 > `/wp-content/uploads` URLs are **not** excluded — migrated media files often still need legitimate redirects, so those are left for you to handle.
 
-### Apply Security Probe Filters
+### Apply security-probe filters
 
 Stops the steady background of vulnerability scanning from cluttering your analytics. It adds precise patterns for database dumps (`*.sql`, `dump.sql.gz`), config and secret files (`.env`, `.git/`, `.htaccess`, `.aws`, `.ssh`), admin panels (`/phpmyadmin`, `/pma/`, `adminer.php`), and exploit attempts (`shell.php`, `/cgi-bin/`, `phpinfo.php`). The patterns are deliberately specific so they don't catch legitimate URLs like `/mysql-tips` or `/debugging-guide`.
 
-## Additional Headers
+## Additional headers
 
 **Additional Headers** are name/value pairs added to the **redirect response** — they're sent when Redirect Manager issues a redirect, not on normal pages. The most common use is `X-Robots-Tag: noindex, nofollow` (added for you by **Apply Recommended Settings**) to keep search engines from indexing the old URLs you're redirecting away from.
 

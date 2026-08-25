@@ -2,7 +2,7 @@
 
 Redirect Manager registers granular permissions that can be assigned to user groups via **Settings → Users → User Groups → [Group Name] → Redirect Manager**.
 
-## Permission Structure
+## Permission structure
 
 ### Redirects
 
@@ -13,7 +13,7 @@ Redirect Manager registers granular permissions that can be assigned to user gro
 | └─ `redirectManager:editRedirects` | Edit existing redirects |
 | └─ `redirectManager:deleteRedirects` | Delete redirects |
 
-### Import/Export
+### Import and export
 
 | Permission | Description |
 |------------|-------------|
@@ -62,7 +62,7 @@ Redirect Manager registers granular permissions that can be assigned to user gro
 
 The rule-bearing **Settings → Test** page and its direct URL/API test actions require both `redirectManager:manageSettings` and `redirectManager:manageRedirects`. Downloading the placeholder Postman collection requires only `redirectManager:manageSettings`.
 
-## Checking Permissions
+## Checking permissions
 
 In Twig:
 
@@ -87,7 +87,7 @@ if (Craft::$app->getUser()->checkPermission('redirectManager:manageRedirects')) 
 $this->requirePermission('redirectManager:manageRedirects');
 ```
 
-## Nested Permission Pattern
+## Nested permission pattern
 
 Craft's nested permissions are a UI convenience — the parent permission does not automatically grant child permissions at runtime.
 

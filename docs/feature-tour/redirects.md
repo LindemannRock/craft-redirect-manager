@@ -4,9 +4,9 @@ Redirect Manager matches incoming 404 requests against a library of redirect rul
 
 ![The Redirect Manager redirect editor showing the source URL, destination, match type, status code, and priority fields](../images/redirects-edit-form.webp)
 
-## Creating Redirects
+## Create redirects
 
-### Via the Control Panel
+### In the Control Panel
 
 1. Go to **Redirect Manager > Redirects**
 2. Click **New Redirect**
@@ -29,7 +29,7 @@ RedirectManager::$plugin->redirects->createRedirect([
 ]);
 ```
 
-## Match Types
+## Match types
 
 Four match types give you precise control over how source URLs are compared.
 
@@ -42,7 +42,7 @@ Four match types give you precise control over how source URLs are compared.
 
 Matching is case-insensitive for every match type, on every database engine. `exact` and `prefix` rules also store their matching URL lowercased, so duplicate detection and uniqueness behave case-insensitively everywhere (query-string values included). Pattern rules (`regex`/`wildcard`) keep engine-native uniqueness: PostgreSQL permits deliberate case-variant functional duplicates (harmless — matching is case-insensitive either way), while MySQL additionally rejects some legitimately distinct escape-differing patterns (`\W` vs `\w`) as a known collation quirk. Neither affects which redirects fire.
 
-### Exact Match
+### Exact match
 
 The simplest and most performant match type. Comparison is case-insensitive.
 
@@ -54,7 +54,7 @@ No match: /old-page/subpage
           /old-page-2
 ```
 
-### Wildcard Match
+### Wildcard match
 
 Replaces `*` with "any characters". Useful for redirecting entire URL subtrees. Each `*` is also a capture group — use `$1`, `$2` (etc.) in the destination to insert what each `*` matched, in order (e.g. `/blog/*` → `/news/$1`).
 
@@ -65,7 +65,7 @@ Matches:  /blog/post-1
           /blog/2024/01/my-post
 ```
 
-### Prefix Match
+### Prefix match
 
 Matches any URL that starts with the pattern string. The portion of the URL after the prefix is available as `$1` in the destination (e.g. `/old-` → `/new-/$1`).
 
@@ -77,7 +77,7 @@ Matches:  /old-page
 No match: /new-old-page (does not start with /old-)
 ```
 
-### Regex Match with Capture Groups
+### Regex match with capture groups
 
 Full regular expression support, including named and positional capture groups. Use `$1`, `$2` (etc.) in the destination URL to substitute captured values.
 
@@ -131,7 +131,7 @@ New redirects default to priority `0` (highest) — raise the number for broader
 
 Priority is evaluated among eligible safe rules in the same site rank. A matching rule whose capture substitution would change its destination trust boundary, whose chain cycles, or whose chain exceeds the depth limit is skipped rather than blocking the next safe rule.
 
-## Status Codes
+## Status codes
 
 | Code | Name | Description |
 |------|------|-------------|
@@ -144,7 +144,7 @@ Priority is evaluated among eligible safe rules in the same site rank. A matchin
 
 Accepted `410` rules keep the normal hit-count and handled-analytics attribution. They do not resolve a destination or follow a redirect chain. Other status codes continue to issue redirects with a `Location` header.
 
-## Source Match Mode
+## Source match mode
 
 The source match mode controls what part of the incoming URL is compared against the redirect pattern.
 
@@ -165,7 +165,7 @@ Configure the global default in `config/redirect-manager.php`:
 
 Individual redirects can override this at the rule level.
 
-## Multi-Site Support
+## Multi-site support
 
 Redirects can be scoped to a single Craft site or applied globally.
 
@@ -174,21 +174,21 @@ Redirects can be scoped to a single Craft site or applied globally.
 
 When both a site-specific and a global redirect match, the site-specific rule is considered first even when the global rule has a lower priority number. Priority and rule ID then order candidates within the site-specific and global ranks.
 
-## Managing Redirects
+## Manage redirects
 
-### Enabling and Disabling
+### Enable and disable rules
 
 Individual redirects can be enabled or disabled without deleting them. Disabled redirects are skipped during matching.
 
-### Hit Counts
+### Hit counts
 
 Each redirect tracks how many times it has fired. Hit counts are visible in the redirect list and help you identify stale rules that are no longer needed.
 
-### Bulk Operations
+### Bulk operations
 
 The redirect list supports bulk enable, bulk disable, and bulk delete. Select rows using the checkboxes and choose an action from the bulk action menu.
 
-### Testing a Redirect
+### Test a redirect
 
 To check what a given URL resolves to, go to **Settings → Test** and enter a URL. The tester lists every enabled rule that matches and reaches a safe endpoint — not just the first — along with the resolved destination, with any capture groups and query-string settings already applied. Unsafe destinations, cycles, and depth-exhausted chains are skipped by the same policy used for frontend requests, GraphQL, and plugin integrations, so the first result is the rule that would actually win. This is the fastest way to confirm a new pattern behaves as expected or to see why two rules overlap before adjusting their [priority](#priority). See [Testing tools](../resources/testing-tools.md) for the full redirect tester and JSON API tester workflow.
 
@@ -199,7 +199,9 @@ Redirect Manager caches eligible resolved winners for fast lookups. An unsafe de
 ```php
 'enableRedirectCache'    => true,
 'redirectCacheDuration'  => 3600,   // seconds
-'cacheStorageMethod'     => 'file', // 'file' or 'redis'
+'cacheStorageMethod'     => 'file', // 'file', 'redis', or 'craft'
 ```
+
+On durable hosts, `file` stores plugin-owned disposable cache files. On ephemeral hosts, that same preference automatically uses a suitable Craft application cache. The `redis` compatibility token and the clearer `craft` token both request a suitable cross-request application cache; neither promises a specific cache component. If no safe cross-request backend is available, Redirect Manager skips disposable caching instead of writing files that cannot persist safely.
 
 See [Configuration](../get-started/configuration.md) for all caching options.

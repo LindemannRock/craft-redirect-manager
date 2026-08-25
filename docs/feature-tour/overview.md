@@ -1,17 +1,17 @@
-# Features Overview
+# Features overview
 
 Redirect Manager is a comprehensive redirect and 404 management plugin for Craft CMS. It catches 404s, routes them to matching redirects, tracks unhandled misses, and gives you the analytics to act on them.
 
 > [!TIP]
-> New to Redirect Manager? Start with the [Quickstart](../get-started/quickstart.md) guide to get your first redirect in place within minutes.
+> New to Redirect Manager? Start with the [Quickstart](../get-started/quickstart.md) guide to create and test your first redirect in the Control Panel.
 
-## What It Does
+## What it does
 
 At its core, Redirect Manager intercepts every 404 response on your site, checks it against a library of redirect rules, and either fires the redirect or records the miss as an analytics entry. Every 404 — whether it came from a renamed entry, a deleted page, or an external link pointing at the wrong URL — is captured and actionable.
 
 ![The Redirect Manager redirects list in the Control Panel showing source, destination, match type, and hit-count columns](../images/overview-redirects-list.webp)
 
-## Core Capabilities
+## Core capabilities
 
 - **[Redirects](redirects.md)** — Create and manage redirects with four match types: exact, regex, wildcard, and prefix. Assign priority to control which rule wins when multiple patterns match. Supports all common status codes (301, 302, 303, 307, 308, 410) and full multi-site configuration.
 
@@ -37,15 +37,15 @@ At its core, Redirect Manager intercepts every 404 response on your site, checks
 
 - **Craft Utility @since(5.1.0)** — A utility page under **Utilities → Redirect Manager** that shows redirect counts, recent 404 activity (last 7 days), and cache file counts at a glance. Redirect totals include global rules plus rules for the user's editable sites; analytics activity and the displayed clear count include editable sites only. Cache-file counts follow the separate cache-clear permission and are not site-specific.
 
-## Privacy by Default
+## Privacy by default
 
 Redirect Manager never stores plain IP addresses. Visitor IPs are hashed with a salted SHA256 before storage. Optional subnet masking adds a second anonymization layer. Because analytics depends on this salt, the **Redirect Manager → Setup** checklist confirms it is configured — see [Post-Install Setup](../get-started/installation.md#post-install-setup). See [Analytics](analytics.md) for details on the IP salt setup.
 
-## Multi-Site Support
+## Multi-site support
 
 Redirects can be scoped to a specific site or set to apply globally (`siteId = null`). Analytics are also filtered by site. All CP views support per-site filtering.
 
-## Next Steps
+## Next steps
 
 If you're new to Redirect Manager:
 

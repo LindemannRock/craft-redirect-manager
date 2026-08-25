@@ -13,13 +13,13 @@ Intelligent redirect management and 404 handling for Craft CMS.
 ## Features
 
 - **Automatic 404 Handling** — catches all 404s and attempts to redirect
-- **Multiple Match Types** — exact, contains, regex, wildcard, prefix
+- **Multiple Match Types** — exact, regex, wildcard, and prefix
 - **Auto-Redirect Creation** — creates redirects when entry URIs change with undo detection
 - **Rich Analytics** — track 404s with device, browser, OS, geographic data, and bot detection
 - **Geographic Detection** — visitor location via ip-api.com, ipapi.co, or ipinfo.io
 - **CSV Import/Export** — import redirects (up to 4000 rows) and export analytics
 - **Backup System** — automatic/scheduled backups with retention and restore
-- **Smart Caching** — file or Redis caching for fast redirect lookups
+- **Smart Caching** — portable file or Craft application caching for fast redirect lookups
 - **Multi-Site Support** — site-specific or global redirects
 - **GraphQL Support** — resolve redirects and list enabled redirects for headless/SPAs
 - **Read-only JSON API** — expose enabled redirects to static builds, SPAs, edge workers, or backend integrations
@@ -41,25 +41,13 @@ Intelligent redirect management and 404 handling for Craft CMS.
 ### Composer
 
 ```bash
-composer require lindemannrock/craft-redirect-manager && php craft plugin/install redirect-manager
+composer require lindemannrock/craft-redirect-manager && php craft plugin/install redirect-manager && php craft redirect-manager/security/generate-salt
 ```
 
 ### DDEV
 
 ```bash
-ddev composer require lindemannrock/craft-redirect-manager && ddev craft plugin/install redirect-manager
-```
-
-### Post-install
-
-Generate the IP hash salt used by privacy-conscious analytics:
-
-```bash
-php craft redirect-manager/security/generate-salt
-```
-
-```bash
-ddev craft redirect-manager/security/generate-salt
+ddev composer require lindemannrock/craft-redirect-manager && ddev craft plugin/install redirect-manager && ddev craft redirect-manager/security/generate-salt
 ```
 
 ## Documentation

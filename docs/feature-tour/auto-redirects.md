@@ -1,10 +1,20 @@
-# Auto-Redirects
+# Auto-redirects
 
-Redirect Manager can automatically create a redirect whenever a Craft entry's URI changes. This keeps old URLs alive without any manual work, preventing broken links when content is reorganized.
+Keep old entry URLs working when editors change slugs or move content. Redirect Manager can create the redirect automatically and remove the temporary rule when an editor quickly changes the URI back.
 
 ![An auto-created redirect in the Redirect Manager list, tagged with its entry-change creation type](../images/auto-redirects-list.webp)
 
-## How It Works
+## Turn on automatic redirects
+
+1. Open **Redirect Manager → Settings → General**.
+2. Turn on **Auto Create Redirects**.
+3. Choose an **Undo Window** that matches your editorial workflow.
+4. Save the settings.
+5. Change the URI of an existing routable entry, then open **Redirect Manager → Redirects** to review the new rule.
+
+Automatic creation is enabled by default. Existing redirects are unaffected if you later turn it off.
+
+## How it works
 
 When an entry is saved with a changed URI, the plugin runs a two-step process:
 
@@ -13,7 +23,7 @@ When an entry is saved with a changed URI, the plugin runs a two-step process:
 
 The resulting redirect uses match type `exact`, status code `301`, and a fixed priority of `0`. Its source shape follows `redirectSrcMatch`: path-only mode stores URI-shaped values such as `/old-page`, while full-URL mode uses the old and new URLs reported by the changed element for that explicit Craft site.
 
-### When Auto-Redirects Are Created
+### When auto-redirects are created
 
 Auto-redirects are created when all of the following are true:
 
@@ -22,7 +32,7 @@ Auto-redirects are created when all of the following are true:
 - The URI has actually changed (not just the title or other fields)
 - The entry is not brand new (no "old" URI to redirect from)
 
-### When They Are NOT Created
+### When auto-redirects are not created
 
 Auto-redirects are **not** created when:
 
@@ -33,18 +43,18 @@ Auto-redirects are **not** created when:
 - The old or new element does not have a routable URL
 - The save concerns a draft or revision
 
-## Enabling and Disabling
+## Configure it in code
 
-Auto-redirect creation is enabled by default. Toggle it in the CP under **Redirect Manager > Settings**, or via config:
+Use the config file when the setting should be locked per environment:
 
 ```php
 // config/redirect-manager.php
 'autoCreateRedirects' => true,
 ```
 
-Set to `false` to disable entirely. You can also re-enable it later — existing redirects are unaffected.
+Set it to `false` to disable automatic creation.
 
-## Undo Detection
+## Undo detection
 
 A common workflow issue is the "flip-flop": a content editor changes a slug, then immediately changes it back. Without undo detection, this creates a redirect that would loop: `A → B` while the entry is back at `A`.
 
@@ -58,7 +68,7 @@ Redirect Manager solves this with an undo detection window. When a new URI chang
 4. Plugin detects the flip-flop: deletes `/about-us → /about` instead of creating `/about → /about-us`
 5. No redirect stacking, no loop
 
-### Undo Window Setting
+### Undo window setting
 
 ```php
 // config/redirect-manager.php
@@ -75,16 +85,16 @@ Redirect Manager solves this with an undo detection window. When a new URI chang
 
 Setting to `0` means undo detection always fires — no time limit. Use a shorter window if you want undo detection to only apply immediately after a change.
 
-## Multi-Site Behavior
+## Multi-site behavior
 
 Auto-redirects are created per site. When a multi-site entry changes its URI, a redirect is created for each site where the URI changed. The redirect is scoped to that specific site's `siteId`.
 
 In full-URL mode, each site's configured domain and base path remain part of that site's automatic redirect. Redirect Manager uses the element URLs for the explicit site being saved; it does not borrow the current request's host. For example, a secondary site rooted at `https://example.test/fr/` produces full-URL sources and destinations under that same site root.
 
-## Reviewing Auto-Created Redirects
+## Review auto-created redirects
 
 Auto-created redirects appear in the redirect list alongside manually created ones. They are identified by a `creationType` of `entry-change` in the underlying data. You can edit, disable, or delete them like any other redirect.
 
-## Programmatic Integration
+## Programmatic integration
 
 Other plugins can replicate this behavior using `RedirectHandlingTrait`. See [Plugin Integration](plugin-integration.md) for the full pattern including undo detection support.

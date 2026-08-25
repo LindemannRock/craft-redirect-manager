@@ -1,10 +1,20 @@
 # Analytics @since(5.1.0)
 
-Redirect Manager tracks every 404 that hits your site — whether it was handled by a redirect or went unmatched. The analytics dashboard gives you device breakdowns, geographic data, bot identification, and charts over time. Unhandled 404s can be turned into redirects with a single click.
+Find the broken URLs visitors actually reach, separate human traffic from bots and probes, and turn useful 404s into redirects. Redirect Manager records handled and unhandled 404 activity and presents it in the Control Panel.
 
 ![The Redirect Manager analytics dashboard with summary cards, device breakdown, and a 404 activity chart](../images/analytics-dashboard.webp)
 
-## What Gets Tracked
+## Review and fix 404s in the CP
+
+1. Open **Redirect Manager → Analytics**.
+2. Choose a site and date range.
+3. Review **Most Common 404s** for high-impact broken URLs and **Recent Unhandled 404s** for newly discovered problems.
+4. Use the request-type, device, and geographic breakdowns to understand the traffic behind those requests.
+5. Click **Create Redirect** on an unhandled row, confirm the pre-filled source, add a destination, and save.
+
+The rest of this page explains what the dashboard records, how its summaries behave, and which settings control collection and cleanup.
+
+## What gets tracked
 
 Every 404 event records:
 
@@ -38,28 +48,17 @@ The migration does not guess dimensions for older cumulative summaries, so
 pre-upgrade hits remain visible in the URL summary but are not added to
 historical charts, breakdowns, or exports.
 
-## Enabling Analytics
-
-Analytics is controlled by a master switch:
-
-```php
-// config/redirect-manager.php
-'enableAnalytics' => true,
-```
-
-When disabled, no 404 data is recorded and the Analytics CP section is hidden. Device detection, geo detection, and IP hashing are all subject to this master switch.
-
-## The Analytics Dashboard
+## The analytics dashboard
 
 Navigate to **Redirect Manager > Analytics** to see:
 
-### 404 Trend
+### 404 trend
 
 Charts showing hit volume over time, split by handled vs. unhandled. Dates are
 grouped in Craft's configured time zone. Use the date range filter to zoom in
 or compare periods.
 
-### Most Common 404s
+### Most common 404s
 
 A table of the top 404 URLs ranked by hit count. Each row shows:
 - The URL
@@ -77,24 +76,24 @@ available, Redirect Manager uses the current site-specific rule for the same
 URL, then a global rule. A rule belonging only to another site is never used to
 construct the link.
 
-### Recent Unhandled 404s
+### Recent unhandled 404s
 
 The most recent unhandled 404 events in reverse chronological order. The table
 includes request type and agent columns so system warmups, public bots, and
 security probes can be separated from normal visitor traffic while you triage
 new broken links.
 
-### Device & Browser Breakdown
+### Device and browser breakdown
 
 Bar charts showing the distribution of device types, browsers, and operating systems across all tracked 404s.
 
-### Geographic Breakdown
+### Geographic breakdown
 
 Country and city distribution charts. Percentages use every qualifying hit in
 the selected site and date filters, including locations beyond the displayed
 top 15. They are only shown when `enableGeoDetection` is `true`.
 
-### Request Type and Agents
+### Request type and agents
 
 The Traffic & Devices tab shows a request-type chart split into normal, system,
 bot, and probe traffic. The same tab lists the top identified agents with their
@@ -113,7 +112,22 @@ device brand/model, browser version and engine, OS version, detected language, u
 agent, traffic type, system-agent flag, bot flag, bot category, and bot
 producer.
 
-## Auto-Refresh
+## Create redirects from 404s
+
+Each unhandled URL in **Most Common 404s** has a **Create Redirect** action. It opens the new redirect form with the 404 URL pre-filled as the source; add a destination, review the rule, and save.
+
+## Enable analytics
+
+Analytics is enabled by default. Change the master switch under **Redirect Manager → Settings → Analytics**, or lock it per environment in config:
+
+```php
+// config/redirect-manager.php
+'enableAnalytics' => true,
+```
+
+When disabled, no 404 data is recorded and the Analytics CP section is hidden. Device detection, geo detection, and IP hashing are all subject to this master switch.
+
+## Auto-refresh
 
 The dashboard can refresh automatically at a configurable interval:
 
@@ -123,11 +137,7 @@ The dashboard can refresh automatically at a configurable interval:
 
 When a user interacts with the page (hover, click, scroll), auto-refresh pauses to avoid disrupting their workflow. It resumes when interaction stops.
 
-## Creating Redirects from 404s
-
-The most common action in the analytics dashboard is fixing unhandled 404s. Each unhandled URL in the "Most Common 404s" table has a **Create Redirect** button. Clicking it opens the new redirect form pre-filled with the 404 URL as the source — just add a destination and save.
-
-## Device Detection
+## Device detection
 
 Device detection is powered by [Matomo DeviceDetector](https://github.com/matomo-org/device-detector) @since(5.14.0). It identifies device type, browser name, browser version, OS, bot status, bot category, bot producer, and first-party system-agent traffic from the user-agent string and browser Client Hints when available.
 
@@ -138,7 +148,7 @@ Detection results are cached to avoid re-parsing the same user-agent repeatedly:
 'deviceDetectionCacheDuration'  => 3600, // seconds
 ```
 
-## Geographic Detection
+## Geographic detection
 
 Geographic detection is disabled by default. Enable it and configure a provider:
 
@@ -150,7 +160,7 @@ Geographic detection is disabled by default. Enable it and configure a provider:
 
 The `geoApiKey` enables HTTPS for `ip-api.com` and unlocks higher rate limits on all providers.
 
-### Local Development Override
+### Local development override
 
 Private IP addresses (127.0.0.1, 192.168.x.x, 10.x.x.x) cannot be geolocated automatically. In development, set both defaults to record a local test location:
 
@@ -215,13 +225,13 @@ ddev craft queue/run
 
 Manual analytics clearing remains available from **Redirect Manager > Analytics** and the Redirect Manager Craft utility when you need to remove data before the scheduled job runs.
 
-## Exporting Analytics
+## Export analytics
 
 Export 404 analytics as CSV from **Redirect Manager > Analytics > Export CSV**. Each row represents one daily dimensional aggregate and includes every tracked field — URL, referrer, site, hit count, handled status, the full request-type, traffic-type, device, browser, OS, and bot metadata, geographic country and city, the salted IP hash, user agent, and timestamps.
 
 The `redirectManager:exportAnalytics` permission is required to access the export button.
 
-## Analytics Services
+## Developer service reference
 
 The `AnalyticsService` @since(5.7.0) is a facade that delegates to five focused sub-services:
 

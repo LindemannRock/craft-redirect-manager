@@ -1,8 +1,8 @@
-# Plugin Integration @since(5.3.0)
+# Plugin integration @since(5.3.0)
 
 Redirect Manager provides a pluggable architecture that lets other plugins participate in its redirect system. By using `RedirectHandlingTrait`, a plugin can query Redirect Manager when it encounters a 404, create redirect rules on demand, and detect undo situations — all while keeping both plugins loosely coupled.
 
-## RedirectHandlingTrait Overview
+## RedirectHandlingTrait overview
 
 `RedirectHandlingTrait` is a PHP trait located at `src/traits/RedirectHandlingTrait.php`. Include it in any controller, service, or component in your plugin. It provides three methods:
 
@@ -15,7 +15,7 @@ Redirect Manager provides a pluggable architecture that lets other plugins parti
 > [!NOTE]
 > The trait only provides these three methods. Functions like `handleDeletedItem()` or `handle404()` are examples you write in your own plugin. The trait's methods are the building blocks you call from those functions.
 
-## Integration Pattern 1: Handling 404s
+## Integration pattern 1: handle 404s
 
 When your plugin encounters a 404, call `handleRedirect404()` to check whether Redirect Manager has a matching redirect. If it does, use the returned data to issue the redirect.
 
@@ -57,7 +57,7 @@ class MyController extends Controller
 4. If not found, it's recorded as "unhandled" with your plugin as the source
 5. The method returns the redirect array or `null`
 
-## Integration Pattern 2: Creating Redirects
+## Integration pattern 2: create redirects
 
 When your plugin performs an operation that should create a redirect (item deleted, slug changed, link expired), call `createRedirectRule()`.
 
@@ -91,7 +91,7 @@ class MyService extends Component
 }
 ```
 
-## Integration Pattern 3: Slug Changes with Undo Detection
+## Integration pattern 3: handle slug changes with undo detection
 
 When a slug changes, first call `handleUndoRedirect()` to check whether the change is an immediate reversal of a previous change. If the undo is detected, the old redirect is removed and the method returns `true` — no new redirect should be created. If it returns `false`, proceed with `createRedirectRule()`.
 
@@ -130,7 +130,7 @@ class MyService extends Component
 }
 ```
 
-## Method Reference
+## Method reference
 
 ### `handleRedirect404(string $url, string $source, array $context = []): ?array`
 
@@ -187,7 +187,7 @@ Plugin handle format:
 ✗  'shortlink_manager'   (no underscores)
 ```
 
-## Source Attribution in Analytics
+## Source attribution in analytics
 
 Every 404 reported through `handleRedirect404()` is attributed to the source plugin you pass as `$source`. The analytics dashboard shows a breakdown by source:
 
@@ -199,14 +199,14 @@ smart-links:          43 (handled: 38)
 
 This lets you see at a glance which plugin or area of your site is generating the most 404s.
 
-## Real-World Example
+## Real-world example
 
 ShortLink Manager integrates Redirect Manager in two places:
 
 - **404 Handling** (`RedirectController::redirectToNotFound()`): When a shortlink is not found, it calls `handleRedirect404()`. If a redirect exists, it fires. Otherwise, falls back to the configured not-found URL.
 - **Auto-Redirect Creation** (`ShortLinksService`): When a shortlink code changes, expires, or is deleted, it calls `handleUndoRedirect()` then `createRedirectRule()` to keep the old code redirecting to the right place.
 
-## Benefits of Integration
+## Benefits of integration
 
 - **Centralized 404 tracking** — All 404s across your whole site in one dashboard
 - **Auto-healing** — Broken links automatically resolved when redirects exist

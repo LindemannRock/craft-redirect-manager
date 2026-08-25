@@ -2,16 +2,16 @@
 
 Events can be used to extend the functionality of Redirect Manager. All redirect events use the `RedirectEvent` class @since(5.0.0), which provides access to the redirect data and allows you to cancel save/delete operations.
 
-## RedirectEvent Properties
+## RedirectEvent properties
 
 | Property | Type | Description |
 |----------|------|-------------|
 | `$event->redirect` | `array` | The redirect data |
 | `$event->isValid` | `bool` | Set to `false` to cancel the operation (before events only) |
 
-## RedirectsService Events
+## RedirectsService events
 
-### The `beforeSaveRedirect` event @since(5.0.0)
+### The `beforeSaveRedirect` event
 
 Event triggered before a redirect is saved. Set `$event->isValid = false` to cancel the save.
 
@@ -33,7 +33,7 @@ Event::on(
 );
 ```
 
-### The `afterSaveRedirect` event @since(5.0.0)
+### The `afterSaveRedirect` event
 
 Event triggered after a redirect is saved.
 
@@ -52,7 +52,7 @@ Event::on(
 );
 ```
 
-### The `beforeDeleteRedirect` event @since(5.0.0)
+### The `beforeDeleteRedirect` event
 
 Event triggered before a redirect is deleted. Set `$event->isValid = false` to cancel the deletion.
 
@@ -73,7 +73,7 @@ Event::on(
 );
 ```
 
-### The `afterDeleteRedirect` event @since(5.0.0)
+### The `afterDeleteRedirect` event
 
 Event triggered after a redirect is deleted.
 

@@ -82,7 +82,7 @@ ddev craft help redirect-manager/security/generate-api-token
 
 When either security command writes to an existing `.env` file, Redirect Manager verifies the complete replacement in the same directory before switching it into place. The command reports success only after that replacement succeeds, and it preserves the original file contents and permissions if any write, verification, permission, or replacement step fails. In that case, the generated value remains in the command output so you can add the assignment manually.
 
-### `redirect-manager/security/generate-salt` @since(5.1.0)
+### `redirect-manager/security/generate-salt`
 
 Generates a cryptographically secure IP hash salt and adds it to your `.env` file as `REDIRECT_MANAGER_IP_SALT`.
 
@@ -110,7 +110,7 @@ Rotating this token immediately invalidates external consumers that still send t
 
 ## Backups @since(5.24.0)
 
-### `redirect-manager/backup/create` @since(5.24.0)
+### `redirect-manager/backup/create`
 
 Creates a manual backup of all redirects. By default, the command also cleans old backups when backup retention is enabled.
 
@@ -129,7 +129,7 @@ ddev craft redirect-manager/backup/create
 | `--reason` | `?string` | `'console'` | Reason for the backup |
 | `--clean` | `bool` | `true` | Clean old backups after creating |
 
-### `redirect-manager/backup/scheduled` @since(5.24.0)
+### `redirect-manager/backup/scheduled`
 
 Runs the scheduled backup based on the `backupSchedule` setting. Checks the time elapsed since the last scheduled backup and creates one if due. Redirect Manager normally schedules backups through Craft's queue; this command is useful for manual checks or direct cron setups.
 
@@ -141,7 +141,7 @@ php craft redirect-manager/backup/scheduled
 ddev craft redirect-manager/backup/scheduled
 ```
 
-### `redirect-manager/backup/list` @since(5.24.0)
+### `redirect-manager/backup/list`
 
 Lists all available backups with date, reason, size, and redirect count.
 
@@ -153,7 +153,7 @@ php craft redirect-manager/backup/list
 ddev craft redirect-manager/backup/list
 ```
 
-### `redirect-manager/backup/clean` @since(5.24.0)
+### `redirect-manager/backup/clean`
 
 Removes backups older than the configured `backupRetentionDays`. Does nothing if retention is set to `0` (keep forever).
 

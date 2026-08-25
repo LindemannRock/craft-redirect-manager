@@ -81,7 +81,7 @@ A redirect exists in the CP but visiting the URL does not redirect.
    ddev craft clear-caches/all
    ```
 
-   If `cacheStorageMethod` is set to `redis`, also check the logs for a cache-component warning. Redirect Manager logs a warning and skips Redis-specific cache operations when Redis storage is selected but Craft's `cache` component is not Redis-backed.
+   Then open **Redirect Manager → Settings → Cache** and check the effective storage message. On durable hosts, `file` uses plugin-owned files. On ephemeral hosts it automatically uses a suitable Craft application cache. The `redis` compatibility token and `craft` both request a suitable cross-request application cache. If Craft's cache component is unavailable or unsuitable for cross-request use, Redirect Manager disables disposable caching and logs the reason instead of falling back to ephemeral files.
 
 7. **Check the logs.** Go to **Redirect Manager > Logs** or enable debug logging temporarily:
 
@@ -226,7 +226,7 @@ Entry URIs change but no redirects appear in the redirect list.
 
 ---
 
-## Debug Logging Not Showing Up
+## Debug logging not showing up
 
 Set `logLevel` to `debug` but debug entries are not appearing.
 
@@ -241,7 +241,7 @@ Set `logLevel` to `debug` but debug entries are not appearing.
 
 ---
 
-## Redirect Creates a Loop
+## Redirect creates a loop
 
 A redirect is skipped, or an independently configured redirect outside Redirect Manager sends the browser back to the source.
 
@@ -262,7 +262,7 @@ Redirect Manager detects direct, multi-hop, wildcard, prefix, and RegEx cycles b
 
 ---
 
-## Geo-Location Showing Wrong Country
+## Geo-location showing the wrong country
 
 All 404s show the same country or show "Unknown" in the geographic breakdown.
 
@@ -284,7 +284,7 @@ If either value is missing or does not match a supported location, Redirect Mana
 
 ---
 
-## Import Fails or Produces Unexpected Redirects
+## Import fails or produces unexpected redirects
 
 A CSV import completed but some redirects are wrong or missing.
 
@@ -292,13 +292,13 @@ A CSV import completed but some redirects are wrong or missing.
 
 1. **Check the import count.** The import summary shows how many rows succeeded vs. failed.
 2. **Review the CSV format.** Column mapping happens during the import wizard — verify the mapping was correct.
-3. **Check for rows over the limit.** Maximum 4000 rows per import. Rows beyond this limit are silently skipped.
+3. **Check the file size and row count.** A CSV with more than 4000 data rows is rejected as a whole; split it into smaller files and upload each separately. In `devMode`, the failure includes the row-limit detail. Outside `devMode`, the CP reports a generic parse failure and the specific reason is written to the Redirect Manager logs.
 4. **Check site permissions.** Rows whose **Site ID** points at a site your account cannot edit are skipped and counted as failures. Ask an admin to grant edit access to those sites, or import as a user who has it. Rows with a blank Site ID (all sites) are unaffected.
 5. **Restore from backup.** If `backupOnImport` is `true` (default), a backup was created before the import. Go to **Redirect Manager > Backups** and restore the pre-import snapshot.
 
 ---
 
-## Redirect or Import Rejected as Invalid URL
+## Redirect or import rejected as an invalid URL
 
 Saving a redirect or importing a row fails with an invalid destination/source URL or a capture-reference error.
 
@@ -335,13 +335,13 @@ Creating a backup while the redirect library is empty is a successful no-op. The
 
 ---
 
-## Getting Help
+## Getting help
 
 - Enable debug logging and check **Redirect Manager > Logs**
 - Check Craft's general log at `storage/logs/web.log`
 - For persistent issues, include your Redirect Manager version, Craft version, and relevant log entries
 
-## SQL Errors on PostgreSQL (Column Does Not Exist / Ambiguous)
+## SQL errors on PostgreSQL (column does not exist or is ambiguous)
 
 ```text
 SQLSTATE[42703]: column "..." does not exist

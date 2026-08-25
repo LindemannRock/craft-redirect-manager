@@ -1,10 +1,22 @@
 # Configuration
 
-Configure Redirect Manager from the Control Panel or by creating `config/redirect-manager.php`. Config-file values override the matching Control Panel fields, which is useful when production behavior needs to stay locked across deploys.
+Tune redirect behavior, analytics, caching, backups, and the Control Panel from **Redirect Manager → Settings**, or from a version-controlled file at `config/redirect-manager.php`.
+
+Redirect Manager stores CP-managed settings in its dedicated `redirectmanager_settings` database table. Values defined in `config/redirect-manager.php` take precedence for the active environment; their matching CP fields become read-only so the effective value cannot drift between deployments. Settings not present in the config file continue to use the saved CP value.
+
+## Config file
+
+Copy the sample config file to your project:
 
 ```bash title="PHP"
 cp vendor/lindemannrock/craft-redirect-manager/src/config.php config/redirect-manager.php
 ```
+
+```bash title="DDEV"
+ddev exec cp vendor/lindemannrock/craft-redirect-manager/src/config.php config/redirect-manager.php
+```
+
+The `*` group applies everywhere. Add `dev`, `staging`, or `production` groups to override only the values that differ in those environments. The complete example near the end of this page shows both forms.
 
 ## General
 
@@ -38,14 +50,14 @@ When the Control Panel value is **Use global default**, the setting cascades fro
 | `defaultDateRange` | `string\|null` | `null` | Default date range for dashboard, analytics, logs, and other date-filtered views. Common values: `today`, `yesterday`, `last7days`, `last30days`, `last90days`, `thisMonth`, `lastMonth`, `thisYear`, `lastYear`, `all` |
 | `exports` | `array\|null` | `null` | Export format overrides, e.g. `['csv' => true, 'json' => true, 'excel' => true]` |
 
-## Query String Handling
+## Query string handling
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `stripQueryString` | `bool` | `false` | Strip the query before matching across frontend, GraphQL, the URL tester, and plugin integrations; when `false`, the query remains part of the matching input |
 | `preserveQueryString` | `bool` | `false` | Append the incoming query after existing destination parameters and before any `#fragment`; applies after capture substitution across the same resolution paths |
 
-## Redirect Response
+## Redirect response
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -81,7 +93,7 @@ cutover. Existing cumulative summaries stay intact, but Redirect Manager does
 not invent earlier device, redirect, handled, referrer, or geographic history
 from their latest metadata.
 
-## Geographic Detection
+## Geographic detection
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -91,7 +103,7 @@ from their latest metadata.
 | `defaultCountry` | `?string` | `null` | Default country for local dev. Falls back to `REDIRECT_MANAGER_DEFAULT_COUNTRY` env var. Requires `defaultCity`; otherwise private/local IP geo fields stay empty |
 | `defaultCity` | `?string` | `null` | Default city for local dev. Falls back to `REDIRECT_MANAGER_DEFAULT_CITY` env var. Requires `defaultCountry`; otherwise private/local IP geo fields stay empty |
 
-## Device Detection
+## Device detection
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -104,7 +116,9 @@ from their latest metadata.
 |--------|------|---------|-------------|
 | `enableRedirectCache` | `bool` | `true` | Enable redirect lookup caching |
 | `redirectCacheDuration` | `int` | `3600` | Redirect cache duration in seconds |
-| `cacheStorageMethod` | `string` | `'file'` | Cache storage method (`file` or `redis`) |
+| `cacheStorageMethod` | `string` | `'file'` | Disposable cache preference: `file`, `redis`, or `craft` |
+
+`file` uses plugin-owned files on durable hosts. On a host with an ephemeral filesystem, Redirect Manager automatically uses a suitable Craft application cache instead. `redis` is a compatibility token that requests a suitable cross-request application cache; it is not limited to a Redis component. `craft` explicitly selects the same application-cache path. If no suitable cross-request application cache is available for an application-cache selection, disposable caching is disabled for that request rather than written to unsafe ephemeral files.
 
 ## Backups @since(5.23.0)
 
@@ -136,11 +150,12 @@ An explicitly configured missing, invalid, or unresolved volume instead shows a 
 | `excludePatterns` | `array` | `[]` | Regex patterns for URLs to exclude from both redirect handling and analytics. See [URL Filtering](../feature-tour/url-filtering.md) |
 | `logLevel` | `string` | `'error'` | Log level (`debug`, `info`, `warning`, `error`). Debug requires devMode |
 
-## Environment Variables
+## Environment variables
 
 | Variable | Setting | Description |
 |----------|---------|-------------|
 | `REDIRECT_MANAGER_IP_SALT` | `ipHashSalt` | IP hash salt for privacy-focused analytics |
+| `REDIRECT_MANAGER_GEO_API_KEY` | `geoApiKey` | Optional key for the configured geographic lookup provider |
 | `REDIRECT_MANAGER_DEFAULT_COUNTRY` | `defaultCountry` | Default country code for local development |
 | `REDIRECT_MANAGER_DEFAULT_CITY` | `defaultCity` | Default city for local development |
 | `REDIRECT_MANAGER_API_TOKEN` | `apiEndpointToken` | Token required by the read-only JSON redirects endpoint |
@@ -155,7 +170,7 @@ php craft redirect-manager/security/generate-api-token
 ddev craft redirect-manager/security/generate-api-token
 ```
 
-## Example Configuration
+## Complete configuration example
 
 ```php
 <?php
@@ -166,9 +181,23 @@ use craft\helpers\App;
 return [
     '*' => [
         'pluginName' => 'Redirect Manager',
+        'ipHashSalt' => App::env('REDIRECT_MANAGER_IP_SALT'),
         'autoCreateRedirects' => true,
         'undoWindowMinutes' => 60,
         'redirectSrcMatch' => 'pathonly',
+
+        // Query strings and redirect responses
+        'stripQueryString' => false,
+        'preserveQueryString' => false,
+        'setNoCacheHeaders' => true,
+        'additionalHeaders' => [
+            ['name' => 'X-Robots-Tag', 'value' => 'noindex, nofollow'],
+        ],
+
+        // Logging and interface
+        'logLevel' => 'error',
+        'refreshIntervalSecs' => 30,
+        'itemsPerPage' => 100,
 
         // JSON API
         'apiEndpointEnabled' => false,
@@ -178,31 +207,38 @@ return [
         // Analytics
         'enableAnalytics' => true,
         'anonymizeIpAddress' => false,
+        'stripQueryStringFromStats' => true,
         'analyticsRetention' => 30,
         'analyticsLimit' => 1000,
+        'autoTrimAnalytics' => true,
 
         // Geo
         'enableGeoDetection' => false,
         'geoProvider' => 'ip-api.com',
+        'geoApiKey' => App::env('REDIRECT_MANAGER_GEO_API_KEY'),
+        'defaultCountry' => App::env('REDIRECT_MANAGER_DEFAULT_COUNTRY'),
+        'defaultCity' => App::env('REDIRECT_MANAGER_DEFAULT_CITY'),
 
         // Caching
         'enableRedirectCache' => true,
         'redirectCacheDuration' => 3600,
         'cacheStorageMethod' => 'file',
-
-        // Query strings
-        'stripQueryString' => false,
-        'preserveQueryString' => false,
-        'stripQueryStringFromStats' => true,
+        'cacheDeviceDetection' => true,
+        'deviceDetectionCacheDuration' => 3600,
 
         // Backups
         'backupEnabled' => true,
         'backupOnImport' => true,
         'backupSchedule' => 'daily',
         'backupRetentionDays' => 30,
+        'backupPath' => '@storage/redirect-manager/backups',
+        'backupVolumeUid' => null,
 
-        // Logging
-        'logLevel' => 'error',
+        // URL filtering
+        'excludePatterns' => [
+            ['pattern' => '^/admin'],
+            ['pattern' => '^/actions'],
+        ],
 
         // Optional base-setting overrides for this plugin only
         // Leave unset to inherit from config/lindemannrock-base.php.
@@ -217,6 +253,18 @@ return [
         //     'json' => true,
         //     'excel' => true,
         // ],
+    ],
+
+    'dev' => [
+        'logLevel' => 'debug',
+        'refreshIntervalSecs' => 15,
+        'redirectCacheDuration' => 60,
+    ],
+
+    'production' => [
+        'logLevel' => 'error',
+        'cacheStorageMethod' => 'craft',
+        'redirectCacheDuration' => 86400,
     ],
 ];
 ```

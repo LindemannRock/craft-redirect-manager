@@ -35,7 +35,7 @@ ddev craft plugin/install logging-library
 
 Or via the Control Panel: **Settings → Plugins → Logging Library → Install**
 
-## Post-Install Setup
+## Post-install setup
 
 After installing, open **Redirect Manager → Setup** in the Control Panel. The Setup page is a short readiness checklist that confirms the plugin is configured before you rely on analytics. It shows a **Setup** badge while a step is outstanding and a **Ready** badge once everything is in place.
 

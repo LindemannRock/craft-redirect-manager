@@ -1,4 +1,4 @@
-# API Endpoints @since(5.33.0)
+# API endpoints @since(5.33.0)
 
 Use the JSON redirects endpoint when another layer needs the redirect table outside Craft's normal request lifecycle. Typical consumers are static build scripts, edge workers, SPA bootstrapping code, and backend services that do not use GraphQL.
 
@@ -143,7 +143,7 @@ The decision fails closed. If Craft cannot acquire the token mutex, read the sha
 | `429` | Rate limit exceeded — retry after the window resets |
 | `503` | Rate-limit coordination or counter storage is temporarily unavailable; retry the request |
 
-## JSON API vs GraphQL
+## JSON API or GraphQL
 
 Use this endpoint when a consumer wants the full enabled redirect table as plain JSON.
 

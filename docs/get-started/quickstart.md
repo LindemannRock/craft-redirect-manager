@@ -1,6 +1,6 @@
 # Quickstart
 
-Get Redirect Manager running in under 5 minutes. By the end of this guide you'll have redirects catching 404s automatically.
+Create a redirect, verify how it resolves, and confirm automatic redirects are ready for future URI changes.
 
 ## Before you start
 

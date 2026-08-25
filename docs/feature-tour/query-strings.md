@@ -1,10 +1,18 @@
-# Query String Handling
+# Query string handling
 
-Redirect Manager provides three independent settings that control how query strings are treated at three different points in the request lifecycle: during redirect matching, when issuing the redirect response, and when grouping analytics records.
+Keep campaign parameters from breaking redirects, decide whether they reach the destination, and control how 404 analytics groups them. Redirect Manager applies one setting at each of those three stages.
 
-Understanding these settings independently — and how they interact — lets you tune the plugin for your site's specific needs.
+## Configure query strings in the CP
 
-## The Three Settings
+1. Open **Redirect Manager → Settings → General**.
+2. Turn on **Strip Query String** when parameters such as `utm_source` should not prevent a source URL from matching.
+3. Turn on **Preserve Query String** when incoming parameters should be appended to the redirect destination.
+4. Open **Redirect Manager → Settings → Analytics**.
+5. Leave **Strip Query String From Stats** on to group parameter variants under one analytics URL, or turn it off to track each combination separately.
+
+These controls are independent. Start with the defaults, then use the recipes below when your site has a specific matching, attribution, or reporting need.
+
+## The three settings
 
 | Setting | Stage | Default |
 |---------|-------|---------|
@@ -12,7 +20,7 @@ Understanding these settings independently — and how they interact — lets yo
 | `preserveQueryString` | Destination — should query strings be passed to the redirect target? | `false` |
 | `stripQueryStringFromStats` | Analytics — should different query strings be grouped as one URL? | `true` |
 
-## 1. Strip Query String (Matching)
+## 1. Strip query string for matching
 
 Controls whether the query string portion of a 404 URL is stripped before comparing against redirect patterns.
 
@@ -35,7 +43,7 @@ OFF (default):          ON:
 'stripQueryString' => true,
 ```
 
-## 2. Preserve Query String (Destination)
+## 2. Preserve query string for the destination
 
 Controls whether the query string from the original 404 URL is appended to the redirect destination URL.
 
@@ -66,7 +74,7 @@ This policy is shared by frontend responses, GraphQL resolution, the Settings UR
 'preserveQueryString' => true,
 ```
 
-## 3. Strip Query String From Stats (Analytics)
+## 3. Strip query string from analytics
 
 Controls whether analytics groups all hits to a URL regardless of query string, or tracks each unique URL+query combination separately.
 
@@ -90,7 +98,7 @@ OFF:          Three records — each with count: 1
 'stripQueryStringFromStats' => false,
 ```
 
-## Interaction Between Settings
+## How the settings interact
 
 These three settings are completely independent. Each operates at a different stage:
 
@@ -112,9 +120,9 @@ Response issued: 301 /new-page  (or /new-page?utm_source=email)
 Analytics recorded: /old-page  (or /old-page?utm_source=email)
 ```
 
-## Common Configuration Recipes
+## Common configuration recipes
 
-### E-commerce and Marketing Sites
+### E-commerce and marketing sites
 
 Match regardless of UTM/tracking params, preserve them through to the destination, and consolidate analytics by path:
 
@@ -124,7 +132,7 @@ Match regardless of UTM/tracking params, preserve them through to the destinatio
 'stripQueryStringFromStats' => true,   // Clean analytics reports
 ```
 
-### API or Application Sites
+### API or application sites
 
 Require exact URL matching (params matter for behavior), drop query strings at destination (canonical clean URLs), and track each unique combination:
 
@@ -134,7 +142,7 @@ Require exact URL matching (params matter for behavior), drop query strings at d
 'stripQueryStringFromStats' => false,  // Track each unique combination
 ```
 
-### Standard Content Sites (Default)
+### Standard content sites (default)
 
 Default behavior: params must match if present, are dropped at destination, analytics consolidated by path:
 

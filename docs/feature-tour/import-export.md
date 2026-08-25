@@ -1,14 +1,14 @@
-# Import / Export
+# Import and export
 
 Redirect Manager supports bulk redirect management through CSV import and export. Import hundreds of redirects at once with a guided column-mapping workflow. Export your full redirect library for backup or migration.
 
 ![The Import/Export page in the Redirect Manager Control Panel](../images/import-export-main.webp)
 
-## Importing Redirects
+## Import redirects
 
 Navigate to **Redirect Manager > Import/Export** to start an import.
 
-### Import Workflow
+### Import workflow
 
 1. **Upload CSV** — Select and upload your CSV file. Maximum 4000 rows per import. For larger datasets, split into multiple files.
 2. **Map Columns** — The plugin reads your CSV headers and presents a mapping screen. Match each CSV column to the corresponding redirect field.
@@ -23,7 +23,7 @@ The **Preview Import** step summarizes total, valid, duplicate, and error rows, 
 
 ![Import preview showing valid redirects and row counts](../images/import-export-preview.webp)
 
-### CSV Format
+### CSV format
 
 Your CSV file must have a header row. Column names do not need to match exactly — you map them in step 2.
 
@@ -54,13 +54,13 @@ Canonical values and supported aliases are compared without regard to letter cas
 
 Duplicate identity is the normalized source plus its site scope. Match Type and Source Match Mode labels do not create a second identity for the same normalized source. Global and site-specific rows remain separate, while equivalent path-only full URLs, paths, and Exact/Prefix case variants collide. Preview checks both existing redirects and earlier accepted rows in the same CSV, so the final import uses the same identity the preview reported.
 
-### Portable Import Ownership
+### Portable import ownership
 
 A CSV is a portable data format, not a same-install lifecycle backup. Every imported CSV row becomes a manual redirect owned by Redirect Manager. The mapper does not offer creation type, source plugin, or element ID fields, and those columns are ignored if a CSV includes them. This prevents a portable row from claiming entry-change, Shortlink, Smartlink, or another integration's ownership without the original element lifecycle.
 
 JSON backups created by Redirect Manager are different: restoring one on the same installation may retain a valid creation type, source plugin, and element association. Restore still recalculates the canonical normalized source and site identity before writing the rows.
 
-### Row Validation
+### Row validation
 
 Each row is validated before import; problems are flagged in the **Preview** errors bucket and those rows are skipped. A row is rejected when:
 
@@ -71,11 +71,11 @@ Each row is validated before import; problems are flagged in the **Preview** err
 
 Validation prevents intrinsically unsafe new templates from being imported. Redirect Manager still checks substituted destinations at runtime so older published rows and records created through integrations cannot emit an unsafe redirect. An unsafe matching rule is skipped and the next eligible safe rule is considered.
 
-### Import Limits
+### Import limits
 
 The maximum is **4000 rows per import**. This limit ensures reliable operation across all hosting environments. For larger redirect libraries, split your CSV into batches of 4000 or fewer rows.
 
-### Backup Before Import
+### Backup before import
 
 By default, Redirect Manager creates a backup of your current redirects before processing an import. This ensures you can restore if something goes wrong.
 
@@ -86,7 +86,7 @@ By default, Redirect Manager creates a backup of your current redirects before p
 
 Disable this setting to skip the pre-import backup (not recommended for large imports).
 
-### Import History @since(5.23.0)
+### Import history @since(5.23.0)
 
 Every import is logged in the Import History tab. Each entry shows:
 
@@ -99,11 +99,11 @@ This log is useful for auditing changes and understanding the state of your redi
 
 The `redirectManager:manageImportExport` permission is required to access the history tab. The `redirectManager:clearImportHistory` permission is required to delete history logs.
 
-### Clearing Import History
+### Clear import history
 
 Import history can be cleared from the Import History tab. This permanently deletes the log entries but does not affect the redirects themselves.
 
-## Exporting Redirects
+## Export redirects
 
 To export your full redirect list as CSV:
 
@@ -114,7 +114,7 @@ The export includes source URL, destination URL, site ID, source match mode, mat
 
 The `redirectManager:exportRedirects` permission is required.
 
-## Permissions Summary
+## Permissions summary
 
 | Action | Permission Required |
 |--------|---------------------|

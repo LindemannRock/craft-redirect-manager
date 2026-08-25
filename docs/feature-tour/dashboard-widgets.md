@@ -1,10 +1,10 @@
-# Dashboard Widgets @since(5.33.0)
+# Dashboard widgets @since(5.33.0)
 
 Redirect Manager provides two Craft dashboard widgets for at-a-glance visibility into your site's redirect health and 404 activity.
 
 ![Both Redirect Manager dashboard widgets — Analytics Summary and Unhandled 404s — on the Craft dashboard](../images/dashboard-widgets-cp.webp)
 
-## Adding Widgets
+## Add widgets
 
 1. Go to **Dashboard** in the Craft CP
 2. Click **New Widget** (top right)
@@ -17,7 +17,7 @@ In multi-site projects, both widgets can be scoped to **All Sites** or a specifi
 
 Craft rechecks that site access whenever a widget renders. If a saved site is no longer editable, the widget shows a permission/no-data state and does not query that site. Restoring access makes the saved selection work again; **All Sites** always follows the user's current editable-site list, including the no-editable-sites case.
 
-## Unhandled 404s Widget
+## Unhandled 404s widget
 
 Lists the most common unhandled 404s — URLs that hit a 404 but have no matching redirect rule. This gives you a quick, actionable view of broken links without navigating to the full Analytics section.
 
@@ -32,7 +32,7 @@ Lists the most common unhandled 404s — URLs that hit a 404 but have no matchin
 | `limit` | `10` | 5–50 | Maximum number of unhandled 404 URLs to display |
 | `siteId` | `All Sites` | Editable sites | Site scope for the 404 URLs |
 
-## Analytics Summary Widget
+## Analytics Summary widget
 
 An overview of recent 404 activity across your site, including:
 
