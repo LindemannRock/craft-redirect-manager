@@ -80,6 +80,8 @@ ddev craft help redirect-manager/security/generate-api-token
 
 ## Security
 
+When either security command writes to an existing `.env` file, Redirect Manager verifies the complete replacement in the same directory before switching it into place. The command reports success only after that replacement succeeds, and it preserves the original file contents and permissions if any write, verification, permission, or replacement step fails. In that case, the generated value remains in the command output so you can add the assignment manually.
+
 ### `redirect-manager/security/generate-salt` @since(5.1.0)
 
 Generates a cryptographically secure IP hash salt and adds it to your `.env` file as `REDIRECT_MANAGER_IP_SALT`.

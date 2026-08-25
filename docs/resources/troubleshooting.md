@@ -29,6 +29,16 @@ If the endpoint returns `503`:
 
 Setting `apiEndpointRateLimit` to `0` intentionally disables all rate-limit cache and mutex work. Use that only when disabling the endpoint's request limit is an explicit deployment decision, not as a substitute for repairing shared infrastructure.
 
+## A security command cannot update `.env`
+
+The salt and API-token generators print the generated environment assignment even when they cannot update the project `.env` file. If either command reports a write error:
+
+1. Copy the printed `REDIRECT_MANAGER_IP_SALT=...` or `REDIRECT_MANAGER_API_TOKEN=...` assignment to your deployment's environment configuration.
+2. Check that `.env` exists, is readable and writable by the console process, and that its directory permits creation and replacement of a temporary file.
+3. Retry the command after correcting the filesystem permissions if you want Redirect Manager to manage the assignment.
+
+Redirect Manager verifies the complete candidate before replacing `.env`. A failed write, verification, permission copy, or replacement leaves the existing `.env` contents and permissions unchanged; the command does not report a successful update in that case.
+
 ## Redirects not working
 
 A redirect exists in the CP but visiting the URL does not redirect.

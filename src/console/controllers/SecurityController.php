@@ -39,7 +39,7 @@ class SecurityController extends Controller
         $this->stdout($token . "\n\n", Console::FG_GREEN);
 
         $envPath = $this->envPath();
-        if (!file_exists($envPath)) {
+        if (!$this->fileExists($envPath)) {
             $this->stdout("Warning: .env file not found at: {$envPath}\n\n", Console::FG_RED);
             $this->stdout("Manually add this to your .env file:\n", Console::FG_CYAN);
             $this->stdout(self::API_TOKEN_ENV_VAR . "=\"{$token}\"\n\n", Console::FG_GREEN);
@@ -52,7 +52,7 @@ class SecurityController extends Controller
             return ExitCode::OK;
         }
 
-        $envContent = file_get_contents($envPath);
+        $envContent = $this->readFile($envPath);
         if ($envContent === false) {
             $this->stdout("\nError: Could not read .env file\n", Console::FG_RED);
             $this->stdout("Please add manually:\n", Console::FG_CYAN);
@@ -60,7 +60,12 @@ class SecurityController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $tokenExists = preg_match('/^' . self::API_TOKEN_ENV_VAR . '=/m', $envContent) === 1;
+        $tokenMatch = $this->matchEnvironmentAssignment($envContent, self::API_TOKEN_ENV_VAR);
+        if ($tokenMatch === false) {
+            return $this->failWithManualAssignment(self::API_TOKEN_ENV_VAR, $token);
+        }
+
+        $tokenExists = $tokenMatch === 1;
 
         if ($tokenExists) {
             $this->stdout("Existing " . self::API_TOKEN_ENV_VAR . " found in .env\n\n", Console::FG_YELLOW);
@@ -72,11 +77,10 @@ class SecurityController extends Controller
                 return ExitCode::OK;
             }
 
-            $envContent = preg_replace(
-                '/^' . self::API_TOKEN_ENV_VAR . '=.*$/m',
-                self::API_TOKEN_ENV_VAR . '="' . $token . '"',
-                $envContent
-            );
+            $envContent = $this->replaceEnvironmentAssignment($envContent, self::API_TOKEN_ENV_VAR, $token);
+            if ($envContent === null) {
+                return $this->failWithManualAssignment(self::API_TOKEN_ENV_VAR, $token);
+            }
             $action = 'Updated';
         } else {
             if ($envContent !== '' && substr($envContent, -1) !== "\n") {
@@ -87,11 +91,8 @@ class SecurityController extends Controller
             $action = 'Added';
         }
 
-        if ($envContent === null || file_put_contents($envPath, $envContent) === false) {
-            $this->stdout("\nError: Could not write to .env file\n", Console::FG_RED);
-            $this->stdout("Please add manually:\n", Console::FG_CYAN);
-            $this->stdout(self::API_TOKEN_ENV_VAR . "=\"{$token}\"\n\n", Console::FG_GREEN);
-            return ExitCode::UNSPECIFIED_ERROR;
+        if (!$this->replaceFileAtomically($envPath, $envContent)) {
+            return $this->failWithManualAssignment(self::API_TOKEN_ENV_VAR, $token);
         }
 
         $this->stdout("\n✓ {$action} " . self::API_TOKEN_ENV_VAR . " in .env file\n", Console::FG_GREEN);
@@ -125,7 +126,7 @@ class SecurityController extends Controller
         // Check if .env file exists and try to update it
         $envPath = $this->envPath();
 
-        if (!file_exists($envPath)) {
+        if (!$this->fileExists($envPath)) {
             $this->stdout("Warning: .env file not found at: {$envPath}\n\n", Console::FG_RED);
             $this->stdout("Manually add this to your .env file:\n", Console::FG_CYAN);
             $this->stdout(self::IP_SALT_ENV_VAR . "=\"{$salt}\"\n\n", Console::FG_GREEN);
@@ -133,7 +134,7 @@ class SecurityController extends Controller
         }
 
         // Read current .env file
-        $envContent = file_get_contents($envPath);
+        $envContent = $this->readFile($envPath);
         if ($envContent === false) {
             $this->stdout("\nError: Could not read .env file\n", Console::FG_RED);
             $this->stdout("Please add manually:\n", Console::FG_CYAN);
@@ -141,7 +142,10 @@ class SecurityController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $saltExists = preg_match('/^' . self::IP_SALT_ENV_VAR . '=/m', $envContent);
+        $saltExists = $this->matchEnvironmentAssignment($envContent, self::IP_SALT_ENV_VAR);
+        if ($saltExists === false) {
+            return $this->failWithManualAssignment(self::IP_SALT_ENV_VAR, $salt);
+        }
 
         if ($saltExists) {
             $this->stdout("Existing " . self::IP_SALT_ENV_VAR . " found in .env\n\n", Console::FG_YELLOW);
@@ -155,11 +159,10 @@ class SecurityController extends Controller
             }
 
             // Replace existing salt
-            $envContent = preg_replace(
-                '/^' . self::IP_SALT_ENV_VAR . '=.*$/m',
-                self::IP_SALT_ENV_VAR . '="' . $salt . '"',
-                $envContent
-            );
+            $envContent = $this->replaceEnvironmentAssignment($envContent, self::IP_SALT_ENV_VAR, $salt);
+            if ($envContent === null) {
+                return $this->failWithManualAssignment(self::IP_SALT_ENV_VAR, $salt);
+            }
             $action = "Updated";
         } else {
             // Append new salt
@@ -172,11 +175,8 @@ class SecurityController extends Controller
         }
 
         // Write back to .env file
-        if (file_put_contents($envPath, $envContent) === false) {
-            $this->stdout("\nError: Could not write to .env file\n", Console::FG_RED);
-            $this->stdout("Please add manually:\n", Console::FG_CYAN);
-            $this->stdout(self::IP_SALT_ENV_VAR . "=\"{$salt}\"\n\n", Console::FG_GREEN);
-            return ExitCode::UNSPECIFIED_ERROR;
+        if (!$this->replaceFileAtomically($envPath, $envContent)) {
+            return $this->failWithManualAssignment(self::IP_SALT_ENV_VAR, $salt);
         }
 
         $this->stdout("\n✓ {$action} " . self::IP_SALT_ENV_VAR . " in .env file\n", Console::FG_GREEN);
@@ -191,7 +191,170 @@ class SecurityController extends Controller
         return ExitCode::OK;
     }
 
-    private function envPath(): string
+    /**
+     * Replace a file through a verified temporary file in the same directory.
+     */
+    protected function replaceFileAtomically(string $path, string $content): bool
+    {
+        $directory = dirname($path);
+        $temporaryPath = $this->createTemporaryFile($directory, '.' . basename($path) . '.tmp-');
+        if ($temporaryPath === false) {
+            return false;
+        }
+
+        $temporaryHandle = null;
+
+        try {
+            if (dirname($temporaryPath) !== $directory) {
+                return false;
+            }
+
+            $temporaryHandle = $this->openTemporaryFile($temporaryPath);
+            if ($temporaryHandle === false) {
+                $temporaryHandle = null;
+                return false;
+            }
+
+            $written = $this->writeTemporaryFile($temporaryHandle, $content);
+            if ($written !== strlen($content)) {
+                return false;
+            }
+
+            if (!$this->flushTemporaryFile($temporaryHandle)) {
+                return false;
+            }
+
+            $closed = $this->closeTemporaryFile($temporaryHandle);
+            $temporaryHandle = null;
+            if (!$closed) {
+                return false;
+            }
+
+            if ($this->readFile($temporaryPath) !== $content) {
+                return false;
+            }
+
+            $existingMode = $this->getFileMode($path);
+            if ($existingMode === false) {
+                return false;
+            }
+            $expectedMode = $existingMode & 0777;
+            if (!$this->setFileMode($temporaryPath, $expectedMode)) {
+                return false;
+            }
+
+            $temporaryMode = $this->getFileMode($temporaryPath);
+            if ($temporaryMode === false || ($temporaryMode & 0777) !== $expectedMode) {
+                return false;
+            }
+
+            if (!$this->renameFile($temporaryPath, $path)) {
+                return false;
+            }
+
+            $temporaryPath = null;
+            return true;
+        } finally {
+            if ($temporaryHandle !== null) {
+                $this->closeTemporaryFile($temporaryHandle);
+            }
+
+            if ($temporaryPath !== null && $this->fileExists($temporaryPath)) {
+                $this->deleteFile($temporaryPath);
+            }
+        }
+    }
+
+    protected function failWithManualAssignment(string $environmentVariable, string $secret): int
+    {
+        $this->stdout("\nError: Could not write to .env file\n", Console::FG_RED);
+        $this->stdout("Please add manually:\n", Console::FG_CYAN);
+        $this->stdout($environmentVariable . "=\"{$secret}\"\n\n", Console::FG_GREEN);
+        return ExitCode::UNSPECIFIED_ERROR;
+    }
+
+    protected function matchEnvironmentAssignment(string $content, string $environmentVariable): int|false
+    {
+        return preg_match('/^' . preg_quote($environmentVariable, '/') . '=/m', $content);
+    }
+
+    protected function replaceEnvironmentAssignment(string $content, string $environmentVariable, string $secret): ?string
+    {
+        return preg_replace(
+            '/^' . preg_quote($environmentVariable, '/') . '=.*$/m',
+            $environmentVariable . '="' . $secret . '"',
+            $content
+        );
+    }
+
+    protected function fileExists(string $path): bool
+    {
+        return file_exists($path);
+    }
+
+    protected function readFile(string $path): string|false
+    {
+        return @file_get_contents($path);
+    }
+
+    protected function createTemporaryFile(string $directory, string $prefix): string|false
+    {
+        return @tempnam($directory, $prefix);
+    }
+
+    /**
+     * @return resource|false
+     */
+    protected function openTemporaryFile(string $path): mixed
+    {
+        return @fopen($path, 'wb');
+    }
+
+    /**
+     * @param resource $handle
+     */
+    protected function writeTemporaryFile(mixed $handle, string $content): int|false
+    {
+        return @fwrite($handle, $content);
+    }
+
+    /**
+     * @param resource $handle
+     */
+    protected function flushTemporaryFile(mixed $handle): bool
+    {
+        return @fflush($handle);
+    }
+
+    /**
+     * @param resource $handle
+     */
+    protected function closeTemporaryFile(mixed $handle): bool
+    {
+        return @fclose($handle);
+    }
+
+    protected function getFileMode(string $path): int|false
+    {
+        return @fileperms($path);
+    }
+
+    protected function setFileMode(string $path, int $mode): bool
+    {
+        return @chmod($path, $mode);
+    }
+
+    protected function renameFile(string $from, string $to): bool
+    {
+        return @rename($from, $to);
+    }
+
+    protected function deleteFile(string $path): bool
+    {
+        return @unlink($path);
+    }
+
+    protected function envPath(): string
     {
         return defined('CRAFT_BASE_PATH')
             ? CRAFT_BASE_PATH . DIRECTORY_SEPARATOR . '.env'
