@@ -18,6 +18,7 @@ Desktop.ini
 # Dependencies
 node_modules/
 /vendor/
+/composer.lock
 
 # Build artifacts
 npm-debug.log*

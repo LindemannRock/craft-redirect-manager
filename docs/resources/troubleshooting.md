@@ -120,7 +120,15 @@ A redirect exists in the CP but visiting the URL does not redirect.
 
    ```sql
    SELECT COUNT(*) FROM redirectmanager_analytics;
+   SELECT COUNT(*) FROM redirectmanager_analytics_daily;
    ```
+
+The first table is the bounded URL/site summary. The second contains truthful
+post-cutover daily dimensions used by charts, breakdowns, redirect analytics,
+percentages, and exports. After upgrading to schema 1.2.0, an existing summary
+can have rows while the daily table is still empty; this is expected until new
+404 requests arrive. Redirect Manager does not reconstruct dimensions that
+were never stored.
 
 **Why it happens:** Analytics requires `enableAnalytics = true`, a configured salt, and a URL that is not excluded. `analyticsLimit` does not reject incoming events; it is enforced later by scheduled cleanup.
 
@@ -144,7 +152,7 @@ If the row count stays above the limit:
    ddev craft queue/run
    ```
 
-Setting `analyticsRetention` to `0` only disables age-based deletion. It does not disable limit cleanup while `autoTrimAnalytics` is enabled. Retention-only cleanup also remains available by setting a positive retention period with auto-trim disabled. You can clear analytics manually from **Redirect Manager > Analytics** or the Redirect Manager Craft utility if you need immediate removal rather than scheduled convergence.
+Setting `analyticsRetention` to `0` only disables age-based deletion. It does not disable limit cleanup while `autoTrimAnalytics` is enabled. Retention-only cleanup also remains available by setting a positive retention period with auto-trim disabled. Cleanup removes the daily history owned by each deleted URL summary. You can clear analytics manually from **Redirect Manager > Analytics** or the Redirect Manager Craft utility if you need immediate removal rather than scheduled convergence.
 
 ---
 

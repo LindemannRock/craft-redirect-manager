@@ -117,6 +117,7 @@ final class AnalyticsRequestMaintenanceTest extends TestCase
 
         self::assertSame([], $queries);
         self::assertNull($this->fetchRow('{{%redirectmanager_analytics}}', ['urlParsed' => $url]));
+        self::assertNull($this->fetchRow('{{%redirectmanager_analytics_daily}}', ['urlParsed' => $url]));
     }
 
     /**
@@ -159,7 +160,7 @@ final class AnalyticsRequestMaintenanceTest extends TestCase
             static fn(string $sql): bool => preg_match('/SELECT\s+COUNT\s*\(\s*\*\s*\)/i', $sql) === 1,
         );
 
-        self::assertCount(1, $writes, "Expected one atomic analytics upsert.\n" . implode("\n", $queries));
+        self::assertCount(2, $writes, "Expected one summary and one dimensional atomic upsert.\n" . implode("\n", $queries));
         self::assertCount(0, $counts, "Request-time analytics must not run full-table count maintenance.\n" . implode("\n", $queries));
     }
 }

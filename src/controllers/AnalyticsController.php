@@ -84,7 +84,7 @@ class AnalyticsController extends Controller
      * Resolve redirect IDs for handled analytics rows in one query.
      *
      * @param array<int, array<string, mixed>> $analytics
-     * @return array<string, int>
+     * @return array<int, int>
      */
     private function _getRedirectIdMap(array $analytics): array
     {
@@ -93,7 +93,7 @@ class AnalyticsController extends Controller
             if (empty($stat['handled']) || empty($stat['urlParsed'])) {
                 continue;
             }
-    
+
             $urlParsedValues[] = (string)$stat['urlParsed'];
         }
     
@@ -103,14 +103,41 @@ class AnalyticsController extends Controller
         }
     
         $rows = (new Query())
-                ->select(['sourceUrlParsed', 'id'])
+                ->select(['sourceUrlParsed', 'siteId', 'id'])
                 ->from(RedirectRecord::tableName())
                 ->where(['sourceUrlParsed' => $urlParsedValues, 'enabled' => true])
                 ->all();
-    
-        $map = [];
+
+        $byId = [];
+        $byScope = [];
         foreach ($rows as $row) {
-            $map[(string)$row['sourceUrlParsed']] = (int)$row['id'];
+            $id = (int)$row['id'];
+            $byId[$id] = $row;
+            $scope = $row['siteId'] === null ? 0 : (int)$row['siteId'];
+            $byScope[(string)$row['sourceUrlParsed']][$scope] = $id;
+        }
+
+        $map = [];
+        foreach ($analytics as $key => $stat) {
+            if (empty($stat['handled']) || empty($stat['urlParsed'])) {
+                continue;
+            }
+
+            $urlParsed = (string)$stat['urlParsed'];
+            $siteId = isset($stat['siteId']) ? (int)$stat['siteId'] : 0;
+            $storedId = isset($stat['redirectId']) ? (int)$stat['redirectId'] : 0;
+            $stored = $byId[$storedId] ?? null;
+            if ($stored !== null
+                && (string)$stored['sourceUrlParsed'] === $urlParsed
+                && ($stored['siteId'] === null || (int)$stored['siteId'] === $siteId)) {
+                $map[$key] = $storedId;
+                continue;
+            }
+
+            $fallback = $byScope[$urlParsed][$siteId] ?? $byScope[$urlParsed][0] ?? null;
+            if ($fallback !== null) {
+                $map[$key] = $fallback;
+            }
         }
     
         return $map;
@@ -272,7 +299,7 @@ class AnalyticsController extends Controller
             }
 
             $analytics[$key]['redirectId'] = $stat['handled']
-                ? ($redirectIdMap[(string)$stat['urlParsed']] ?? null)
+                ? ($redirectIdMap[$key] ?? null)
                 : null;
         }
 
@@ -916,8 +943,10 @@ class AnalyticsController extends Controller
 
         $map = [];
         foreach ($rows as $row) {
-            $rowDate = new \DateTime($row['date'], new \DateTimeZone('UTC'));
-            $localKey = $rowDate->setTimezone($tz)->format('Y-m-d');
+            // The SQL bucket comes from Base's local-date expression and is
+            // already a local calendar date. Converting it as UTC shifts
+            // negative-offset zones into the previous day.
+            $localKey = (string)$row['date'];
             if (!isset($map[$localKey])) {
                 $map[$localKey] = [
                     'total' => 0,

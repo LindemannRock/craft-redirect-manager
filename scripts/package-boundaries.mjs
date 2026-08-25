@@ -5,6 +5,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 export const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+export const approvedCustomerArchiveFileCount = 101;
 const generatedOutput = 'src/web/assets/analytics/dist/analytics.js';
 const activeTemporaryPaths = new Set();
 let signalHandlersInstalled = false;
@@ -82,7 +83,7 @@ export function checkBuildParity(sourceRoot = packageRoot, {onTemporaryPath} = {
 
 export function validateArchiveMembers(members) {
     const files = members.filter((member) => !member.endsWith('/'));
-    const forbidden = files.filter((member) => /^(?:ecs\.php|phpstan\.neon|phpunit\.xml\.dist)$/.test(member)
+    const forbidden = files.filter((member) => /^(?:composer\.lock|ecs\.php|phpstan\.neon|phpunit\.xml\.dist)$/.test(member)
         || /^(?:tests|scripts|\.github|\.githooks|docs)\//.test(member)
         || /^src\/web\/assets\/(?:package(?:-lock)?\.json|node_modules\/)/.test(member)
         || /^src\/web\/assets\/analytics\/src\//.test(member));
@@ -93,14 +94,15 @@ export function validateArchiveMembers(members) {
         'composer.json',
         'src/RedirectManager.php',
         'src/presenters/StorageWarningPresentation.php',
+        'src/migrations/m260825_000000_create_analytics_daily.php',
         'src/services/analytics/AnalyticsMaintenanceService.php',
         'src/services/ScheduledBackupScheduler.php',
         generatedOutput,
     ]) {
         if (!files.includes(required)) throw new Error(`Customer archive is missing runtime file: ${required}`);
     }
-    if (files.length !== 100) {
-        throw new Error(`Customer archive changed from the approved 100-file boundary: ${files.length}`);
+    if (files.length !== approvedCustomerArchiveFileCount) {
+        throw new Error(`Customer archive changed from the approved ${approvedCustomerArchiveFileCount}-file boundary: ${files.length}`);
     }
     return files;
 }

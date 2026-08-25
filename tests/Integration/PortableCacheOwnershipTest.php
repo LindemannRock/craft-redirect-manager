@@ -10,16 +10,17 @@ declare(strict_types=1);
 
 namespace lindemannrock\redirectmanager\tests\Integration;
 
+use Composer\Semver\Semver;
 use FilesystemIterator;
 use lindemannrock\base\cache\DisposableCacheStorageResolver;
 use lindemannrock\base\cache\ScopedCache;
 use lindemannrock\base\cache\ScopedCacheResult;
 use lindemannrock\redirectmanager\services\LocalCacheService;
+use lindemannrock\redirectmanager\tests\Support\InstalledBasePackage;
 use lindemannrock\redirectmanager\tests\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use ReflectionClass;
 use RuntimeException;
 use yii\caching\ArrayCache;
 
@@ -30,20 +31,50 @@ final class PortableCacheOwnershipTest extends TestCase
 
     public function testPortableCacheContractsResolveFromExpectedBaseSource(): void
     {
-        $pluginRoot = dirname(__DIR__, 2);
-        $baseRoot = dirname($pluginRoot) . '/base';
+        self::assertSame('lindemannrock/craft-plugin-base', InstalledBasePackage::name());
 
         foreach ([
-            DisposableCacheStorageResolver::class,
-            ScopedCache::class,
-            ScopedCacheResult::class,
-        ] as $class) {
-            $source = (new ReflectionClass($class))->getFileName();
-            self::assertIsString($source);
-            self::assertStringStartsWith(realpath($baseRoot . '/src/cache') . DIRECTORY_SEPARATOR, realpath($source));
+            DisposableCacheStorageResolver::class => 'cache/DisposableCacheStorageResolver.php',
+            ScopedCache::class => 'cache/ScopedCache.php',
+            ScopedCacheResult::class => 'cache/ScopedCacheResult.php',
+        ] as $class => $relativePath) {
+            $expectedSource = InstalledBasePackage::sourceFile($relativePath);
+            self::assertFileExists($expectedSource);
+            self::assertSame($expectedSource, InstalledBasePackage::reflectedClassFile($class));
         }
 
-        self::assertSame(self::EXPECTED_BASE_RUNTIME_FINGERPRINT, $this->baseRuntimeFingerprint($baseRoot));
+        self::assertSame(self::EXPECTED_BASE_RUNTIME_FINGERPRINT, $this->baseRuntimeFingerprint());
+    }
+
+    public function testInstalledBaseResolverRejectsMissingAndEscapingResources(): void
+    {
+        foreach ([
+            'missing' => ['cache/not-present.php', 'absent'],
+            'escape' => ['../composer.json', 'outside'],
+        ] as $case => [$relativePath, $messageFragment]) {
+            try {
+                InstalledBasePackage::sourceFile($relativePath);
+                self::fail("Expected installed Base resolver to reject {$case} resource.");
+            } catch (RuntimeException $exception) {
+                self::assertStringContainsString($messageFragment, $exception->getMessage());
+            }
+        }
+    }
+
+    public function testComposerRequiresTheFirstCompatibleBaseQueueAndCacheRelease(): void
+    {
+        $composerContents = file_get_contents(dirname(__DIR__, 2) . '/composer.json');
+        self::assertIsString($composerContents);
+        $composer = json_decode($composerContents, true, flags: JSON_THROW_ON_ERROR);
+        self::assertIsArray($composer);
+        $constraint = $composer['require']['lindemannrock/craft-plugin-base'] ?? null;
+
+        self::assertIsString($constraint);
+        self::assertSame('^5.38', $constraint);
+        self::assertFalse(Semver::satisfies('5.37.99', $constraint));
+        self::assertTrue(Semver::satisfies('5.38.0', $constraint));
+        self::assertTrue(Semver::satisfies('5.99.0', $constraint));
+        self::assertFalse(Semver::satisfies('6.0.0', $constraint));
     }
 
     public function testRedirectLookupFamilyConstructsWithoutPluginOrDatabaseAccess(): void
@@ -88,7 +119,7 @@ final class PortableCacheOwnershipTest extends TestCase
         self::assertStringContainsString("FAMILY_REDIRECT_LOOKUPS = 'redirect-lookups'", $localCacheSource);
         self::assertStringContainsString("FAMILY_DEVICE = 'device'", $localCacheSource);
 
-        $baseDevicePath = dirname($pluginRoot) . '/base/src/device/DeviceDetection.php';
+        $baseDevicePath = InstalledBasePackage::sourceFile('device/DeviceDetection.php');
         $baseDeviceSource = file_get_contents($baseDevicePath);
         self::assertIsString($baseDeviceSource, $baseDevicePath);
         self::assertStringContainsString("new ScopedCache(\$cache, \$context, 'device')", $baseDeviceSource);
@@ -98,10 +129,10 @@ final class PortableCacheOwnershipTest extends TestCase
         self::assertStringContainsString("'pluginHandle' => RedirectManager::\$plugin->id", $redirectDeviceSource);
     }
 
-    private function baseRuntimeFingerprint(string $baseRoot): string
+    private function baseRuntimeFingerprint(): string
     {
-        $cacheRoot = $baseRoot . '/src/cache';
-        $devicePath = $baseRoot . '/src/device/DeviceDetection.php';
+        $cacheRoot = InstalledBasePackage::sourceDirectory('cache');
+        $devicePath = InstalledBasePackage::sourceFile('device/DeviceDetection.php');
         self::assertDirectoryExists($cacheRoot);
         self::assertFileExists($devicePath);
 
@@ -122,7 +153,9 @@ final class PortableCacheOwnershipTest extends TestCase
             if ($fileHash === false) {
                 throw new RuntimeException("Unable to fingerprint Base runtime source: {$path}");
             }
-            $relativePath = substr($path, strlen($baseRoot) + 1);
+            $relativePath = $path === $devicePath
+                ? 'src/device/DeviceDetection.php'
+                : 'src/cache/' . substr($path, strlen($cacheRoot) + 1);
             $rows[] = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath) . ':' . $fileHash;
         }
         sort($rows, SORT_STRING);

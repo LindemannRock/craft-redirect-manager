@@ -74,7 +74,12 @@ When enabled and token-configured, test the endpoint from **Redirect Manager →
 | `analyticsRetention` | `int` | `30` | Days to retain analytics by age (`0` = disable age-based deletion) |
 | `autoTrimAnalytics` | `bool` | `true` | Enforce `analyticsLimit` during scheduled cleanup |
 
-Retention and limit cleanup are independent. With `analyticsRetention` set to `0`, age-based deletion is disabled, but `autoTrimAnalytics` can still enforce `analyticsLimit`. Automatic cleanup runs through Craft's queue, so the table can temporarily exceed the limit until the scheduled job runs. Analytics recording itself remains immediate, including hit counts and request metadata.
+Retention and limit cleanup are independent. With `analyticsRetention` set to `0`, age-based deletion is disabled, but `autoTrimAnalytics` can still enforce `analyticsLimit`. Automatic cleanup runs through Craft's queue, so the URL-summary table can temporarily exceed the limit until the scheduled job runs. Analytics recording itself remains immediate: the bounded URL summary and its daily dimensional aggregate are written atomically. Trimming, retention, and manual clear/delete operations remove the corresponding dimensional history with its summary.
+
+The schema 1.2.0 upgrade creates the daily history table with an explicit empty
+cutover. Existing cumulative summaries stay intact, but Redirect Manager does
+not invent earlier device, redirect, handled, referrer, or geographic history
+from their latest metadata.
 
 ## Geographic Detection
 

@@ -15,12 +15,16 @@ use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use lindemannrock\base\testing\StubConsoleRequest;
 use lindemannrock\redirectmanager\jobs\CleanupAnalyticsJob;
+use lindemannrock\redirectmanager\records\AnalyticsRecord;
 use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\services\analytics\AnalyticsExportService;
 use lindemannrock\redirectmanager\services\analytics\AnalyticsMaintenanceService;
 use lindemannrock\redirectmanager\services\AnalyticsService;
 use lindemannrock\redirectmanager\tests\TestCase;
 use RuntimeException;
+use yii\base\Event;
+use yii\base\ModelEvent;
+use yii\db\ActiveRecord;
 
 /**
  * Verifies independent retention and limit cleanup behavior.
@@ -85,6 +89,7 @@ final class AnalyticsMaintenanceTest extends TestCase
 
         self::assertSame(['retentionDeleted' => 0, 'limitDeleted' => 2], $result);
         self::assertSame(3, $this->analyticsRowCount());
+        self::assertSame(3, $this->countRows('{{%redirectmanager_analytics_daily}}'));
         self::assertFalse($this->analyticsRowExists($oldest));
         self::assertFalse($this->analyticsRowExists($second));
         foreach ($kept as $id) {
@@ -97,18 +102,51 @@ final class AnalyticsMaintenanceTest extends TestCase
         $this->enableLimitOnly(3);
         $this->insertAnalytics('equal-one', '2030-01-01 00:00:00');
         $this->insertAnalytics('equal-two', '2030-01-02 00:00:00');
-        $this->insertAnalytics('equal-three', '2030-01-03 00:00:00');
+        $third = $this->insertAnalytics('equal-three', '2030-01-03 00:00:00');
 
         self::assertSame(0, $this->analytics->maintenance->runCleanup()['limitDeleted']);
         self::assertSame(3, $this->analyticsRowCount());
 
-        Craft::$app->getDb()->createCommand()->delete(
-            '{{%redirectmanager_analytics}}',
-            ['urlParsed' => '/' . self::MARKER . 'equal-three'],
-        )->execute();
+        self::assertTrue($this->analytics->deleteAnalytic($third));
 
         self::assertSame(0, $this->analytics->maintenance->runCleanup()['limitDeleted']);
         self::assertSame(2, $this->analyticsRowCount());
+        self::assertSame(2, $this->countRows('{{%redirectmanager_analytics_daily}}'));
+    }
+
+    public function testClearAndIndividualDeleteRemoveOwnedSummaryAndHistoryTogether(): void
+    {
+        $siteIds = array_map(static fn($site): int => (int)$site->id, Craft::$app->getSites()->getAllSites());
+        $first = $this->insertAnalytics('clear-first', '2030-01-01 00:00:00', siteId: $siteIds[0]);
+        $second = $this->insertAnalytics('clear-second', '2030-01-02 00:00:00', siteId: $siteIds[1]);
+
+        self::assertSame(1, $this->analytics->clearAnalytics($siteIds[0]));
+        self::assertFalse($this->analyticsRowExists($first));
+        self::assertSame(0, $this->countRows('{{%redirectmanager_analytics_daily}}', ['siteId' => $siteIds[0]]));
+        self::assertTrue($this->analyticsRowExists($second));
+        self::assertSame(1, $this->countRows('{{%redirectmanager_analytics_daily}}', ['siteId' => $siteIds[1]]));
+
+        self::assertTrue($this->analytics->deleteAnalytic($second));
+        self::assertSame(0, $this->countRows('{{%redirectmanager_analytics}}'));
+        self::assertSame(0, $this->countRows('{{%redirectmanager_analytics_daily}}'));
+    }
+
+    public function testCancelledIndividualDeleteRollsBackOwnedHistoryDeletion(): void
+    {
+        $id = $this->insertAnalytics('cancelled-delete', '2030-01-01 00:00:00');
+        $cancelDelete = static function(ModelEvent $event): void {
+            $event->isValid = false;
+        };
+        Event::on(AnalyticsRecord::class, ActiveRecord::EVENT_BEFORE_DELETE, $cancelDelete);
+
+        try {
+            self::assertFalse($this->analytics->deleteAnalytic($id));
+        } finally {
+            Event::off(AnalyticsRecord::class, ActiveRecord::EVENT_BEFORE_DELETE, $cancelDelete);
+        }
+
+        self::assertTrue($this->analyticsRowExists($id));
+        self::assertSame(1, $this->countRows('{{%redirectmanager_analytics_daily}}'));
     }
 
     public function testRetentionOnlyCleanupDoesNotEnforceLimit(): void
@@ -271,7 +309,7 @@ final class AnalyticsMaintenanceTest extends TestCase
     {
         $url = '/' . self::MARKER . $suffix;
         $date = Db::prepareDateForDb(new \DateTime($lastHit));
-        Craft::$app->getDb()->createCommand()->insert('{{%redirectmanager_analytics}}', [
+        $data = [
             'url' => $url,
             'urlParsed' => $url,
             'handled' => false,
@@ -281,9 +319,16 @@ final class AnalyticsMaintenanceTest extends TestCase
             'dateCreated' => $date,
             'dateUpdated' => $date,
             'uid' => StringHelper::UUID(),
+        ];
+        Craft::$app->getDb()->createCommand()->insert('{{%redirectmanager_analytics}}', $data)->execute();
+        $id = (int)Craft::$app->getDb()->getLastInsertID();
+
+        Craft::$app->getDb()->createCommand()->insert('{{%redirectmanager_analytics_daily}}', $data + [
+            'bucketKey' => hash('sha256', $url),
+            'hitDate' => (new \DateTimeImmutable($lastHit))->format('Y-m-d'),
         ])->execute();
 
-        return (int)Craft::$app->getDb()->getLastInsertID();
+        return $id;
     }
 
     private function analyticsRowCount(): int

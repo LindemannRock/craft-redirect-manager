@@ -26,6 +26,18 @@ Every 404 event records:
 | City | Visitor's city (when geo-detection is enabled) |
 | IP hash | Salted SHA256 hash — original IP is never stored |
 
+Redirect Manager keeps two bounded views of this data. The dashboard list has
+one cumulative summary per normalized URL and site, with the latest request
+metadata. Charts, breakdowns, redirect analytics, geographic percentages, and
+exports use daily dimensional aggregates, so earlier hits keep the handled
+state, redirect, referrer, device, browser, OS, bot, and location that were
+recorded for those requests.
+
+Daily dimensional history starts when the schema 1.2.0 migration is applied.
+The migration does not guess dimensions for older cumulative summaries, so
+pre-upgrade hits remain visible in the URL summary but are not added to
+historical charts, breakdowns, or exports.
+
 ## Enabling Analytics
 
 Analytics is controlled by a master switch:
@@ -43,7 +55,9 @@ Navigate to **Redirect Manager > Analytics** to see:
 
 ### 404 Trend
 
-Charts showing 404 volume over time, split by handled vs. unhandled. Use the date range filter to zoom in or compare periods.
+Charts showing hit volume over time, split by handled vs. unhandled. Dates are
+grouped in Craft's configured time zone. Use the date range filter to zoom in
+or compare periods.
 
 ### Most Common 404s
 
@@ -56,6 +70,12 @@ A table of the top 404 URLs ranked by hit count. Each row shows:
 - Agent name when a bot or first-party system agent was identified
 - Last seen timestamp
 - A "Create Redirect" action button for unhandled entries
+
+Handled rows keep a link to the exact recorded redirect while that redirect is
+still enabled and visible for the row's site. If that rule is no longer
+available, Redirect Manager uses the current site-specific rule for the same
+URL, then a global rule. A rule belonging only to another site is never used to
+construct the link.
 
 ### Recent Unhandled 404s
 
@@ -70,7 +90,9 @@ Bar charts showing the distribution of device types, browsers, and operating sys
 
 ### Geographic Breakdown
 
-Country and city distribution charts. Only shown when `enableGeoDetection` is `true`.
+Country and city distribution charts. Percentages use every qualifying hit in
+the selected site and date filters, including locations beyond the displayed
+top 15. They are only shown when `enableGeoDetection` is `true`.
 
 ### Request Type and Agents
 
@@ -179,7 +201,7 @@ Analytics recording stays on the request path so counts and metadata are availab
 
 Setting `analyticsRetention` to `0` does not disable limit cleanup when `autoTrimAnalytics` is `true`. Likewise, setting `autoTrimAnalytics` to `false` does not disable age-based deletion when retention is greater than `0`.
 
-The limit is a scheduled convergence target, not a hard request-time cap. New handled and unhandled events are recorded immediately, so a temporary overflow can exist until the next cleanup run. The job removes the oldest, lowest-hit records until the table reaches `analyticsLimit`.
+The limit is a scheduled convergence target, not a hard request-time cap. New handled and unhandled events are recorded immediately, so a temporary overflow can exist until the next cleanup run. The job removes the oldest, lowest-hit URL summaries until the table reaches `analyticsLimit`, together with the daily history owned by each removed summary. Age retention and manual clear/delete operations also remove the matching summary and dimensional history together.
 
 Keep Craft's queue processing active for automatic cleanup:
 
@@ -195,7 +217,7 @@ Manual analytics clearing remains available from **Redirect Manager > Analytics*
 
 ## Exporting Analytics
 
-Export 404 analytics as CSV from **Redirect Manager > Analytics > Export CSV**. The export includes every tracked field — URL, referrer, site, hit count, handled status, the full request-type, traffic-type, device, browser, OS, and bot metadata, geographic country and city, the salted IP hash, user agent, and timestamps.
+Export 404 analytics as CSV from **Redirect Manager > Analytics > Export CSV**. Each row represents one daily dimensional aggregate and includes every tracked field — URL, referrer, site, hit count, handled status, the full request-type, traffic-type, device, browser, OS, and bot metadata, geographic country and city, the salted IP hash, user agent, and timestamps.
 
 The `redirectManager:exportAnalytics` permission is required to access the export button.
 

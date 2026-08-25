@@ -17,8 +17,10 @@ use craft\queue\BaseJob;
 use craft\queue\Queue;
 use lindemannrock\base\testing\IntegrationTestCase;
 use lindemannrock\redirectmanager\models\Settings;
+use lindemannrock\redirectmanager\records\AnalyticsRecord;
 use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\RedirectManager;
+use lindemannrock\redirectmanager\services\analytics\AnalyticsTrackingService;
 use lindemannrock\redirectmanager\services\AnalyticsService;
 use lindemannrock\redirectmanager\services\MatchingService;
 use lindemannrock\redirectmanager\services\RedirectsService;
@@ -71,9 +73,12 @@ abstract class TestCase extends IntegrationTestCase
     /** @var list<int> */
     private array $ownedAnalyticsIds = [];
     /** @var list<int> */
+    private array $ownedDailyAnalyticsIds = [];
+    /** @var list<int> */
     private array $ownedQueueIds = [];
     private bool $isolationFinished = false;
     private bool $baseStateInitialised = false;
+    private ?AnalyticsTrackingService $originalAnalyticsTracking = null;
 
     protected function setUp(): void
     {
@@ -91,6 +96,7 @@ abstract class TestCase extends IntegrationTestCase
             $this->matching = RedirectManager::$plugin->matching;
             $this->redirects = RedirectManager::$plugin->redirects;
             $this->analytics = RedirectManager::$plugin->analytics;
+            $this->originalAnalyticsTracking = $this->analytics->tracking;
             $this->scheduledBackups = RedirectManager::$plugin->scheduledBackups;
             $this->seedCounter = 0;
         } catch (Throwable $exception) {
@@ -171,6 +177,20 @@ abstract class TestCase extends IntegrationTestCase
         /** @var Settings $settings */
         $settings = RedirectManager::$plugin->getSettings();
         return $settings;
+    }
+
+    /** Mirror an explicitly seeded summary into the post-cutover authority. */
+    protected function seedDailyAnalyticsFromSummary(AnalyticsRecord $record): void
+    {
+        $data = $record->getAttributes();
+        unset($data['id']);
+        $data['trafficType'] ??= 'human';
+        $data['requestType'] ??= 'normal';
+        $lastHit = new \DateTimeImmutable((string)$record->lastHit, new \DateTimeZone('UTC'));
+        $data['bucketKey'] = hash('sha256', (string)$record->urlParsed . random_bytes(8));
+        $data['hitDate'] = $lastHit->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()))->format('Y-m-d');
+
+        Craft::$app->getDb()->createCommand()->insert('{{%redirectmanager_analytics_daily}}', $data)->execute();
     }
 
     /** Replace a plugin component while retaining exact automatic restoration. */
@@ -262,6 +282,10 @@ abstract class TestCase extends IntegrationTestCase
             'intval',
             (new Query())->select(['id'])->from('{{%redirectmanager_analytics}}')->column(),
         );
+        $this->ownedDailyAnalyticsIds = array_map(
+            'intval',
+            (new Query())->select(['id'])->from('{{%redirectmanager_analytics_daily}}')->column(),
+        );
         $this->ownedQueueIds = array_values(array_unique(array_merge(
             $this->ownedQueueIds,
             array_map('intval', (new Query())->select(['id'])->from('{{%queue}}')->column()),
@@ -285,6 +309,10 @@ abstract class TestCase extends IntegrationTestCase
         });
         $this->runCleanupStep($errors, fn() => $this->verifyOwnedRowsRemoved());
         $this->runCleanupStep($errors, function(): void {
+            if ($this->originalAnalyticsTracking !== null) {
+                $this->analytics->tracking = $this->originalAnalyticsTracking;
+                $this->originalAnalyticsTracking = null;
+            }
             foreach ($this->pluginComponentSnapshots as $id => $component) {
                 RedirectManager::$plugin->set($id, $component);
             }
@@ -365,6 +393,7 @@ abstract class TestCase extends IntegrationTestCase
         foreach ([
             [RedirectRecord::tableName(), $this->ownedRedirectIds],
             ['{{%redirectmanager_analytics}}', $this->ownedAnalyticsIds],
+            ['{{%redirectmanager_analytics_daily}}', $this->ownedDailyAnalyticsIds],
             ['{{%queue}}', $this->ownedQueueIds],
         ] as [$table, $ids]) {
             if ($ids !== [] && (new Query())->from($table)->where(['id' => $ids])->exists()) {
@@ -373,6 +402,7 @@ abstract class TestCase extends IntegrationTestCase
         }
         $this->ownedRedirectIds = [];
         $this->ownedAnalyticsIds = [];
+        $this->ownedDailyAnalyticsIds = [];
         $this->ownedQueueIds = [];
     }
 }

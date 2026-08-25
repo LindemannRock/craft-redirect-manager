@@ -55,8 +55,8 @@ final class UtilitySiteScopeTest extends TestCase
     /** @return iterable<string, array{int, int, int, int, int, int}> */
     public static function editableScopeProvider(): iterable
     {
-        yield 'one editable site' => [1, 2, 2, 1, 1, 0];
-        yield 'multiple editable sites' => [2, 3, 2, 2, 1, 1];
+        yield 'one editable site' => [1, 2, 2, 1, 2, 0];
+        yield 'multiple editable sites' => [2, 3, 2, 2, 2, 3];
         yield 'no editable sites' => [0, 1, 1, 0, 0, 0];
     }
 
@@ -74,7 +74,7 @@ final class UtilitySiteScopeTest extends TestCase
         ));
 
         self::assertSame($redirectsVisible ? 2 : 0, (int)$variables['totalRedirects']);
-        self::assertSame($analyticsVisible ? 1 : 0, (int)$variables['total404s']);
+        self::assertSame($analyticsVisible ? 2 : 0, (int)$variables['total404s']);
         self::assertSame($clearCountVisible ? 1 : 0, (int)$variables['analyticsCount']);
     }
 
@@ -145,6 +145,7 @@ final class UtilitySiteScopeTest extends TestCase
         $record->isRobot = false;
         $record->lastHit = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
         self::assertTrue($record->save(false));
+        $this->seedDailyAnalyticsFromSummary($record);
         return $record;
     }
 

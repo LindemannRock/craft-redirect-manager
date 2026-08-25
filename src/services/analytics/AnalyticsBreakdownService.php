@@ -44,7 +44,7 @@ class AnalyticsBreakdownService
     {
         $query = (new Query())
             ->select(['deviceType', 'count' => new Expression('SUM([[count]])')])
-            ->from(AnalyticsRecord::tableName())
+            ->from(AnalyticsRecord::dailyTableName())
             ->where(['not', ['deviceType' => null]])
             ->groupBy('deviceType')
             ->orderBy(['count' => SORT_DESC]);
@@ -75,7 +75,7 @@ class AnalyticsBreakdownService
     {
         $query = (new Query())
             ->select(['browser', 'count' => new Expression('SUM([[count]])')])
-            ->from(AnalyticsRecord::tableName())
+            ->from(AnalyticsRecord::dailyTableName())
             ->where(['not', ['browser' => null]])
             ->groupBy('browser')
             ->orderBy(['count' => SORT_DESC])
@@ -105,7 +105,7 @@ class AnalyticsBreakdownService
     {
         $query = (new Query())
             ->select(['osName', 'count' => new Expression('SUM([[count]])')])
-            ->from(AnalyticsRecord::tableName())
+            ->from(AnalyticsRecord::dailyTableName())
             ->where(['not', ['osName' => null]])
             ->groupBy('osName')
             ->orderBy(['count' => SORT_DESC]);
@@ -133,7 +133,7 @@ class AnalyticsBreakdownService
     public function getBotStats(int|array|null $siteId = null, int $days = 30, ?\DateTime $startDate = null, ?\DateTime $endDate = null): array
     {
         $query = (new Query())
-            ->from(AnalyticsRecord::tableName());
+            ->from(AnalyticsRecord::dailyTableName());
 
         $this->applyDateFilter($query, $days, $startDate, $endDate);
         $this->applySiteFilter($query, $siteId);
@@ -217,7 +217,7 @@ class AnalyticsBreakdownService
     {
         $query = (new Query())
             ->select(['country', 'count' => new Expression('SUM([[count]])')])
-            ->from(AnalyticsRecord::tableName())
+            ->from(AnalyticsRecord::dailyTableName())
             ->where(['not', ['country' => null]])
             ->andWhere(['not', ['country' => '']])
             ->groupBy(['country'])
@@ -227,8 +227,16 @@ class AnalyticsBreakdownService
         $this->applyDateFilter($query, $days, $startDate, $endDate);
         $this->applySiteFilter($query, $siteId);
 
+        $totalQuery = (new Query())
+            ->select(['total' => new Expression('COALESCE(SUM([[count]]), 0)')])
+            ->from(AnalyticsRecord::dailyTableName())
+            ->where(['not', ['country' => null]])
+            ->andWhere(['not', ['country' => '']]);
+        $this->applyDateFilter($totalQuery, $days, $startDate, $endDate);
+        $this->applySiteFilter($totalQuery, $siteId);
+
         $results = $query->all();
-        $total = array_sum(array_column($results, 'count'));
+        $total = (int)$totalQuery->scalar();
 
         $countries = [];
         foreach ($results as $row) {
@@ -257,7 +265,7 @@ class AnalyticsBreakdownService
     {
         $query = (new Query())
             ->select(['city', 'country', 'count' => new Expression('SUM([[count]])')])
-            ->from(AnalyticsRecord::tableName())
+            ->from(AnalyticsRecord::dailyTableName())
             ->where(['not', ['city' => null]])
             ->andWhere(['not', ['city' => '']])
             ->groupBy(['city', 'country'])
@@ -267,8 +275,16 @@ class AnalyticsBreakdownService
         $this->applyDateFilter($query, $days, $startDate, $endDate);
         $this->applySiteFilter($query, $siteId);
 
+        $totalQuery = (new Query())
+            ->select(['total' => new Expression('COALESCE(SUM([[count]]), 0)')])
+            ->from(AnalyticsRecord::dailyTableName())
+            ->where(['not', ['city' => null]])
+            ->andWhere(['not', ['city' => '']]);
+        $this->applyDateFilter($totalQuery, $days, $startDate, $endDate);
+        $this->applySiteFilter($totalQuery, $siteId);
+
         $results = $query->all();
-        $total = array_sum(array_column($results, 'count'));
+        $total = (int)$totalQuery->scalar();
 
         $cities = [];
         foreach ($results as $row) {

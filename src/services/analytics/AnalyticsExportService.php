@@ -67,6 +67,35 @@ class AnalyticsExportService
     }
 
     /**
+     * Scope dimensional rows to the URL/site identities selected from the
+     * bounded dashboard summary.
+     *
+     * @param array<int> $analyticsIds
+     */
+    private function applySelectedSummaryFilter(Query $query, array $analyticsIds): bool
+    {
+        $summaries = (new Query())
+            ->select(['urlParsed', 'siteId'])
+            ->from(AnalyticsRecord::tableName())
+            ->where(['id' => $analyticsIds])
+            ->all();
+        if ($summaries === []) {
+            return false;
+        }
+
+        $condition = ['or'];
+        foreach ($summaries as $summary) {
+            $condition[] = [
+                'urlParsed' => $summary['urlParsed'],
+                'siteId' => $summary['siteId'],
+            ];
+        }
+        $query->andWhere($condition);
+
+        return true;
+    }
+
+    /**
      * Get analytics data formatted for export
      *
      * @param int|array<int>|null $siteId Filter by site ID
@@ -81,12 +110,14 @@ class AnalyticsExportService
     {
         // Build query
         $query = (new \craft\db\Query())
-            ->from(AnalyticsRecord::tableName())
+            ->from(AnalyticsRecord::dailyTableName())
             ->orderBy(['lastHit' => SORT_DESC]);
 
         // Filter by specific IDs if provided
         if (!empty($analyticsIds)) {
-            $query->where(['in', 'id', $analyticsIds]);
+            if (!$this->applySelectedSummaryFilter($query, $analyticsIds)) {
+                return [];
+            }
         }
 
         // Filter by redirect
@@ -165,9 +196,12 @@ class AnalyticsExportService
         // If specific IDs provided, fetch only those
         if (!empty($analyticsIds)) {
             $query = (new \craft\db\Query())
-                ->from(AnalyticsRecord::tableName())
-                ->where(['in', 'id', $analyticsIds])
+                ->from(AnalyticsRecord::dailyTableName())
                 ->orderBy(['lastHit' => SORT_DESC]);
+
+            if (!$this->applySelectedSummaryFilter($query, $analyticsIds)) {
+                throw new \Exception('No data to export for the selected period.');
+            }
 
             if ($siteId) {
                 $query->andWhere(['siteId' => $siteId]);
@@ -177,7 +211,7 @@ class AnalyticsExportService
         } else {
             // Build query with date range filtering
             $query = (new \craft\db\Query())
-                ->from(AnalyticsRecord::tableName())
+                ->from(AnalyticsRecord::dailyTableName())
                 ->orderBy(['lastHit' => SORT_DESC]);
 
             if ($siteId !== null) {
@@ -266,12 +300,33 @@ class AnalyticsExportService
             return false;
         }
 
-        if ($record->delete()) {
-            $this->logInfo('Analytics record deleted', ['id' => $id]);
-            return true;
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
+
+        try {
+            $db->createCommand()->delete(AnalyticsRecord::dailyTableName(), [
+                'urlParsed' => $record->urlParsed,
+                'siteId' => $record->siteId,
+            ])->execute();
+
+            $deleted = (bool)$record->delete();
+            if (!$deleted) {
+                $transaction->rollBack();
+                return false;
+            }
+
+            $transaction->commit();
+        } catch (\Throwable $exception) {
+            if ($transaction->getIsActive()) {
+                $transaction->rollBack();
+            }
+
+            throw $exception;
         }
 
-        return false;
+        $this->logInfo('Analytics record deleted', ['id' => $id]);
+
+        return true;
     }
 
     /**
@@ -282,15 +337,12 @@ class AnalyticsExportService
      */
     public function clearAnalytics(int|array|null $siteId = null): int
     {
-        if ($siteId !== null) {
-            $count = Craft::$app->getDb()->createCommand()
-                ->delete(AnalyticsRecord::tableName(), ['siteId' => $siteId])
-                ->execute();
-        } else {
-            $count = Craft::$app->getDb()->createCommand()
-                ->delete(AnalyticsRecord::tableName())
-                ->execute();
-        }
+        $count = Craft::$app->getDb()->transaction(function() use ($siteId): int {
+            $condition = $siteId !== null ? ['siteId' => $siteId] : [];
+            Craft::$app->getDb()->createCommand()->delete(AnalyticsRecord::dailyTableName(), $condition)->execute();
+
+            return Craft::$app->getDb()->createCommand()->delete(AnalyticsRecord::tableName(), $condition)->execute();
+        });
 
         $this->logInfo('Analytics cleared', ['count' => $count, 'siteId' => $siteId]);
 
@@ -320,7 +372,7 @@ class AnalyticsExportService
     
             // Get candidates to delete (oldest by lastHit, lowest count)
             $candidates = (new Query())
-                    ->select(['id', 'lastHit', 'count'])
+                    ->select(['id', 'urlParsed', 'siteId', 'lastHit', 'count'])
                     ->from(AnalyticsRecord::tableName())
                     ->orderBy(['lastHit' => SORT_ASC, 'count' => SORT_ASC, 'id' => SORT_ASC])
                     ->limit($currentCount - $limit)
@@ -346,22 +398,21 @@ class AnalyticsExportService
     protected function deleteUnchangedTrimCandidates(array $candidates): int
     {
         $deleted = 0;
-        foreach (array_chunk($candidates, 500) as $candidateChunk) {
-            $unchangedCandidates = ['or'];
-            foreach ($candidateChunk as $candidate) {
-                $unchangedCandidates[] = [
-                    'and',
-                    ['id' => $candidate['id']],
-                    ['lastHit' => $candidate['lastHit']],
-                    ['count' => $candidate['count']],
-                ];
-            }
-
+        foreach ($candidates as $candidate) {
             // A request upsert can refresh a candidate after selection.
             // Delete only rows that are still exactly as observed.
-            $deleted += Craft::$app->getDb()->createCommand()
-                    ->delete(AnalyticsRecord::tableName(), $unchangedCandidates)
-                    ->execute();
+            $summaryDeleted = Craft::$app->getDb()->createCommand()->delete(AnalyticsRecord::tableName(), [
+                'id' => $candidate['id'],
+                'lastHit' => $candidate['lastHit'],
+                'count' => $candidate['count'],
+            ])->execute();
+            if ($summaryDeleted === 1) {
+                Craft::$app->getDb()->createCommand()->delete(AnalyticsRecord::dailyTableName(), [
+                    'urlParsed' => $candidate['urlParsed'],
+                    'siteId' => $candidate['siteId'],
+                ])->execute();
+                $deleted++;
+            }
         }
 
         return $deleted;
@@ -383,12 +434,12 @@ class AnalyticsExportService
 
         $date = (new \DateTime())->modify("-{$retention} days");
 
-        $deleted = Craft::$app->getDb()->createCommand()
-            ->delete(
-                AnalyticsRecord::tableName(),
-                ['<', 'lastHit', Db::prepareDateForDb($date)]
-            )
-            ->execute();
+        $deleted = Craft::$app->getDb()->transaction(function() use ($date): int {
+            $condition = ['<', 'lastHit', Db::prepareDateForDb($date)];
+            Craft::$app->getDb()->createCommand()->delete(AnalyticsRecord::dailyTableName(), $condition)->execute();
+
+            return Craft::$app->getDb()->createCommand()->delete(AnalyticsRecord::tableName(), $condition)->execute();
+        });
 
         if ($deleted > 0) {
             $this->logInfo('Cleaned up old analytics', ['deleted' => $deleted, 'retention' => $retention]);

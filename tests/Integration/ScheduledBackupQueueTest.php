@@ -10,7 +10,6 @@ declare(strict_types=1);
 
 namespace lindemannrock\redirectmanager\tests\Integration;
 
-use Composer\InstalledVersions;
 use Craft;
 use craft\db\Query;
 use craft\helpers\DateTimeHelper;
@@ -25,6 +24,7 @@ use lindemannrock\redirectmanager\jobs\CreateBackupJob;
 use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\services\BackupService;
 use lindemannrock\redirectmanager\services\ScheduledBackupScheduler;
+use lindemannrock\redirectmanager\tests\Support\InstalledBasePackage;
 use lindemannrock\redirectmanager\tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
@@ -59,8 +59,7 @@ final class ScheduledBackupQueueTest extends TestCase
 
     public function testApprovedBaseQueueRuntimeIsAvailableThroughReflection(): void
     {
-        $basePath = InstalledVersions::getInstallPath('lindemannrock/craft-plugin-base');
-        self::assertIsString($basePath);
+        self::assertSame('lindemannrock/craft-plugin-base', InstalledBasePackage::name());
         $helper = new ReflectionClass(\lindemannrock\base\helpers\RecurringQueueHelper::class);
         $scheduler = new ReflectionClass(PortableQueueScheduler::class);
         $handoff = new ReflectionClass(DeferredQueueJob::class);
@@ -71,9 +70,18 @@ final class ScheduledBackupQueueTest extends TestCase
         self::assertTrue($scheduler->hasMethod('continue'));
         self::assertTrue($scheduler->isFinal());
         self::assertTrue($handoff->isFinal());
-        self::assertSame(realpath($basePath . '/src/helpers/RecurringQueueHelper.php'), $helper->getFileName());
-        self::assertSame(realpath($basePath . '/src/queue/PortableQueueScheduler.php'), $scheduler->getFileName());
-        self::assertSame(realpath($basePath . '/src/queue/DeferredQueueJob.php'), $handoff->getFileName());
+        self::assertSame(
+            InstalledBasePackage::sourceFile('helpers/RecurringQueueHelper.php'),
+            InstalledBasePackage::reflectedClassFile(\lindemannrock\base\helpers\RecurringQueueHelper::class),
+        );
+        self::assertSame(
+            InstalledBasePackage::sourceFile('queue/PortableQueueScheduler.php'),
+            InstalledBasePackage::reflectedClassFile(PortableQueueScheduler::class),
+        );
+        self::assertSame(
+            InstalledBasePackage::sourceFile('queue/DeferredQueueJob.php'),
+            InstalledBasePackage::reflectedClassFile(DeferredQueueJob::class),
+        );
     }
 
     public function testScheduleTokensLabelsAndLegacyManualNormalizationRemainStable(): void

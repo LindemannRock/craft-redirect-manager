@@ -13,7 +13,6 @@ use craft\db\Query;
 use craft\helpers\Db;
 use lindemannrock\base\helpers\DateFormatHelper;
 use lindemannrock\base\helpers\DateRangeHelper;
-use lindemannrock\base\helpers\DbHelper;
 use lindemannrock\base\helpers\GeoHelper;
 use lindemannrock\redirectmanager\records\AnalyticsRecord;
 
@@ -69,7 +68,7 @@ class AnalyticsQueryService
 
         // Get total hits
         $query = (new Query())
-            ->from(AnalyticsRecord::tableName())
+            ->from(AnalyticsRecord::dailyTableName())
             ->where(['redirectId' => $redirectId]);
 
         if ($dateCondition) {
@@ -239,11 +238,11 @@ class AnalyticsQueryService
         $query = (new Query())
             ->select([
                 'date' => $localDate,
-                'COUNT(*) as total',
-                'SUM(' . DbHelper::boolToInt('handled') . ') as handled',
-                'SUM(CASE WHEN [[handled]] THEN 0 ELSE 1 END) as unhandled',
+                'SUM([[count]]) as total',
+                'SUM(CASE WHEN [[handled]] THEN [[count]] ELSE 0 END) as handled',
+                'SUM(CASE WHEN [[handled]] THEN 0 ELSE [[count]] END) as unhandled',
             ])
-            ->from(AnalyticsRecord::tableName())
+            ->from(AnalyticsRecord::dailyTableName())
             ->groupBy($localDate)
             ->orderBy(['date' => SORT_ASC]);
 

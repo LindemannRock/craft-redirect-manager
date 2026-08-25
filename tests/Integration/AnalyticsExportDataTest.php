@@ -84,6 +84,7 @@ final class AnalyticsExportDataTest extends TestCase
         $record->lastHit = date('Y-m-d H:i:s');
 
         self::assertTrue($record->save(false));
+        $this->seedDailyAnalyticsFromSummary($record);
 
         return $record;
     }

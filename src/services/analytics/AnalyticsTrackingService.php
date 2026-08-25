@@ -10,6 +10,7 @@ namespace lindemannrock\redirectmanager\services\analytics;
 
 use Craft;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use lindemannrock\base\helpers\AnalyticsIpHelper;
 use lindemannrock\base\helpers\DbHelper;
@@ -103,7 +104,8 @@ class AnalyticsTrackingService
             ? RedirectManager::$plugin->analytics->breakdown->getLocationFromIp($ipState['geoLookupIp'])
             : null;
 
-        $now = Db::prepareDateForDb(new \DateTime());
+        $nowUtc = $this->currentTimeUtc();
+        $now = Db::prepareDateForDb($nowUtc);
         $analyticsData = [
                 'siteId' => $siteId,
                 'url' => $url,
@@ -150,7 +152,17 @@ class AnalyticsTrackingService
 
         $analyticsData = $this->filterAnalyticsColumns($analyticsData);
     
-        Craft::$app->getDb()->createCommand()
+        $dimensionData = $analyticsData;
+        unset($dimensionData['count'], $dimensionData['lastHit'], $dimensionData['dateCreated'], $dimensionData['dateUpdated'], $dimensionData['uid']);
+        ksort($dimensionData);
+        $hitDate = $nowUtc->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()))->format('Y-m-d');
+        $dailyData = $analyticsData + [
+            'bucketKey' => hash('sha256', Json::encode([$hitDate, $dimensionData])),
+            'hitDate' => $hitDate,
+        ];
+
+        Craft::$app->getDb()->transaction(function() use ($analyticsData, $dailyData, $url, $handled, $redirectId, $sourcePlugin, $referrer, $ip, $userAgent, $deviceInfo, $requestType, $geoData, $now): void {
+            Craft::$app->getDb()->createCommand()
                 ->upsert(
                     AnalyticsRecord::tableName(),
                     $analyticsData,
@@ -197,8 +209,33 @@ class AnalyticsTrackingService
                     ]),
                 )
                 ->execute();
+
+            $this->writeDailyAggregate($dailyData, $now);
+        });
     
         $this->logDebug('Recorded 404 analytics hit', ['url' => $url, 'urlParsed' => $urlParsed, 'source' => $sourcePlugin]);
+    }
+
+    /** Return the UTC event time; isolated behavioral tests can control it. */
+    protected function currentTimeUtc(): \DateTime
+    {
+        return new \DateTime('now', new \DateTimeZone('UTC'));
+    }
+
+    /** @param array<string, mixed> $dailyData */
+    protected function writeDailyAggregate(array $dailyData, string $now): void
+    {
+        Craft::$app->getDb()->createCommand()
+            ->upsert(
+                AnalyticsRecord::dailyTableName(),
+                $dailyData,
+                [
+                    'count' => new Expression(DbHelper::existingColumn('redirectmanager_analytics_daily', 'count') . ' + 1'),
+                    'lastHit' => $now,
+                    'dateUpdated' => $now,
+                ],
+            )
+            ->execute();
     }
 
     /**

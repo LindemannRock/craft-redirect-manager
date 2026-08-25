@@ -17,6 +17,7 @@ use lindemannrock\redirectmanager\controllers\SettingsController;
 use lindemannrock\redirectmanager\models\Settings;
 use lindemannrock\redirectmanager\RedirectManager;
 use lindemannrock\redirectmanager\tests\Support\InMemoryRedisConnection;
+use lindemannrock\redirectmanager\tests\Support\InstalledBasePackage;
 use lindemannrock\redirectmanager\tests\TestCase;
 use yii\redis\Cache as RedisCache;
 
@@ -181,7 +182,7 @@ final class CacheStoragePresentationTest extends TestCase
         ];
 
         foreach (['en', 'de', 'fr', 'nl', 'es', 'ar', 'it', 'pt', 'ja', 'sv', 'da', 'no'] as $locale) {
-            $catalogue = require dirname(__DIR__, 3) . "/base/src/translations/{$locale}/lindemannrock-base.php";
+            $catalogue = require InstalledBasePackage::sourceFile("translations/{$locale}/lindemannrock-base.php");
             self::assertIsArray($catalogue);
             foreach ($keys as $key) {
                 self::assertArrayHasKey($key, $catalogue, "Missing {$locale} Base key: {$key}");

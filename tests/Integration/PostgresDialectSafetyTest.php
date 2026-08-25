@@ -63,6 +63,10 @@ final class PostgresDialectSafetyTest extends TestCase
             "DbHelper::existingColumn('redirectmanager_analytics', 'count')",
             $source
         );
+        self::assertStringContainsString(
+            "DbHelper::existingColumn('redirectmanager_analytics_daily', 'count')",
+            $source
+        );
         self::assertStringNotContainsString("new Expression('[[count]] + 1')", $source);
     }
 }

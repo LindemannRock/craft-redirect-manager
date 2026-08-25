@@ -109,6 +109,7 @@ final class AnalyticsBotStatsScopeTest extends TestCase
         $record->lastHit = $lastHit ?? date('Y-m-d H:i:s');
 
         self::assertTrue($record->save(false));
+        $this->seedDailyAnalyticsFromSummary($record);
 
         return $record;
     }

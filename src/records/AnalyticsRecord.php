@@ -71,6 +71,16 @@ class AnalyticsRecord extends ActiveRecord
     }
 
     /**
+     * Return the post-cutover daily dimensional aggregate table.
+     *
+     * @since 5.41.0
+     */
+    public static function dailyTableName(): string
+    {
+        return '{{%redirectmanager_analytics_daily}}';
+    }
+
+    /**
      * Returns the analytics record's site
      *
      * @return ActiveQueryInterface

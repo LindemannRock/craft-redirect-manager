@@ -217,6 +217,10 @@ class Install extends Migration
             );
         }
 
+        // Daily/dimensional analytics starts empty at the 1.2.0 cutover. Do
+        // not derive historical dimensions from the latest summary metadata.
+        m260825_000000_create_analytics_daily::createDailyTable($this);
+
         // Create import history table
         if (!$this->db->tableExists('{{%redirectmanager_import_history}}')) {
             $this->createTable('{{%redirectmanager_import_history}}', [
@@ -254,10 +258,17 @@ class Install extends Migration
     public function safeDown(): bool
     {
         // Drop tables in reverse order
-        $this->dropTableIfExists('{{%redirectmanager_import_history}}');
-        $this->dropTableIfExists('{{%redirectmanager_analytics}}');
-        $this->dropTableIfExists('{{%redirectmanager_settings}}');
-        $this->dropTableIfExists('{{%redirectmanager_redirects}}');
+        foreach ([
+            '{{%redirectmanager_import_history}}',
+            '{{%redirectmanager_analytics_daily}}',
+            '{{%redirectmanager_analytics}}',
+            '{{%redirectmanager_settings}}',
+            '{{%redirectmanager_redirects}}',
+        ] as $table) {
+            if ($this->db->tableExists($table)) {
+                $this->dropTable($table);
+            }
+        }
 
         return true;
     }

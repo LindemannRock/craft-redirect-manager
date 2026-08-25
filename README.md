@@ -33,7 +33,7 @@ Intelligent redirect management and 404 handling for Craft CMS.
 
 - Craft CMS 5.10+
 - PHP 8.2+
-- [LindemannRock Plugin Base](https://github.com/LindemannRock/craft-plugin-base) 5.37+ (required by Composer)
+- [LindemannRock Plugin Base](https://github.com/LindemannRock/craft-plugin-base) 5.38+ (required by Composer)
 - [Logging Library](https://github.com/LindemannRock/craft-logging-library) 5.18+ (required by Composer; install in CP for log viewing)
 
 ## Installation
