@@ -57,6 +57,8 @@ The local-storage warning is informational. It does not change the selected sett
 
 Scheduled backups normally run through Craft's queue. Redirect Manager keeps one delayed scheduled-backup chain for the next run. Each eligible occurrence schedules its successor even when the current storage attempt fails, allowing the same configured volume to recover automatically on a later run. On queue transports with a bounded delay, the plugin relays the wait through intermediate queue handoffs; those handoffs do not create backups. Local queue transports retain the complete native delay. Run a queue worker with `queue/listen` or a cron-driven `queue/run` so scheduled backups fire on time.
 
+Changing `backupSchedule` in `config/redirect-manager.php` takes effect without resaving the Control Panel settings. On the next plugin bootstrap, Redirect Manager replaces the pending occurrence for the old cadence with one scheduled for the new daily, weekly, or monthly timing. Repeated requests with the same effective cadence keep the existing occurrence instead of continually requeuing it.
+
 The queued job description shows when that specific queued row is due to run. Craft stores that description when the row is queued, so date/time format changes apply to newly queued rows. Existing delayed rows keep their old label until they run or are requeued. Queue labels stay compact: numeric months render numerically, while short and long month settings both render as short month names.
 
 ### Retention

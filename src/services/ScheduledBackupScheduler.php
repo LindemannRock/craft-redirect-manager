@@ -48,7 +48,7 @@ final class ScheduledBackupScheduler extends Component
         $this->withBootstrapQueueMutationLocks(
             fn() => $nextRun === null
                 ? $this->cancelLocked()
-                : $this->queueAtLocked($settings, $nextRun, true),
+                : $this->queueAtLocked($settings, $nextRun),
         );
     }
 
@@ -107,7 +107,7 @@ final class ScheduledBackupScheduler extends Component
             } finally {
                 $nextRun = $this->getNextRun($settings);
                 if ($nextRun !== null) {
-                    $this->withPortableLock(fn() => $this->queueAtLocked($settings, $nextRun, true));
+                    $this->withPortableLock(fn() => $this->queueAtLocked($settings, $nextRun));
                 }
             }
 
@@ -179,17 +179,27 @@ final class ScheduledBackupScheduler extends Component
         return $state['enabled'];
     }
 
-    private function queueAtLocked(Settings $settings, DateTime $nextRun, bool $preserveHealthyLegacy): void
+    private function queueAtLocked(Settings $settings, DateTime $nextRun): void
     {
-        if ($preserveHealthyLegacy && $this->retainEarliestHealthyLegacy()) {
-            $this->cancelNewOwnerLocked();
+        $ownerRows = $this->healthyOwnedRows();
+        $matchingRows = array_values(array_filter(
+            $ownerRows,
+            fn(array $row): bool => $this->hasCurrentScheduleIdentity(
+                (string)$row['job'],
+                $settings->getEffectiveBackupSchedule(),
+            ),
+        ));
+
+        if ($matchingRows !== []) {
+            $retainedId = (string)$matchingRows[0]['id'];
+            $this->deleteRows(array_values(array_filter(
+                [...$ownerRows, ...$this->healthyLegacyRows()],
+                static fn(array $row): bool => (string)$row['id'] !== $retainedId,
+            )));
             return;
         }
 
-        if ($this->retainEarliestHealthyOwner()) {
-            return;
-        }
-
+        $this->deleteRows([...$ownerRows, ...$this->healthyLegacyRows()]);
         $this->pushAtLocked($settings, $nextRun);
     }
 
@@ -207,6 +217,8 @@ final class ScheduledBackupScheduler extends Component
             job: new CreateBackupJob([
                 'reason' => 'scheduled',
                 'reschedule' => true,
+                'schedule' => $settings->getEffectiveBackupSchedule(),
+                'targetTimestamp' => $nextRun->getTimestamp(),
                 'nextRunTime' => $nextRunTime,
                 'recurringOwner' => self::RECURRING_OWNER,
             ]),
@@ -223,32 +235,21 @@ final class ScheduledBackupScheduler extends Component
         }
     }
 
-    private function retainEarliestHealthyOwner(): bool
+    private function hasCurrentScheduleIdentity(string $payload, string $schedule): bool
     {
-        $rows = $this->healthyOwnedRows();
-        if ($rows === []) {
+        if ($payload === '' || !str_contains($payload, self::RECURRING_OWNER)) {
             return false;
         }
 
-        if (count($rows) > 1) {
-            $this->deleteRows(array_slice($rows, 1));
-        }
+        $phpSchedule = sprintf('s:8:"schedule";s:%d:"%s";', strlen($schedule), $schedule);
+        $phpTarget = preg_match('/s:15:"targetTimestamp";i:[1-9][0-9]*;/', $payload) === 1;
+        $jsonSchedule = preg_match(
+            '/"schedule"\s*:\s*"' . preg_quote($schedule, '/') . '"/',
+            $payload,
+        ) === 1;
+        $jsonTarget = preg_match('/"targetTimestamp"\s*:\s*[1-9][0-9]*/', $payload) === 1;
 
-        return true;
-    }
-
-    private function retainEarliestHealthyLegacy(): bool
-    {
-        $rows = $this->healthyLegacyRows();
-        if ($rows === []) {
-            return false;
-        }
-
-        if (count($rows) > 1) {
-            $this->deleteRows(array_slice($rows, 1));
-        }
-
-        return true;
+        return (str_contains($payload, $phpSchedule) && $phpTarget) || ($jsonSchedule && $jsonTarget);
     }
 
     private function cancelLocked(): int

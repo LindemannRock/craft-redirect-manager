@@ -262,6 +262,8 @@ final class ScheduledBackupQueueTest extends TestCase
             'reason' => 'scheduled',
             'reschedule' => true,
             'recurringOwner' => ScheduledBackupScheduler::RECURRING_OWNER,
+            'schedule' => 'daily',
+            'targetTimestamp' => self::START_TIMESTAMP,
             'nextRunTime' => $nextRunTime,
         ]);
 
@@ -280,11 +282,13 @@ final class ScheduledBackupQueueTest extends TestCase
         self::assertSame('scheduled', $serialized->reason);
         self::assertTrue($serialized->reschedule);
         self::assertSame(ScheduledBackupScheduler::RECURRING_OWNER, $serialized->recurringOwner);
+        self::assertSame('daily', $serialized->schedule);
+        self::assertSame(self::START_TIMESTAMP, $serialized->targetTimestamp);
         self::assertSame(1024, (int)$row['priority']);
         self::assertSame(1800, (int)$row['ttr']);
     }
 
-    public function testBootstrapRetainsEarliestHealthyPhpLegacyRowAndRemovesNewOwnerCompetition(): void
+    public function testBootstrapReconcilesHealthyPhpLegacyRowsToCurrentOwnedOccurrence(): void
     {
         $this->settings()->backupEnabled = true;
         $this->settings()->backupSchedule = 'daily';
@@ -292,14 +296,15 @@ final class ScheduledBackupQueueTest extends TestCase
             'reason' => 'scheduled',
             'reschedule' => true,
         ]));
-        $earliestId = $this->insertPayload($legacyPayload, delay: 100);
+        $this->insertPayload($legacyPayload, delay: 100);
         $this->insertPayload($legacyPayload, delay: 200);
         $this->pushOwnedJob($this->recurringJob('competing'), 300);
 
         $this->scheduledBackups->synchronize($this->settings());
 
-        self::assertSame([$earliestId], $this->legacyRowIds());
-        self::assertSame(0, $this->countOwnerRows());
+        self::assertSame([], $this->legacyRowIds());
+        self::assertSame(1, $this->countOwnerRows());
+        $this->assertOwnerScheduleIdentity($this->onlyOwnerRow(), 'daily');
     }
 
     public function testRepeatedBootstrapCreatesExactlyOneNewOwnerChain(): void
@@ -309,10 +314,113 @@ final class ScheduledBackupQueueTest extends TestCase
 
         $this->scheduledBackups->synchronize($this->settings());
         $firstId = $this->onlyOwnerRow()['id'];
+        $before = $this->queueFingerprint();
         $this->scheduledBackups->synchronize($this->settings());
 
         self::assertSame(1, $this->countOwnerRows());
         self::assertSame((string)$firstId, (string)$this->onlyOwnerRow()['id']);
+        self::assertSame($before, $this->queueFingerprint());
+        $this->assertOwnerScheduleIdentity($this->onlyOwnerRow(), 'daily');
+    }
+
+    #[DataProvider('configCadenceChangeProvider')]
+    public function testBootstrapReplacesPendingOccurrenceWhenConfigCadenceChanges(string $newSchedule): void
+    {
+        $this->installPortableQueue(true);
+        $this->pauseAt(time());
+        $configuredSchedule = 'daily';
+        $config = $this->createMock(Config::class);
+        $config->method('getConfigFromFile')->willReturnCallback(
+            static function(string $handle) use (&$configuredSchedule): array {
+                return $handle === 'redirect-manager'
+                    ? ['backupEnabled' => true, 'backupSchedule' => $configuredSchedule]
+                    : [];
+            },
+        );
+        Craft::$app->set('config', $config);
+
+        $dailySettings = RedirectManager::getInstance()->getSettings();
+        self::assertInstanceOf(\lindemannrock\redirectmanager\models\Settings::class, $dailySettings);
+        $this->scheduledBackups->synchronize($dailySettings);
+        $dailyRow = $this->onlyOwnerRow();
+        $dailyHandoff = $this->unserializeJob($dailyRow);
+        self::assertInstanceOf(DeferredQueueJob::class, $dailyHandoff);
+        $dailyTarget = $dailyHandoff->targetTimestamp;
+
+        $configuredSchedule = $newSchedule;
+        $changedSettings = RedirectManager::getInstance()->getSettings();
+        self::assertInstanceOf(\lindemannrock\redirectmanager\models\Settings::class, $changedSettings);
+        self::assertSame($newSchedule, $changedSettings->getEffectiveBackupSchedule());
+        $expectedTarget = $this->scheduledBackups->getNextRun($changedSettings);
+        self::assertNotNull($expectedTarget);
+
+        $this->scheduledBackups->synchronize($changedSettings);
+
+        $changedRow = $this->onlyOwnerRow();
+        $changedHandoff = $this->unserializeJob($changedRow);
+        self::assertInstanceOf(DeferredQueueJob::class, $changedHandoff);
+        $changedTarget = $changedHandoff->targetTimestamp;
+        self::assertSame($expectedTarget->getTimestamp(), $changedTarget);
+        self::assertNotSame($dailyTarget, $changedTarget);
+        self::assertNotSame((string)$dailyRow['id'], (string)$changedRow['id']);
+        $this->assertOwnerScheduleIdentity($changedRow, $newSchedule, $expectedTarget->getTimestamp());
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function configCadenceChangeProvider(): iterable
+    {
+        yield 'daily to weekly' => ['weekly'];
+        yield 'daily to monthly' => ['monthly'];
+    }
+
+    public function testBootstrapCoalescesHealthyCurrentAndLegacyDuplicatesToOneCurrentOccurrence(): void
+    {
+        $this->settings()->backupEnabled = true;
+        $this->settings()->backupSchedule = 'daily';
+        $this->scheduledBackups->synchronize($this->settings());
+        $currentPayload = (string)$this->onlyOwnerRow()['job'];
+        $this->insertPayload($currentPayload, delay: 100);
+        $this->insertPayload($this->serializeJob(new CreateBackupJob([
+            'reason' => 'scheduled',
+            'reschedule' => true,
+        ])), delay: 50);
+
+        $this->scheduledBackups->synchronize($this->settings());
+
+        self::assertSame(1, $this->countOwnerRows());
+        self::assertSame([], $this->legacyRowIds());
+        $this->assertOwnerScheduleIdentity($this->onlyOwnerRow(), 'daily');
+    }
+
+    public function testCadenceReconciliationPreservesNonPendingAndForeignQueueRowsExactly(): void
+    {
+        $this->settings()->backupEnabled = true;
+        $this->settings()->backupSchedule = 'daily';
+        $this->scheduledBackups->synchronize($this->settings());
+        $pendingRow = $this->onlyOwnerRow();
+        $ownedPayload = (string)$pendingRow['job'];
+        $preservedIds = [
+            $this->insertPayload($ownedPayload, reserved: true),
+            $this->insertPayload($ownedPayload, fail: true),
+            $this->pushOwnedJob(new CreateBackupJob(['reason' => 'manual', 'reschedule' => false]), 50),
+            $this->pushOwnedJob(new CreateBackupJob(['reason' => 'import', 'reschedule' => true]), 50),
+            $this->pushOwnedJob(new CreateBackupJob(['reason' => 'console', 'reschedule' => true]), 50),
+            $this->pushOwnedJob(new CleanupAnalyticsJob(['reschedule' => true]), 50),
+            $this->insertPayload('{"plugin":"another-plugin","class":"CreateBackupJob","reason":"scheduled","reschedule":true}'),
+        ];
+        $before = $this->queueRowsByIds($preservedIds);
+
+        $this->settings()->backupSchedule = 'weekly';
+        $this->scheduledBackups->synchronize($this->settings());
+
+        self::assertSame($before, $this->queueRowsByIds($preservedIds));
+        self::assertFalse((new Query())->from('{{%queue}}')->where(['id' => $pendingRow['id']])->exists());
+        self::assertSame(3, $this->countOwnerRows());
+        $healthy = $this->ownerQuery()->andWhere(['fail' => false, 'timeUpdated' => null])->all();
+        self::assertCount(1, $healthy);
+        $this->assertOwnerScheduleIdentity($healthy[0], 'weekly');
     }
 
     public function testBootstrapLifecycleContentionIsNonfatalAndLeavesRowsUnchanged(): void
@@ -601,7 +709,7 @@ final class ScheduledBackupQueueTest extends TestCase
         );
     }
 
-    public function testJsonAndDeferredWrapperLegacyRowsAreRecognized(): void
+    public function testJsonAndDeferredWrapperLegacyRowsAreReconciledToCurrentIdentity(): void
     {
         $this->settings()->backupEnabled = true;
         $this->settings()->backupSchedule = 'daily';
@@ -622,8 +730,10 @@ final class ScheduledBackupQueueTest extends TestCase
 
         $this->scheduledBackups->synchronize($this->settings());
 
-        self::assertSame([$jsonId], $this->legacyRowIds());
-        self::assertSame(0, $this->countOwnerRows());
+        self::assertNotContains($jsonId, $this->legacyRowIds());
+        self::assertSame([], $this->legacyRowIds());
+        self::assertSame(1, $this->countOwnerRows());
+        $this->assertOwnerScheduleIdentity($this->onlyOwnerRow(), 'daily');
     }
 
     public function testFailedLegacyRowDoesNotBlockNewOwnerRecovery(): void
@@ -640,6 +750,7 @@ final class ScheduledBackupQueueTest extends TestCase
 
         self::assertSame([$failedId], $this->legacyRowIds());
         self::assertSame(1, $this->countOwnerRows());
+        $this->assertOwnerScheduleIdentity($this->onlyOwnerRow(), 'daily');
     }
 
     public function testReplacementCancelsEveryOwnedStateAndPreservesOtherQueueFamilies(): void
@@ -738,6 +849,7 @@ final class ScheduledBackupQueueTest extends TestCase
         self::assertTrue($this->scheduledBackups->replaceIfChanged($this->settings(), $dailyState));
         $weeklyId = $this->onlyOwnerRow()['id'];
         self::assertNotSame((string)$firstId, (string)$weeklyId);
+        $this->assertOwnerScheduleIdentity($this->onlyOwnerRow(), 'weekly');
 
         $weeklyState = $this->scheduledBackups->getEffectiveState($this->settings());
         $this->settings()->backupEnabled = false;
@@ -752,6 +864,7 @@ final class ScheduledBackupQueueTest extends TestCase
         $this->settings()->backupEnabled = true;
         self::assertTrue($this->scheduledBackups->replaceIfChanged($this->settings(), $disabledState));
         self::assertSame(1, $this->countOwnerRows());
+        $this->assertOwnerScheduleIdentity($this->onlyOwnerRow(), 'monthly');
     }
 
     public function testSettingsReplacementUsesConfigOverriddenEffectiveValues(): void
@@ -820,6 +933,7 @@ final class ScheduledBackupQueueTest extends TestCase
         self::assertSame(['scheduled'], $backup->reasons);
         self::assertSame(1, $backup->cleanupCalls);
         self::assertSame(1, $this->countOwnerRows());
+        $this->assertOwnerScheduleIdentity($this->onlyOwnerRow(), 'daily');
         self::assertSame([
             ScheduledBackupScheduler::LIFECYCLE_MUTEX,
             ScheduledBackupScheduler::PORTABLE_MUTEX,
@@ -850,6 +964,7 @@ final class ScheduledBackupQueueTest extends TestCase
         self::assertSame(1, $backup->createCalls);
         self::assertSame(0, $backup->cleanupCalls);
         self::assertSame(1, $this->countOwnerRows());
+        $this->assertOwnerScheduleIdentity($this->onlyOwnerRow(), 'daily');
     }
 
     public function testEmptyRecurringBackupQueuesOneSuccessorWithoutRetentionOrRetry(): void
@@ -1067,6 +1182,19 @@ final class ScheduledBackupQueueTest extends TestCase
         }, $rows);
     }
 
+    /**
+     * @param list<int> $ids
+     * @return list<array<string, mixed>>
+     */
+    private function queueRowsByIds(array $ids): array
+    {
+        return (new Query())
+            ->from('{{%queue}}')
+            ->where(['id' => $ids])
+            ->orderBy(['id' => SORT_ASC])
+            ->all();
+    }
+
     /** @return list<int> */
     private function legacyRowIds(): array
     {
@@ -1110,6 +1238,29 @@ final class ScheduledBackupQueueTest extends TestCase
         self::assertIsObject($job);
 
         return $job;
+    }
+
+    /** @param array<string, mixed> $row */
+    private function assertOwnerScheduleIdentity(
+        array $row,
+        string $schedule,
+        ?int $targetTimestamp = null,
+    ): void {
+        $job = $this->unserializeJob($row);
+        if ($job instanceof DeferredQueueJob) {
+            if ($targetTimestamp !== null) {
+                self::assertSame($targetTimestamp, $job->targetTimestamp);
+            }
+            $job = $job->job;
+        }
+
+        self::assertInstanceOf(CreateBackupJob::class, $job);
+        self::assertSame(ScheduledBackupScheduler::RECURRING_OWNER, $job->recurringOwner);
+        self::assertSame($schedule, $job->schedule);
+        self::assertGreaterThan(0, $job->targetTimestamp);
+        if ($targetTimestamp !== null) {
+            self::assertSame($targetTimestamp, $job->targetTimestamp);
+        }
     }
 
     private function insertPayload(

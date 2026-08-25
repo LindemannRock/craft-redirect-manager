@@ -112,6 +112,8 @@ Retention and limit cleanup are independent. With `analyticsRetention` set to `0
 | `backupPath` | `string` | `'@storage/redirect-manager/backups'` | Local filesystem path for backups. Supports `@storage`, `@root` subfolders, or `$VARIABLE` env vars that resolve inside those roots. |
 | `backupVolumeUid` @since(5.32.0) | `?string` | `null` | Optional asset volume UID for storing backups. Local volumes inside `@webroot` are rejected; remote volume access must be restricted in the storage provider. |
 
+Config-file cadence changes do not require a Control Panel save. When Redirect Manager next bootstraps, it reconciles the pending scheduled occurrence to the effective `backupSchedule`; an unchanged cadence keeps the existing occurrence, while a daily, weekly, or monthly change queues the new timing.
+
 When `backupVolumeUid` resolves to a valid volume, it takes precedence over `backupPath`. Redirect Manager performs backup operations through the Craft volume, so the volume's configured subpath is honored for creation, listing, downloads, restores, deletion, and retention. New backups live beneath that subpath at `redirect-manager/backups`.
 
 For compatibility, Redirect Manager also recognizes backups created by earlier versions at the exact filesystem-root prefix `redirect-manager/backups`. It does not scan arbitrary locations or move those backups automatically. Canonical backups beneath the current volume subpath take precedence when both locations contain the same backup name, and the Backups page shows which location owns each listed entry.

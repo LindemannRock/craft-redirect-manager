@@ -167,6 +167,17 @@ This warning is expected when a scheduled backup or another scheduling operation
 
 If the warning continues after the backup or settings operation has finished, confirm the queue worker is healthy and check for a stuck scheduled-backup job before restarting the worker.
 
+## A scheduled backup still shows the previous cadence
+
+Values in `config/redirect-manager.php` override the Control Panel. If a queued backup appears to use the wrong cadence:
+
+1. Confirm the effective `backupEnabled` and `backupSchedule` values in the config file for the current environment.
+2. Load any Craft request or run a Craft command so Redirect Manager can bootstrap. The plugin replaces a healthy pending occurrence from the previous cadence with the new daily, weekly, or monthly timing; no Control Panel resave is required.
+3. Confirm a queue worker is running. A row that is already executing is allowed to finish, and its successor uses the current effective cadence.
+4. Check the queue again after bootstrap. Repeated requests with an unchanged cadence retain one pending occurrence rather than creating duplicates.
+
+If the old timing remains after these checks, review the Redirect Manager and Craft logs for queue mutex or database errors. A temporary lock conflict defers reconciliation to a later bootstrap instead of blocking the request.
+
 ## Duplicate scheduled backup jobs keep appearing
 
 Scheduled backups and analytics cleanup should normally have one delayed queue row per next run. Redirect Manager checks for existing pending rows during bootstrap, collapses duplicate pending rows automatically, and keeps one row for the next scheduled run.

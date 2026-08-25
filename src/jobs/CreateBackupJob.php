@@ -44,6 +44,18 @@ class CreateBackupJob extends BaseJob implements RetryableJobInterface
     public string $recurringOwner = '';
 
     /**
+     * @var string Effective cadence for this recurring occurrence
+     * @since 5.41.0
+     */
+    public string $schedule = '';
+
+    /**
+     * @var int|null Intended Unix timestamp for this recurring occurrence
+     * @since 5.41.0
+     */
+    public ?int $targetTimestamp = null;
+
+    /**
      * @var string|null Next run time display string
      */
     public ?string $nextRunTime = null;
