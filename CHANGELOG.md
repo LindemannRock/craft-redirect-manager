@@ -1,5 +1,45 @@
 # Changelog
 
+## [5.41.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.40.0...v5.41.0) - 2026-08-26
+
+
+### Added
+
+* **settings:** warn about ephemeral local storage ([8e8e11c](https://github.com/LindemannRock/craft-redirect-manager/commit/8e8e11c12e044b5ecdfd8f4df5ec0f3ff454b27f))
+
+
+### Fixed
+
+* **analytics:** preserve reporting integrity ([d5d3e38](https://github.com/LindemannRock/craft-redirect-manager/commit/d5d3e380501ce7a5b28248f950baabc3b3d933fa))
+* **backups:** clean partial remote promotions ([77d4f8c](https://github.com/LindemannRock/craft-redirect-manager/commit/77d4f8c77ed419b7429a6c255cf32eeb6a6ca885))
+* **backups:** harden backup storage lifecycle ([4addc93](https://github.com/LindemannRock/craft-redirect-manager/commit/4addc93f33b4a331843f6ede6d987e4ad73e1d47))
+* **backups:** honor Craft volume subpaths ([d8d1c5a](https://github.com/LindemannRock/craft-redirect-manager/commit/d8d1c5a38aa35e946b02a50a1feb211037dfc04e))
+* **backups:** reconcile configured cadence ([bf48e08](https://github.com/LindemannRock/craft-redirect-manager/commit/bf48e08a0f3d78c2829e0d51f15d4b5508dd2d5d))
+* **cache:** support portable disposable storage ([699a6ed](https://github.com/LindemannRock/craft-redirect-manager/commit/699a6edf05799a6b459b51c2792e0724edf4590c))
+* **controllers:** coordinate API rate limits ([f5e80de](https://github.com/LindemannRock/craft-redirect-manager/commit/f5e80deb4290118e4935d08fd2ee15e18433ed7f))
+* **controllers:** protect environment updates ([cb29ac1](https://github.com/LindemannRock/craft-redirect-manager/commit/cb29ac17add33d3c34c2b63da364b35da43b2a64))
+* **cp:** support Craft Cloud asset delivery ([50e8804](https://github.com/LindemannRock/craft-redirect-manager/commit/50e880495c4158df3386c9ef69436e221547cf06))
+* **import-export:** normalize portable redirect identity ([486defd](https://github.com/LindemannRock/craft-redirect-manager/commit/486defddc04921f9cec4c7bf8ff63b17eac567b8))
+* **permissions:** enforce live site authorization ([a1cd055](https://github.com/LindemannRock/craft-redirect-manager/commit/a1cd055ea35cb7f93880c33072e3f9a8fd34d448))
+* **queue:** defer busy bootstrap reconciliation ([d363708](https://github.com/LindemannRock/craft-redirect-manager/commit/d363708f9a04250d7898ad281562631178fc7f70))
+* **queue:** support portable scheduled backups ([31203df](https://github.com/LindemannRock/craft-redirect-manager/commit/31203df81e393f2dfeb58d2b5994f7dcd2a57e74))
+* **redirects:** enforce safe resolution semantics ([86a993f](https://github.com/LindemannRock/craft-redirect-manager/commit/86a993feb0fc6f5c439518d81abd1f7e1e1d62f4))
+* remove unused linkMode parameter from error summary ([6a2b321](https://github.com/LindemannRock/craft-redirect-manager/commit/6a2b3210fcf82155c791b3e1b089644d0f8e6c10))
+* require base 5.37 and logging library 5.18 ([ff017b0](https://github.com/LindemannRock/craft-redirect-manager/commit/ff017b02e6718ce0d2363aad6bd00a3d5541926e))
+* **settings:** apply query settings in URL tester ([a7bb460](https://github.com/LindemannRock/craft-redirect-manager/commit/a7bb460ed9cdb4c0db801270ab2db7f78132f615))
+* **templates:** correct title rendering in setup template ([41b9b3b](https://github.com/LindemannRock/craft-redirect-manager/commit/41b9b3b1b1930a745036d651146d30a2414017da))
+
+
+### Security
+
+* **redirects:** preserve authored destination authority ([805d556](https://github.com/LindemannRock/craft-redirect-manager/commit/805d556d4c5c755f4e7624a870bc850711d1bdbc))
+
+
+### Changed
+
+* **analytics:** schedule bounded analytics maintenance ([82beb71](https://github.com/LindemannRock/craft-redirect-manager/commit/82beb7105bf6e7f8d65c814f3e695ac17bda5702))
+* **cache:** bound repeated redirect miss work ([45ce9bc](https://github.com/LindemannRock/craft-redirect-manager/commit/45ce9bc27d4103ef92c0f457cdb7664adc11f4d1))
+
 ## [5.40.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.39.1...v5.40.0) - 2026-07-18
 
 
