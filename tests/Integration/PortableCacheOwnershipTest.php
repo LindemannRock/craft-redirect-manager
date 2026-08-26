@@ -61,20 +61,28 @@ final class PortableCacheOwnershipTest extends TestCase
         }
     }
 
-    public function testComposerRequiresTheFirstCompatibleBaseQueueAndCacheRelease(): void
+    public function testComposerRequiresPublishedDependencyFloors(): void
     {
         $composerContents = file_get_contents(dirname(__DIR__, 2) . '/composer.json');
         self::assertIsString($composerContents);
         $composer = json_decode($composerContents, true, flags: JSON_THROW_ON_ERROR);
         self::assertIsArray($composer);
-        $constraint = $composer['require']['lindemannrock/craft-plugin-base'] ?? null;
+        $baseConstraint = $composer['require']['lindemannrock/craft-plugin-base'] ?? null;
+        $loggingConstraint = $composer['require']['lindemannrock/craft-logging-library'] ?? null;
 
-        self::assertIsString($constraint);
-        self::assertSame('^5.38', $constraint);
-        self::assertFalse(Semver::satisfies('5.37.99', $constraint));
-        self::assertTrue(Semver::satisfies('5.38.0', $constraint));
-        self::assertTrue(Semver::satisfies('5.99.0', $constraint));
-        self::assertFalse(Semver::satisfies('6.0.0', $constraint));
+        self::assertIsString($baseConstraint);
+        self::assertSame('^5.38.1', $baseConstraint);
+        self::assertFalse(Semver::satisfies('5.38.0', $baseConstraint));
+        self::assertTrue(Semver::satisfies('5.38.1', $baseConstraint));
+        self::assertTrue(Semver::satisfies('5.99.0', $baseConstraint));
+        self::assertFalse(Semver::satisfies('6.0.0', $baseConstraint));
+
+        self::assertIsString($loggingConstraint);
+        self::assertSame('^5.18.1', $loggingConstraint);
+        self::assertFalse(Semver::satisfies('5.18.0', $loggingConstraint));
+        self::assertTrue(Semver::satisfies('5.18.1', $loggingConstraint));
+        self::assertTrue(Semver::satisfies('5.99.0', $loggingConstraint));
+        self::assertFalse(Semver::satisfies('6.0.0', $loggingConstraint));
     }
 
     public function testRedirectLookupFamilyConstructsWithoutPluginOrDatabaseAccess(): void

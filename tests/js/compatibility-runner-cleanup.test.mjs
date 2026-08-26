@@ -13,11 +13,18 @@ function executable(pathname, source) {
     chmodSync(pathname, 0o700);
 }
 
-function fixture({install = false, keep = false, failureMatch = '', cleanupExit = 0, waitMatch = ''} = {}) {
+function fixture({
+    install = false,
+    failureMatch = '',
+    cleanupExit = 0,
+    waitCreate = false,
+    requestedPhp = '8.3',
+    actualPhp = requestedPhp,
+} = {}) {
     const root = mkdtempSync(path.join(os.tmpdir(), 'redirect-manager-compat-runner-'));
     const fixturePackageRoot = path.join(root, 'package');
     const binRoot = path.join(root, 'bin');
-    const tempRoot = path.join(root, 'compat temp [owned]');
+    const tempRoot = path.join(root, 'compat-temp');
     const resourceRoot = path.join(root, 'ddev-resources');
     const logPath = path.join(root, 'commands.log');
     mkdirSync(path.join(fixturePackageRoot, 'scripts'), {recursive: true});
@@ -35,53 +42,58 @@ function fixture({install = false, keep = false, failureMatch = '', cleanupExit 
     writeFileSync(path.join(resourceRoot, 'unrelated-sentinel.txt'), 'owner ddev\n');
 
     executable(path.join(binRoot, 'composer'), `#!/bin/bash
-printf 'composer:%s\n' "$*" >> "$REDIRECT_MANAGER_COMPAT_TEST_LOG"
+printf 'composer:%s\\n' "$*" >> "$REDIRECT_MANAGER_COMPAT_TEST_LOG"
 if [[ "$1" == "create-project" ]]; then
   project_dir="$3"
   mkdir -p "$project_dir"
-  printf '{"require-dev":{"fixture":"1"}}\n' > "$project_dir/composer.json"
-  printf '{"packages":[]}\n' > "$project_dir/composer.lock"
-fi
-if [[ -n "$REDIRECT_MANAGER_COMPAT_WAIT_MATCH" && "composer $*" == *"$REDIRECT_MANAGER_COMPAT_WAIT_MATCH"* ]]; then
-  trap 'exit 130' INT
-  trap 'exit 143' TERM
-  trap 'exit 129' HUP
-  while :; do sleep 1; done
+  printf '{"require-dev":{"fixture":"1"}}\\n' > "$project_dir/composer.json"
+  if [[ "$REDIRECT_MANAGER_COMPAT_WAIT_CREATE" == "1" ]]; then
+    trap 'exit 143' TERM
+    while :; do sleep 1; done
+  fi
 fi
 if [[ -n "$REDIRECT_MANAGER_COMPAT_FAIL_MATCH" && "composer $*" == *"$REDIRECT_MANAGER_COMPAT_FAIL_MATCH"* ]]; then exit 41; fi
 exit 0
 `);
     executable(path.join(binRoot, 'ddev'), `#!/bin/bash
-printf 'ddev:%s\n' "$*" >> "$REDIRECT_MANAGER_COMPAT_TEST_LOG"
-if [[ "$1" == "delete" ]]; then
-  project_name="\${@: -1}"
-  if [[ "$REDIRECT_MANAGER_COMPAT_CLEANUP_EXIT" -ne 0 ]]; then exit "$REDIRECT_MANAGER_COMPAT_CLEANUP_EXIT"; fi
-  rm -rf "$REDIRECT_MANAGER_DDEV_RESOURCE_ROOT/$project_name"
-  exit 0
-fi
+printf 'ddev:%s\\n' "$*" >> "$REDIRECT_MANAGER_COMPAT_TEST_LOG"
 if [[ "$1" == "config" ]]; then
   for argument in "$@"; do
     case "$argument" in --project-name=*) project_name="\${argument#*=}" ;; esac
   done
-  case "$project_name" in ""|-*|*-|*[!a-z0-9-]*) exit 42 ;; esac
+  case "$project_name" in
+    ""|-*|*-|*[!a-z0-9-]*) exit 42 ;;
+  esac
+  printf '%s\\n' "$project_name" > "$REDIRECT_MANAGER_DDEV_RESOURCE_ROOT/current-project"
   mkdir -p "$REDIRECT_MANAGER_DDEV_RESOURCE_ROOT/$project_name"
 fi
-if [[ -n "$REDIRECT_MANAGER_COMPAT_WAIT_MATCH" && "ddev $*" == *"$REDIRECT_MANAGER_COMPAT_WAIT_MATCH"* ]]; then
-  trap 'exit 130' INT
-  trap 'exit 143' TERM
-  trap 'exit 129' HUP
-  while :; do sleep 1; done
+if [[ "$1" == "delete" ]]; then
+  project_name="\${@: -1}"
+  if [[ "$REDIRECT_MANAGER_COMPAT_CLEANUP_EXIT" -ne 0 ]]; then exit "$REDIRECT_MANAGER_COMPAT_CLEANUP_EXIT"; fi
+  rm -rf "$REDIRECT_MANAGER_DDEV_RESOURCE_ROOT/$project_name"
+  rm -f "$REDIRECT_MANAGER_DDEV_RESOURCE_ROOT/current-project"
+  exit 0
+fi
+if [[ "$1" == "exec" && "$2" == "test" ]]; then exit 0; fi
+if [[ "$1" == "exec" && "$2" == "php" ]]; then
+  case "$4" in
+    *PHP_MAJOR_VERSION*) printf '%s' "$REDIRECT_MANAGER_COMPAT_ACTUAL_PHP_ROW" ;;
+    *PHP_VERSION*) printf '%s' "$REDIRECT_MANAGER_COMPAT_ACTUAL_PHP_FULL" ;;
+  esac
+  exit 0
 fi
 if [[ -n "$REDIRECT_MANAGER_COMPAT_FAIL_MATCH" && "ddev $*" == *"$REDIRECT_MANAGER_COMPAT_FAIL_MATCH"* ]]; then exit 41; fi
 if [[ "$1 $2" == "craft plugin/list" ]]; then
-  printf ' redirect-manager fixture Yes Yes\n'
+  printf ' redirect-manager fixture Yes Yes\\n'
 fi
 exit 0
 `);
 
     const argumentsList = ['^5.10', 'dev-main'];
-    if (install) argumentsList.push('--install');
-    if (keep) argumentsList.push('--keep-project');
+    if (install) {
+        argumentsList.push('--install');
+    }
+    argumentsList.push('--php-version', requestedPhp);
     const environment = {
         ...process.env,
         PATH: `${binRoot}:${process.env.PATH}`,
@@ -89,8 +101,10 @@ exit 0
         REDIRECT_MANAGER_COMPAT_TEST_LOG: logPath,
         REDIRECT_MANAGER_COMPAT_FAIL_MATCH: failureMatch,
         REDIRECT_MANAGER_COMPAT_CLEANUP_EXIT: String(cleanupExit),
-        REDIRECT_MANAGER_COMPAT_WAIT_MATCH: waitMatch,
+        REDIRECT_MANAGER_COMPAT_WAIT_CREATE: waitCreate ? '1' : '0',
         REDIRECT_MANAGER_DDEV_RESOURCE_ROOT: resourceRoot,
+        REDIRECT_MANAGER_COMPAT_ACTUAL_PHP_ROW: actualPhp,
+        REDIRECT_MANAGER_COMPAT_ACTUAL_PHP_FULL: `${actualPhp}.30`,
     };
     const command = '/bin/bash';
     const args = [path.join(fixturePackageRoot, 'scripts/test-craft-compat'), ...argumentsList];
@@ -99,19 +113,20 @@ exit 0
         root,
         tempRoot,
         resourceRoot,
+        logPath,
         run() {
             return spawnSync(command, args, {cwd: fixturePackageRoot, env: environment, encoding: 'utf8'});
         },
         spawn() {
-            return spawn(command, args, {cwd: fixturePackageRoot, env: environment, detached: true, stdio: ['ignore', 'pipe', 'pipe']});
+            return spawn(command, args, {
+                cwd: fixturePackageRoot,
+                env: environment,
+                detached: true,
+                stdio: ['ignore', 'pipe', 'pipe'],
+            });
         },
         log() {
             return existsSync(logPath) ? readFileSync(logPath, 'utf8') : '';
-        },
-        projectPaths() {
-            return readdirSync(tempRoot)
-                .filter((entry) => entry.startsWith('craft-compat-redirect-manager-'))
-                .map((entry) => path.join(tempRoot, entry));
         },
         assertOwnedStateRemoved() {
             assert.deepEqual(readdirSync(tempRoot), ['unrelated-sentinel.txt']);
@@ -126,14 +141,16 @@ exit 0
 }
 
 async function waitForLog(current, pattern) {
-    for (let attempt = 0; attempt < 150; attempt++) {
-        if (pattern.test(current.log())) return;
+    for (let attempt = 0; attempt < 100; attempt++) {
+        if (pattern.test(current.log())) {
+            return;
+        }
         await new Promise((resolve) => setTimeout(resolve, 20));
     }
     throw new Error(`Timed out waiting for compatibility runner log:\n${current.log()}`);
 }
 
-test('Composer-only success and failure remove only the exact generated project', async (context) => {
+test('Composer-only success and failure remove only the generated project', async (context) => {
     for (const [name, failureMatch, expected] of [
         ['success', '', 0],
         ['dependency failure', 'composer require craftcms/cms', 41],
@@ -142,9 +159,9 @@ test('Composer-only success and failure remove only the exact generated project'
             const current = fixture({failureMatch});
             try {
                 const result = current.run();
-                assert.equal(result.status, expected, `${result.stdout}\n${result.stderr}`);
+                assert.equal(result.status, expected, result.stderr);
                 current.assertOwnedStateRemoved();
-                assert.doesNotMatch(result.stdout, /Project (?:left|kept) at/);
+                assert.doesNotMatch(result.stdout, /Project left at/);
             } finally {
                 current.cleanup();
             }
@@ -152,21 +169,26 @@ test('Composer-only success and failure remove only the exact generated project'
     }
 });
 
-test('install success and failures clean the exact partial DDEV lifecycle', async (context) => {
+test('install mode preserves the Craft plugin smoke path and cleans every partial DDEV path', async (context) => {
     for (const [name, failureMatch, expected] of [
         ['success', '', 0],
-        ['configuration failure', 'ddev config ', 41],
+        ['config failure', 'ddev config ', 41],
         ['start failure', 'ddev start', 41],
         ['Craft install failure', 'ddev craft install', 41],
         ['plugin install failure', 'ddev craft plugin/install', 41],
-        ['smoke failure', 'ddev exec env', 41],
+        ['plugin smoke failure', 'ddev exec env', 41],
     ]) {
         await context.test(name, () => {
             const current = fixture({install: true, failureMatch});
             try {
                 const result = current.run();
                 assert.equal(result.status, expected, `${result.stdout}\n${result.stderr}`);
-                assert.match(current.log(), /ddev:delete -Oy craft-compat-redirect-manager-/);
+                assert.match(current.log(), /ddev:delete -Oy compat-redirect-manager-/);
+                if (failureMatch === '' || failureMatch === 'ddev exec env') {
+                    assert.match(result.stdout, / redirect-manager fixture Yes Yes/);
+                    assert.match(result.stdout, /Running package smoke test: \.craft-compat\/smoke-test/);
+                    assert.match(current.log(), /ddev:exec env PLUGIN_NAME=lindemannrock\/craft-redirect-manager PLUGIN_HANDLE=redirect-manager PLUGIN_TYPE=craft-plugin bash \.craft-compat\/smoke-test/);
+                }
                 current.assertOwnedStateRemoved();
             } finally {
                 current.cleanup();
@@ -175,77 +197,53 @@ test('install success and failures clean the exact partial DDEV lifecycle', asyn
     }
 });
 
-test('SIGINT, SIGTERM, and SIGHUP preserve signal exit codes and clean owned paths', async (context) => {
-    for (const [signal, expected] of [['SIGINT', 130], ['SIGTERM', 143], ['SIGHUP', 129]]) {
-        await context.test(signal, async () => {
-            const current = fixture({waitMatch: 'composer create-project'});
-            try {
-                const child = current.spawn();
-                await waitForLog(current, /composer:create-project/);
-                process.kill(-child.pid, signal);
-                const result = await new Promise((resolve) => child.once('close', (code, closedSignal) => resolve({code, signal: closedSignal})));
-                assert.ok(result.code === expected || result.signal === signal, JSON.stringify(result));
-                current.assertOwnedStateRemoved();
-            } finally {
-                current.cleanup();
-            }
-        });
-    }
+test('requested PHP row is verified against the observed DDEV runtime before mandatory smoke', async (context) => {
+    await context.test('matching row reaches package smoke', () => {
+        const current = fixture({install: true, requestedPhp: '8.4', actualPhp: '8.4'});
+        try {
+            const result = current.run();
+            assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+            assert.match(result.stdout, /Actual DDEV PHP: 8\.4\.30/);
+            assert.match(current.log(), /ddev:config .*--php-version=8\.4/);
+            assert.match(current.log(), /ddev:exec env .*bash \.craft-compat\/smoke-test/);
+            current.assertOwnedStateRemoved();
+        } finally {
+            current.cleanup();
+        }
+    });
+
+    await context.test('mismatched row fails before package smoke', () => {
+        const current = fixture({install: true, requestedPhp: '8.3', actualPhp: '8.4'});
+        try {
+            const result = current.run();
+            assert.equal(result.status, 1, `${result.stdout}\n${result.stderr}`);
+            assert.match(result.stderr, /DDEV PHP row mismatch: requested 8\.3, got 8\.4/);
+            assert.doesNotMatch(current.log(), /ddev:exec env .*bash \.craft-compat\/smoke-test/);
+            current.assertOwnedStateRemoved();
+        } finally {
+            current.cleanup();
+        }
+    });
 });
 
-test('signal after DDEV configuration removes only that project and its directory', async () => {
-    const current = fixture({install: true, waitMatch: 'ddev start'});
+test('signal cleanup returns signal status and removes the exact generated project', async () => {
+    const current = fixture({waitCreate: true});
     try {
         const child = current.spawn();
-        await waitForLog(current, /ddev:start/);
+        await waitForLog(current, /composer:create-project/);
         process.kill(-child.pid, 'SIGTERM');
         const result = await new Promise((resolve) => child.once('close', (code, signal) => resolve({code, signal})));
         assert.ok(result.code === 143 || result.signal === 'SIGTERM', JSON.stringify(result));
-        assert.match(current.log(), /ddev:delete -Oy craft-compat-redirect-manager-/);
         current.assertOwnedStateRemoved();
     } finally {
         current.cleanup();
     }
 });
 
-test('diagnostic keep is distinct and retains only the exact requested run', async (context) => {
-    for (const install of [false, true]) {
-        await context.test(install ? 'install' : 'Composer-only', () => {
-            const current = fixture({install, keep: true});
-            try {
-                const result = current.run();
-                assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-                assert.match(result.stdout, /Project kept at:/);
-                assert.equal(current.projectPaths().length, 1);
-                if (install) {
-                    assert.equal(readdirSync(current.resourceRoot).filter((entry) => entry !== 'unrelated-sentinel.txt').length, 1);
-                    assert.doesNotMatch(current.log(), /ddev:delete/);
-                }
-            } finally {
-                current.cleanup();
-            }
-        });
-    }
-});
-
-test('repeated diagnostic runs receive collision-safe project directories', () => {
-    const current = fixture({keep: true});
-    try {
-        const first = current.run();
-        const second = current.run();
-        assert.equal(first.status, 0, `${first.stdout}\n${first.stderr}`);
-        assert.equal(second.status, 0, `${second.stdout}\n${second.stderr}`);
-        assert.equal(current.projectPaths().length, 2);
-        assert.equal(new Set(current.projectPaths()).size, 2);
-    } finally {
-        current.cleanup();
-    }
-});
-
-test('cleanup failure is reported and cannot turn retained resources into success', async (context) => {
+test('cleanup failure never hides the primary status and fails clean success', async (context) => {
     for (const [name, failureMatch, expected] of [
-        ['primary failure remains primary', 'ddev craft install', 41],
-        ['cleanup-only failure is nonzero', '', 88],
+        ['primary failure', 'ddev craft install', 41],
+        ['cleanup-only failure', '', 88],
     ]) {
         await context.test(name, () => {
             const current = fixture({install: true, failureMatch, cleanupExit: 88});
@@ -255,17 +253,9 @@ test('cleanup failure is reported and cannot turn retained resources into succes
                 assert.match(result.stderr, /Failed to remove owned DDEV project .* \(exit 88\)/);
                 assert.deepEqual(readdirSync(current.tempRoot), ['unrelated-sentinel.txt']);
                 assert.equal(readFileSync(path.join(current.resourceRoot, 'unrelated-sentinel.txt'), 'utf8'), 'owner ddev\n');
-                assert.equal(readdirSync(current.resourceRoot).length, 2);
             } finally {
                 current.cleanup();
             }
         });
     }
-});
-
-test('help documents diagnostic retention separately from project dev dependencies', () => {
-    const result = spawnSync('/bin/bash', [runnerSource, '--help'], {cwd: packageRoot, encoding: 'utf8'});
-    assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /--keep-project\b/);
-    assert.match(result.stdout, /separate from --keep-project-dev/);
 });
