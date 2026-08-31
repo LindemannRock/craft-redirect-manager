@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.41.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.41.0...v5.41.1) (2026-08-31)
+
+
+### Fixed
+
+* **backups:** attribute scheduled backups to system ([935e484](https://github.com/LindemannRock/craft-redirect-manager/commit/935e48458406902267c0a28697a7e21cde5c20fb))
+
 ## [5.41.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.40.0...v5.41.0) - 2026-08-26
 
 
