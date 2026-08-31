@@ -31,12 +31,13 @@
     "require": {
         "php": "^8.2",
         "craftcms/cms": "^5.10",
-        "lindemannrock/craft-plugin-base": "^5.38.1",
-        "lindemannrock/craft-logging-library": "^5.18.1"
+        "lindemannrock/craft-plugin-base": "^5.38.2",
+        "lindemannrock/craft-logging-library": "^5.18.2"
     },
     "require-dev": {
         "craftcms/ecs": "dev-main",
         "craftcms/phpstan": "dev-main",
+        "phpstan/phpstan": "^1.12.33",
         "phpunit/phpunit": "^11.0",
         "yiisoft/yii2-redis": "^2.0"
     },

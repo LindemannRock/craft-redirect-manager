@@ -29,7 +29,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 /**
  * Pins backup creator attribution at storage and presentation boundaries.
  *
- * @since 5.42.0
+ * @since 5.41.1
  */
 final class BackupAttributionTest extends TestCase
 {
