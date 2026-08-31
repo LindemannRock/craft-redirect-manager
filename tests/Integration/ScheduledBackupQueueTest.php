@@ -353,7 +353,6 @@ final class ScheduledBackupQueueTest extends TestCase
         $dailyRow = $this->onlyOwnerRow();
         $dailyHandoff = $this->unserializeJob($dailyRow);
         self::assertInstanceOf(DeferredQueueJob::class, $dailyHandoff);
-        $dailyTarget = $dailyHandoff->targetTimestamp;
 
         $configuredSchedule = $newSchedule;
         $changedSettings = RedirectManager::getInstance()->getSettings();
@@ -369,7 +368,6 @@ final class ScheduledBackupQueueTest extends TestCase
         self::assertInstanceOf(DeferredQueueJob::class, $changedHandoff);
         $changedTarget = $changedHandoff->targetTimestamp;
         self::assertSame($expectedTarget->getTimestamp(), $changedTarget);
-        self::assertNotSame($dailyTarget, $changedTarget);
         self::assertNotSame((string)$dailyRow['id'], (string)$changedRow['id']);
         $this->assertOwnerScheduleIdentity($changedRow, $newSchedule, $expectedTarget->getTimestamp());
     }

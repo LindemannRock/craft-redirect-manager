@@ -24,6 +24,8 @@ A backup is a snapshot of your redirect library at a point in time, saved as a f
 - **On a schedule** (daily, weekly, or monthly, when `backupSchedule` is not `disabled`)
 - **Manually** from the Backups CP section or via console command
 
+The **Created By** column identifies the account behind a user-initiated backup, including backups created before an import or restore. Scheduled backups are owned by the scheduler and show **System**, regardless of which Control Panel request happens to process the queue job. Redirect Manager also presents older scheduled backups as **System** without rewriting their stored metadata or downloaded contents.
+
 ## Configure automatic backups
 
 Use **Redirect Manager → Settings → Backup** to enable backups, choose pre-import behavior and cadence, set retention, and select local or volume storage. Use `config/redirect-manager.php` when those values should be fixed per environment:

@@ -215,6 +215,7 @@ class ImportExportController extends Controller
             }
 
             $reason = $backup['reason'] ?? 'import';
+            $isScheduled = strtolower((string)$reason) === 'scheduled';
             $reasonInfo = $this->formatBackupReason($reason);
             $badgeHtml = $view->renderTemplate('lindemannrock-base/_components/badge', [
                 'label' => $reasonInfo['reasonLabel'],
@@ -264,6 +265,12 @@ class ImportExportController extends Controller
 
             $formatted[] = array_merge($backup, $reasonInfo, [
                 'formattedDate' => $formattedDate ?? ($backup['date'] ?? ''),
+                'user' => $isScheduled
+                    ? Craft::t('redirect-manager', 'System')
+                    : ($backup['user'] ?? 'system'),
+                'userId' => $isScheduled
+                    ? null
+                    : ($backup['userId'] ?? null),
                 'reasonBadgeHtml' => $badgeHtml,
                 'rowActionsHtml' => $rowActionsHtml,
             ]);

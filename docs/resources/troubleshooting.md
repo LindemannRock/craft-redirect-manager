@@ -167,6 +167,12 @@ Redirect Manager schedules recurring queue jobs for analytics cleanup and automa
 
 The queued job description shows when that specific queued row is due to run. Craft stores that description when the row is queued, so date/time format changes apply to newly queued rows. Existing delayed rows keep their old label until they run or are requeued. Queue labels stay compact: numeric months render numerically, while short and long month settings both render as short month names.
 
+## A scheduled backup shows System as its creator
+
+This is expected. Scheduled backups belong to Redirect Manager's scheduler rather than the account whose request happens to process Craft's queue, so the Backups page shows **System** in the **Created By** column. Control Panel manual backups and backups triggered by a user import or restore keep that account's attribution.
+
+Backups created by older plugin versions may contain a username in their stored `metadata.json`. Redirect Manager presents those scheduled entries as **System** without changing the file, checksum, restore behavior, or downloaded backup contents.
+
 ## Scheduled-backup reconciliation is deferred
 
 The logs show that scheduled-backup bootstrap reconciliation was deferred because the lifecycle or portable queue lock is busy.

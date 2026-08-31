@@ -88,7 +88,9 @@ class BackupService extends Component
             $folder = $this->getFolderForReason($reason);
             $backupName = $folder . '/' . $timestamp . '-' . bin2hex(random_bytes(6));
 
-            $identity = Craft::$app->getUser()->getIdentity();
+            $identity = strtolower($reason) === 'scheduled'
+                ? null
+                : Craft::$app->getUser()->getIdentity();
             $metadata = [
                 'date' => $timestamp,
                 'timestamp' => time(),
