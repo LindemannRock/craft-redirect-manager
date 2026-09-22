@@ -9,6 +9,9 @@
          failOnSkipped="true"
          failOnWarning="true"
          cacheDirectory=".phpunit.cache">
+    <php>
+        <const name="YII_DEBUG" value="true"/>
+    </php>
     <testsuites>
         <testsuite name="integration">
             <directory>tests/Integration</directory>

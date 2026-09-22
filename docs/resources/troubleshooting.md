@@ -175,11 +175,11 @@ Backups created by older plugin versions may contain a username in their stored 
 
 ## Scheduled-backup reconciliation is deferred
 
-The logs show that scheduled-backup bootstrap reconciliation was deferred because the lifecycle or portable queue lock is busy.
+With debug logging enabled, the logs can show that scheduled-backup bootstrap reconciliation was deferred because the lifecycle or portable queue lock is busy.
 
-This warning is expected when a scheduled backup or another scheduling operation already owns the lock. Redirect Manager leaves the queue unchanged, allows the request to continue, and retries reconciliation during a later Craft bootstrap.
+This debug message is expected when a scheduled backup or another scheduling operation already owns the lock. Redirect Manager leaves the queue unchanged, allows the request to continue, and retries reconciliation during a later Craft bootstrap.
 
-If the warning continues after the backup or settings operation has finished, confirm the queue worker is healthy and check for a stuck scheduled-backup job before restarting the worker.
+These diagnostics require Craft’s `devMode` and debug logging; they are not warnings. If the message continues after the backup or settings operation has finished, confirm the queue worker is healthy and check for a stuck scheduled-backup job before restarting the worker.
 
 ## A scheduled backup still shows the previous cadence
 

@@ -44,6 +44,14 @@ final class ScheduledBackupQueueTest extends TestCase
 
     private ?RecordingBackupSqsQueue $proxyQueue = null;
     private bool $timePaused = false;
+    private ?int $originalLogFlushInterval = null;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->originalLogFlushInterval = Craft::getLogger()->flushInterval;
+        Craft::getLogger()->flushInterval = PHP_INT_MAX;
+    }
 
     protected function tearDown(): void
     {
@@ -53,6 +61,9 @@ final class ScheduledBackupQueueTest extends TestCase
                 $this->timePaused = false;
             }
         } finally {
+            if ($this->originalLogFlushInterval !== null) {
+                Craft::getLogger()->flushInterval = $this->originalLogFlushInterval;
+            }
             parent::tearDown();
         }
     }
@@ -451,9 +462,9 @@ final class ScheduledBackupQueueTest extends TestCase
         }
 
         self::assertSame($before, $this->queueFingerprint());
-        self::assertContains(
+        $this->assertBootstrapDebugSince(
+            $messageOffset,
             'Scheduled-backup bootstrap reconciliation deferred because the lifecycle lock is busy.',
-            $this->redirectManagerWarningsSince($messageOffset),
         );
         self::assertSame([ScheduledBackupScheduler::LIFECYCLE_MUTEX], $mutex->acquisitions);
         self::assertSame([0], $mutex->timeouts);
@@ -483,9 +494,9 @@ final class ScheduledBackupQueueTest extends TestCase
         }
 
         self::assertSame($before, $this->queueFingerprint());
-        self::assertContains(
+        $this->assertBootstrapDebugSince(
+            $messageOffset,
             'Scheduled-backup bootstrap reconciliation deferred because the portable lock is busy.',
-            $this->redirectManagerWarningsSince($messageOffset),
         );
         self::assertSame([
             ScheduledBackupScheduler::LIFECYCLE_MUTEX,
@@ -1308,22 +1319,16 @@ final class ScheduledBackupQueueTest extends TestCase
         $property->setValue($queue, $jobId);
     }
 
-    /** @return list<string> */
-    private function redirectManagerWarningsSince(int $offset): array
+    private function assertBootstrapDebugSince(int $offset, string $expectedMessage): void
     {
-        $warnings = [];
-        foreach (array_slice(Craft::getLogger()->messages, $offset) as $message) {
-            if (($message[1] ?? null) !== Logger::LEVEL_WARNING
-                || ($message[2] ?? null) !== 'redirect-manager'
-                || !is_string($message[0] ?? null)
-            ) {
-                continue;
-            }
+        $matching = array_filter(
+            array_slice(Craft::getLogger()->messages, $offset),
+            static fn(array $message): bool => $message[0] === $expectedMessage
+                && $message[2] === 'redirect-manager',
+        );
 
-            $warnings[] = $message[0];
-        }
-
-        return $warnings;
+        self::assertSame([Logger::LEVEL_TRACE], array_values(array_column($matching, 1)));
+        self::assertNotContains(Logger::LEVEL_WARNING, array_column($matching, 1));
     }
 }
 

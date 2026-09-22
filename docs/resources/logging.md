@@ -117,6 +117,7 @@ The level of detail depends on your configured `logLevel`.
 
 ### Debug (`debug`)
 
+- Scheduled-backup bootstrap reconciliation deferred because a lifecycle or portable queue lock is busy; a later request retries automatically
 - Each incoming 404 URL and the matching result
 - Cache hit/miss for redirect lookups
 - Device detection parsing details
