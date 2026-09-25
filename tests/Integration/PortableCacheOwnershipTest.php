@@ -80,9 +80,9 @@ final class PortableCacheOwnershipTest extends TestCase
         self::assertSame('^1.12.33', $phpstanConstraint);
 
         self::assertIsString($loggingConstraint);
-        self::assertSame('^5.18.2', $loggingConstraint);
-        self::assertFalse(Semver::satisfies('5.18.1', $loggingConstraint));
-        self::assertTrue(Semver::satisfies('5.18.2', $loggingConstraint));
+        self::assertSame('^5.19.0', $loggingConstraint);
+        self::assertFalse(Semver::satisfies('5.18.2', $loggingConstraint));
+        self::assertTrue(Semver::satisfies('5.19.0', $loggingConstraint));
         self::assertTrue(Semver::satisfies('5.99.0', $loggingConstraint));
         self::assertFalse(Semver::satisfies('6.0.0', $loggingConstraint));
     }
