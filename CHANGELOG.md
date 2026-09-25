@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.41.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.41.1...v5.41.2) - 2026-09-25
+
+
+### Fixed
+
+* **backups:** log routine scheduling contention at debug level ([d52886d](https://github.com/LindemannRock/craft-redirect-manager/commit/d52886d387fd8ad9c18b32f93a471bfd3002852e))
+
 ## [5.41.1](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.41.0...v5.41.1) - 2026-08-31
 
 
