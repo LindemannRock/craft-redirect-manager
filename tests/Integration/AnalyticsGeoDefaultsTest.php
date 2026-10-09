@@ -63,6 +63,30 @@ final class AnalyticsGeoDefaultsTest extends TestCase
         self::assertIsArray($location);
         self::assertSame('US', $location['countryCode']);
         self::assertSame('New York', $location['city']);
+        self::assertArrayNotHasKey('timezone', $location);
+    }
+
+    public function testPrivateIpUsesEuropeanLocaleDefaults(): void
+    {
+        $expectedDefaults = [
+            'NL' => ['Amsterdam', 'Netherlands'],
+            'SE' => ['Stockholm', 'Sweden'],
+            'DK' => ['Copenhagen', 'Denmark'],
+            'NO' => ['Oslo', 'Norway'],
+        ];
+
+        foreach ($expectedDefaults as $countryCode => [$city, $country]) {
+            $this->settings()->defaultCountry = $countryCode;
+            $this->settings()->defaultCity = $city;
+
+            $location = $this->analytics->getLocationFromIp('192.168.1.42');
+
+            self::assertIsArray($location, $countryCode . '/' . $city . ' should resolve to default geo metadata.');
+            self::assertSame($countryCode, $location['countryCode']);
+            self::assertSame($country, $location['country']);
+            self::assertSame($city, $location['city']);
+            self::assertArrayNotHasKey('timezone', $location);
+        }
     }
 
     public function testPrivateIpHasNoGeoLocationForUnsupportedDefaults(): void

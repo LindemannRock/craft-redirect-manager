@@ -180,7 +180,7 @@ REDIRECT_MANAGER_DEFAULT_CITY=New York
 
 These settings only affect private/local IPs. In production, real visitor IPs use actual geolocation. If either default is missing or unsupported, private/local IP geo fields stay empty instead of using a fallback location.
 
-**Supported default locations include:** US (New York, Los Angeles, Chicago, San Francisco), GB (London, Manchester), DE (Berlin, Munich), FR (Paris), CA (Toronto, Vancouver), AU (Sydney, Melbourne), JP (Tokyo), SG (Singapore), IN (Mumbai, Delhi), AE (Dubai, Abu Dhabi), and SA (Riyadh, Jeddah).
+**Supported default locations include:** US (New York, Los Angeles, Chicago, San Francisco), GB (London, Manchester), DE (Berlin, Munich), FR (Paris), NL (Amsterdam), SE (Stockholm), DK (Copenhagen), NO (Oslo), CA (Toronto, Vancouver), AU (Sydney, Melbourne), JP (Tokyo), SG (Singapore), IN (Mumbai, Delhi), AE (Dubai, Abu Dhabi), and SA (Riyadh, Jeddah).
 
 ## Privacy
 
