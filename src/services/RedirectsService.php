@@ -13,6 +13,7 @@ use craft\base\Component;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use DirectoryIterator;
@@ -681,6 +682,11 @@ class RedirectsService extends Component
             $oldUri = (string)$stashed['uri'];
             $newUri = $element->uri;
             $siteId = $element->siteId;
+
+            // Temporary Craft URIs are not previous or destination public URLs.
+            if (ElementHelper::containsTempSlug($oldUri) || ElementHelper::containsTempSlug($newUri)) {
+                return;
+            }
 
             $this->logDebug('Checking URI change', [
                 'elementId' => $element->id,

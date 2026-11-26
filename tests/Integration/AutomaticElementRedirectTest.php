@@ -13,12 +13,14 @@ namespace lindemannrock\redirectmanager\tests\Integration;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Entry;
+use craft\helpers\ElementHelper;
 use craft\services\Elements;
 use lindemannrock\redirectmanager\events\RedirectEvent;
 use lindemannrock\redirectmanager\records\RedirectRecord;
 use lindemannrock\redirectmanager\services\LocalCacheService;
 use lindemannrock\redirectmanager\services\RedirectsService;
 use lindemannrock\redirectmanager\tests\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionProperty;
 
 /**
@@ -142,6 +144,149 @@ final class AutomaticElementRedirectTest extends TestCase
             self::assertSame("https://site-{$index}.example.test/base/new-{$index}", $record->destinationUrl);
         }
         self::assertSame(0, $this->stashedCount($service));
+    }
+
+    #[DataProvider('temporaryUriChangeProvider')]
+    public function testTemporaryUriChangesAreIgnored(string $sourceMode, string $oldUri, string $newUri): void
+    {
+        $siteId = (int)Craft::$app->getSites()->getPrimarySite()->id;
+        $elementId = random_int(100000, 999999);
+        $old = $this->element($elementId, $siteId, $oldUri, 'https://site.example/base/' . $oldUri);
+        $new = $this->element($elementId, $siteId, $newUri, 'https://site.example/base/' . $newUri);
+        $this->replaceElements($new, $old);
+        $this->settings()->redirectSrcMatch = $sourceMode;
+        $service = new NotificationRecordingRedirectsService();
+
+        $service->stashElementUri($new);
+        $service->handleElementUriChange($new);
+
+        self::assertSame(0, $this->countRows(RedirectRecord::tableName(), ['elementId' => $elementId]));
+        self::assertFalse($service->notificationRequested);
+        self::assertSame([], $service->notices);
+        self::assertSame([], $service->errors);
+        self::assertSame(0, $this->stashedCount($service));
+    }
+
+    /** @return iterable<string, array{string, string, string}> */
+    public static function temporaryUriChangeProvider(): iterable
+    {
+        $temporary = ElementHelper::tempSlug();
+        $anotherTemporary = ElementHelper::tempSlug();
+        $changes = [
+            'temporary source' => ['catalog/' . $temporary, 'catalog/published'],
+            'temporary destination' => ['catalog/published', 'catalog/' . $temporary],
+            'both temporary' => ['catalog/' . $temporary, 'catalog/' . $anotherTemporary],
+            'temporary parent source' => [$temporary . '/child', 'parent/child'],
+            'temporary parent destination' => ['parent/child', $temporary . '/child'],
+            'temporary source with unique suffix' => ['catalog/' . $temporary . '-2', 'catalog/published'],
+        ];
+        foreach (['pathonly', 'fullurl'] as $sourceMode) {
+            foreach ($changes as $name => [$oldUri, $newUri]) {
+                yield $sourceMode . ': ' . $name => [$sourceMode, $oldUri, $newUri];
+            }
+        }
+    }
+
+    #[DataProvider('sourceModeProvider')]
+    public function testTemporaryUriChangesPreserveExistingAutomaticRedirects(string $sourceMode): void
+    {
+        $siteId = (int)Craft::$app->getSites()->getPrimarySite()->id;
+        $elementId = random_int(100000, 999999);
+        $temporaryUri = 'catalog/' . ElementHelper::tempSlug();
+        $publishedUri = 'catalog/published';
+        $prefix = $sourceMode === 'fullurl' ? 'https://site.example/base/' : '/';
+        // Existing rows created before temporary URI changes were excluded.
+        $record = $this->seedRedirect([
+            'sourceUrl' => $prefix . $temporaryUri,
+            'destinationUrl' => $prefix . $publishedUri,
+            'redirectSrcMatch' => $sourceMode,
+            'siteId' => $siteId,
+            'creationType' => 'entry-change',
+            'elementId' => $elementId,
+        ]);
+        $before = $this->fetchRow(RedirectRecord::tableName(), ['id' => $record->id]);
+        $old = $this->element($elementId, $siteId, $publishedUri, 'https://site.example/base/' . $publishedUri);
+        $new = $this->element($elementId, $siteId, $temporaryUri, 'https://site.example/base/' . $temporaryUri);
+        $this->replaceElements($new, $old);
+        $this->settings()->redirectSrcMatch = $sourceMode;
+        $this->settings()->undoWindowMinutes = 0;
+        $service = new NotificationRecordingRedirectsService();
+
+        $service->stashElementUri($new);
+        $service->handleElementUriChange($new);
+
+        self::assertSame($before, $this->fetchRow(RedirectRecord::tableName(), ['id' => $record->id]));
+        self::assertSame(1, $this->countRows(RedirectRecord::tableName(), ['elementId' => $elementId]));
+        self::assertSame([], $service->notices);
+        self::assertSame(0, $this->stashedCount($service));
+    }
+
+    #[DataProvider('sourceModeProvider')]
+    public function testTemporaryUriOnOneSiteDoesNotSuppressAnotherSitesRedirect(string $sourceMode): void
+    {
+        $sites = array_slice(Craft::$app->getSites()->getAllSites(), 0, 2);
+        $elementId = random_int(100000, 999999);
+        $service = new NotificationRecordingRedirectsService();
+        $this->settings()->redirectSrcMatch = $sourceMode;
+        $oldBySite = [];
+        $newBySite = [];
+        foreach ($sites as $index => $site) {
+            $siteId = (int)$site->id;
+            $oldUri = $index === 0 ? 'catalog/' . ElementHelper::tempSlug() : 'catalog/old';
+            $oldBySite[$siteId] = $this->element($elementId, $siteId, $oldUri, "https://site-{$index}.example.test/base/" . $oldUri);
+            $newBySite[$siteId] = $this->element($elementId, $siteId, 'catalog/published', "https://site-{$index}.example.test/base/catalog/published");
+        }
+        $elements = $this->createMock(Elements::class);
+        $elements->expects(self::exactly(2))->method('getElementById')
+            ->willReturnCallback(static fn(int $id, ?string $type, int $siteId): ElementInterface => $oldBySite[$siteId]);
+        Craft::$app->set('elements', $elements);
+
+        foreach ($newBySite as $new) {
+            $service->stashElementUri($new);
+        }
+        foreach ($newBySite as $new) {
+            $service->handleElementUriChange($new);
+        }
+
+        $records = RedirectRecord::find()->where(['elementId' => $elementId])->all();
+        self::assertCount(1, $records);
+        self::assertInstanceOf(RedirectRecord::class, $records[0]);
+        self::assertSame((int)$sites[1]->id, (int)$records[0]->siteId);
+        $prefix = $sourceMode === 'fullurl' ? 'https://site-1.example.test/base/' : '/';
+        self::assertSame($prefix . 'catalog/old', $records[0]->sourceUrl);
+        self::assertSame($prefix . 'catalog/published', $records[0]->destinationUrl);
+        self::assertSame(0, $this->stashedCount($service));
+    }
+
+    #[DataProvider('sourceModeProvider')]
+    public function testNonTemporaryLookalikeUrisStillCreateRedirects(string $sourceMode): void
+    {
+        $siteId = (int)Craft::$app->getSites()->getPrimarySite()->id;
+        $elementId = random_int(100000, 999999);
+        $oldUri = 'catalog/__temp_notes';
+        $newUri = 'catalog/__temp_archive';
+        $old = $this->element($elementId, $siteId, $oldUri, 'https://site.example/base/' . $oldUri);
+        $new = $this->element($elementId, $siteId, $newUri, 'https://site.example/base/' . $newUri);
+        $this->replaceElements($new, $old);
+        $this->settings()->redirectSrcMatch = $sourceMode;
+        $service = new NotificationRecordingRedirectsService();
+
+        $service->stashElementUri($new);
+        $service->handleElementUriChange($new);
+
+        $record = RedirectRecord::find()->where(['elementId' => $elementId, 'siteId' => $siteId])->one();
+        self::assertInstanceOf(RedirectRecord::class, $record);
+        $prefix = $sourceMode === 'fullurl' ? 'https://site.example/base/' : '/';
+        self::assertSame($prefix . $oldUri, $record->sourceUrl);
+        self::assertSame($prefix . $newUri, $record->destinationUrl);
+        self::assertSame(0, $this->stashedCount($service));
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function sourceModeProvider(): iterable
+    {
+        yield 'path-only' => ['pathonly'];
+        yield 'full URL' => ['fullurl'];
     }
 
     public function testForwardProgressionRetainsEarlierRedirects(): void
