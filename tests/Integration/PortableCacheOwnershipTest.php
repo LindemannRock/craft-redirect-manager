@@ -72,22 +72,22 @@ final class PortableCacheOwnershipTest extends TestCase
         $loggingConstraint = $composer['require']['lindemannrock/craft-logging-library'] ?? null;
         $phpstanConstraint = $composer['require-dev']['phpstan/phpstan'] ?? null;
 
-        self::assertSame('^5.11', $craftConstraint);
-        self::assertFalse(Semver::satisfies('5.10.14', $craftConstraint));
-        self::assertTrue(Semver::satisfies('5.11.0', $craftConstraint));
+        self::assertSame('^5.12.3', $craftConstraint);
+        self::assertFalse(Semver::satisfies('5.12.2', $craftConstraint));
+        self::assertTrue(Semver::satisfies('5.12.3', $craftConstraint));
 
         self::assertIsString($baseConstraint);
-        self::assertSame('^5.39.0', $baseConstraint);
-        self::assertFalse(Semver::satisfies('5.38.2', $baseConstraint));
-        self::assertTrue(Semver::satisfies('5.39.0', $baseConstraint));
+        self::assertSame('^5.40', $baseConstraint);
+        self::assertFalse(Semver::satisfies('5.39.0', $baseConstraint));
+        self::assertTrue(Semver::satisfies('5.40.0', $baseConstraint));
         self::assertTrue(Semver::satisfies('5.99.0', $baseConstraint));
         self::assertFalse(Semver::satisfies('6.0.0', $baseConstraint));
         self::assertSame('^1.12.33', $phpstanConstraint);
 
         self::assertIsString($loggingConstraint);
-        self::assertSame('^5.19.0', $loggingConstraint);
-        self::assertFalse(Semver::satisfies('5.18.2', $loggingConstraint));
-        self::assertTrue(Semver::satisfies('5.19.0', $loggingConstraint));
+        self::assertSame('^5.21', $loggingConstraint);
+        self::assertFalse(Semver::satisfies('5.20.0', $loggingConstraint));
+        self::assertTrue(Semver::satisfies('5.21.0', $loggingConstraint));
         self::assertTrue(Semver::satisfies('5.99.0', $loggingConstraint));
         self::assertFalse(Semver::satisfies('6.0.0', $loggingConstraint));
     }

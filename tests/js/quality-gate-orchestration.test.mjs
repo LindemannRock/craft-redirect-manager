@@ -58,7 +58,7 @@ function actFixture(content = workflow([checkout, trust, gate])) {
     writeFileSync(path.join(binRoot, 'act'), `#!/bin/sh\nprintf '%s\\n' "$*" > "$REDIRECT_MANAGER_ACT_LOG"\ntouch "$REDIRECT_MANAGER_ACT_RESOURCES/container" "$REDIRECT_MANAGER_ACT_RESOURCES/network"\ncase " $* " in *" --rm "*) rm -f "$REDIRECT_MANAGER_ACT_RESOURCES"/* ;; esac\nexit 73\n`, {mode: 0o700});
     chmodSync(path.join(binRoot, 'act'), 0o700);
     return {
-        run: () => spawnSync('/bin/bash', ['scripts/act-quality-gates'], {cwd: root, encoding: 'utf8', env: {...process.env, PATH: `${binRoot}:/usr/bin:/bin`, REDIRECT_MANAGER_ACT_LOG: logPath, REDIRECT_MANAGER_ACT_RESOURCES: resources}}),
+        run: () => spawnSync('/bin/bash', ['scripts/act-quality-gates'], {cwd: root, encoding: 'utf8', env: {...process.env, BASH_ENV: '', PATH: `${binRoot}:/usr/bin:/bin`, REDIRECT_MANAGER_ACT_LOG: logPath, REDIRECT_MANAGER_ACT_RESOURCES: resources}}),
         log: () => readFileSync(logPath, 'utf8'),
         resources: () => readdirSync(resources),
         cleanup: () => rmSync(root, {recursive: true, force: true}),

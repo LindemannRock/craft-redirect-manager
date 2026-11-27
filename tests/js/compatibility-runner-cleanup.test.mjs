@@ -96,6 +96,7 @@ exit 0
     argumentsList.push('--php-version', requestedPhp);
     const environment = {
         ...process.env,
+        BASH_ENV: '',
         PATH: `${binRoot}:${process.env.PATH}`,
         CRAFT_COMPAT_TEMP_ROOT: tempRoot,
         REDIRECT_MANAGER_COMPAT_TEST_LOG: logPath,

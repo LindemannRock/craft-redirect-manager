@@ -29,7 +29,7 @@ function fixture({workspace = false, ddevExit = 0, platformExit = 0, qualityExit
     executable(path.join(binRoot, 'ddev'), `#!/bin/sh\nprintf 'ddev:%s\\n' "$*" >> "$REDIRECT_MANAGER_HOOK_TEST_LOG"\nexit ${ddevExit}\n`);
     executable(path.join(binRoot, 'php'), `#!/bin/sh\nprintf 'php:%s\\n' "$*" >> "$REDIRECT_MANAGER_HOOK_TEST_LOG"\nif [ "$1" = "-r" ]; then printf '8.3.30'; exit 0; fi\nif [ "$1" = "scripts/check-quality-platform.php" ]; then exit ${qualityExit}; fi\nexit 92\n`);
     executable(path.join(binRoot, 'composer'), `#!/bin/sh\nprintf 'composer:%s\\n' "$*" >> "$REDIRECT_MANAGER_HOOK_TEST_LOG"\nif [ "$1" = "check-platform-reqs" ]; then exit ${platformExit}; fi\nif [ "$1" = "ci" ]; then exit ${ciExit}; fi\nexit 91\n`);
-    const environment = {...process.env, PATH: `${binRoot}:/usr/bin:/bin`, REDIRECT_MANAGER_HOOK_TEST_LOG: logPath};
+    const environment = {...process.env, BASH_ENV: '', PATH: `${binRoot}:/usr/bin:/bin`, REDIRECT_MANAGER_HOOK_TEST_LOG: logPath};
     const snapshot = () => execFileSync('/usr/bin/find', [packageRoot, '-type', 'f', '-exec', '/usr/bin/shasum', '-a', '256', '{}', ';'], {encoding: 'utf8'}).trim().split('\n').sort().join('\n');
     const before = snapshot();
     return {
