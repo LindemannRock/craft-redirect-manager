@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.42.0](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.41.2...v5.42.0) - 2026-11-27
+
+
+### Added
+
+* **geo:** use shared default locations ([62c2991](https://github.com/LindemannRock/craft-redirect-manager/commit/62c2991e0ba7e8659d014dfd9761dc4f0df4451c))
+
+
+### Fixed
+
+* **deps:** require Base 5.40 and Logging Library 5.21 ([0b4675a](https://github.com/LindemannRock/craft-redirect-manager/commit/0b4675aee912aa08f01ff6ed188de573996dda4c))
+* **redirects:** ignore Craft temporary URIs ([f190e5e](https://github.com/LindemannRock/craft-redirect-manager/commit/f190e5e5ce241f2f558ec6bf96d27acf4c852ffe))
+
 ## [5.41.2](https://github.com/LindemannRock/craft-redirect-manager/compare/v5.41.1...v5.41.2) - 2026-09-25
 
 
